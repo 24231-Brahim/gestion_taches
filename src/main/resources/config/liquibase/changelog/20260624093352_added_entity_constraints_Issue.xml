@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <!--
+        Added the constraints for entity Issue.
+    -->
+    <changeSet id="20260624093352-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="sprint_id"
+                                 baseTableName="issue"
+                                 constraintName="fk_issue__sprint_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="sprint"
+                                 />
+
+        <addForeignKeyConstraint baseColumnNames="epic_id"
+                                 baseTableName="issue"
+                                 constraintName="fk_issue__epic_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="epic"
+                                 />
+
+        <addForeignKeyConstraint baseColumnNames="project_id"
+                                 baseTableName="issue"
+                                 constraintName="fk_issue__project_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="project"
+                                 />
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,36 @@
+{
+  "gestionTachesApp": {
+    "issue": {
+      "home": {
+        "title": "Issues",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Issue",
+        "createOrEditLabel": "Créer ou éditer un Issue",
+        "notFound": "Aucun Issue trouvé"
+      },
+      "created": "Un nouveau Issue a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Issue avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Issue avec l'identifiant {{ param }} a été supprimé",
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Issue {{ id }} ?"
+      },
+      "detail": {
+        "title": "Issue"
+      },
+      "id": "ID",
+      "title": "Title",
+      "description": "Description",
+      "type": "Type",
+      "status": "Status",
+      "priority": "Priority",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "comments": "Comments",
+      "attachments": "Attachments",
+      "history": "History",
+      "sprint": "Sprint",
+      "epic": "Epic",
+      "project": "Project"
+    }
+  }
+}

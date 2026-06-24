@@ -1,0 +1,59 @@
+{
+  "annotations": {
+    "changelogDate": "20260624093351"
+  },
+  "applications": ["*"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "title",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "200",
+      "fieldValidateRulesMinlength": "1"
+    },
+    {
+      "fieldName": "description",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "1000"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "EpicStatus",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "TODO,IN_PROGRESS,DONE,CANCELLED"
+    },
+    {
+      "fieldName": "priority",
+      "fieldType": "Priority",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "LOWEST,LOW,MEDIUM,HIGH,HIGHEST"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "Instant"
+    }
+  ],
+  "jpaMetamodelFiltering": true,
+  "name": "Epic",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityField": "name",
+      "otherEntityName": "project",
+      "otherEntityRelationshipName": "epics",
+      "relationshipName": "project",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

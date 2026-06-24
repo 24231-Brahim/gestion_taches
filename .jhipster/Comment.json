@@ -1,0 +1,35 @@
+{
+  "annotations": {
+    "changelogDate": "20260624093353"
+  },
+  "applications": ["*"],
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "content",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "2000",
+      "fieldValidateRulesMinlength": "1"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "name": "Comment",
+  "pagination": "infinite-scroll",
+  "relationships": [
+    {
+      "otherEntityName": "issue",
+      "otherEntityRelationshipName": "comments",
+      "relationshipName": "issue",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

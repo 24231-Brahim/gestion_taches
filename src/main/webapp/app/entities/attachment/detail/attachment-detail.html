@@ -1,0 +1,50 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (attachment(); as attachmentRef) {
+      <div>
+        <h2 data-cy="attachmentDetailsHeading"><span jhiTranslate="gestionTachesApp.attachment.detail.title">Attachment</span></h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ attachmentRef.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.attachment.fileName">File Name</span></dt>
+          <dd>
+            <span>{{ attachmentRef.fileName }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.attachment.filePath">File Path</span></dt>
+          <dd>
+            <span>{{ attachmentRef.filePath }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.attachment.uploadedAt">Uploaded At</span></dt>
+          <dd>
+            <span>{{ attachmentRef.uploadedAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.attachment.issue">Issue</span></dt>
+          <dd>
+            @if (attachment()!.issue) {
+              <div>
+                <a [routerLink]="['/issue', attachment()!.issue?.id, 'view']">{{ attachmentRef.issue?.id }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+        </button>
+
+        <button type="button" [routerLink]="['/attachment', attachmentRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,29 @@
+{
+  "gestionTachesApp": {
+    "actionHistory": {
+      "home": {
+        "title": "ActionHistories",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Action History",
+        "createOrEditLabel": "Créer ou éditer un Action History",
+        "notFound": "Aucun Action History trouvé"
+      },
+      "created": "Un nouveau Action History a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Action History avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Action History avec l'identifiant {{ param }} a été supprimé",
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Action History {{ id }} ?"
+      },
+      "detail": {
+        "title": "Action History"
+      },
+      "id": "ID",
+      "action": "Action",
+      "fieldChanged": "Field Changed",
+      "oldValue": "Old Value",
+      "newValue": "New Value",
+      "createdAt": "Created At",
+      "issue": "Issue"
+    }
+  }
+}

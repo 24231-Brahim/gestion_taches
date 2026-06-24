@@ -1,0 +1,29 @@
+{
+  "gestionTachesApp": {
+    "actionHistory": {
+      "home": {
+        "title": "Action Histories",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Action History",
+        "createOrEditLabel": "Create or edit a Action History",
+        "notFound": "No Action Histories found"
+      },
+      "created": "A new Action History is created with identifier {{ param }}",
+      "updated": "A Action History is updated with identifier {{ param }}",
+      "deleted": "A Action History is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Action History {{ id }}?"
+      },
+      "detail": {
+        "title": "Action History"
+      },
+      "id": "ID",
+      "action": "Action",
+      "fieldChanged": "Field Changed",
+      "oldValue": "Old Value",
+      "newValue": "New Value",
+      "createdAt": "Created At",
+      "issue": "Issue"
+    }
+  }
+}

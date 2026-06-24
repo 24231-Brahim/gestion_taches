@@ -1,0 +1,46 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (comment(); as commentRef) {
+      <div>
+        <h2 data-cy="commentDetailsHeading"><span jhiTranslate="gestionTachesApp.comment.detail.title">Comment</span></h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ commentRef.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.comment.content">Content</span></dt>
+          <dd>
+            <span>{{ commentRef.content }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.comment.createdAt">Created At</span></dt>
+          <dd>
+            <span>{{ commentRef.createdAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.comment.issue">Issue</span></dt>
+          <dd>
+            @if (comment()!.issue) {
+              <div>
+                <a [routerLink]="['/issue', comment()!.issue?.id, 'view']">{{ commentRef.issue?.id }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+        </button>
+
+        <button type="button" [routerLink]="['/comment', commentRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

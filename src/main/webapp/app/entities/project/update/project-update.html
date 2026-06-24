@@ -1,0 +1,133 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+      <h2 id="jhi-project-heading" data-cy="ProjectCreateUpdateHeading" jhiTranslate="gestionTachesApp.project.home.createOrEditLabel">
+        Créer ou éditer un Project
+      </h2>
+
+      <div>
+        <jhi-alert-error />
+
+        @if (editForm.controls.id.value !== null) {
+          <div class="mb-3">
+            <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
+            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+          </div>
+        }
+
+        @let nameRef = editForm.get('name')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_name" jhiTranslate="gestionTachesApp.project.name">Name</label>
+          <input type="text" class="form-control" name="name" id="field_name" data-cy="name" formControlName="name" />
+          @if (nameRef.invalid && (nameRef.dirty || nameRef.touched)) {
+            <div>
+              @if (editForm.get('name')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">Ce champ est obligatoire.</small>
+              }
+              @if (editForm.get('name')?.errors?.minlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.minlength" [translateValues]="{ min: '1' }"
+                  >Ce champ doit faire au moins 1 caractères.</small
+                >
+              }
+              @if (editForm.get('name')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '100' }"
+                  >Ce champ doit faire au maximum 100 caractères.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let descriptionRef = editForm.get('description')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_description" jhiTranslate="gestionTachesApp.project.description">Description</label>
+          <input
+            type="text"
+            class="form-control"
+            name="description"
+            id="field_description"
+            data-cy="description"
+            formControlName="description"
+          />
+          @if (descriptionRef.invalid && (descriptionRef.dirty || descriptionRef.touched)) {
+            <div>
+              @if (editForm.get('description')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '500' }"
+                  >Ce champ doit faire au maximum 500 caractères.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let keyRef = editForm.get('key')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_key" jhiTranslate="gestionTachesApp.project.key">Key</label>
+          <input type="text" class="form-control" name="key" id="field_key" data-cy="key" formControlName="key" />
+          @if (keyRef.invalid && (keyRef.dirty || keyRef.touched)) {
+            <div>
+              @if (editForm.get('key')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">Ce champ est obligatoire.</small>
+              }
+              @if (editForm.get('key')?.errors?.minlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.minlength" [translateValues]="{ min: '2' }"
+                  >Ce champ doit faire au moins 2 caractères.</small
+                >
+              }
+              @if (editForm.get('key')?.errors?.maxlength) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '10' }"
+                  >Ce champ doit faire au maximum 10 caractères.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
+        @let createdAtRef = editForm.get('createdAt')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_createdAt" jhiTranslate="gestionTachesApp.project.createdAt">Created At</label>
+          <div class="d-flex">
+            <input
+              id="field_createdAt"
+              data-cy="createdAt"
+              type="datetime-local"
+              class="form-control"
+              name="createdAt"
+              formControlName="createdAt"
+              placeholder="YYYY-MM-DD HH:mm"
+            />
+          </div>
+          @if (createdAtRef.invalid && (createdAtRef.dirty || createdAtRef.touched)) {
+            <div>
+              @if (editForm.get('createdAt')?.errors?.required) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.required">Ce champ est obligatoire.</small>
+              }
+              <small
+                class="form-text text-danger"
+                [hidden]="!editForm.get('createdAt')?.errors?.datetimelocal"
+                jhiTranslate="entity.validation.datetimelocal"
+                >Ce champ doit être une date et une heure.</small
+              >
+            </div>
+          }
+        </div>
+      </div>
+
+      <div>
+        <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
+          <fa-icon icon="ban" />&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+        </button>
+
+        <button
+          type="submit"
+          id="save-entity"
+          data-cy="entityCreateSaveButton"
+          [disabled]="editForm.invalid || isSaving()"
+          class="btn btn-primary"
+        >
+          <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

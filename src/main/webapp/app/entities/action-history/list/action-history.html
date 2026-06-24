@@ -1,0 +1,129 @@
+<div>
+  <h2 id="page-heading" data-cy="ActionHistoryHeading">
+    <span jhiTranslate="gestionTachesApp.actionHistory.home.title">ActionHistories</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span jhiTranslate="gestionTachesApp.actionHistory.home.refreshListLabel">Actualiser la liste</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-action-history"
+        [routerLink]="['/action-history/new']"
+      >
+        <fa-icon icon="plus" />
+        <span jhiTranslate="gestionTachesApp.actionHistory.home.createLabel">Créer un nouveau Action History</span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error />
+
+  <jhi-alert />
+
+  @if (actionHistories().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span jhiTranslate="gestionTachesApp.actionHistory.home.notFound">Aucun Action History trouvé</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" jhiSortBy="id">
+              <div class="d-flex">
+                <span jhiTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="action">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.actionHistory.action">Action</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="fieldChanged">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.actionHistory.fieldChanged">Field Changed</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="oldValue">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.actionHistory.oldValue">Old Value</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="newValue">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.actionHistory.newValue">New Value</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="createdAt">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.actionHistory.createdAt">Created At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="issue.id">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.actionHistory.issue">Issue</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody infinite-scroll (scrolled)="loadNextPage()" [infiniteScrollDisabled]="!hasMorePage()" [infiniteScrollDistance]="0">
+          @for (actionHistory of actionHistories(); track trackId(actionHistory)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/action-history', actionHistory.id, 'view']">{{ actionHistory.id }}</a>
+              </td>
+              <td>{{ actionHistory.action }}</td>
+              <td>{{ actionHistory.fieldChanged }}</td>
+              <td>{{ actionHistory.oldValue }}</td>
+              <td>{{ actionHistory.newValue }}</td>
+              <td>{{ actionHistory.createdAt | formatMediumDatetime }}</td>
+              <td>
+                @if (actionHistory.issue) {
+                  <div>
+                    <a [routerLink]="['/issue', actionHistory.issue.id, 'view']">{{ actionHistory.issue.id }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/action-history', actionHistory.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
+                  </a>
+
+                  <a [routerLink]="['/action-history', actionHistory.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(actionHistory)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

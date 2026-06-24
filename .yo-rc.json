@@ -1,0 +1,27 @@
+{
+  "generator-jhipster": {
+    "applicationType": "monolith",
+    "authenticationType": "jwt",
+    "baseName": "gestionTaches",
+    "buildTool": "maven",
+    "cacheProvider": "caffeine",
+    "clientFramework": "angular",
+    "creationTimestamp": 1782293534447,
+    "databaseType": "sql",
+    "defaultCommand": "app",
+    "devDatabaseType": "h2Disk",
+    "enableHibernateCache": true,
+    "enableTranslation": true,
+    "entities": ["Project", "Sprint", "Epic", "Issue", "Comment", "Attachment", "ActionHistory"],
+    "jhipsterVersion": "9.1.0",
+    "jwtSecretKey": "NzRjMjI3ZDgzYWI3YmM5MjkwMzY0NmFhMzkzMGIwMmZjOWM3NTRiMGFmYzFmNjRmNWU2MjkzNDZmMzAyZjRlYTYyN2YyYjNlNTM2MDRhNGM1NDE1NzVkZGFmZThiZDAyNGQ3Y2NhZWQ5MWUxNzNkMmE3MTI1YWMyZDYwNTYxOTQ=",
+    "languages": ["fr", "en"],
+    "lastLiquibaseTimestamp": 1782293635000,
+    "nativeLanguage": "fr",
+    "packageName": "com.gestiontaches",
+    "prodDatabaseType": "postgresql",
+    "serverPort": "8080",
+    "skipFakeData": true,
+    "testFrameworks": ["cypress"]
+  }
+}
