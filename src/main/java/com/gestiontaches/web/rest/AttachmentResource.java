@@ -1,6 +1,7 @@
 package com.gestiontaches.web.rest;
 
 import com.gestiontaches.repository.AttachmentRepository;
+import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.AttachmentService;
 import com.gestiontaches.service.dto.AttachmentDTO;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -55,6 +57,15 @@ public class AttachmentResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
+            "')"
+    )
     public ResponseEntity<AttachmentDTO> createAttachment(@Valid @RequestBody AttachmentDTO attachmentDTO) throws URISyntaxException {
         LOG.debug("REST request to save Attachment : {}", attachmentDTO);
         if (attachmentDTO.getId() != null) {
@@ -77,6 +88,15 @@ public class AttachmentResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
+            "')"
+    )
     public ResponseEntity<AttachmentDTO> updateAttachment(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody AttachmentDTO attachmentDTO
@@ -111,6 +131,15 @@ public class AttachmentResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
+            "')"
+    )
     public ResponseEntity<AttachmentDTO> partialUpdateAttachment(
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody AttachmentDTO attachmentDTO
@@ -169,6 +198,15 @@ public class AttachmentResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
+            "')"
+    )
     public ResponseEntity<Void> deleteAttachment(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Attachment : {}", id);
         attachmentService.delete(id);

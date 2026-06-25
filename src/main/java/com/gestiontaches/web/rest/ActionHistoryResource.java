@@ -1,6 +1,7 @@
 package com.gestiontaches.web.rest;
 
 import com.gestiontaches.repository.ActionHistoryRepository;
+import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.ActionHistoryService;
 import com.gestiontaches.service.dto.ActionHistoryDTO;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -55,6 +57,15 @@ public class ActionHistoryResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
+            "')"
+    )
     public ResponseEntity<ActionHistoryDTO> createActionHistory(@Valid @RequestBody ActionHistoryDTO actionHistoryDTO)
         throws URISyntaxException {
         LOG.debug("REST request to save ActionHistory : {}", actionHistoryDTO);
@@ -78,6 +89,15 @@ public class ActionHistoryResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
+            "')"
+    )
     public ResponseEntity<ActionHistoryDTO> updateActionHistory(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody ActionHistoryDTO actionHistoryDTO
@@ -112,6 +132,15 @@ public class ActionHistoryResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
+            "')"
+    )
     public ResponseEntity<ActionHistoryDTO> partialUpdateActionHistory(
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody ActionHistoryDTO actionHistoryDTO
@@ -170,6 +199,15 @@ public class ActionHistoryResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
+            "')"
+    )
     public ResponseEntity<Void> deleteActionHistory(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete ActionHistory : {}", id);
         actionHistoryService.delete(id);

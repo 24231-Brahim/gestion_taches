@@ -1,6 +1,7 @@
 package com.gestiontaches.web.rest;
 
 import com.gestiontaches.repository.SprintRepository;
+import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.SprintQueryService;
 import com.gestiontaches.service.SprintService;
 import com.gestiontaches.service.criteria.SprintCriteria;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -60,6 +62,7 @@ public class SprintResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
+    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
     public ResponseEntity<SprintDTO> createSprint(@Valid @RequestBody SprintDTO sprintDTO) throws URISyntaxException {
         LOG.debug("REST request to save Sprint : {}", sprintDTO);
         if (sprintDTO.getId() != null) {
@@ -82,6 +85,7 @@ public class SprintResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
     public ResponseEntity<SprintDTO> updateSprint(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody SprintDTO sprintDTO
@@ -116,6 +120,7 @@ public class SprintResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
     public ResponseEntity<SprintDTO> partialUpdateSprint(
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody SprintDTO sprintDTO
@@ -191,6 +196,7 @@ public class SprintResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
     public ResponseEntity<Void> deleteSprint(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Sprint : {}", id);
         sprintService.delete(id);

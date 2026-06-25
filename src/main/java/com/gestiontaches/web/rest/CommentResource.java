@@ -1,6 +1,7 @@
 package com.gestiontaches.web.rest;
 
 import com.gestiontaches.repository.CommentRepository;
+import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.CommentService;
 import com.gestiontaches.service.dto.CommentDTO;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -55,6 +57,17 @@ public class CommentResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
+            "', '" +
+            AuthoritiesConstants.USER +
+            "')"
+    )
     public ResponseEntity<CommentDTO> createComment(@Valid @RequestBody CommentDTO commentDTO) throws URISyntaxException {
         LOG.debug("REST request to save Comment : {}", commentDTO);
         if (commentDTO.getId() != null) {
@@ -77,6 +90,15 @@ public class CommentResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
+            "')"
+    )
     public ResponseEntity<CommentDTO> updateComment(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody CommentDTO commentDTO
@@ -111,6 +133,15 @@ public class CommentResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
+            "')"
+    )
     public ResponseEntity<CommentDTO> partialUpdateComment(
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody CommentDTO commentDTO
@@ -169,6 +200,15 @@ public class CommentResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
+            "')"
+    )
     public ResponseEntity<Void> deleteComment(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Comment : {}", id);
         commentService.delete(id);

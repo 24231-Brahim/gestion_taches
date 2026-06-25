@@ -1,6 +1,7 @@
 package com.gestiontaches.web.rest;
 
 import com.gestiontaches.repository.EpicRepository;
+import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.EpicQueryService;
 import com.gestiontaches.service.EpicService;
 import com.gestiontaches.service.criteria.EpicCriteria;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -60,6 +62,7 @@ public class EpicResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
+    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
     public ResponseEntity<EpicDTO> createEpic(@Valid @RequestBody EpicDTO epicDTO) throws URISyntaxException {
         LOG.debug("REST request to save Epic : {}", epicDTO);
         if (epicDTO.getId() != null) {
@@ -82,6 +85,7 @@ public class EpicResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
     public ResponseEntity<EpicDTO> updateEpic(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody EpicDTO epicDTO
@@ -116,6 +120,7 @@ public class EpicResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
     public ResponseEntity<EpicDTO> partialUpdateEpic(
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody EpicDTO epicDTO
@@ -191,6 +196,7 @@ public class EpicResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
     public ResponseEntity<Void> deleteEpic(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Epic : {}", id);
         epicService.delete(id);
