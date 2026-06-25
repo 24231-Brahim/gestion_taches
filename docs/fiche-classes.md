@@ -4,6 +4,14 @@
 
 ```mermaid
 classDiagram
+    class User {
+        +Long id
+        +String login
+        +String firstName
+        +String lastName
+        +String email
+    }
+
     class Project {
         +String name
         +String description
@@ -101,6 +109,8 @@ classDiagram
         HIGHEST
     }
 
+    User "1" --> "*" Project : possède (owner)
+    Project "*" --> "*" User : équipe (members)
     Project "1" --> "*" Sprint : contient
     Project "1" --> "*" Epic : contient
     Project "1" --> "*" Issue : contient
@@ -122,7 +132,7 @@ classDiagram
 ## Rôle de Chaque Table
 
 ### Project
-Table racine du système. Représente un projet (ex. une application, un produit). Contient les sprints, epics et issues. Un `key` unique sert d'identifiant court (ex. `PROJ`).
+Table racine du système. Représente un projet (ex. une application, un produit). Contient les sprints, epics et issues. Un `key` unique sert d'identifiant court (ex. `PROJ`). Chaque projet a un propriétaire (`owner_id` → `jhi_user`) et une équipe (`project_members`).
 
 ### Sprint
 Itération de développement dans un projet. Regroupe un ensemble d'issues à réaliser sur une période donnée. Peut être PLANIFIÉ, ACTIF, TERMINÉ ou ANNULÉ.
@@ -148,10 +158,12 @@ Trace d'audit détaillant chaque modification d'une issue. Enregistre l'action, 
 
 | Table | Dépend de | Est utilisé par |
 |-------|-----------|-----------------|
-| Project | — | Sprint, Epic, Issue |
+| User | — | Project (owner, members) |
+| Project | User (owner) | Sprint, Epic, Issue |
 | Sprint | Project | Issue |
 | Epic | Project | Issue |
 | Issue | Project, Sprint, Epic | Comment, Attachment, ActionHistory |
 | Comment | Issue | — |
 | Attachment | Issue | — |
 | ActionHistory | Issue | — |
+| project_members | Project, User | — |

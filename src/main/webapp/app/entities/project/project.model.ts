@@ -6,6 +6,9 @@ export interface IProject {
   description?: string | null;
   key?: string | null;
   createdAt?: dayjs.Dayjs | null;
+  ownerId?: number | null;
+  ownerLogin?: string | null;
+  memberIds?: number[] | null;
 }
 
 export type NewProject = Omit<IProject, 'id'> & { id: null };

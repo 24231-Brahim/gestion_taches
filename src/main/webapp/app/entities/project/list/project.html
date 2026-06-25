@@ -24,7 +24,13 @@
 
   <jhi-alert />
 
-  @if (projects().length === 0) {
+  @if (error()) {
+    <div class="alert alert-danger">
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (projects().length === 0 && !isLoading() && !error()) {
     <div class="alert alert-warning" id="no-result">
       <span jhiTranslate="gestionTachesApp.project.home.notFound">Aucun Project trouvé</span>
     </div>

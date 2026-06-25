@@ -3,7 +3,9 @@ package com.gestiontaches.service.dto;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A DTO for the {@link com.gestiontaches.domain.Project} entity.
@@ -26,6 +28,12 @@ public class ProjectDTO implements Serializable {
 
     @NotNull
     private Instant createdAt;
+
+    private Long ownerId;
+
+    private String ownerLogin;
+
+    private Set<Long> memberIds = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -67,6 +75,30 @@ public class ProjectDTO implements Serializable {
         this.createdAt = createdAt;
     }
 
+    public Long getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(Long ownerId) {
+        this.ownerId = ownerId;
+    }
+
+    public String getOwnerLogin() {
+        return ownerLogin;
+    }
+
+    public void setOwnerLogin(String ownerLogin) {
+        this.ownerLogin = ownerLogin;
+    }
+
+    public Set<Long> getMemberIds() {
+        return memberIds;
+    }
+
+    public void setMemberIds(Set<Long> memberIds) {
+        this.memberIds = memberIds;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -97,6 +129,8 @@ public class ProjectDTO implements Serializable {
             ", description='" + getDescription() + "'" +
             ", key='" + getKey() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
+            ", ownerId='" + getOwnerId() + "'" +
+            ", ownerLogin='" + getOwnerLogin() + "'" +
             "}";
     }
 }

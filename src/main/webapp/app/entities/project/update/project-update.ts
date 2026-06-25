@@ -1,11 +1,13 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable, finalize } from 'rxjs';
 
+import { AlertService } from 'app/core/util/alert.service';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { TranslateDirective } from 'app/shared/language';
 import { IProject } from '../project.model';
@@ -26,6 +28,8 @@ export class ProjectUpdate implements OnInit {
   protected projectService = inject(ProjectService);
   protected projectFormService = inject(ProjectFormService);
   protected activatedRoute = inject(ActivatedRoute);
+  protected alertService = inject(AlertService);
+  protected translateService = inject(TranslateService);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: ProjectFormGroup = this.projectFormService.createProjectFormGroup();
@@ -56,7 +60,7 @@ export class ProjectUpdate implements OnInit {
   protected subscribeToSaveResponse(result: Observable<IProject | null>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       next: () => this.onSaveSuccess(),
-      error: () => this.onSaveError(),
+      error: (err: HttpErrorResponse) => this.onSaveError(err),
     });
   }
 
@@ -64,8 +68,9 @@ export class ProjectUpdate implements OnInit {
     this.previousState();
   }
 
-  protected onSaveError(): void {
-    // Api for inheritance.
+  protected onSaveError(err: HttpErrorResponse): void {
+    const message = err.error?.detail ?? err.message ?? this.translateService.instant('error.general');
+    this.alertService.addAlert({ type: 'danger', message });
   }
 
   protected onSaveFinalize(): void {

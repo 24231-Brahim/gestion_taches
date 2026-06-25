@@ -1,9 +1,11 @@
 package com.gestiontaches.web.rest;
 
+import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.ProjectService;
 import com.gestiontaches.service.dto.ProjectDTO;
+import com.gestiontaches.service.dto.UserDTO;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -12,6 +14,8 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -178,6 +182,55 @@ public class ProjectResource {
     public ResponseEntity<Void> deleteProject(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Project : {}", id);
         projectService.delete(id);
+        return ResponseEntity.noContent()
+            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .build();
+    }
+
+    /**
+     * {@code GET  /projects/:id/members} : get all members of a project.
+     *
+     * @param id the id of the project.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of members in body.
+     */
+    @GetMapping("/{id}/members")
+    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
+    public ResponseEntity<Set<UserDTO>> getProjectMembers(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get members of Project : {}", id);
+        Set<User> members = projectService.getMembers(id);
+        Set<UserDTO> userDTOs = members.stream().map(UserDTO::new).collect(Collectors.toSet());
+        return ResponseEntity.ok(userDTOs);
+    }
+
+    /**
+     * {@code POST  /projects/:id/members/:userId} : add a member to a project.
+     *
+     * @param id the id of the project.
+     * @param userId the id of the user to add.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)}.
+     */
+    @PostMapping("/{id}/members/{userId}")
+    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
+    public ResponseEntity<Void> addProjectMember(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
+        LOG.debug("REST request to add user {} to Project {}", userId, id);
+        projectService.addMember(id, userId);
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .build();
+    }
+
+    /**
+     * {@code DELETE  /projects/:id/members/:userId} : remove a member from a project.
+     *
+     * @param id the id of the project.
+     * @param userId the id of the user to remove.
+     * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
+     */
+    @DeleteMapping("/{id}/members/{userId}")
+    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
+    public ResponseEntity<Void> removeProjectMember(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
+        LOG.debug("REST request to remove user {} from Project {}", userId, id);
+        projectService.removeMember(id, userId);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();

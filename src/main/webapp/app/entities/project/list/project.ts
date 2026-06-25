@@ -58,6 +58,8 @@ export class Project implements OnInit {
   protected readonly sortService = inject(SortService);
   protected modalService = inject(NgbModal);
 
+  readonly error = signal<string | null>(null);
+
   constructor() {
     effect(() => {
       const headers = this.projectService.projectsResource.headers();
@@ -67,6 +69,10 @@ export class Project implements OnInit {
     });
     effect(() => {
       this.projects.set(this.fillComponentAttributesFromResponseBody([...this.projectService.projects()]));
+    });
+    effect(() => {
+      const err = this.projectService.projectsResource.error();
+      this.error.set(err ? 'Erreur lors du chargement des projets' : null);
     });
   }
 

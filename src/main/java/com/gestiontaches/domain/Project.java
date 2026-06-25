@@ -40,12 +40,26 @@ public class Project implements Serializable {
 
     @NotNull
     @Size(min = 2, max = 10)
-    @Column(name = "key", length = 10, nullable = false, unique = true)
+    @Column(name = "project_key", length = 10, nullable = false, unique = true)
     private String key;
 
     @NotNull
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = { "authorities" }, allowSetters = true)
+    private User owner;
+
+    @ManyToMany
+    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @JoinTable(
+        name = "project_members",
+        joinColumns = @JoinColumn(name = "project_id", referencedColumnName = "id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id")
+    )
+    @JsonIgnoreProperties(value = { "authorities" }, allowSetters = true)
+    private Set<User> members = new HashSet<>();
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "project")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
@@ -127,6 +141,42 @@ public class Project implements Serializable {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public User getOwner() {
+        return this.owner;
+    }
+
+    public void setOwner(User user) {
+        this.owner = user;
+    }
+
+    public Project owner(User user) {
+        this.setOwner(user);
+        return this;
+    }
+
+    public Set<User> getMembers() {
+        return this.members;
+    }
+
+    public void setMembers(Set<User> users) {
+        this.members = users;
+    }
+
+    public Project members(Set<User> users) {
+        this.setMembers(users);
+        return this;
+    }
+
+    public Project addMembers(User user) {
+        this.members.add(user);
+        return this;
+    }
+
+    public Project removeMembers(User user) {
+        this.members.remove(user);
+        return this;
     }
 
     public Set<Sprint> getSprintses() {

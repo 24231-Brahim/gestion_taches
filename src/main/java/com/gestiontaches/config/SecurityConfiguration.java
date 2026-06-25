@@ -1,9 +1,13 @@
 package com.gestiontaches.config;
 
+import static com.gestiontaches.security.SecurityUtils.AUTHORITIES_CLAIM;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 import com.gestiontaches.security.*;
 import com.gestiontaches.web.filter.SpaWebFilter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -13,8 +17,10 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
@@ -42,7 +48,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationConverter jwtAuthenticationConverter) {
         http.cors(withDefaults())
             .csrf(csrf -> csrf.disable())
             .addFilterAfter(new SpaWebFilter(), BasicAuthenticationFilter.class)
@@ -86,10 +92,26 @@ public class SecurityConfiguration {
                     .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
                     .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
             )
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
+            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)));
         if (env.acceptsProfiles(Profiles.of(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT))) {
             http.authorizeHttpRequests(authz -> authz.requestMatchers("/h2-console/**").permitAll());
         }
         return http.build();
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            String auth = jwt.getClaimAsString(AUTHORITIES_CLAIM);
+            if (auth == null || auth.isBlank()) {
+                return List.of();
+            }
+            return Arrays.stream(auth.split(" "))
+                .filter(s -> !s.isEmpty())
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+        });
+        return converter;
     }
 }
