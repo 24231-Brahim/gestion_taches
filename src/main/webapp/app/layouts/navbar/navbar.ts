@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { NgbCollapse } from '@ng-bootstrap/ng-bootstrap/collapse';
 import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { environment } from 'environments/environment';
@@ -27,7 +26,6 @@ import ActiveMenuDirective from './active-menu.directive';
     RouterLink,
     RouterLinkActive,
     FontAwesomeModule,
-    NgbCollapse,
     NgbDropdown,
     NgbDropdownMenu,
     NgbDropdownToggle,
@@ -75,6 +73,10 @@ export default class Navbar implements OnInit {
 
   collapseNavbar(): void {
     this.isNavbarCollapsed.set(true);
+  }
+
+  toggleMobileSidebar(): void {
+    document.body.classList.toggle('sidebar-mobile-open');
   }
 
   login(): void {

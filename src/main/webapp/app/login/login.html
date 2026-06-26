@@ -1,7 +1,7 @@
 <div>
   <div class="d-flex justify-content-center">
     <div class="col-lg-6 col-md-8 col-sm-10">
-      <h1 data-cy="loginTitle" jhiTranslate="login.title">Authentification</h1>
+      <h1 class="page-heading" data-cy="loginTitle" jhiTranslate="login.title">Authentification</h1>
       @if (authenticationError()) {
         <div class="alert alert-danger" data-cy="loginError" jhiTranslate="login.messages.error.authentication">
           <strong>Erreur d&apos;authentification !</strong> Veuillez vérifier vos identifiants de connexion.
@@ -9,7 +9,7 @@
       }
       <form class="form" (ngSubmit)="login()" [formGroup]="loginForm">
         <div class="mb-3">
-          <label class="username-label" for="username" jhiTranslate="global.form.username.label">Nom d&apos;utilisateur</label>
+          <label class="form-label" for="username" jhiTranslate="global.form.username.label">Nom d&apos;utilisateur</label>
           <input
             type="text"
             class="form-control"
@@ -22,7 +22,7 @@
         </div>
 
         <div class="mb-3">
-          <label for="password" jhiTranslate="login.form.password">Mot de passe</label>
+          <label class="form-label" for="password" jhiTranslate="login.form.password">Mot de passe</label>
           <input
             type="password"
             class="form-control"
@@ -34,11 +34,13 @@
           />
         </div>
 
-        <div class="form-check">
-          <label class="form-check-label" for="rememberMe">
-            <input class="form-check-input" type="checkbox" name="rememberMe" id="rememberMe" formControlName="rememberMe" />
-            <span jhiTranslate="login.form.rememberme">Garder la session ouverte</span>
-          </label>
+        <div class="mb-3">
+          <div class="form-check">
+            <label class="form-check-label" for="rememberMe">
+              <input class="form-check-input" type="checkbox" name="rememberMe" id="rememberMe" formControlName="rememberMe" />
+              <span jhiTranslate="login.form.rememberme">Garder la session ouverte</span>
+            </label>
+          </div>
         </div>
 
         <button type="submit" class="btn btn-primary" data-cy="submit" jhiTranslate="login.form.button">Connexion</button>

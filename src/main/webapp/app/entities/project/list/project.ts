@@ -49,16 +49,14 @@ export class Project implements OnInit {
   readonly itemsPerPage = signal(ITEMS_PER_PAGE);
   readonly totalItems = signal(0);
   readonly page = signal(1);
+  readonly error = signal<string | null>(null);
 
   readonly router = inject(Router);
-  protected readonly projectService = inject(ProjectService);
-  // eslint-disable-next-line @typescript-eslint/member-ordering
+  readonly projectService = inject(ProjectService);
   readonly isLoading = this.projectService.projectsResource.isLoading;
-  protected readonly activatedRoute = inject(ActivatedRoute);
-  protected readonly sortService = inject(SortService);
-  protected modalService = inject(NgbModal);
-
-  readonly error = signal<string | null>(null);
+  readonly activatedRoute = inject(ActivatedRoute);
+  readonly sortService = inject(SortService);
+  readonly modalService = inject(NgbModal);
 
   constructor() {
     effect(() => {

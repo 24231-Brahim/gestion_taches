@@ -47,11 +47,45 @@
 - [x] **Frontend — `IProject` model** : ajout des champs `ownerId`, `ownerLogin`, `memberIds`
 - [x] **Frontend — Erreur liste projets** : affichage d'un message d'erreur si le chargement échoue
 
+### Design System & Theming
+
+- [x] Création de `design-system.scss` : CSS custom properties (dark/light), reset, typo (Audiowide + JetBrains Mono), accessibilité
+- [x] Surcharge Bootstrap dark theme dans `_bootstrap-variables.scss` (hex values, border-radius: 0, border-width: 3px)
+- [x] Réécriture de `global.scss` : boutons brutals (offset shadow + hover translate), cards, inputs, alerts, tables, pagination, modals, layout shell, page-heading
+- [x] Google Fonts (Audiowide, JetBrains Mono) + `data-theme="dark"` dans `index.html`
+- [x] `vendor.scss` réordonné : design-system → bootstrap-variables → bootstrap
+
+### Layout — Restructuration complète
+
+- [x] `Sidebar` component : collapsible 256px ↔ 80px, navigation entities + admin, overlay mobile, toggle chevron
+- [x] `BottomNav` component : 4 items (Accueil, Projects, Issues, Settings/Login), visible <768px
+- [x] `Navbar` transformée en topbar : brand + logo + hamburger mobile + dropdowns (admin, account, langue)
+- [x] `Main` layout shell : topbar + sidebar + content + footer + bottom-nav
+- [x] Communication mobile hamburger ↔ sidebar via `document.body.classList` + MutationObserver
+- [x] Fix z-index sidebar/overlay (sidebar au-dessus de l'overlay)
+- [x] Fix `overflow-x: hidden` qui coupait le bouton toggle de la sidebar
+
+### Branding
+
+- [x] Suppression des images JHipster (logo-jhipster.png, favicon.ico, family_members svg/png)
+- [x] `logo.webp` défini comme logo du projet (topbar + favicon)
+
+### Icônes FontAwesome
+
+- [x] Ajout des icônes manquantes dans `font-awesome-icons.ts` : folder, bookmark, bug, comment, paperclip, history, cog, chevron-left, chevron-right, user-circle
+
 ## 📝 À faire (prochaines étapes)
 
 ### Gestion des erreurs frontend
 
 - [ ] Appliquer le même fix `onSaveError()` avec `AlertService` sur les autres composants (Sprint, Epic, Issue, Comment, Attachment, ActionHistory)
+
+### Layout — Finitions
+
+- [ ] Ajouter un thème toggle (dark/light) avec persistance locale
+- [ ] Ajouter les pages admin dans la sidebar
+- [ ] Ajouter la sidebar pour les routes admin
+- [ ] Persister l'état collapsed de la sidebar (localStorage)
 
 ### Tests
 

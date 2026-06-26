@@ -2,25 +2,25 @@
 
 Système de gestion de projet (type Jira) généré avec **JHipster 9.1.0**.
 
-| Technologie | Choix |
-|-------------|-------|
-| Backend | Spring Boot 4.0.6 (Java 17) |
-| Frontend | Angular 21.2.14 |
-| Base de données | PostgreSQL (H2 en développement) |
-| Build | Maven |
-| Authentification | JWT |
+| Technologie      | Choix                            |
+| ---------------- | -------------------------------- |
+| Backend          | Spring Boot 4.0.6 (Java 17)      |
+| Frontend         | Angular 21.2.14                  |
+| Base de données  | PostgreSQL (H2 en développement) |
+| Build            | Maven                            |
+| Authentification | JWT                              |
 
 ### Entités
 
-| Entité | Description |
-|--------|-------------|
-| **Project** | Projet racine contenant sprints, epics et issues |
-| **Sprint** | Itération de développement |
-| **Epic** | Fonctionnalité transverse |
-| **Issue** | Unité de travail (Story, Bug, Task, Subtask, Improvement) |
-| **Comment** | Commentaire sur une issue |
-| **Attachment** | Fichier joint à une issue |
-| **ActionHistory** | Audit des modifications d'une issue |
+| Entité            | Description                                               |
+| ----------------- | --------------------------------------------------------- |
+| **Project**       | Projet racine contenant sprints, epics et issues          |
+| **Sprint**        | Itération de développement                                |
+| **Epic**          | Fonctionnalité transverse                                 |
+| **Issue**         | Unité de travail (Story, Bug, Task, Subtask, Improvement) |
+| **Comment**       | Commentaire sur une issue                                 |
+| **Attachment**    | Fichier joint à une issue                                 |
+| **ActionHistory** | Audit des modifications d'une issue                       |
 
 Documentation et aide : [https://www.jhipster.tech/documentation-archive/v9.1.0](https://www.jhipster.tech/documentation-archive/v9.1.0).
 

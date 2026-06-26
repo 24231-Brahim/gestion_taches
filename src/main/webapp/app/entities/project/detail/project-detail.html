@@ -2,7 +2,9 @@
   <div class="col-8">
     @if (project(); as projectRef) {
       <div>
-        <h2 data-cy="projectDetailsHeading"><span jhiTranslate="gestionTachesApp.project.detail.title">Project</span></h2>
+        <h2 class="page-heading" data-cy="projectDetailsHeading">
+          <span jhiTranslate="gestionTachesApp.project.detail.title">Project</span>
+        </h2>
 
         <hr />
 
@@ -25,7 +27,7 @@
           </dd>
           <dt><span jhiTranslate="gestionTachesApp.project.key">Key</span></dt>
           <dd>
-            <span>{{ projectRef.key }}</span>
+            <span class="badge border-primary">{{ projectRef.key }}</span>
           </dd>
           <dt><span jhiTranslate="gestionTachesApp.project.createdAt">Created At</span></dt>
           <dd>

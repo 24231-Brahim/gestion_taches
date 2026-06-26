@@ -1,13 +1,4 @@
-/*
- * Bootstrap overrides https://getbootstrap.com/docs/5.1/customize/sass/
- * All values defined in bootstrap source
- * https://github.com/twbs/bootstrap/blob/v5.1.3/scss/_variables.scss can be overwritten here
- * Make sure not to add !default to values here
- */
-
-// Options:
-// Quickly modify global styling by enabling or disabling optional features.
-$enable-rounded: true;
+$enable-rounded: false;
 $enable-shadows: false;
 $enable-gradients: false;
 $enable-transitions: true;
@@ -15,22 +6,120 @@ $enable-hover-media-query: false;
 $enable-grid-classes: true;
 $enable-print-styles: true;
 
-// Components:
-// Define common padding and border radius sizes and more.
+$border-radius: 0;
+$border-radius-lg: 0;
+$border-radius-sm: 0;
 
-$border-radius: 0.15rem;
-$border-radius-lg: 0.125rem;
-$border-radius-sm: 0.1rem;
+$body-bg: #0f1419;
+$body-color: #dfe3ea;
 
-// Body:
-// Settings for the `<body>` element.
-
-$body-bg: #ffffff;
-
-// Typography:
-// Font, line-height, and color for body text, headings, and more.
-
+$font-family-sans-serif: 'JetBrains Mono', 'Courier New', monospace;
+$font-family-monospace: 'JetBrains Mono', 'Courier New', monospace;
 $font-size-base: 1rem;
+$line-height-base: 1.5;
 
-$dropdown-link-hover-color: white;
-$dropdown-link-hover-bg: #343a40;
+$headings-font-family: 'Audiowide', cursive;
+$headings-font-weight: 400;
+$headings-line-height: 1.2;
+
+$link-color: #97cbff;
+$link-hover-color: #52d6fd;
+$link-font-weight: 700;
+
+$navbar-dark-color: #dfe3ea;
+$navbar-dark-hover-color: #97cbff;
+$navbar-dark-active-color: #25a7fd;
+$navbar-padding-y: 0;
+$navbar-padding-x: 0;
+
+$nav-link-padding-y: 0.75rem;
+$nav-link-padding-x: 1rem;
+
+$dropdown-bg: #1b2025;
+$dropdown-color: #dfe3ea;
+$dropdown-border-color: #25a7fd;
+$dropdown-border-width: 3px;
+$dropdown-border-radius: 0;
+$dropdown-link-color: #dfe3ea;
+$dropdown-link-hover-color: #97cbff;
+$dropdown-link-hover-bg: #262a30;
+$dropdown-link-active-color: #0f1419;
+$dropdown-link-active-bg: #97cbff;
+
+$card-bg: #1b2025;
+$card-border-color: #25a7fd;
+$card-border-width: 3px;
+$card-border-radius: 0;
+$card-cap-bg: #1b2025;
+$card-cap-color: #dfe3ea;
+
+$input-bg: #0f1419;
+$input-color: #dfe3ea;
+$input-border-color: #25a7fd;
+$input-border-width: 3px;
+$input-border-radius: 0;
+$input-focus-border-color: #52d6fd;
+$input-focus-color: #dfe3ea;
+$input-focus-bg: #0f1419;
+$input-placeholder-color: #6a8fac;
+$input-disabled-bg: #171c21;
+
+$btn-border-radius: 0;
+$btn-border-radius-lg: 0;
+$btn-border-radius-sm: 0;
+$btn-font-family: 'JetBrains Mono', 'Courier New', monospace;
+$btn-font-weight: 700;
+$btn-padding-y: 0.5rem;
+$btn-padding-x: 1.5rem;
+$btn-font-size: 0.875rem;
+
+$table-color: #dfe3ea;
+$table-bg: transparent;
+$table-border-color: #25a7fd;
+$table-border-width: 2px;
+$table-striped-bg: #171c21;
+$table-hover-bg: #262a30;
+$table-hover-color: #dfe3ea;
+$table-cell-padding-y: 0.75rem;
+$table-cell-padding-x: 0.75rem;
+$table-th-font-weight: 700;
+
+$pagination-bg: #1b2025;
+$pagination-color: #dfe3ea;
+$pagination-border-color: #25a7fd;
+$pagination-border-width: 2px;
+$pagination-border-radius: 0;
+$pagination-hover-bg: #262a30;
+$pagination-hover-color: #97cbff;
+$pagination-active-bg: #97cbff;
+$pagination-active-color: #0f1419;
+$pagination-disabled-bg: #171c21;
+$pagination-disabled-color: #6a8fac;
+
+$alert-border-radius: 0;
+$alert-border-width: 3px;
+
+$badge-border-radius: 0;
+$badge-font-family: 'JetBrains Mono', 'Courier New', monospace;
+$badge-font-weight: 700;
+$badge-font-size: 0.75rem;
+$badge-padding-y: 0.25rem;
+$badge-padding-x: 0.5rem;
+
+$modal-content-bg: #1b2025;
+$modal-content-border-color: #25a7fd;
+$modal-content-border-width: 3px;
+$modal-content-border-radius: 0;
+$modal-header-border-color: #25a7fd;
+$modal-footer-border-color: #25a7fd;
+$modal-backdrop-bg: rgba(0, 0, 0, 0.6);
+
+$hr-border-color: #25a7fd;
+$hr-border-width: 3px;
+
+$progress-bg: #1b2025;
+$progress-border-radius: 0;
+$progress-bar-bg: #25a7fd;
+
+$close-color: #dfe3ea;
+$close-font-weight: 700;

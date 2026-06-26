@@ -1,23 +1,62 @@
-/* ==========================================================================
-Main page styles
-========================================================================== */
-
-.hipster {
-  display: inline-block;
-  width: 347px;
-  height: 497px;
-  background: url('../../content/images/jhipster_family_member_3.svg') no-repeat center top;
-  background-size: contain;
+jhi-home {
+  display: block;
 }
 
-/* wait autoprefixer update to allow simple generation of high pixel density media query */
-@media only screen and (-webkit-min-device-pixel-ratio: 2),
-  only screen and (-moz-min-device-pixel-ratio: 2),
-  only screen and (-o-min-device-pixel-ratio: 2/1),
-  only screen and (min-resolution: 192dpi),
-  only screen and (min-resolution: 2dppx) {
-  .hipster {
-    background: url('../../content/images/jhipster_family_member_3.svg') no-repeat center top;
-    background-size: contain;
+.home-welcome {
+  border: 3px solid var(--color-primary);
+  background-color: var(--color-surface-container);
+  padding: var(--stack-lg);
+  box-shadow: var(--shadow-brutal);
+  margin-bottom: var(--stack-lg);
+}
+
+.home-title {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: var(--headline-lg);
+  letter-spacing: 0.04em;
+  color: var(--color-primary);
+  margin-bottom: var(--stack-md);
+  border-bottom: 3px solid var(--color-primary);
+  padding-bottom: var(--stack-md);
+}
+
+.home-subtitle {
+  font-family: var(--font-mono);
+  font-size: var(--body-lg);
+  color: var(--color-muted);
+  margin-bottom: var(--stack-lg);
+}
+
+.home-logged-message {
+  font-family: var(--font-mono);
+}
+
+.home-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li {
+    padding: var(--stack-sm) 0;
+    border-bottom: 1px solid var(--color-outline-variant);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  a {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-primary);
+    transition: color var(--transition-fast);
+
+    &:hover {
+      color: var(--color-secondary);
+    }
   }
 }
