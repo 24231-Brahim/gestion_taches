@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TASKFLOW | Kanban Board</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Audiowide&family=JetBrains+Mono:wght@400;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Audiowide:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#1b2025",
+                        "on-surface-variant": "#bec7d3",
+                        "secondary-fixed": "#b5ebff",
+                        "tertiary-fixed-dim": "#a5cbea",
+                        "outline": "#89929d",
+                        "secondary-fixed-dim": "#52d6fd",
+                        "primary-fixed": "#cee5ff",
+                        "tertiary-container": "#7fa4c2",
+                        "on-tertiary-fixed-variant": "#234a64",
+                        "on-error": "#690005",
+                        "tertiary-fixed": "#cae6ff",
+                        "on-secondary-fixed-variant": "#004e60",
+                        "on-primary-fixed-variant": "#004a76",
+                        "surface-container-high": "#262a30",
+                        "inverse-surface": "#dfe3ea",
+                        "on-tertiary-container": "#0f3a53",
+                        "on-tertiary-fixed": "#001e2f",
+                        "surface-bright": "#353a3f",
+                        "on-surface": "#dfe3ea",
+                        "tertiary": "#a5cbea",
+                        "surface-container-highest": "#30353b",
+                        "error-container": "#93000a",
+                        "on-primary-container": "#003a5d",
+                        "on-tertiary": "#05344d",
+                        "surface": "#0f1419",
+                        "surface-tint": "#97cbff",
+                        "on-secondary-fixed": "#001f28",
+                        "secondary-container": "#01afd4",
+                        "on-background": "#dfe3ea",
+                        "on-primary": "#003353",
+                        "surface-container-low": "#171c21",
+                        "background": "#0f1419",
+                        "surface-variant": "#30353b",
+                        "on-secondary": "#003543",
+                        "on-secondary-container": "#003d4c",
+                        "surface-dim": "#0f1419",
+                        "surface-container-lowest": "#0a0f14",
+                        "on-error-container": "#ffdad6",
+                        "inverse-on-surface": "#2c3136",
+                        "on-primary-fixed": "#001d33",
+                        "secondary": "#52d6fd",
+                        "primary-container": "#25a7fd",
+                        "primary": "#97cbff",
+                        "outline-variant": "#3f4852",
+                        "error": "#ffb4ab",
+                        "inverse-primary": "#00639b",
+                        "primary-fixed-dim": "#97cbff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-page": "32px",
+                        "stack-sm": "8px",
+                        "unit": "4px",
+                        "gutter": "24px",
+                        "stack-lg": "32px",
+                        "stack-md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["JetBrains Mono"],
+                        "headline-md": ["Audiowide"],
+                        "label-md": ["JetBrains Mono"],
+                        "headline-lg": ["Audiowide"],
+                        "body-sm": ["JetBrains Mono"],
+                        "body-md": ["JetBrains Mono"],
+                        "display-lg": ["Audiowide"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "1.2", "letterSpacing": "0.04em", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "1", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "0.04em", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "letterSpacing": "0em", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "0.05em", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0f1419;
+            color: #dfe3ea;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .brutalist-card {
+            border: 3px solid #25a7fd;
+            box-shadow: 4px 4px 0px 0px rgba(37,167,253,1);
+            transition: all 0.15s ease-in-out;
+        }
+        .brutalist-card:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px 0px rgba(37,167,253,1);
+        }
+        .brutalist-card:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px 0px rgba(37,167,253,1);
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .column-header-badge {
+            border: 2px solid currentColor;
+            border-radius: 0;
+        }
+        .progress-bar-segment {
+            height: 4px;
+            background: #1b2025;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: #25a7fd;
+        }
+    </style>
+</head>
+<body class="overflow-hidden">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 right-0 z-50 h-20 flex justify-between items-center px-margin-page bg-surface border-b-3 border-primary shadow-[4px_4px_0px_0px_rgba(37,167,253,1)]">
+<div class="flex items-center gap-stack-md">
+<img alt="TASKFLOW Logo" class="h-10" src="data:image/png;base64,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"/>
+<div class="h-8 w-px bg-outline-variant mx-4 hidden md:block"></div>
+<div class="hidden md:flex items-center bg-surface-container border-2 border-primary px-4 py-2 w-96">
+<span class="material-symbols-outlined text-primary mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-label-md font-label-md w-full placeholder:text-on-surface-variant uppercase" placeholder="SEARCH ISSUES..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-gutter">
+<nav class="hidden lg:flex items-center gap-6">
+<a class="text-primary font-bold font-label-md uppercase tracking-wider" href="#">Dashboard</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md uppercase tracking-wider" href="#">Team</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md uppercase tracking-wider" href="#">Docs</a>
+</nav>
+<div class="flex items-center gap-stack-md">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all p-2 hover:bg-surface-container">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all p-2 hover:bg-surface-container">contrast</button>
+<button class="bg-primary text-on-primary font-label-md px-6 py-2 uppercase border-3 border-primary shadow-[4px_4px_0px_0px_rgba(37,167,253,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">CREATE</button>
+<div class="w-10 h-10 border-2 border-primary overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a high-tech engineering team lead, wearing glasses with data reflections, professional lighting with blue rim light, technical background with circuit board patterns, digital photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDwZUkOL9GJVuDsgfGDnd4VDyqndzPqaABqgob2DQjPMGDm8Wdbw3OhiKoZoHEOzlQwneWTMrCYNR7LXJAjzsjZQqYSTsDtMlwbTKXXZsJuEfg1ZzB27cYaTzOBBJPr1_d5TsXmUMRPuLN_TpZzqdSdhtIjrRlZ8CJLWTaZ4SrIHjkgkcv66-CBSdpPrBrLCk6ur8N9LvkT3sm5k_XT-SDYkRRW_X2NIQtrsqQQLpP095Y6Z_Y0NIVWXAeO_IhBvVtS2i4oe6Z2nwk"/>
+</div>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-20 h-[calc(100vh-5rem)] w-64 bg-surface border-r-3 border-primary z-40 transition-all duration-300 flex flex-col py-stack-lg" id="sidebar">
+<div class="px-6 mb-stack-lg flex items-center gap-3">
+<div class="w-8 h-8 bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container text-sm">terminal</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-[16px] text-on-surface uppercase leading-tight">TaskFlow Pro</span>
+<span class="font-label-md text-[10px] text-on-surface-variant uppercase tracking-tighter">Management Suite</span>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-2 overflow-y-auto scrollbar-hide">
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface hover:bg-surface-container border-r-3 border-transparent transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md uppercase">Home</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 bg-primary text-on-primary border-r-3 border-secondary transition-colors" href="#">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="font-label-md uppercase">Projects</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface hover:bg-surface-container border-r-3 border-transparent transition-colors" href="#">
+<span class="material-symbols-outlined">assignment_ind</span>
+<span class="font-label-md uppercase">My Work</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface hover:bg-surface-container border-r-3 border-transparent transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md uppercase">Board</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface hover:bg-surface-container border-r-3 border-transparent transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md uppercase">Reports</span>
+</a>
+<div class="pt-stack-lg border-t border-outline-variant/30 mt-stack-lg">
+<a class="flex items-center gap-4 px-4 py-3 text-on-surface hover:bg-surface-container border-r-3 border-transparent transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md uppercase">Settings</span>
+</a>
+</div>
+</nav>
+<button class="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-surface border-3 border-primary flex items-center justify-center cursor-pointer hover:bg-primary-container transition-colors" onclick="toggleSidebar()">
+<span class="material-symbols-outlined text-sm" id="sidebar-icon">chevron_left</span>
+</button>
+</aside>
+<!-- Main Content -->
+<main class="ml-64 mt-20 p-8 h-[calc(100vh-5rem)] overflow-x-auto transition-all duration-300" id="main-canvas">
+<div class="min-w-[1400px] h-full grid grid-cols-6 gap-6">
+<!-- BACKLOG -->
+<div class="flex flex-col h-full bg-surface-container-lowest/50 border-t-[6px] border-[#25a7fd]">
+<div class="p-4 flex justify-between items-center">
+<h3 class="font-label-md text-primary uppercase">Backlog</h3>
+<span class="column-header-badge px-2 text-label-md text-primary">12</span>
+</div>
+<div class="flex-1 p-4 space-y-6 overflow-y-auto scrollbar-hide">
+<!-- Card 1 -->
+<div class="brutalist-card bg-surface p-4 space-y-3 cursor-grab active:cursor-grabbing">
+<div class="flex justify-between items-start">
+<span class="text-label-md text-on-surface-variant">PRJ-042</span>
+<span class="material-symbols-outlined text-error text-lg" style="font-variation-settings: 'FILL' 1;">fiber_manual_record</span>
+</div>
+<h4 class="font-body-md text-on-surface leading-tight">Implement WebGL Shader integration for dashboard backgrounds</h4>
+<div class="flex items-center gap-2">
+<div class="progress-bar-segment flex-1">
+<div class="progress-bar-fill w-[30%]"></div>
+</div>
+<span class="text-[10px] font-label-md">3/10</span>
+</div>
+<div class="flex justify-between items-center pt-2">
+<div class="flex items-center -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-primary overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A developer headshot in a synthwave aesthetic, high contrast blue and purple lighting, dark industrial background, sharp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAERxwv8h8AN1xQYmLMHGUe-Tn9hKeTPCbVipWzuZZx39TWAHsBVq_7-QLigsBGvHJcnjrCEFQe1zkDcdMcIlFlHrnfyNglZ9xQr7gmZOKNhBNvhvvm-MRmdd8opnYNW2GN4GmORDwFaYJMUH_wmDiukXQiNWWBRKB6gsvKSZzntwKAxLLjUVIyxaNyB0QMV1Ic-IXkV7xuUVxDwwTcCKXe5Ha5QYK4FpUvYuFeTL6XxcPPr3jXtIii8hkfSDz_0wgfODrvSZUImx9O"/>
+</div>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">comment</span>
+<span class="text-[10px] font-label-md">4</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">calendar_today</span>
+<span class="text-[10px] font-label-md uppercase">Oct 12</span>
+</div>
+<div class="bg-surface-container px-1 py-0.5 border border-outline-variant">
+<span class="text-[10px] font-label-md">8 SP</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="brutalist-card bg-surface p-4 space-y-3 cursor-grab active:cursor-grabbing">
+<div class="flex justify-between items-start">
+<span class="text-label-md text-on-surface-variant">PRJ-056</span>
+<span class="material-symbols-outlined text-secondary text-lg" style="font-variation-settings: 'FILL' 1;">fiber_manual_record</span>
+</div>
+<h4 class="font-body-md text-on-surface leading-tight">Database migration to CockroachDB for multi-region scale</h4>
+<div class="flex items-center gap-2">
+<div class="progress-bar-segment flex-1">
+<div class="progress-bar-fill w-0"></div>
+</div>
+<span class="text-[10px] font-label-md">0/5</span>
+</div>
+<div class="flex justify-between items-center pt-2">
+<div class="w-8 h-8 rounded-full border-2 border-primary overflow-hidden bg-surface-container flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">person</span>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">comment</span>
+<span class="text-[10px] font-label-md">0</span>
+</div>
+<div class="bg-surface-container px-1 py-0.5 border border-outline-variant">
+<span class="text-[10px] font-label-md">13 SP</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SELECTED -->
+<div class="flex flex-col h-full bg-surface-container-lowest/50 border-t-[6px] border-[#fbbf24]">
+<div class="p-4 flex justify-between items-center">
+<h3 class="font-label-md text-[#fbbf24] uppercase">Selected</h3>
+<span class="column-header-badge px-2 text-label-md text-[#fbbf24]">4</span>
+</div>
+<div class="flex-1 p-4 space-y-6 overflow-y-auto scrollbar-hide">
+<div class="brutalist-card bg-surface p-4 space-y-3">
+<div class="flex justify-between items-start">
+<span class="text-label-md text-on-surface-variant">PRJ-102</span>
+<span class="material-symbols-outlined text-error text-lg" style="font-variation-settings: 'FILL' 1;">fiber_manual_record</span>
+</div>
+<h4 class="font-body-md text-on-surface leading-tight">Refactor Auth Middleware for JWT rotation</h4>
+<div class="flex items-center gap-2">
+<div class="progress-bar-segment flex-1">
+<div class="progress-bar-fill w-full"></div>
+</div>
+<span class="text-[10px] font-label-md">2/2</span>
+</div>
+<div class="flex justify-between items-center pt-2">
+<div class="w-8 h-8 rounded-full border-2 border-primary overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A focused female software architect with neon highlights in hair, technical glass lenses reflecting code, cyberpunk tech aesthetic, professional studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDweSPC92qTQZzxmeh_Xa2MTdwUFQ5JVlzFZFYIUqvz65rcjI09Fn-YHB37VZ4Y8RUtbjPCrth2nk9sP6d9wppVsWWpD-WG_4qErOha81t6SP88rKpVs8aIbNX7Td91lZxDVedrSBV4vo5_F2MD05RumJb2gUL7sKjFek9YqMXjJoB3wrsNIQGsk3rQLbjC9YjqYM_59Q7Z0pwit3cUu3L5a4hFIVzdmm9-KD5FMu0tGZ9XDOxsQJXJP1_iYoyUG1VEHBNqQjxnMEWw"/>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">comment</span>
+<span class="text-[10px] font-label-md">12</span>
+</div>
+<div class="bg-surface-container px-1 py-0.5 border border-outline-variant">
+<span class="text-[10px] font-label-md">5 SP</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- IN PROGRESS -->
+<div class="flex flex-col h-full bg-surface-container-lowest/50 border-t-[6px] border-[#f97316]">
+<div class="p-4 flex justify-between items-center">
+<h3 class="font-label-md text-[#f97316] uppercase">In Progress</h3>
+<span class="column-header-badge px-2 text-label-md text-[#f97316]">3</span>
+</div>
+<div class="flex-1 p-4 space-y-6 overflow-y-auto scrollbar-hide">
+<div class="brutalist-card bg-surface p-4 space-y-3 border-orange-500 shadow-[4px_4px_0px_0px_rgba(249,115,22,1)]" style="border-color: #f97316; box-shadow: 4px 4px 0px 0px rgba(249,115,22,1);">
+<div class="flex justify-between items-start">
+<span class="text-label-md text-on-surface-variant">PRJ-089</span>
+<span class="material-symbols-outlined text-orange-500 text-lg" style="font-variation-settings: 'FILL' 1;">fiber_manual_record</span>
+</div>
+<h4 class="font-body-md text-on-surface leading-tight">Kubernetes operator for auto-scaling GPU nodes</h4>
+<div class="flex items-center gap-2">
+<div class="progress-bar-segment flex-1">
+<div class="progress-bar-fill w-[65%]" style="background: #f97316;"></div>
+</div>
+<span class="text-[10px] font-label-md">4/6</span>
+</div>
+<div class="flex justify-between items-center pt-2">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-orange-500 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Cyberpunk character portrait of a hardware engineer, metallic implants visible on neck, intense yellow lighting, dark gritty background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4P38Nc5Mud9-sRT9qICMCnwCpaAgBfwAUCXo9Fd4uECFdEZ1uh7KqRYFPYZm96Z1-E6BKUEmMCXg1RCOaXqjiHUu2XXAKo-_nfrChhDhm2n9hgEPBlQX3iPa_RinqbgUJuExmlZoJS0ZsQ11i80nPSob1WSxJV5paRc_E6K1WJJEdeBxS2j7J7eRDQW-3a2GQK53iYw24xFyWf25uBejNpbLdRvlioL3ODyqUt5wStMV8y-TFkgytlHhBtMEhK7PEVZ5EPLYtDJFR"/>
+</div>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="text-[10px] font-label-md uppercase">Oct 10</span>
+<div class="bg-surface-container px-1 py-0.5 border border-orange-500/50">
+<span class="text-[10px] font-label-md">21 SP</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- REVIEW -->
+<div class="flex flex-col h-full bg-surface-container-lowest/50 border-t-[6px] border-[#a855f7]">
+<div class="p-4 flex justify-between items-center">
+<h3 class="font-label-md text-[#a855f7] uppercase">Review</h3>
+<span class="column-header-badge px-2 text-label-md text-[#a855f7]">2</span>
+</div>
+<div class="flex-1 p-4 space-y-6 overflow-y-auto scrollbar-hide">
+<div class="brutalist-card bg-surface p-4 space-y-3" style="border-color: #a855f7; box-shadow: 4px 4px 0px 0px rgba(168,85,247,1);">
+<div class="flex justify-between items-start">
+<span class="text-label-md text-on-surface-variant">PRJ-210</span>
+<span class="material-symbols-outlined text-purple-400 text-lg" style="font-variation-settings: 'FILL' 1;">fiber_manual_record</span>
+</div>
+<h4 class="font-body-md text-on-surface leading-tight">API Documentation - v2.4 Release notes</h4>
+<div class="flex items-center gap-2">
+<div class="progress-bar-segment flex-1">
+<div class="progress-bar-fill w-full" style="background: #a855f7;"></div>
+</div>
+<span class="text-[10px] font-label-md">1/1</span>
+</div>
+<div class="flex justify-between items-center pt-2">
+<div class="w-8 h-8 rounded-full border-2 border-purple-500 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional tech writer portrait, minimalist aesthetic, soft purple background light, high resolution, digital art style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxpXthkZgLFx_jYoWfNFiFa53vDgvCxpC__q_-V0RBVajcIiYZT0RNFz2pjMlOh6ClzmOIPbU6xMx4vZMVYn4znqQ7BL8OHItlJ6EeGNSRn-5Ez4iOV_2_ibEHnjVfM7lvQT0DeG9gmuQLrWKFojpNesalP_6ctQuHXsEnaiFWsY1tzSzI9--D32PeYJMew3fUBlVJK5SOhF9x-dnvagbhdzr7LqFyaCGQzv2hMYjus22dzjxuYbE9_eEgJnYso6Wy1MSBnl8gF6ro"/>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">link</span>
+<div class="bg-surface-container px-1 py-0.5 border border-purple-500/50">
+<span class="text-[10px] font-label-md">2 SP</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- TESTING -->
+<div class="flex flex-col h-full bg-surface-container-lowest/50 border-t-[6px] border-[#06b6d4]">
+<div class="p-4 flex justify-between items-center">
+<h3 class="font-label-md text-[#06b6d4] uppercase">Testing</h3>
+<span class="column-header-badge px-2 text-label-md text-[#06b6d4]">5</span>
+</div>
+<div class="flex-1 p-4 space-y-6 overflow-y-auto scrollbar-hide">
+<div class="brutalist-card bg-surface p-4 space-y-3" style="border-color: #06b6d4; box-shadow: 4px 4px 0px 0px rgba(6,182,212,1);">
+<div class="flex justify-between items-start">
+<span class="text-label-md text-on-surface-variant">PRJ-115</span>
+<span class="material-symbols-outlined text-cyan-400 text-lg" style="font-variation-settings: 'FILL' 1;">fiber_manual_record</span>
+</div>
+<h4 class="font-body-md text-on-surface leading-tight">Stress testing Redis cluster under high write load</h4>
+<div class="flex items-center gap-2">
+<div class="progress-bar-segment flex-1">
+<div class="progress-bar-fill w-[80%]" style="background: #06b6d4;"></div>
+</div>
+<span class="text-[10px] font-label-md">8/10</span>
+</div>
+<div class="flex justify-between items-center pt-2">
+<div class="w-8 h-8 rounded-full border-2 border-cyan-500 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of a QA engineer, wearing data-vis goggles, bright cyan lighting accents, dark server room background, hyper-detailed digital photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbIiOF__1H5r_N0tq9jdP3iExjppWndilCR_3_unLUxFHk9BDwZzPx_Mc7D3kmYkFnkA3iXqecWYl3LteeBuVvtLdJdjtJpWhp6CJJerERnQZddAs6GkAQNqIH6RuhjgZsJRSpwqf0Ma18p9zDCxKXOWMhDro-GrpRiHhx0-hUAwKEDd1JvBiuqLdXnFQ_M9OfNcen3dgb_F5UDiRnWtxwLOhPliQA6Af_tfbmaWCtphRjyc33_ikNI-683AJ9gi4AiafJ9rncOZoI"/>
+</div>
+<div class="flex items-center gap-3 text-on-surface-variant">
+<div class="bg-surface-container px-1 py-0.5 border border-cyan-500/50">
+<span class="text-[10px] font-label-md">13 SP</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- DONE -->
+<div class="flex flex-col h-full bg-surface-container-lowest/50 border-t-[6px] border-[#22c55e]">
+<div class="p-4 flex justify-between items-center">
+<h3 class="font-label-md text-[#22c55e] uppercase">Done</h3>
+<span class="column-header-badge px-2 text-label-md text-[#22c55e]">45</span>
+</div>
+<div class="flex-1 p-4 space-y-6 overflow-y-auto scrollbar-hide opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
+<div class="brutalist-card bg-surface p-4 space-y-3" style="border-color: #22c55e; box-shadow: 4px 4px 0px 0px rgba(34,197,94,1);">
+<div class="flex justify-between items-start">
+<span class="text-label-md text-on-surface-variant">PRJ-001</span>
+<span class="material-symbols-outlined text-green-500 text-lg" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<h4 class="font-body-md text-on-surface leading-tight line-through">Core Engine Bootstrap</h4>
+<div class="flex items-center gap-2">
+<div class="progress-bar-segment flex-1">
+<div class="progress-bar-fill w-full" style="background: #22c55e;"></div>
+</div>
+<span class="text-[10px] font-label-md">100%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button - Replaced by context sensitive FAB if needed -->
+<button class="fixed bottom-10 right-10 w-16 h-16 bg-primary text-on-primary flex items-center justify-center border-4 border-primary shadow-[6px_6px_0px_0px_rgba(37,167,253,1)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_rgba(37,167,253,1)] transition-all z-50">
+<span class="material-symbols-outlined text-4xl">add</span>
+</button>
+<script>
+        let sidebarExpanded = true;
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const main = document.getElementById('main-canvas');
+            const icon = document.getElementById('sidebar-icon');
+            
+            if (sidebarExpanded) {
+                sidebar.style.width = '80px';
+                main.style.marginLeft = '80px';
+                icon.innerText = 'chevron_right';
+                // Hide text labels
+                sidebar.querySelectorAll('span:not(.material-symbols-outlined)').forEach(s => s.classList.add('hidden'));
+                sidebar.querySelector('.flex-col').classList.add('hidden');
+            } else {
+                sidebar.style.width = '256px';
+                main.style.marginLeft = '256px';
+                icon.innerText = 'chevron_left';
+                // Show text labels
+                setTimeout(() => {
+                    sidebar.querySelectorAll('span:not(.material-symbols-outlined)').forEach(s => s.classList.remove('hidden'));
+                    sidebar.querySelector('.flex-col').classList.remove('hidden');
+                }, 150);
+            }
+            sidebarExpanded = !sidebarExpanded;
+        }
+
+        // Simple horizontal drag scrolling for the main canvas if mouse button is held
+        const slider = document.getElementById('main-canvas');
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        slider.addEventListener('mousedown', (e) => {
+            if(e.target.closest('.brutalist-card')) return; // Don't scroll if dragging card
+            isDown = true;
+            startX = e.pageX - slider.offsetLeft;
+            scrollLeft = slider.scrollLeft;
+        });
+        slider.addEventListener('mouseleave', () => { isDown = false; });
+        slider.addEventListener('mouseup', () => { isDown = false; });
+        slider.addEventListener('mousemove', (e) => {
+            if(!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - slider.offsetLeft;
+            const walk = (x - startX) * 2;
+            slider.scrollLeft = scrollLeft - walk;
+        });
+    </script>
+</body></html>

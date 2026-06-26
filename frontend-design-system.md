@@ -12,12 +12,11 @@ The interface must feel:
 - Brutalist but readable — raw edges softened for productivity
 - Enterprise-grade, not decorative
 
-<<<<<<< Updated upstream
 Design rules:
 
 - Hard edges (border-radius: 0 to 2px max)
 - Thick borders: 2–3px solid
-- # Flat offset shadows only (no blur, no glow)
+- Flat offset shadows only (no blur, no glow)
 - Use semantic HTML5
 - Use CSS variables for all theme values
 - No inline styles
@@ -39,7 +38,6 @@ The style is defined by rigid geometry, deliberate lack of organic curves, and h
 ### Forbidden
 
 - NO border-radius (except avatars: use `rounded-full`)
-  > > > > > > > Stashed changes
 - NO gradients
 - NO glassmorphism
 - NO soft floating cards
@@ -72,13 +70,12 @@ COLORS — Light theme:
 --color-muted : #47657d
 --color-primary : #0077cc
 
-<<<<<<< Updated upstream
 TYPOGRAPHY:
 
 Google Fonts:
 
 - Audiowide → H1, H2, app name, section titles (uppercase)
-- # JetBrains Mono → All UI text, buttons, labels, inputs, tables, badges
+- JetBrains Mono → All UI text, buttons, labels, inputs, tables, badges
 
 ### Dark Theme (default — "Void")
 
@@ -132,8 +129,6 @@ on-tertiary-fixed       : #001e2f
 on-tertiary-fixed-variant: #234a64
 ```
 
-> > > > > > > Stashed changes
-
 Type scale:
 --text-xs : 0.75rem
 --text-sm : 0.875rem
@@ -143,20 +138,13 @@ Type scale:
 --text-2xl : 2rem
 --text-4xl : 3.5rem
 
-<<<<<<< Updated upstream
 SPACING: 8px base unit system
-=======
-Not yet specified — all current design assets are dark-only. To be defined when needed.
-
-> > > > > > > Stashed changes
 
 GRID: 12 columns desktop / 6 tablet / 4 mobile
 
 ====================================================
 ANGULAR-SPECIFIC REQUIREMENTS
 ====================================================
-
-<<<<<<< Updated upstream
 
 - Use Angular component architecture (no migration)
 - Apply design via SCSS with CSS custom properties
@@ -167,13 +155,14 @@ ANGULAR-SPECIFIC REQUIREMENTS
 - Theme switching via [data-theme] attribute on <html>
 - i18n-ready: use Angular i18n or ngx-translate
   for all UI text (FR / EN minimum)
-- All icons: Lucide Angular or Angular Material icons
-  with stroke-only style, stroke-width: 2.5px
+- All icons: Material Symbols Outlined (Google Fonts)
+  with stroke-only style
+- `font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24`
+- Outline only — no filled icons (exceptions: `check_circle`, `fiber_manual_record` for status indicators may use `'FILL' 1`)
 
 ====================================================
 APPLICATION LAYOUT
 ====================================================
-=======
 
 ```html
 <html class="dark">
@@ -182,15 +171,6 @@ APPLICATION LAYOUT
 ```
 
 Dark is always default. No light theme until specified.
-
----
-
-## Icons
-
-- **Material Symbols Outlined** only (Google Fonts)
-- `font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24`
-- Outline only — no filled icons (exceptions: `check_circle`, `fiber_manual_record` for status indicators may use `'FILL' 1`)
-  > > > > > > > Stashed changes
 
 GLOBAL TOP BAR (64px, sticky):
 
@@ -214,20 +194,12 @@ COLLAPSIBLE LEFT SIDEBAR:
   color var(--color-bg)
 - Bottom: Storage indicator, Upgrade, Profile
 
-# <<<<<<< Updated upstream
-
-# PROJECT LAYOUT
-
-=======
-
 ```html
 <link
   href="https://fonts.googleapis.com/css2?family=Audiowide&family=JetBrains+Mono:wght@400;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
   rel="stylesheet"
 />
 ```
-
-> > > > > > > Stashed changes
 
 PROJECT HEADER:
 
@@ -240,23 +212,38 @@ PROJECT HEADER:
 - Search
 - [+ CREATE ISSUE] button
 
-<<<<<<< Updated upstream
 PROJECT TABS (single active):
 Overview | Board | Backlog | Timeline |
 Calendar | Epics | Releases | Reports |
 Issues | Components | Files | Automation | Settings
-=======
+
+Typography usage:
 
 - H1 / H2 only
 - Uppercase always
 - Used with restraint — branding, page headers, major section titles
-  > > > > > > > Stashed changes
+- Navigation, buttons, inputs, labels, body text, code, tables, captions, all UI
+
+### Type Scale (exact px values)
+
+```css
+--display-lg: 48px / 1.1 / 400 / 0.05em /* Audiowide — hero headings */ --headline-lg: 32px / 1.2 / 400 / 0.04em
+  /* Audiowide — section headers */ --headline-md: 24px / 1.2 / 400 / 0.04em /* Audiowide — card titles */ --headline-lg-mobile: 24px /
+  1.2 / 400 /* Audiowide — mobile fallback */ --body-lg: 18px / 1.6 / 400 / 0em /* JetBrains Mono */ --body-md: 16px / 1.5 / 400 / 0em
+  /* JetBrains Mono — default */ --body-sm: 14px / 1.5 / 400 / 0em /* JetBrains Mono */ --label-md: 12px / 1 / 700 / 0.1em
+  /* JetBrains Mono — labels, buttons, badges */;
+```
+
+### Spacing
+
+```css
+--unit: 4px /* baseline grid unit */ --gutter: 24px /* column gutters */ --margin-page: 32px /* page padding */ --stack-sm: 8px
+  --stack-md: 16px --stack-lg: 32px;
+```
 
 ====================================================
 PAGES TO REDESIGN
 ====================================================
-
-<<<<<<< Updated upstream
 
 1. BOARD (Kanban)
    Columns: Backlog / Selected / In Progress /
@@ -277,30 +264,6 @@ Each card shows:
 Column header: thick top border colored by status
 Drag & drop preserved (CDK Drag Drop)
 Card hover: translate(-2px, -2px) + offset shadow
-=======
-
-- Navigation, buttons, inputs, labels, body text, code, tables, captions, all UI
-
-### Type Scale (exact px values)
-
-```css
---display-lg: 48px / 1.1 / 400 / 0.05em /* Audiowide — hero headings */ --headline-lg: 32px / 1.2 / 400 / 0.04em
-  /* Audiowide — section headers */ --headline-md: 24px / 1.2 / 400 / 0.04em /* Audiowide — card titles */ --headline-lg-mobile: 24px /
-  1.2 / 400 /* Audiowide — mobile fallback */ --body-lg: 18px / 1.6 / 400 / 0em /* JetBrains Mono */ --body-md: 16px / 1.5 / 400 / 0em
-  /* JetBrains Mono — default */ --body-sm: 14px / 1.5 / 400 / 0em /* JetBrains Mono */ --label-md: 12px / 1 / 700 / 0.1em
-  /* JetBrains Mono — labels, buttons, badges */;
-```
-
----
-
-## Spacing
-
-```css
---unit: 4px /* baseline grid unit */ --gutter: 24px /* column gutters */ --margin-page: 32px /* page padding */ --stack-sm: 8px
-  --stack-md: 16px --stack-lg: 32px;
-```
-
-> > > > > > > Stashed changes
 
 2. BACKLOG
    Left: Epics panel (collapsible)
@@ -314,17 +277,16 @@ Card hover: translate(-2px, -2px) + offset shadow
    Comments, History, Checklist,
    Linked Issues, Time Tracking
 
-<<<<<<< Updated upstream 4. DASHBOARD
-Draggable widget grid:
-
-- Assigned to me
-- Sprint progress
-- Velocity chart
-- Burndown chart
-- Recent activity
-- Upcoming deadlines
-- Workload
-- # Pie/Bar charts
+4. DASHBOARD
+   Draggable widget grid:
+   - Assigned to me
+   - Sprint progress
+   - Velocity chart
+   - Burndown chart
+   - Recent activity
+   - Upcoming deadlines
+   - Workload
+   - Pie/Bar charts
 
 ```css
 :root {
@@ -350,127 +312,33 @@ Draggable widget grid:
   --color-on-error: #690005;
   --color-text: #dfe3ea;
   --color-muted: #6a8fac;
->>>>>>> Stashed changes
-
-5. TIMELINE
-Horizontal Gantt-style roadmap
-Zoom: Week / Month / Quarter / Year
-Dependencies, Milestones, Drag bars
-
-<<<<<<< Updated upstream
-6. REPORTS
-Charts: Velocity, Burndown, Burnup,
-Cycle Time, Lead Time, Cumulative Flow,
-Issue Distribution
-
-7. SETTINGS
-Sections: General, Members, Roles,
-Permissions, Workflows, Issue Types,
-Labels, Priorities, Automation,
-Notifications, Integrations, API
-=======
   --border-width: 3px;
   --shadow-brutal: 4px 4px 0px var(--color-primary);
   --radius: 0;
 }
 ```
 
-> > > > > > > Stashed changes
+5. TIMELINE
+   Horizontal Gantt-style roadmap
+   Zoom: Week / Month / Quarter / Year
+   Dependencies, Milestones, Drag bars
+
+6. REPORTS
+   Charts: Velocity, Burndown, Burnup,
+   Cycle Time, Lead Time, Cumulative Flow,
+   Issue Distribution
+
+7. SETTINGS
+   Sections: General, Members, Roles,
+   Permissions, Workflows, Issue Types,
+   Labels, Priorities, Automation,
+   Notifications, Integrations, API
 
 ====================================================
 COMPONENT LIBRARY (SCSS overrides)
 ====================================================
 
 Every component must follow brutalist rules:
-
-Button:
-border: 3px solid var(--color-primary)
-border-radius: 0
-font-family: var(--font-mono)
-text-transform: uppercase
-hover: translate(-2px,-2px) + box-shadow 4px 4px 0 accent
-active: translate(0,0) + no shadow
-
-<<<<<<< Updated upstream
-Input / Select:
-background: transparent
-border: 3px solid var(--color-border)
-border-radius: 0
-font-family: var(--font-mono)
-
-Card:
-background: var(--color-surface)
-border: 3px solid var(--color-border)
-box-shadow: 4px 4px 0 var(--color-primary)
-border-radius: 0
-=======
-
-- Desktop : 12-column fluid grid
-- Tablet : 6-column grid
-- Mobile : single-column stack
-
-Hard left-alignment for all text and UI blocks to emphasize the vertical axis of the grid.
-
----
-
-## Elevation & Depth
-
-Depth is communicated through **Hard Offsets** rather than light and shadow.
-
-1. **Flat Layer** (z-0): No shadow, sits directly on background.
-2. **Elevated Layer**: Interactive elements use 4px horizontal + 4px vertical offset shadow. Shadow color is always solid (no blur), matches `primary` (`#97cbff`).
-3. **Active State**: On click/press, elements shift 2px down + 2px right, shadow reduces to 2px offset — simulates physical "push" into surface.
-   > > > > > > > Stashed changes
-
-Badge / Label:
-border: 2px solid currentColor
-border-radius: 0
-font-family: var(--font-mono)
-font-size: var(--text-xs)
-text-transform: uppercase
-
-Table:
-All borders 2px solid var(--color-border)
-No zebra stripe
-Monospace font
-Exposed grid
-
-<<<<<<< Updated upstream
-Modal / Drawer:
-border: 3px solid var(--color-border)
-border-radius: 0
-box-shadow: 8px 8px 0 var(--color-primary)
-
-Focus state (all interactive):
-outline: 3px solid var(--color-accent)
-outline-offset: 2px
-
-====================================================
-MOTION
-====================================================
-
-Max duration: 150ms
-Allowed: hover displacement, focus transitions,
-drawer slide-in, tab switch
-Forbidden: bounce, float, blur fade, long transitions
-
-=======
-
-### Navigation (Top Bar)
-
-- Full width, sticky top
-- `border-bottom: 3px solid var(--color-primary-container)`
-- JetBrains Mono, uppercase
-- Active item: `background: var(--color-primary)` / `color: var(--color-bg)`
-
-### Sidebar
-
-- Fixed left, full height below top bar
-- 256px width (collapsible to 80px icon-only)
-- `border-right: 3px solid var(--color-primary)`
-- Navigation items: icon + label, `font-label-md`, uppercase
-- Active item: `background: var(--color-primary)` / `color: var(--color-bg)`
-- Collapse button: positioned at right edge, `-right-4`
 
 ### Buttons
 
@@ -496,16 +364,7 @@ opacity: 0.4;
 pointer-events: none;
 ```
 
-### Cards
-
-```css
-background: var(--color-surface-container);
-border: 3px solid var(--color-primary);
-border-radius: 0;
-box-shadow: var(--shadow-brutal);
-```
-
-### Inputs
+### Input / Select
 
 ```css
 background: var(--color-surface);
@@ -519,30 +378,91 @@ border-color: var(--color-secondary);
 outline: none;
 ```
 
-### Tables
+### Cards
 
-- Thick borders, monospace typography
-- No zebra striping
-- Rows separated by 2px solid lines (`border-bottom`)
-- Active row: full `primary` background with `on-primary` text
+```css
+background: var(--color-surface-container);
+border: 3px solid var(--color-primary);
+border-radius: 0;
+box-shadow: var(--shadow-brutal);
+```
+
+### Badge / Label
+
+```css
+border: 2px solid currentColor;
+border-radius: 0;
+font-family: var(--font-mono);
+font-size: var(--text-xs);
+text-transform: uppercase;
+```
+
+### Table
+
+- All borders 2px solid var(--color-border)
+- No zebra stripe
+- Monospace font
+- Exposed grid
+- Rows separated by 2px solid lines (border-bottom)
+- Active row: full primary background with on-primary text
+
+### Modal / Drawer
+
+```css
+border: 3px solid var(--color-border);
+border-radius: 0;
+box-shadow: 8px 8px 0 var(--color-primary);
+```
 
 ### Dividers
 
 - 3px solid borders
-- May use `skew()` transforms
+- May use skew() transforms
 - Must reinforce structural rhythm
+
+### Navigation (Top Bar)
+
+- Full width, sticky top
+- border-bottom: 3px solid var(--color-primary-container)
+- JetBrains Mono, uppercase
+- Active item: background var(--color-primary) / color var(--color-bg)
+
+### Sidebar
+
+- Fixed left, full height below top bar
+- 256px width (collapsible to 80px icon-only)
+- border-right: 3px solid var(--color-primary)
+- Navigation items: icon + label, font-label-md, uppercase
+- Active item: background var(--color-primary) / color var(--color-bg)
+- Collapse button: positioned at right edge, right: -16px
+
+### Grid Layout
+
+- Desktop : 12-column fluid grid
+- Tablet : 6-column grid
+- Mobile : single-column stack
+
+Hard left-alignment for all text and UI blocks to emphasize the vertical axis of the grid.
+
+### Elevation & Depth
+
+Depth is communicated through **Hard Offsets** rather than light and shadow.
+
+1. **Flat Layer** (z-0): No shadow, sits directly on background.
+2. **Elevated Layer**: Interactive elements use 4px horizontal + 4px vertical offset shadow. Shadow color is always solid (no blur), matches primary (#97cbff).
+3. **Active State**: On click/press, elements shift 2px down + 2px right, shadow reduces to 2px offset — simulates physical "push" into surface.
 
 ### Kanban Board Columns
 
 - Column header: colored top border (6px thick), per status:
-  - Backlog: `#25a7fd` (primary-container)
-  - Selected: `#fbbf24` (amber)
-  - In Progress: `#f97316` (orange)
-  - Review: `#a855f7` (purple)
-  - Testing: `#06b6d4` (cyan)
-  - Done: `#22c55e` (green)
-- Column badge: `border: 2px solid`, count number
-- Cards: draggable, `brutalist-card` styling
+  - Backlog: #25a7fd (primary-container)
+  - Selected: #fbbf24 (amber)
+  - In Progress: #f97316 (orange)
+  - Review: #a855f7 (purple)
+  - Testing: #06b6d4 (cyan)
+  - Done: #22c55e (green)
+- Column badge: border: 2px solid, count number
+- Cards: draggable, brutalist-card styling
 - Scrollable column body, hidden scrollbar
 
 ### Kanban Card
@@ -566,53 +486,59 @@ box-shadow: 6px 6px 0 var(--color-primary);
 - Square ends (no border-radius)
 - Segmented "blocks" style (not continuous fill)
 - Height: 4px
-- Track: `background: var(--color-surface-container)`
+- Track: background var(--color-surface-container)
 - Fill: colored per context (primary/column color)
-- Label: `n/m` or percentage
+- Label: n/m or percentage
 
 ### Chips & Tags
 
 - Small scale, no shadow
-- `border: 1px solid` or `2px solid`
-- Text: `--label-md` (12px, bold, uppercase)
+- border: 1px solid or 2px solid
+- Text: --label-md (12px, bold, uppercase)
 - Used for: status badges, priority labels, SP (story points)
 
 ### Avatars
 
-- `width: 32px, height: 32px`
-- `border-radius: 9999px` (EXCEPTION to the no-radius rule — avatars only)
-- `border: 2px solid` (color matches context)
-- `object-fit: cover`
-- Avatar stacks: use negative margin `-space-x-2` for overlap
+- width: 32px, height: 32px
+- border-radius: 9999px (EXCEPTION to the no-radius rule — avatars only)
+- border: 2px solid (color matches context)
+- object-fit: cover
+- Avatar stacks: use negative margin for overlap
 
 ### Bottom Navigation (Mobile)
 
 - Fixed bottom, full width
-- `border-top: 3px solid var(--color-primary-container)`
+- border-top: 3px solid var(--color-primary-container)
 - 4-5 items with icon + label
-- Center "CREATE" button elevated above bar (`-top-6`)
+- Center "CREATE" button elevated above bar
 
----
+### Focus state (all interactive)
 
-## Motion
+```css
+:focus-visible {
+  outline: 3px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+```
 
-- Max duration: 150ms
-- Allowed: hover displacement, focus transitions
-- Forbidden: bounce, float, soft fades, long page transitions
+====================================================
+MOTION
+====================================================
 
-````css
->>>>>>>Stashed changes @media (prefers-reduced-motion: reduce) {
+Max duration: 150ms
+Allowed: hover displacement, focus transitions,
+drawer slide-in, tab switch
+Forbidden: bounce, float, blur fade, long transitions
+
+```css
+@media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
     animation: none !important;
   }
 }
+```
 
-<<<<<<< Updated upstream
-====================================================
-ACCESSIBILITY
-====================================================
-=======
 ### Optional Atmospheric Effect: Scanline
 
 A subtle horizontal scanline overlay for the home/dashboard screen:
@@ -637,11 +563,11 @@ A subtle horizontal scanline overlay for the home/dashboard screen:
   pointer-events: none;
   animation: scanline 8s linear infinite;
 }
-````
+```
 
----
-
-> > > > > > > Stashed changes
+====================================================
+ACCESSIBILITY
+====================================================
 
 - WCAG AA minimum
 - All interactive elements keyboard accessible
@@ -670,24 +596,9 @@ DELIVERABLES
 5. i18n translation files (fr.json + en.json)
 6. Component library documentation (inline comments)
 
-# <<<<<<< Updated upstream
-
-# CONSTRAINTS
-
-=======
-
-```css
-:focus-visible {
-  outline: 3px solid var(--color-secondary);
-  outline-offset: 2px;
-}
-```
-
----
-
-## Output Requirements
-
-> > > > > > > Stashed changes
+====================================================
+CONSTRAINTS
+====================================================
 
 - Do NOT touch TypeScript logic or services
 - Do NOT change routing or module structure
@@ -695,8 +606,5 @@ DELIVERABLES
 - Keep all existing [routerLink], (click), *ngFor, *ngIf
 - Production-ready code only
 - No placeholders, no omitted styles
-  <<<<<<< Updated upstream
-  =======
 - Every component follows the softened brutalist system
 - Final result must feel industrial, structural, technical, and aggressively brutalist
-  > > > > > > > Stashed changes
