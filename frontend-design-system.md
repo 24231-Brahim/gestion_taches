@@ -1,278 +1,291 @@
-# FRONTEND DESIGN SYSTEM SPECIFICATION
+You are a Senior Frontend Engineer and UI/UX Architect specializing in Angular applications.
 
-Build a production-ready frontend UI following this design system exactly.
+Your mission is to completely redesign the visual identity of an existing Angular project management application (Jira-like) for IT/Dev teams, without changing the business logic or Angular architecture.
 
----
+====================================================
+DESIGN IDENTITY — BRUTALIST ADOUCI
+====================================================
 
-## Framework & Technical Requirements
+The interface must feel:
+- Industrial, structured, technical
+- Brutalist but readable — raw edges softened for productivity
+- Enterprise-grade, not decorative
 
-- Use semantic HTML5
-- Use CSS variables for all theme values
-- No inline styles
-- Mobile-first responsive design
-- Responsive down to 375px width
-- Respect `prefers-reduced-motion`
-- WCAG AA accessibility compliance
-- All interactive elements must be keyboard accessible
-- Visible focus states are mandatory
-
----
-
-## Design Style: Brutalism
-
-Raw, unapologetic, structural. The interface should feel engineered rather than decorated. Expose the grid. Make structure visible. Elements should appear bolted together, not floating.
-
-### Forbidden
-
-- NO border-radius
+Design rules:
+- Hard edges (border-radius: 0 to 2px max)
+- Thick borders: 2–3px solid
+- Flat offset shadows only (no blur, no glow)
 - NO gradients
-- NO glassmorphism / neumorphism / material design patterns
-- NO blurred shadows
-- NO floating cards
-- NO soft effects
-- NO decorative curves
+- NO glassmorphism
+- NO soft floating cards
+- Visible structural grid at all times
+- Strong typographic hierarchy
 
-### Required
+====================================================
+DESIGN SYSTEM
+====================================================
 
-- Hard edges everywhere
-- Thick borders (3–5px solid)
-- Flat offset shadows only (no blur)
-- Visible structural divisions
-- Strong visual hierarchy
-- Intentional asymmetrical spacing
-- Exposed grid system
+COLORS — Dark theme (default):
 
----
+--color-primary   : #25a7fd
+--color-accent    : #51d5fc
+--color-bg        : #0a0a0f
+--color-surface   : #111118
+--color-border    : #25a7fd
+--color-text      : #e8f4ff
+--color-muted     : #6a8fac
+--color-success   : #22c55e
+--color-warning   : #f59e0b
+--color-danger    : #ef4444
 
-## Color Palette
+COLORS — Light theme:
 
-Only use colors from this palette. Never introduce outside colors.
+--color-bg        : #dff0ff
+--color-surface   : #ffffff
+--color-border    : #25a7fd
+--color-text      : #0a0a0f
+--color-muted     : #47657d
+--color-primary   : #0077cc
 
-### Dark Theme (default — "somber")
+TYPOGRAPHY:
 
-```
-Primary Blue : #25a7fd
-Accent Cyan  : #51d5fc
-Background   : #0a0a0f
-Surface      : #111118
-Border       : #25a7fd
-Text Primary : #e8f4ff
-Text Muted   : #6a8fac
-```
+Google Fonts:
+- Audiowide → H1, H2, app name, section titles (uppercase)
+- JetBrains Mono → All UI text, buttons, labels, inputs, tables, badges
 
-### Light Theme ("claire")
+Type scale:
+--text-xs   : 0.75rem
+--text-sm   : 0.875rem
+--text-base : 1rem
+--text-lg   : 1.25rem
+--text-xl   : 1.5rem
+--text-2xl  : 2rem
+--text-4xl  : 3.5rem
 
-```
-Background   : #dff0ff
-Surface      : #ffffff
-Border       : #25a7fd
-Text Primary : #0a0a0f
-Text Muted   : #47657d
-```
+SPACING: 8px base unit system
 
----
+GRID: 12 columns desktop / 6 tablet / 4 mobile
 
-## Themes
+====================================================
+ANGULAR-SPECIFIC REQUIREMENTS
+====================================================
 
-```html
-<html data-theme="dark">
-  <!-- default -->
-  <html data-theme="light"></html>
-</html>
-```
+- Use Angular component architecture (no migration)
+- Apply design via SCSS with CSS custom properties
+- Create a global design-system.scss file with all variables
+- Use Angular Material components where already present,
+  override their styles to match the brutalist system
+- Each component gets its own .scss file
+- Theme switching via [data-theme] attribute on <html>
+- i18n-ready: use Angular i18n or ngx-translate
+  for all UI text (FR / EN minimum)
+- All icons: Lucide Angular or Angular Material icons
+  with stroke-only style, stroke-width: 2.5px
 
-Theme switching updates all CSS variables. Dark is always default.
+====================================================
+APPLICATION LAYOUT
+====================================================
 
----
+GLOBAL TOP BAR (64px, sticky):
+- Logo (Audiowide font, uppercase)
+- Workspace switcher
+- Global search (keyboard shortcut: /)
+- [+ CREATE] button (primary style)
+- Notifications bell
+- AI Assistant button
+- Theme toggle (dark/light)
+- Language switcher (FR/EN)
+- User avatar + dropdown
 
-## Typography
+COLLAPSIBLE LEFT SIDEBAR:
+- Collapses to icon-only mode
+- border-right: 3px solid var(--color-border)
+- Sections: Home, Projects, My Work, Favorites,
+  Dashboards, Teams, Calendar, Reports, Settings
+- Active item: background var(--color-primary),
+  color var(--color-bg)
+- Bottom: Storage indicator, Upgrade, Profile
 
-```html
-<link href="https://fonts.googleapis.com/css2?family=Audiowide&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet" />
-```
+====================================================
+PROJECT LAYOUT
+====================================================
 
-### Display — Audiowide
+PROJECT HEADER:
+- Project icon + name (Audiowide)
+- Breadcrumb navigation
+- Visibility badge
+- Members avatars
+- Sprint selector dropdown
+- Filter bar
+- Search
+- [+ CREATE ISSUE] button
 
-- H1 / H2 only
-- Uppercase preferred
-- Letter-spacing: -0.02em
-- Used with restraint
+PROJECT TABS (single active):
+Overview | Board | Backlog | Timeline |
+Calendar | Epics | Releases | Reports |
+Issues | Components | Files | Automation | Settings
 
-### Body / UI — JetBrains Mono
+====================================================
+PAGES TO REDESIGN
+====================================================
 
-- Navigation, buttons, inputs, labels, body text, code, tables, captions
+1. BOARD (Kanban)
+Columns: Backlog / Selected / In Progress /
+         Review / Testing / Done
 
-### Type Scale
+Each card shows:
+- Issue key (monospace badge)
+- Title
+- Priority icon (colored)
+- Labels (flat badges, no radius)
+- Story points
+- Assignee avatar
+- Due date
+- Comments + attachments count
+- Subtask progress bar
 
-```css
---text-xs: 0.75rem;
---text-sm: 0.875rem;
---text-base: 1rem;
---text-lg: 1.25rem;
---text-xl: 1.5rem;
---text-2xl: 2rem;
---text-4xl: 3.5rem;
-```
+Column header: thick top border colored by status
+Drag & drop preserved (CDK Drag Drop)
+Card hover: translate(-2px, -2px) + offset shadow
 
----
+2. BACKLOG
+Left: Epics panel (collapsible)
+Center: Sprint sections + issue list
+Bottom: inline create issue
 
-## CSS Variables
+3. ISSUE DETAIL (Right Drawer)
+Full fields: Title, Description, Status, Priority,
+Type, Assignee, Reporter, Sprint, Epic,
+Story Points, Attachments, Activity,
+Comments, History, Checklist,
+Linked Issues, Time Tracking
 
-```css
-:root {
-  --color-primary: #25a7fd;
-  --color-accent: #51d5fc;
-  --color-bg: #0a0a0f;
-  --color-surface: #111118;
-  --color-border: #25a7fd;
-  --color-text: #e8f4ff;
-  --color-muted: #6a8fac;
+4. DASHBOARD
+Draggable widget grid:
+- Assigned to me
+- Sprint progress
+- Velocity chart
+- Burndown chart
+- Recent activity
+- Upcoming deadlines
+- Workload
+- Pie/Bar charts
 
-  --font-display: 'Audiowide', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+5. TIMELINE
+Horizontal Gantt-style roadmap
+Zoom: Week / Month / Quarter / Year
+Dependencies, Milestones, Drag bars
 
-  --border-width: 3px;
-  --shadow-brutal: 4px 4px 0px var(--color-primary);
-  --radius: 0;
-}
+6. REPORTS
+Charts: Velocity, Burndown, Burnup,
+Cycle Time, Lead Time, Cumulative Flow,
+Issue Distribution
 
-[data-theme='light'] {
-  --color-bg: #dff0ff;
-  --color-surface: #ffffff;
-  --color-border: #25a7fd;
-  --color-text: #0a0a0f;
-  --color-muted: #47657d;
-  --color-primary: #0077cc;
-  --color-accent: #0099e6;
-}
-```
+7. SETTINGS
+Sections: General, Members, Roles,
+Permissions, Workflows, Issue Types,
+Labels, Priorities, Automation,
+Notifications, Integrations, API
 
----
+====================================================
+COMPONENT LIBRARY (SCSS overrides)
+====================================================
 
-## Layout System
+Every component must follow brutalist rules:
 
-CSS Grid as primary layout mechanism.
+Button:
+  border: 3px solid var(--color-primary)
+  border-radius: 0
+  font-family: var(--font-mono)
+  text-transform: uppercase
+  hover: translate(-2px,-2px) + box-shadow 4px 4px 0 accent
+  active: translate(0,0) + no shadow
 
-- Desktop : 12-column grid
-- Tablet : 6-column grid
-- Mobile : 4-column grid
+Input / Select:
+  background: transparent
+  border: 3px solid var(--color-border)
+  border-radius: 0
+  font-family: var(--font-mono)
 
-Grid structure must be visually expressed through borders and alignment.
+Card:
+  background: var(--color-surface)
+  border: 3px solid var(--color-border)
+  box-shadow: 4px 4px 0 var(--color-primary)
+  border-radius: 0
 
----
+Badge / Label:
+  border: 2px solid currentColor
+  border-radius: 0
+  font-family: var(--font-mono)
+  font-size: var(--text-xs)
+  text-transform: uppercase
 
-## Components
+Table:
+  All borders 2px solid var(--color-border)
+  No zebra stripe
+  Monospace font
+  Exposed grid
 
-### Navigation
+Modal / Drawer:
+  border: 3px solid var(--color-border)
+  border-radius: 0
+  box-shadow: 8px 8px 0 var(--color-primary)
 
-- Full width
-- `border-bottom: 3px solid var(--color-primary)`
-- JetBrains Mono, uppercase
-- Active item: `background: var(--color-primary)` / `color: var(--color-bg)`
+Focus state (all interactive):
+  outline: 3px solid var(--color-accent)
+  outline-offset: 2px
 
-### Buttons
+====================================================
+MOTION
+====================================================
 
-```css
-border: 3px solid var(--color-primary);
-border-radius: 0;
-font-family: var(--font-mono);
-text-transform: uppercase;
+Max duration: 150ms
+Allowed: hover displacement, focus transitions,
+         drawer slide-in, tab switch
+Forbidden: bounce, float, blur fade, long transitions
 
-/* hover */
-transform: translate(-2px, -2px);
-box-shadow: 4px 4px 0 var(--color-accent);
-
-/* active */
-transform: translate(0, 0);
-box-shadow: none;
-
-/* disabled */
-opacity: 0.4;
-pointer-events: none;
-```
-
-### Cards
-
-```css
-background: var(--color-surface);
-border: 3px solid var(--color-border);
-border-radius: 0;
-box-shadow: var(--shadow-brutal);
-```
-
-### Inputs
-
-```css
-background: transparent;
-border: 3px solid var(--color-border);
-border-radius: 0;
-font-family: var(--font-mono);
-color: var(--color-text);
-```
-
-### Tables
-
-- Thick borders, monospace typography
-- No zebra striping, no rounded corners
-- Strong exposed grid appearance
-
-### Dividers
-
-- 3px solid borders
-- May use `skew()` transforms
-- Must reinforce structural rhythm
-
----
-
-## Icons
-
-- Lucide Icons only
-- Stroke-width: 2.5px
-- Outline only — no filled icons
-
----
-
-## Motion
-
-- Max duration: 150ms
-- Allowed: hover displacement, focus transitions
-- Forbidden: bounce, float, soft fades, long page transitions
-
-```css
 @media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none !important;
-    animation: none !important;
-  }
+  * { transition: none !important; animation: none !important; }
 }
-```
 
----
+====================================================
+ACCESSIBILITY
+====================================================
 
-## Signature Brutalist Element
+- WCAG AA minimum
+- All interactive elements keyboard accessible
+- Visible focus states mandatory
+- ARIA labels on icons and icon-only buttons
+- Sufficient color contrast in both themes
+- Screen reader friendly structure
 
-At least one hero section must contain:
+====================================================
+RESPONSIVE
+====================================================
 
-- A massive Audiowide heading partially escaping its container
-- Overlapping bordered boxes with intentional clipping
-- Structural tension between typography and layout — text that breaks the grid
+Desktop  (1280px+) : Full sidebar + content
+Laptop   (1024px)  : Sidebar collapsible by default
+Tablet   (768px)   : Sidebar overlay
+Mobile   (375px+)  : Sidebar hidden, bottom nav
 
----
+====================================================
+DELIVERABLES
+====================================================
 
-## Accessibility
+1. global design-system.scss (all variables + base)
+2. Redesigned SCSS for each existing component
+3. Updated HTML templates (Angular syntax preserved)
+4. Theme toggle service (dark/light)
+5. i18n translation files (fr.json + en.json)
+6. Component library documentation (inline comments)
 
-```css
-:focus-visible {
-  outline: 3px solid var(--color-accent);
-  outline-offset: 2px;
-}
-```
+====================================================
+CONSTRAINTS
+====================================================
 
----
-
-## Output Requirements
-
+- Do NOT touch TypeScript logic or services
+- Do NOT change routing or module structure
+- Do NOT remove Angular Material — override it
+- Keep all existing [routerLink], (click), *ngFor, *ngIf
 - Production-ready code only
 - No placeholders, no omitted styles
-- Every component follows the brutalist system
-- Final result must feel industrial, structural, technical, and aggressively brutalist
