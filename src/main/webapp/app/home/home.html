@@ -1,12 +1,13 @@
-<div class="row">
-  <div class="col-md-3">
-    <span class="hipster img-fluid rounded"></span>
-  </div>
+<div class="row home-row">
+  <div class="col-12 col-md-9">
+    <h1 class="page-heading">
+      <span jhiTranslate="home.title">Bienvenue, Java Hipster !</span>
+      <span class="text-muted" style="font-family: var(--font-mono); font-size: var(--text-sm); text-transform: none; letter-spacing: 0"
+        >Gestion Taches</span
+      >
+    </h1>
 
-  <div class="col-md-9">
-    <h1 class="display-4"><span jhiTranslate="home.title">Bienvenue, Java Hipster !</span> (Gestion Taches)</h1>
-
-    <p class="lead" jhiTranslate="home.subtitle">Ceci est votre page d&apos;accueil</p>
+    <p class="lead" style="font-family: var(--font-mono)" jhiTranslate="home.subtitle">Ceci est votre page d&apos;accueil</p>
 
     <div>
       @if (account() !== null) {
@@ -35,7 +36,7 @@
       }
     </div>
 
-    <p jhiTranslate="home.question">Si vous avez des questions à propos de JHipster :</p>
+    <p jhiTranslate="home.question" style="font-family: var(--font-mono)">Si vous avez des questions à propos de JHipster :</p>
 
     <ul>
       <li>
@@ -73,11 +74,15 @@
       </li>
     </ul>
 
-    <p>
+    <p style="font-family: var(--font-mono)">
       <span jhiTranslate="home.like">Si vous aimez JHipster, donnez-nous une étoile sur</span>
       <a href="https://github.com/jhipster/generator-jhipster" target="_blank" rel="noopener noreferrer" jhiTranslate="home.github"
         >GitHub</a
       >!
     </p>
+  </div>
+
+  <div class="col-12 col-md-3">
+    <span class="hipster img-fluid rounded"></span>
   </div>
 </div>

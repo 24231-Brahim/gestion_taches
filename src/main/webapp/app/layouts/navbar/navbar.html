@@ -1,4 +1,4 @@
-<nav data-cy="navbar" class="navbar topbar">
+<nav data-cy="navbar" class="topbar">
   <div class="topbar-inner">
     <div class="topbar-start">
       <a class="topbar-brand" routerLink="/" (click)="collapseNavbar()">
@@ -12,6 +12,14 @@
     </div>
 
     <div class="topbar-end">
+      <a class="topbar-icon-btn" href="javascript:void(0);" (click)="themeService.toggle()" title="Toggle theme">
+        @if (themeService.theme() === 'dark') {
+          <fa-icon icon="sun" />
+        } @else {
+          <fa-icon icon="moon" />
+        }
+      </a>
+
       @if (languages && languages.length > 1) {
         <div ngbDropdown class="topbar-dropdown" display="dynamic">
           <a class="topbar-icon-btn" ngbDropdownToggle href="javascript:void(0);" id="languagesnavBarDropdown">

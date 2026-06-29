@@ -1,10 +1,5 @@
 jhi-navbar {
   display: block;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
 }
 
 .topbar {
@@ -13,6 +8,11 @@ jhi-navbar {
   border-bottom: 2px solid var(--color-primary-container);
   padding: 0;
   font-family: var(--font-mono);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
 }
 
 .topbar-inner {
@@ -20,9 +20,6 @@ jhi-navbar {
   align-items: center;
   justify-content: space-between;
   height: 100%;
-  padding: 0 var(--margin-page);
-  max-width: 1400px;
-  margin: 0 auto;
   width: 100%;
 }
 

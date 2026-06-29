@@ -1,16 +1,17 @@
-import { HttpResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
 import { EpicStatus } from 'app/entities/enumerations/epic-status.model';
 import { Priority } from 'app/entities/enumerations/priority.model';
 import { IProject } from 'app/entities/project/project.model';
 import { ProjectService } from 'app/entities/project/service/project.service';
+import { AlertService } from 'app/core/util/alert.service';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { TranslateDirective } from 'app/shared/language';
 import { IEpic } from '../epic.model';
@@ -36,6 +37,8 @@ export class EpicUpdate implements OnInit {
   protected epicFormService = inject(EpicFormService);
   protected projectService = inject(ProjectService);
   protected activatedRoute = inject(ActivatedRoute);
+  protected alertService = inject(AlertService);
+  protected translateService = inject(TranslateService);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: EpicFormGroup = this.epicFormService.createEpicFormGroup();
@@ -70,7 +73,7 @@ export class EpicUpdate implements OnInit {
   protected subscribeToSaveResponse(result: Observable<IEpic | null>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       next: () => this.onSaveSuccess(),
-      error: () => this.onSaveError(),
+      error: (err: HttpErrorResponse) => this.onSaveError(err),
     });
   }
 
@@ -78,8 +81,9 @@ export class EpicUpdate implements OnInit {
     this.previousState();
   }
 
-  protected onSaveError(): void {
-    // Api for inheritance.
+  protected onSaveError(err: HttpErrorResponse): void {
+    const message = err.error?.detail ?? err.message ?? this.translateService.instant('error.general');
+    this.alertService.addAlert({ type: 'danger', message });
   }
 
   protected onSaveFinalize(): void {

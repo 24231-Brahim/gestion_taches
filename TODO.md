@@ -78,13 +78,12 @@
 
 ### Gestion des erreurs frontend
 
-- [ ] Appliquer le même fix `onSaveError()` avec `AlertService` sur les autres composants (Sprint, Epic, Issue, Comment, Attachment, ActionHistory)
+- [x] Appliquer le même fix `onSaveError()` avec `AlertService` sur les autres composants (Sprint, Epic, Issue, Comment, Attachment, ActionHistory)
 
 ### Layout — Finitions
 
-- [ ] Ajouter un thème toggle (dark/light) avec persistance locale
-- [ ] Ajouter les pages admin dans la sidebar
-- [ ] Ajouter la sidebar pour les routes admin
+- [x] Ajouter un thème toggle (dark/light) avec persistance locale
+- [ ] Ajouter les pages admin dans la sidebar (User Management, Metrics, Health, Configuration, Logs, API, H2)
 - [ ] Persister l'état collapsed de la sidebar (localStorage)
 
 ### Tests

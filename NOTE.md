@@ -1,4 +1,167 @@
-# Note d'implémentation — Sécurité RBAC et Propriété des Projets
+# Notes d'implémentation
+
+## Design System — Architecture CSS et Thèmes
+
+### Vue d'ensemble
+
+L'application utilise une approche **"Softened Brutalism"** avec un système de design tokens via CSS custom properties. Le changement de thème (sombre/clair) est instantané car il repose uniquement sur le changement d'attribut `data-theme` sur `<html>`, sans re-rendu Angular.
+
+### Fichiers clés
+
+| Fichier                                  | Rôle                                                                   |
+| ---------------------------------------- | ---------------------------------------------------------------------- |
+| `index.html`                             | Définit `data-theme="light"` sur `<html>`                              |
+| `content/scss/design-system.scss`        | Design tokens : couleurs, ombres, espacements, typographie             |
+| `content/scss/_bootstrap-variables.scss` | Surcharge les variables SCSS Bootstrap avant compilation               |
+| `content/scss/vendor.scss`               | Import Bootstrap avec les surcharges                                   |
+| `content/scss/global.scss`               | Ré-écrit les classes Bootstrap avec des `var(--color-*)`               |
+| `app/core/util/theme.service.ts`         | Service Angular qui toggle `data-theme` et persist dans `localStorage` |
+| `app/layouts/navbar/navbar.ts`           | Bouton de bascule thème dans la barre de navigation                    |
+
+### Flux de rendu
+
+```
+index.html (data-theme="light")
+       │
+       ▼
+design-system.scss  ─── définit ───>  --color-bg, --color-text, ...
+       │                                      │
+       ▼                                      ▼
+_bootstrap-variables.scss  ─── compile ───>  Bootstrap CSS (couleurs fixes)
+       │
+       ▼
+global.scss  ─── surcharge ───>  .card, .btn, .table, ... avec var(--color-*)
+       │
+       ▼
+Composants (navbar.scss, sidebar.scss, ...)  ─── utilisent aussi var(--color-*)
+       │
+       ▼
+ThemeService.toggle()  ─── change data-theme sur <html> ───>  toutes les var() se mettent à jour
+```
+
+### Design tokens (`design-system.scss`)
+
+Deux blocs CSS :
+
+```scss
+:root, [data-theme='light'] {
+  --color-bg: #0f1419;
+  --color-text: #dfe3ea;
+  --color-primary: #97cbff;
+  --color-primary-container: #25a7fd;
+  --shadow-brutal: 4px 4px 0 var(--color-primary);
+  --color-surface: #0f1419;
+  --color-surface-container: #1b2025;
+  --color-muted: #6a8fac;
+  ...
+}
+
+[data-theme='light'] {
+  --color-bg: #dff0ff;
+  --color-text: #0a0a0f;
+  --color-primary: #0077cc;
+  --color-surface: #ffffff;
+  --color-surface-container: #ffffff;
+  --color-muted: #47657d;
+  ...
+}
+```
+
+Quand `data-theme` change, toutes les `var(--color-*)` sont recalculées par le navigateur instantanément. Le thème par défaut est clair.
+
+### Bootstrap — pourquoi une double couche
+
+1. `_bootstrap-variables.scss` surcharge les variables SCSS (ex: `$body-bg`, `$card-bg`) **avant compilation**. Ces valeurs sont fixes dans le CSS final.
+2. `global.scss` **ré-écrit** les classes Bootstrap générées avec des `var(--color-*)` pour les rendre dynamiques.
+
+Exemple pour `.form-control` :
+
+```scss
+// Bootstrap généré (fixe) :
+.form-control {
+  background-color: #0f1419;
+  color: #dfe3ea;
+}
+
+// Surcharge dans global.scss (dynamique) :
+.form-control {
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+  border: var(--border-width-thin) solid var(--color-outline);
+}
+```
+
+Classes Bootstrap surchargées dans `global.scss` : `.btn`, `.card`, `.table`, `.modal-content`, `.modal-header`, `.modal-footer`, `.form-control`, `.alert-*`, `.badge`, `.form-check-input`, `ngb-pagination`, `ngb-progressbar`, `.dropdown-menu`.
+
+### Composants — utilisation des tokens
+
+Chaque composant utilise exclusivement `var(--color-*)` :
+
+```scss
+// navbar.scss
+.topbar {
+  background-color: var(--color-surface);
+  border-bottom: 2px solid var(--color-primary-container);
+}
+.topbar-icon-btn {
+  color: var(--color-on-surface);
+  &:hover {
+    color: var(--color-primary);
+    background-color: var(--color-surface-container-high);
+  }
+}
+
+// sidebar.scss
+.sidebar {
+  background: var(--color-surface);
+  border-right: 2px solid var(--color-outline-variant);
+}
+.sidebar-item {
+  color: var(--color-on-surface);
+  &.active {
+    color: var(--color-primary-container);
+    background-color: color-mix(in srgb, var(--color-primary-container) 12%, transparent);
+  }
+}
+```
+
+Aucun composant n'utilise de couleur en dur — tout passe par les design tokens.
+
+### ThemeService (`app/core/util/theme.service.ts`)
+
+```typescript
+export type Theme = 'dark' | 'light';
+
+@Injectable({ providedIn: 'root' })
+export class ThemeService {
+  readonly theme = signal<Theme>(this.loadInitialTheme());
+
+  toggle(): void {
+    const newTheme = this.theme() === 'dark' ? 'light' : 'dark';
+    this.theme.set(newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  }
+
+  private loadInitialTheme(): Theme {
+    const stored = localStorage.getItem('theme');
+    return stored === 'dark' || stored === 'light' ? stored : 'dark';
+  }
+}
+```
+
+Le service est injecté dans `Navbar` et utilisé dans le template pour le bouton de bascule (icône soleil en mode sombre, lune en mode clair).
+
+### Icônes FontAwesome ajoutées
+
+- `faSun` — affichée quand le thème est sombre (pour suggérer "passer en clair")
+- `faMoon` — affichée quand le thème est clair (pour suggérer "passer en sombre")
+
+Déclarées dans `app/config/font-awesome-icons.ts` et enregistrées via `iconLibrary.addIcons(...fontAwesomeIcons)` dans `app.ts`.
+
+---
+
+## Sécurité RBAC et Propriété des Projets
 
 ## Rôles disponibles (dans `AuthoritiesConstants.java`)
 
@@ -159,3 +322,24 @@ Toutes les opérations de modification sur un projet (`delete`, `getMembers`, `a
 - `src/main/webapp/app/entities/project/list/project.ts` — signal error() pour afficher les erreurs de chargement
 - `src/main/webapp/app/entities/project/list/project.html` — affichage d'une alerte en cas d'erreur
 - `src/test/java/com/gestiontaches/web/rest/ProjectResourceIT.java` — @WithMockUser avec ROLE_ADMIN
+
+---
+
+## État d'avancement des fonctionnalités (Juin 2026)
+
+### ✅ Implémenté
+
+- **Thème toggle dark/light** : `ThemeService` avec signal Angular, persisté dans `localStorage`, icônes `faSun`/`faMoon` dans la navbar
+- **Design system complet** : `design-system.scss`, `global.scss`, composants utilisant `var(--color-*)` exclusivement
+- **Layout responsive** : Sidebar collapsible (256px↔80px), BottomNav mobile (<768px), Topbar sticky
+- **RBAC** : 5 rôles avec `@PreAuthorize` sur tous les endpoints
+- **Projet owner/membres** : auto-assignation owner, filtrage par propriétaire, endpoints de gestion d'équipe
+- **JWT custom converter** : parse le claim `auth` pour Spring Security OAuth2 RS
+
+### ❌ Non implémenté (reste à faire)
+
+- ~~**Gestion des erreurs frontend uniforme** : `onSaveError()` avec `AlertService` manquant sur Sprint, Epic, Issue, Comment, Attachment, ActionHistory~~ ✅ Fait
+- **Tests des nouveaux rôles** : `@WithMockUser` obsolètes dans les IT, tests manquants pour DEVELOPER et PROJET_MANAGER
+- **Pages admin dans la sidebar** : User Management, Metrics, Health, Configuration, Logs, API, H2 Console absents
+- **Persistance sidebar** : l'état collapsed n'est pas sauvegardé dans `localStorage`
+- **Notifications** : pas de système de notification pour les assignations d'issues

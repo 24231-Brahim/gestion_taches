@@ -1,10 +1,10 @@
-import { HttpResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
 import { IssueStatus } from 'app/entities/enumerations/issue-status.model';
@@ -13,6 +13,7 @@ import { Priority } from 'app/entities/enumerations/priority.model';
 import { IEpic } from 'app/entities/epic/epic.model';
 import { SprintService } from 'app/entities/sprint/service/sprint.service';
 import { ISprint } from 'app/entities/sprint/sprint.model';
+import { AlertService } from 'app/core/util/alert.service';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { TranslateDirective } from 'app/shared/language';
 
@@ -47,6 +48,8 @@ export class IssueUpdate implements OnInit {
   protected epicService = inject(EpicService);
   protected projectService = inject(ProjectService);
   protected activatedRoute = inject(ActivatedRoute);
+  protected alertService = inject(AlertService);
+  protected translateService = inject(TranslateService);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: IssueFormGroup = this.issueFormService.createIssueFormGroup();
@@ -85,7 +88,7 @@ export class IssueUpdate implements OnInit {
   protected subscribeToSaveResponse(result: Observable<IIssue | null>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       next: () => this.onSaveSuccess(),
-      error: () => this.onSaveError(),
+      error: (err: HttpErrorResponse) => this.onSaveError(err),
     });
   }
 
@@ -93,8 +96,9 @@ export class IssueUpdate implements OnInit {
     this.previousState();
   }
 
-  protected onSaveError(): void {
-    // Api for inheritance.
+  protected onSaveError(err: HttpErrorResponse): void {
+    const message = err.error?.detail ?? err.message ?? this.translateService.instant('error.general');
+    this.alertService.addAlert({ type: 'danger', message });
   }
 
   protected onSaveFinalize(): void {

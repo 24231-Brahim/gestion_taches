@@ -15,6 +15,8 @@ import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directiv
 import { TranslateDirective } from 'app/shared/language';
 import FindLanguageFromKeyPipe from 'app/shared/language/find-language-from-key.pipe';
 
+import { ThemeService } from 'app/core/util/theme.service';
+
 import ActiveMenuDirective from './active-menu.directive';
 
 @Component({
@@ -43,6 +45,7 @@ export default class Navbar implements OnInit {
   readonly openAPIEnabled = signal(false);
   readonly version: string;
   readonly account = inject(AccountService).account;
+  readonly themeService = inject(ThemeService);
 
   private readonly loginService = inject(LoginService);
   private readonly translateService = inject(TranslateService);
