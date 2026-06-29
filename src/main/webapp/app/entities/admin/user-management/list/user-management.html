@@ -20,7 +20,7 @@
 
   @if (users()) {
     <div class="table-responsive">
-      <table class="table table-striped" aria-describedby="user-management-page-heading">
+      <table class="table" aria-describedby="user-management-page-heading">
         <thead>
           <tr jhiSort [(sortState)]="sortState" (sortChange)="transition($event)">
             <th scope="col" jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon icon="sort" /></th>
