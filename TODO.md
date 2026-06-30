@@ -40,6 +40,25 @@
 - [x] Endpoints : `GET/POST/DELETE /api/projects/{id}/members` — gestion d'équipe (renvoie `ProjectMemberDTO`)
 - [x] Changement du `@WithMockUser` dans `ProjectResourceIT.java` en `ROLE_ADMIN`
 
+### Endpoint PATCH pour modification de rôle
+
+- [x] Ajout de `ProjectService.updateMemberRole()` — modifie le rôle d'un membre avec `checkOwnership`
+- [x] Ajout de `PATCH /api/projects/{id}/members/{userId}` dans `ProjectResource.java`
+
+### Frontend — Section Membres dans le détail du projet
+
+- [x] Ajout de `updateMemberRole()` dans `project.service.ts`
+- [x] Création de la section "Membres" dans `project-detail.ts` (signals, CRUD complet)
+- [x] UI complète dans `project-detail.html` (tableau liste + formulaire ajout + inline edit rôle + suppression)
+- [x] Contrôle des boutons par `*jhiHasAnyAuthority(['ROLE_ADMIN', 'ROLE_PROJET_MANAGER'])`
+- [x] Clés i18n ajoutées dans `fr.json` et `en.json`
+
+### Nettoyage et optimisation
+
+- [x] Ajout de `@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"project_id", "user_id"}))` sur `ProjectMember.java`
+- [x] Suppression de la méthode inutilisée `deleteByProjectIdAndUserId` dans `ProjectMemberRepository.java`
+- [x] Optimisation de `addMember()` pour éviter un double chargement du projet en BDD
+
 ### Bugs corrigés
 
 - [x] **JWT — claim `auth` jamais parsé** : ajout d'un `JwtAuthenticationConverter` custom (lambda) dans `SecurityConfiguration.java` qui lit le claim `auth` et split par espace ; injecté via paramètre de méthode dans `filterChain()`

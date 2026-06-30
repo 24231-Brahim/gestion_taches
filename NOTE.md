@@ -282,6 +282,7 @@ La relation `@ManyToMany Set<User> members` a été remplacée par une entité `
 | ------- | ------------------------------------- | --------------------- | --------------------------- |
 | GET     | `/api/projects/{id}/members`          | ADMIN, PROJET_MANAGER | `Set<ProjectMemberDTO>`     |
 | POST    | `/api/projects/{id}/members/{userId}` | ADMIN, PROJET_MANAGER | Ajoute un `ProjectMember`   |
+| PATCH   | `/api/projects/{id}/members/{userId}` | ADMIN, PROJET_MANAGER | Modifie le rôle             |
 | DELETE  | `/api/projects/{id}/members/{userId}` | ADMIN, PROJET_MANAGER | Supprime le `ProjectMember` |
 
 ### Entité ProjectMember
@@ -325,21 +326,24 @@ Toutes les opérations de modification sur un projet (`delete`, `getMembers`, `a
 
 - `src/main/java/com/gestiontaches/security/AuthoritiesConstants.java` — ajout des constantes DEVELOPER et PROJET_MANAGER
 - `src/main/java/com/gestiontaches/domain/Project.java` — ajout owner + members (puis remplacé par `@OneToMany projectMembers`)
-- `src/main/java/com/gestiontaches/domain/ProjectMember.java` — nouvelle entité (id, project, user, role, joinedAt)
-- `src/main/java/com/gestiontaches/repository/ProjectMemberRepository.java` — nouveau repository
+- `src/main/java/com/gestiontaches/domain/ProjectMember.java` — nouvelle entité (id, project, user, role, joinedAt) + `@Table(uniqueConstraints)`
+- `src/main/java/com/gestiontaches/repository/ProjectMemberRepository.java` — nouveau repository + suppression code mort
 - `src/main/java/com/gestiontaches/service/dto/ProjectDTO.java` — ajout ownerId, ownerLogin, projectMembers (Set<ProjectMemberDTO>)
 - `src/main/java/com/gestiontaches/service/dto/ProjectMemberDTO.java` — nouveau DTO
 - `src/main/java/com/gestiontaches/service/mapper/ProjectMapper.java` — mapping des nouveaux champs
 - `src/main/java/com/gestiontaches/service/mapper/ProjectMemberMapper.java` — nouveau mapper
 - `src/main/java/com/gestiontaches/repository/ProjectRepository.java` — findByOwnerLogin
-- `src/main/java/com/gestiontaches/service/ProjectService.java` — set owner, filtre findAll/findOne, gestion team via ProjectMemberRepository, ownership checks, update() preserves owner
-- `src/main/java/com/gestiontaches/web/rest/ProjectResource.java` — endpoints team (retourne `Set<ProjectMemberDTO>`), GET filtré
+- `src/main/java/com/gestiontaches/service/ProjectService.java` — set owner, filtre findAll/findOne, gestion team via ProjectMemberRepository, ownership checks, update() preserves owner, updateMemberRole
+- `src/main/java/com/gestiontaches/web/rest/ProjectResource.java` — endpoints team (retourne `Set<ProjectMemberDTO>`), GET filtré + PATCH /members/{userId}
 - `src/main/java/com/gestiontaches/config/SecurityConfiguration.java` — JwtAuthenticationConverter bean
 - `src/main/resources/config/liquibase/changelog/20260625000000_added_entity_Project_owner.xml` — owner_id + table project_members
 - `src/main/resources/config/liquibase/changelog/20260629000000_added_entity_ProjectMember.xml` — table project_member avec migration des données
 - `src/main/webapp/app/entities/project/project.model.ts` — ajout `IProjectMember` + `projectMembers`
-- `src/main/webapp/app/entities/project/list/project.ts` — signal error() pour afficher les erreurs de chargement
-- `src/main/webapp/app/entities/project/list/project.html` — affichage d'une alerte en cas d'erreur
+- `src/main/webapp/app/entities/project/service/project.service.ts` — ajout `getMembers()`, `addMember()`, `removeMember()`, `updateMemberRole()`
+- `src/main/webapp/app/entities/project/detail/project-detail.ts` — gestion des membres (signals, CRUD)
+- `src/main/webapp/app/entities/project/detail/project-detail.html` — section "Membres" UI complète
+- `src/main/webapp/i18n/fr/project.json` — clés de traduction membres
+- `src/main/webapp/i18n/en/project.json` — clés de traduction membres
 - `src/test/java/com/gestiontaches/web/rest/ProjectResourceIT.java` — @WithMockUser avec ROLE_ADMIN
 
 ---
@@ -366,3 +370,8 @@ Toutes les opérations de modification sur un projet (`delete`, `getMembers`, `a
 ### ✅ Réalisé (après la rédaction initiale)
 
 - **Table `ProjectMember`** : remplacement du `@ManyToMany Set<User> members` par une entité `ProjectMember` complète (id, project, user, role, joinedAt) avec `ProjectMemberRepository`, `ProjectMemberDTO`, `ProjectMemberMapper`, migration Liquibase de la table `project_members` vers `project_member`.
+- **Unique constraint JPA** : ajout de `@Table(uniqueConstraints)` sur `ProjectMember.java` pour matcher la contrainte Liquibase.
+- **Nettoyage repository** : suppression de la méthode inutilisée `deleteByProjectIdAndUserId()`.
+- **Optimisation `addMember()`** : chargement unique du projet au lieu de deux requêtes.
+- **Endpoint PATCH /members/{userId}** : modification du rôle d'un membre avec `checkOwnership`.
+- **Frontend — Section Membres** : tableau liste + ajout + inline edit rôle + suppression dans `project-detail`, avec conditionnement des boutons par `*jhiHasAnyAuthority`, refetch automatique après chaque mutation, clés i18n fr/en.

@@ -103,6 +103,10 @@ export class ProjectService extends ProjectsService {
     return this.http.delete<void>(`${this.resourceUrl}/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`);
   }
 
+  updateMemberRole(projectId: number, userId: number, role: string): Observable<void> {
+    return this.http.patch<void>(`${this.resourceUrl}/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`, { role });
+  }
+
   getProjectIdentifier(project: Pick<IProject, 'id'>): number {
     return project.id;
   }

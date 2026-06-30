@@ -35,6 +35,105 @@
           </dd>
         </dl>
 
+        <hr />
+
+        <div class="d-flex align-items-center mb-3">
+          <h3 class="mb-0" jhiTranslate="gestionTachesApp.project.members">Members</h3>
+          <button class="btn btn-primary btn-sm ms-2" *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_PROJET_MANAGER']" (click)="toggleAddForm()">
+            <fa-icon icon="user-plus" />&nbsp;<span jhiTranslate="gestionTachesApp.project.member.add">Add member</span>
+          </button>
+        </div>
+
+        @if (showAddForm()) {
+          <div class="card mb-3 border">
+            <div class="card-body">
+              <div class="row g-2 align-items-end">
+                <div class="col-auto">
+                  <select class="form-select" [(ngModel)]="selectedUserId" aria-label="User">
+                    <option [ngValue]="null" disabled jhiTranslate="gestionTachesApp.project.member.selectUser">Select a user</option>
+                    @for (user of users(); track user.id) {
+                      @if (!members().find(m => m.userId === user.id)) {
+                        <option [ngValue]="user.id">{{ user.login }}</option>
+                      }
+                    }
+                  </select>
+                </div>
+                <div class="col-auto">
+                  <input type="text" class="form-control" [(ngModel)]="newMemberRole" placeholder="Role" maxlength="50" />
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-primary" (click)="addMember(projectRef.id)" [disabled]="!selectedUserId()">
+                    <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+                  </button>
+                  <button class="btn btn-secondary ms-1" (click)="toggleAddForm()">
+                    <fa-icon icon="times" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th jhiTranslate="gestionTachesApp.project.member.userLogin">User</th>
+                <th jhiTranslate="gestionTachesApp.project.member.role">Role</th>
+                <th jhiTranslate="gestionTachesApp.project.member.joinedAt">Joined At</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (member of members(); track member.id) {
+                <tr>
+                  <td><fa-icon icon="user" class="me-1" />{{ member.userLogin }}</td>
+                  <td>
+                    @if (editingMemberId() === member.id) {
+                      <div class="d-flex gap-1 align-items-center">
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          style="width: 120px"
+                          [(ngModel)]="editingRole"
+                          maxlength="50"
+                        />
+                        <button class="btn btn-sm btn-primary" (click)="saveRole(projectRef.id, member)">
+                          <fa-icon icon="save" />
+                        </button>
+                        <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">
+                          <fa-icon icon="times" />
+                        </button>
+                      </div>
+                    } @else {
+                      <span class="badge border-primary">{{ member.role }}</span>
+                    }
+                  </td>
+                  <td>{{ member.joinedAt | formatMediumDatetime }}</td>
+                  <td>
+                    <div class="d-flex gap-1" *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_PROJET_MANAGER']">
+                      @if (editingMemberId() !== member.id) {
+                        <button class="btn btn-sm btn-warning" (click)="startEdit(member)">
+                          <fa-icon icon="pencil-alt" />
+                        </button>
+                      }
+                      <button class="btn btn-sm btn-danger" (click)="removeMember(projectRef.id, member.userId!)">
+                        <fa-icon icon="trash-alt" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="text-center text-muted" jhiTranslate="gestionTachesApp.project.member.empty">No members yet</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <hr />
+
         <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
           <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
         </button>

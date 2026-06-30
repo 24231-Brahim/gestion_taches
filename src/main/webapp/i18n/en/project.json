@@ -24,7 +24,24 @@
       "createdAt": "Created At",
       "sprints": "Sprints",
       "epics": "Epics",
-      "issues": "Issues"
+      "issues": "Issues",
+      "members": "Members",
+      "member": {
+        "add": "Add member",
+        "added": "Member added to project",
+        "removed": "Member removed from project",
+        "updated": "Member role updated",
+        "userLogin": "User",
+        "role": "Role",
+        "joinedAt": "Joined At",
+        "selectUser": "Select a user",
+        "empty": "No members yet",
+        "error": {
+          "add": "Error adding member",
+          "remove": "Error removing member",
+          "update": "Error updating role"
+        }
+      }
     }
   }
 }

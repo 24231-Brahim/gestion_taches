@@ -10,7 +10,7 @@ import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 @Entity
-@Table(name = "project_member")
+@Table(name = "project_member", uniqueConstraints = { @UniqueConstraint(columnNames = { "project_id", "user_id" }) })
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class ProjectMember implements Serializable {

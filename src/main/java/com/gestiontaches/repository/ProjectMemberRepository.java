@@ -11,5 +11,4 @@ import org.springframework.stereotype.Repository;
 public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Long> {
     List<ProjectMember> findByProjectId(Long projectId);
     Optional<ProjectMember> findByProjectIdAndUserId(Long projectId, Long userId);
-    void deleteByProjectIdAndUserId(Long projectId, Long userId);
 }

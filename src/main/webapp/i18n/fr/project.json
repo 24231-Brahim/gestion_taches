@@ -24,7 +24,24 @@
       "createdAt": "Created At",
       "sprints": "Sprints",
       "epics": "Epics",
-      "issues": "Issues"
+      "issues": "Issues",
+      "members": "Membres",
+      "member": {
+        "add": "Ajouter un membre",
+        "added": "Membre ajouté au projet",
+        "removed": "Membre retiré du projet",
+        "updated": "Rôle du membre mis à jour",
+        "userLogin": "Utilisateur",
+        "role": "Rôle",
+        "joinedAt": "Date d'ajout",
+        "selectUser": "Sélectionner un utilisateur",
+        "empty": "Aucun membre pour le moment",
+        "error": {
+          "add": "Erreur lors de l'ajout du membre",
+          "remove": "Erreur lors du retrait du membre",
+          "update": "Erreur lors de la mise à jour du rôle"
+        }
+      }
     }
   }
 }

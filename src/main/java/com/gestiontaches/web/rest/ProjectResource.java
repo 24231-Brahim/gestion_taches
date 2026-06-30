@@ -232,4 +232,26 @@ public class ProjectResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
+
+    /**
+     * {@code PATCH  /projects/:id/members/:userId} : update the role of a member.
+     *
+     * @param id the id of the project.
+     * @param userId the id of the user.
+     * @param memberDTO the member DTO with the new role.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)}.
+     */
+    @PatchMapping("/{id}/members/{userId}")
+    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
+    public ResponseEntity<Void> updateProjectMemberRole(
+        @PathVariable("id") Long id,
+        @PathVariable("userId") Long userId,
+        @RequestBody ProjectMemberDTO memberDTO
+    ) {
+        LOG.debug("REST request to update role of user {} in Project {}", userId, id);
+        projectService.updateMemberRole(id, userId, memberDTO);
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .build();
+    }
 }

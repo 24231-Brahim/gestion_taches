@@ -165,8 +165,8 @@ public class ProjectService {
 
     public void addMember(Long projectId, Long userId) {
         LOG.debug("Request to add user {} to Project {}", userId, projectId);
-        checkOwnership(projectId);
         Project project = projectRepository.findById(projectId).orElseThrow(() -> new RuntimeException("Project not found"));
+        checkOwnership(project);
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         if (projectMemberRepository.findByProjectIdAndUserId(projectId, userId).isPresent()) {
             throw new RuntimeException("User is already a member of this project");
@@ -182,6 +182,16 @@ public class ProjectService {
             .findByProjectIdAndUserId(projectId, userId)
             .orElseThrow(() -> new RuntimeException("Member not found"));
         projectMemberRepository.delete(member);
+    }
+
+    public void updateMemberRole(Long projectId, Long userId, ProjectMemberDTO memberDTO) {
+        LOG.debug("Request to update role of user {} in Project {}", userId, projectId);
+        checkOwnership(projectId);
+        ProjectMember member = projectMemberRepository
+            .findByProjectIdAndUserId(projectId, userId)
+            .orElseThrow(() -> new RuntimeException("Member not found"));
+        member.setRole(memberDTO.getRole());
+        projectMemberRepository.save(member);
     }
 
     private void checkOwnership(Long projectId) {
