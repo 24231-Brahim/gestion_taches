@@ -157,6 +157,18 @@ public class ProjectResource {
     }
 
     /**
+     * {@code GET  /projects/members/count} : get the total count of distinct members across all projects.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/members/count")
+    public ResponseEntity<Long> getTotalMemberCount() {
+        LOG.debug("REST request to get total member count");
+        long count = projectService.getTotalMemberCount();
+        return ResponseEntity.ok(count);
+    }
+
+    /**
      * {@code GET  /projects/:id} : get the "id" project.
      *
      * @param id the id of the projectDTO to retrieve.

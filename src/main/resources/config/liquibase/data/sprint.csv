@@ -1,0 +1,5 @@
+id;name;goal;start_date;end_date;status;project_id
+1001;Sprint 1;Set up project infrastructure and initial features;2026-06-25;2026-07-09;ACTIVE;1001
+1002;Sprint 2;Implement core functionality and user testing;2026-07-10;2026-07-24;PLANNED;1001
+1003;Sprint 1;Client onboarding and requirements;2026-06-25;2026-07-09;ACTIVE;1002
+1004;Sprint 2;Deployment and training;2026-07-10;2026-07-24;PLANNED;1002

@@ -15,5 +15,36 @@
     },
     "like": "Si vous aimez JHipster, donnez-nous une étoile sur",
     "github": "GitHub"
+  },
+  "dashboard": {
+    "noData": "Aucune donnée",
+    "loading": "Chargement du tableau de bord...",
+    "error": "Échec du chargement des données",
+    "kpi": {
+      "totalProjects": "Projets Totaux",
+      "activeProjects": "Projets Actifs",
+      "totalTasks": "Tâches Totales",
+      "completedTasks": "Terminées",
+      "overdueTasks": "Tâches en Retard",
+      "teamMembers": "Membres Équipe"
+    },
+    "charts": {
+      "projectProgress": "AVANCEMENT PROJETS",
+      "taskDistribution": "RÉPARTITION TÂCHES"
+    },
+    "lists": {
+      "recentProjects": "PROJETS RÉCENTS",
+      "recentTasks": "TÂCHES RÉCENTES"
+    },
+    "timeline": {
+      "title": "ACTIVITÉ RÉCENTE"
+    },
+    "quickActions": {
+      "title": "ACTIONS RAPIDES",
+      "newProject": "Nouveau Projet",
+      "newIssue": "Nouvelle Tâche",
+      "viewProjects": "Voir Projets",
+      "viewIssues": "Voir Tâches"
+    }
   }
 }

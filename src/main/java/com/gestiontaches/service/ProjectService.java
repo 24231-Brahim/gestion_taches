@@ -194,6 +194,11 @@ public class ProjectService {
         projectMemberRepository.save(member);
     }
 
+    public long getTotalMemberCount() {
+        LOG.debug("Request to get total distinct member count");
+        return projectMemberRepository.countDistinctUsers();
+    }
+
     private void checkOwnership(Long projectId) {
         Project project = projectRepository.findById(projectId).orElseThrow(() -> new RuntimeException("Project not found"));
         checkOwnership(project);

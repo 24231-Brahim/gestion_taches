@@ -11,4 +11,7 @@ import org.springframework.stereotype.Repository;
 public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Long> {
     List<ProjectMember> findByProjectId(Long projectId);
     Optional<ProjectMember> findByProjectIdAndUserId(Long projectId, Long userId);
+
+    @Query("SELECT COUNT(DISTINCT pm.user.id) FROM ProjectMember pm")
+    long countDistinctUsers();
 }

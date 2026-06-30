@@ -375,3 +375,9 @@ Toutes les opérations de modification sur un projet (`delete`, `getMembers`, `a
 - **Optimisation `addMember()`** : chargement unique du projet au lieu de deux requêtes.
 - **Endpoint PATCH /members/{userId}** : modification du rôle d'un membre avec `checkOwnership`.
 - **Frontend — Section Membres** : tableau liste + ajout + inline edit rôle + suppression dans `project-detail`, avec conditionnement des boutons par `*jhiHasAnyAuthority`, refetch automatique après chaque mutation, clés i18n fr/en.
+
+### Dashboard d'accueil
+
+- **DashboardComponent** : 4 appels `httpResource` (projects, issues, doneCount, memberCount), 6 KPI cards computed via signals, graphiques SVG/HTML purs (barres progression + donut), timeline (10 dernières activity), quick actions (4 boutons).
+- **Composants standalone** : `KpiCardComponent`, `DashboardChartsComponent`, `DashboardListsComponent`, `DashboardTimelineComponent`, `DashboardQuickActionsComponent` — tous en `ChangeDetectionStrategy.OnPush`.
+- **Seeds Liquibase** : 7 fichiers CSV (project, sprint, epic, issue, comment, project_member, action_history) chargés via `20260630000000_added_seed_data.xml`.

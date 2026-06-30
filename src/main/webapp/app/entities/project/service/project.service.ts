@@ -95,16 +95,18 @@ export class ProjectService extends ProjectsService {
     return this.http.get<IProjectMember[]>(`${this.resourceUrl}/${encodeURIComponent(id)}/members`);
   }
 
-  addMember(projectId: number, userId: number): Observable<void> {
-    return this.http.post<void>(`${this.resourceUrl}/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`, null);
+  addMember(projectId: number, userId: number): Observable<undefined> {
+    return this.http.post<undefined>(`${this.resourceUrl}/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`, null);
   }
 
-  removeMember(projectId: number, userId: number): Observable<void> {
-    return this.http.delete<void>(`${this.resourceUrl}/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`);
+  removeMember(projectId: number, userId: number): Observable<undefined> {
+    return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`);
   }
 
-  updateMemberRole(projectId: number, userId: number, role: string): Observable<void> {
-    return this.http.patch<void>(`${this.resourceUrl}/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`, { role });
+  updateMemberRole(projectId: number, userId: number, role: string): Observable<undefined> {
+    return this.http.patch<undefined>(`${this.resourceUrl}/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`, {
+      role,
+    });
   }
 
   getProjectIdentifier(project: Pick<IProject, 'id'>): number {

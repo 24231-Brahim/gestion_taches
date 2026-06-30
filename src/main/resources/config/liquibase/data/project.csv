@@ -1,0 +1,3 @@
+id;name;description;project_key;created_at;owner_id
+1001;Alpha;First project for testing and development;ALPHA;2026-06-20 10:00:00;1
+1002;Beta;Second project for client management;BETA;2026-06-22 14:30:00;3

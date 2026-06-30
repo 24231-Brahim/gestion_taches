@@ -36,11 +36,6 @@ import { IUser } from 'app/entities/user/user.model';
 export class ProjectDetail {
   readonly project = input<IProject | null>(null);
 
-  private readonly projectService = inject(ProjectService);
-  private readonly accountService = inject(AccountService);
-  private readonly alertService = inject(AlertService);
-  private readonly userService = inject(UserService);
-
   readonly members = signal<IProjectMember[]>([]);
   readonly showAddForm = signal(false);
   readonly users = signal<IUser[]>([]);
@@ -48,6 +43,11 @@ export class ProjectDetail {
   readonly newMemberRole = signal('MEMBER');
   readonly editingMemberId = signal<number | null>(null);
   readonly editingRole = signal('');
+
+  private readonly projectService = inject(ProjectService);
+  private readonly accountService = inject(AccountService);
+  private readonly alertService = inject(AlertService);
+  private readonly userService = inject(UserService);
 
   constructor() {
     effect(() => {

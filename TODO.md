@@ -93,6 +93,17 @@
 ### Icônes FontAwesome
 
 - [x] Ajout des icônes manquantes dans `font-awesome-icons.ts` : folder, bookmark, bug, comment, paperclip, history, cog, chevron-left, chevron-right, user-circle
+- [x] Ajout des icônes dashboard : rocket, check-circle, exclamation-circle
+
+### Dashboard d'accueil
+
+- [x] Création du composant Dashboard avec grille KPI (6 cartes), graphiques (progress + donut SVG), listes (projets récents + tâches récentes), timeline (activité récente), quick actions
+- [x] Repositionnement Quick Actions entre KPIs et graphiques (full width)
+- [x] Layout Quick Actions en ligne horizontale (flex row, wrap)
+- [x] Correction des 4 cartes KPI vides — ajout des icônes FontAwesome manquantes
+- [x] Ajout du style `.item-meta` manquant dans la liste "Recent Tasks"
+- [x] Données de seed (Liquibase) : 2 projets, 4 sprints, 4 epics, 10 issues, 5 commentaires, 6 membres, 7 actions
+- [x] Bannières loading/error sur le dashboard
 
 ## 📝 À faire (prochaines étapes)
 
