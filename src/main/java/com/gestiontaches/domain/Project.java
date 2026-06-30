@@ -51,15 +51,10 @@ public class Project implements Serializable {
     @JsonIgnoreProperties(value = { "authorities" }, allowSetters = true)
     private User owner;
 
-    @ManyToMany
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JoinTable(
-        name = "project_members",
-        joinColumns = @JoinColumn(name = "project_id", referencedColumnName = "id"),
-        inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id")
-    )
-    @JsonIgnoreProperties(value = { "authorities" }, allowSetters = true)
-    private Set<User> members = new HashSet<>();
+    @JsonIgnoreProperties(value = { "project" }, allowSetters = true)
+    private Set<ProjectMember> projectMembers = new HashSet<>();
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "project")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
@@ -156,26 +151,34 @@ public class Project implements Serializable {
         return this;
     }
 
-    public Set<User> getMembers() {
-        return this.members;
+    public Set<ProjectMember> getProjectMembers() {
+        return this.projectMembers;
     }
 
-    public void setMembers(Set<User> users) {
-        this.members = users;
+    public void setProjectMembers(Set<ProjectMember> projectMembers) {
+        if (this.projectMembers != null) {
+            this.projectMembers.forEach(i -> i.setProject(null));
+        }
+        if (projectMembers != null) {
+            projectMembers.forEach(i -> i.setProject(this));
+        }
+        this.projectMembers = projectMembers;
     }
 
-    public Project members(Set<User> users) {
-        this.setMembers(users);
+    public Project projectMembers(Set<ProjectMember> projectMembers) {
+        this.setProjectMembers(projectMembers);
         return this;
     }
 
-    public Project addMembers(User user) {
-        this.members.add(user);
+    public Project addProjectMember(ProjectMember projectMember) {
+        this.projectMembers.add(projectMember);
+        projectMember.setProject(this);
         return this;
     }
 
-    public Project removeMembers(User user) {
-        this.members.remove(user);
+    public Project removeProjectMember(ProjectMember projectMember) {
+        this.projectMembers.remove(projectMember);
+        projectMember.setProject(null);
         return this;
     }
 

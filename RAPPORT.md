@@ -85,15 +85,16 @@ Le projet a été initié dans le cadre d'un stage de fin d'année (S4) visant �
 
 ### 1.3 Entités du Domaine
 
-| Entité            | Description                                               | Relations clés                                        |
-| ----------------- | --------------------------------------------------------- | ----------------------------------------------------- |
-| **Project**       | Projet racine                                             | owner (User), members (Users), sprints, epics, issues |
-| **Sprint**        | Itération de développement                                | Appartient à un Project                               |
-| **Epic**          | Fonctionnalité transverse                                 | Appartient à un Project                               |
-| **Issue**         | Unité de travail (Story, Bug, Task, Subtask, Improvement) | Appartient à un Project, optionnel : Sprint, Epic     |
-| **Comment**       | Commentaire sur une issue                                 | Lié à une Issue                                       |
-| **Attachment**    | Fichier joint à une issue                                 | Lié à une Issue                                       |
-| **ActionHistory** | Audit des modifications                                   | Lié à une Issue                                       |
+| Entité            | Description                                               | Relations clés                                       |
+| ----------------- | --------------------------------------------------------- | ---------------------------------------------------- |
+| **Project**       | Projet racine                                             | owner (User), projectMembers, sprints, epics, issues |
+| **ProjectMember** | Association membre-équipe (remplace le ManyToMany)        | project (Project), user (User), role, joinedAt       |
+| **Sprint**        | Itération de développement                                | Appartient à un Project                              |
+| **Epic**          | Fonctionnalité transverse                                 | Appartient à un Project                              |
+| **Issue**         | Unité de travail (Story, Bug, Task, Subtask, Improvement) | Appartient à un Project, optionnel : Sprint, Epic    |
+| **Comment**       | Commentaire sur une issue                                 | Lié à une Issue                                      |
+| **Attachment**    | Fichier joint à une issue                                 | Lié à une Issue                                      |
+| **ActionHistory** | Audit des modifications                                   | Lié à une Issue                                      |
 
 ---
 
@@ -236,12 +237,21 @@ L'application suit une architecture **monolithique full-stack** avec séparation
 │ authorities │       │ key (unique) │
 └─────────────┘       │ createdAt    │
         ▲             │ owner ───────┼──► User
-        │ members     │ members ─────┼──► Set<User>
-        │ (ManyToMany)│             │
+        │             │ projectMember│──► Set<ProjectMember>
         │             │ sprintses   │──► Set<Sprint>
         │             │ epicses     │──► Set<Epic>
         │             │ issueses    │──► Set<Issue>
-        └─────────────┴──────────────┘
+        │             └──────────────┘
+        │                      │
+        │             ┌────────▼────────┐
+        └─────────────┤  ProjectMember  │
+                      │────────────────│
+                      │ id             │
+                      │ role           │
+                      │ joinedAt       │
+                      │ project        │──► Project
+                      │ user           │──► User
+                      └────────────────┘
                           │
                 ┌─────────┼──────────┐
                 │         │          │
@@ -357,10 +367,11 @@ L'application suit une architecture **monolithique full-stack** avec séparation
 - **BottomNav** mobile (visible <768px, 4 items : Accueil, Projets, Issues, Settings/Login)
 - **Topbar** avec branding, hamburger mobile, dropdowns (admin, compte, langue)
 - **Boutons brutals** : offset shadow + hover translate
+- **Thème dark/light** : bascule instantanée via `data-theme` + persistance localStorage
 - Design system custom (variables CSS dark/light)
 - **Internationalisation (i18n)** via ngx-translate
 - **Pagination** sur toutes les listes
-- **Gestion des erreurs** avec AlertService sur le composant Project
+- **Gestion des erreurs** avec AlertService sur tous les composants CRUD (Project, Sprint, Epic, Issue, Comment, Attachment, ActionHistory)
 
 ### 5.7 Données de Seed
 
@@ -395,12 +406,12 @@ L'application suit une architecture **monolithique full-stack** avec séparation
 
 ### 7.1 Priorité Haute
 
-- [ ] **Gestion des erreurs frontend unifiée** : appliquer le fix `onSaveError()` avec `AlertService` sur tous les composants (Sprint, Epic, Issue, Comment, Attachment, ActionHistory)
+- [x] **Gestion des erreurs frontend unifiée** : appliquer le fix `onSaveError()` avec `AlertService` sur tous les composants (Sprint, Epic, Issue, Comment, Attachment, ActionHistory)
 - [ ] **Tests des nouveaux rôles** : mettre à jour les `@WithMockUser` dans les tests d'intégration et ajouter des tests pour DEVELOPER et PROJET_MANAGER
 
 ### 7.2 Priorité Moyenne
 
-- [ ] **Thème toggle dark/light** : ajouter un bouton de bascule avec persistance dans localStorage
+- [x] **Thème toggle dark/light** : ajouter un bouton de bascule avec persistance dans localStorage
 - [ ] **Persistance de la sidebar** : sauvegarder l'état collapsed/expanded dans localStorage
 - [ ] **Pages admin dans la sidebar** : ajouter les routes d'administration dans la navigation
 
@@ -454,11 +465,11 @@ L'application suit une architecture **monolithique full-stack** avec séparation
 
 ### 8.5 Phase 5 — Finalisation (Semaine 10)
 
-| Tâche                             | Statut         | Commentaire                         |
-| --------------------------------- | -------------- | ----------------------------------- |
-| Gestion erreurs frontend uniforme | ❌ Non démarré | À appliquer sur tous les composants |
-| Thème toggle dark/light           | ❌ Non démarré | À implémenter                       |
-| Documentation et rapport          | 🔄 En cours    | Présent document                    |
+| Tâche                             | Statut      | Commentaire                                 |
+| --------------------------------- | ----------- | ------------------------------------------- |
+| Gestion erreurs frontend uniforme | ✅ Terminé  | AlertService ajouté sur tous les composants |
+| Thème toggle dark/light           | ✅ Terminé  | ThemeService + localStorage + icônes        |
+| Documentation et rapport          | 🔄 En cours | Présent document                            |
 
 ---
 

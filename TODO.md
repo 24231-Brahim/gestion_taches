@@ -32,11 +32,12 @@
 ### Propriétaire et équipe (Project)
 
 - [x] Ajout de `@ManyToOne User owner` dans `Project.java` — créateur du projet
-- [x] Ajout de `@ManyToMany Set<User> members` dans `Project.java` — équipe du projet
+- [x] Ajout de `@ManyToMany Set<User> members` dans `Project.java` — puis remplacé par `@OneToMany Set<ProjectMember> projectMembers`
+- [x] Création de l'entité `ProjectMember` (id, project, user, role, joinedAt) remplaçant le `@ManyToMany`
 - [x] `ProjectService.save()` : affecte automatiquement l'utilisateur courant comme `owner`
 - [x] `ProjectService.findAll()` : ADMIN voit tout, les autres voient leurs projets uniquement
 - [x] `ProjectService.findOne()` : pareil, filtré par propriétaire
-- [x] Endpoints : `GET/POST/DELETE /api/projects/{id}/members` — gestion d'équipe
+- [x] Endpoints : `GET/POST/DELETE /api/projects/{id}/members` — gestion d'équipe (renvoie `ProjectMemberDTO`)
 - [x] Changement du `@WithMockUser` dans `ProjectResourceIT.java` en `ROLE_ADMIN`
 
 ### Bugs corrigés
@@ -76,13 +77,8 @@
 
 ## 📝 À faire (prochaines étapes)
 
-### Gestion des erreurs frontend
-
-- [x] Appliquer le même fix `onSaveError()` avec `AlertService` sur les autres composants (Sprint, Epic, Issue, Comment, Attachment, ActionHistory)
-
 ### Layout — Finitions
 
-- [x] Ajouter un thème toggle (dark/light) avec persistance locale
 - [ ] Ajouter les pages admin dans la sidebar (User Management, Metrics, Health, Configuration, Logs, API, H2)
 - [ ] Persister l'état collapsed de la sidebar (localStorage)
 

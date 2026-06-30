@@ -33,7 +33,7 @@ public class ProjectDTO implements Serializable {
 
     private String ownerLogin;
 
-    private Set<Long> memberIds = new HashSet<>();
+    private Set<ProjectMemberDTO> projectMembers = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -91,12 +91,12 @@ public class ProjectDTO implements Serializable {
         this.ownerLogin = ownerLogin;
     }
 
-    public Set<Long> getMemberIds() {
-        return memberIds;
+    public Set<ProjectMemberDTO> getProjectMembers() {
+        return projectMembers;
     }
 
-    public void setMemberIds(Set<Long> memberIds) {
-        this.memberIds = memberIds;
+    public void setProjectMembers(Set<ProjectMemberDTO> projectMembers) {
+        this.projectMembers = projectMembers;
     }
 
     @Override

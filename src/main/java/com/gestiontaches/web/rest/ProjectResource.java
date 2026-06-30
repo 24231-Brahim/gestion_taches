@@ -1,11 +1,10 @@
 package com.gestiontaches.web.rest;
 
-import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.ProjectService;
 import com.gestiontaches.service.dto.ProjectDTO;
-import com.gestiontaches.service.dto.UserDTO;
+import com.gestiontaches.service.dto.ProjectMemberDTO;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -15,7 +14,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -195,11 +193,10 @@ public class ProjectResource {
      */
     @GetMapping("/{id}/members")
     @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
-    public ResponseEntity<Set<UserDTO>> getProjectMembers(@PathVariable("id") Long id) {
+    public ResponseEntity<Set<ProjectMemberDTO>> getProjectMembers(@PathVariable("id") Long id) {
         LOG.debug("REST request to get members of Project : {}", id);
-        Set<User> members = projectService.getMembers(id);
-        Set<UserDTO> userDTOs = members.stream().map(UserDTO::new).collect(Collectors.toSet());
-        return ResponseEntity.ok(userDTOs);
+        Set<ProjectMemberDTO> members = projectService.getMembers(id);
+        return ResponseEntity.ok(members);
     }
 
     /**

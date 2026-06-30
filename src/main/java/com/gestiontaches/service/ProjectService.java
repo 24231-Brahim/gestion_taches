@@ -1,15 +1,22 @@
 package com.gestiontaches.service;
 
 import com.gestiontaches.domain.Project;
+import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.User;
+import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
 import com.gestiontaches.service.dto.ProjectDTO;
+import com.gestiontaches.service.dto.ProjectMemberDTO;
 import com.gestiontaches.service.mapper.ProjectMapper;
+import com.gestiontaches.service.mapper.ProjectMemberMapper;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -32,10 +39,22 @@ public class ProjectService {
 
     private final UserRepository userRepository;
 
-    public ProjectService(ProjectRepository projectRepository, ProjectMapper projectMapper, UserRepository userRepository) {
+    private final ProjectMemberRepository projectMemberRepository;
+
+    private final ProjectMemberMapper projectMemberMapper;
+
+    public ProjectService(
+        ProjectRepository projectRepository,
+        ProjectMapper projectMapper,
+        UserRepository userRepository,
+        ProjectMemberRepository projectMemberRepository,
+        ProjectMemberMapper projectMemberMapper
+    ) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
         this.userRepository = userRepository;
+        this.projectMemberRepository = projectMemberRepository;
+        this.projectMemberMapper = projectMemberMapper;
     }
 
     /**
@@ -136,11 +155,12 @@ public class ProjectService {
         projectRepository.deleteById(id);
     }
 
-    public Set<User> getMembers(Long projectId) {
+    public Set<ProjectMemberDTO> getMembers(Long projectId) {
         LOG.debug("Request to get members of Project : {}", projectId);
         Project project = projectRepository.findById(projectId).orElseThrow(() -> new RuntimeException("Project not found"));
         checkOwnership(project);
-        return project.getMembers();
+        List<ProjectMember> members = projectMemberRepository.findByProjectId(projectId);
+        return members.stream().map(projectMemberMapper::toDto).collect(Collectors.toSet());
     }
 
     public void addMember(Long projectId, Long userId) {
@@ -148,17 +168,20 @@ public class ProjectService {
         checkOwnership(projectId);
         Project project = projectRepository.findById(projectId).orElseThrow(() -> new RuntimeException("Project not found"));
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        project.getMembers().add(user);
-        projectRepository.save(project);
+        if (projectMemberRepository.findByProjectIdAndUserId(projectId, userId).isPresent()) {
+            throw new RuntimeException("User is already a member of this project");
+        }
+        ProjectMember member = new ProjectMember().project(project).user(user).role("MEMBER").joinedAt(Instant.now());
+        projectMemberRepository.save(member);
     }
 
     public void removeMember(Long projectId, Long userId) {
         LOG.debug("Request to remove user {} from Project {}", userId, projectId);
         checkOwnership(projectId);
-        Project project = projectRepository.findById(projectId).orElseThrow(() -> new RuntimeException("Project not found"));
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        project.getMembers().remove(user);
-        projectRepository.save(project);
+        ProjectMember member = projectMemberRepository
+            .findByProjectIdAndUserId(projectId, userId)
+            .orElseThrow(() -> new RuntimeException("Member not found"));
+        projectMemberRepository.delete(member);
     }
 
     private void checkOwnership(Long projectId) {

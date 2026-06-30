@@ -7,7 +7,7 @@ import { Observable, map } from 'rxjs';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
-import { IProject, NewProject } from '../project.model';
+import { IProject, IProjectMember, NewProject } from '../project.model';
 
 export type PartialUpdateProject = Partial<IProject> & Pick<IProject, 'id'>;
 
@@ -89,6 +89,18 @@ export class ProjectService extends ProjectsService {
 
   delete(id: number): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
+  }
+
+  getMembers(id: number): Observable<IProjectMember[]> {
+    return this.http.get<IProjectMember[]>(`${this.resourceUrl}/${encodeURIComponent(id)}/members`);
+  }
+
+  addMember(projectId: number, userId: number): Observable<void> {
+    return this.http.post<void>(`${this.resourceUrl}/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`, null);
+  }
+
+  removeMember(projectId: number, userId: number): Observable<void> {
+    return this.http.delete<void>(`${this.resourceUrl}/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`);
   }
 
   getProjectIdentifier(project: Pick<IProject, 'id'>): number {

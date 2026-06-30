@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="20260629000000-1" author="jhipster">
+        <createTable tableName="project_member">
+            <column name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_project_member"/>
+            </column>
+            <column name="project_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+            <column name="role" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+            <column name="joined_at" type="datetime(6)">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20260629000000-2" author="jhipster">
+        <addForeignKeyConstraint baseColumnNames="project_id"
+                                 baseTableName="project_member"
+                                 constraintName="fk_project_member__project_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="project"
+                                 />
+    </changeSet>
+
+    <changeSet id="20260629000000-3" author="jhipster">
+        <addForeignKeyConstraint baseColumnNames="user_id"
+                                 baseTableName="project_member"
+                                 constraintName="fk_project_member__user_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="jhi_user"
+                                 />
+    </changeSet>
+
+    <changeSet id="20260629000000-4" author="jhipster">
+        <addUniqueConstraint columnNames="project_id, user_id"
+                             constraintName="uq_project_member_project_user"
+                             tableName="project_member"
+                             />
+    </changeSet>
+
+    <changeSet id="20260629000000-5" author="jhipster">
+        <comment>Migrate data from project_members join table to project_member entity table</comment>
+        <sql dbms="postgresql">
+            INSERT INTO project_member (id, project_id, user_id, role, joined_at)
+            SELECT
+                nextval('sequence_generator'),
+                pm.project_id,
+                pm.user_id,
+                'MEMBER',
+                NOW()
+            FROM project_members pm
+            WHERE NOT EXISTS (
+                SELECT 1 FROM project_member pm2
+                WHERE pm2.project_id = pm.project_id AND pm2.user_id = pm.user_id
+            )
+        </sql>
+        <sql dbms="h2">
+            INSERT INTO project_member (id, project_id, user_id, role, joined_at)
+            SELECT
+                NEXT VALUE FOR sequence_generator,
+                pm.project_id,
+                pm.user_id,
+                'MEMBER',
+                NOW()
+            FROM project_members pm
+            WHERE NOT EXISTS (
+                SELECT 1 FROM project_member pm2
+                WHERE pm2.project_id = pm.project_id AND pm2.user_id = pm.user_id
+            )
+        </sql>
+    </changeSet>
+
+    <changeSet id="20260629000000-6" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="project_members"/>
+        </preConditions>
+        <dropTable tableName="project_members"/>
+    </changeSet>
+</databaseChangeLog>

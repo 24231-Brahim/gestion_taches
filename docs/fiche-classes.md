@@ -15,8 +15,13 @@ classDiagram
     class Project {
         +String name
         +String description
-        +String key
+        +String project_key
         +Instant createdAt
+    }
+
+    class ProjectMember {
+        +String role
+        +Instant joinedAt
     }
 
     class Sprint {
@@ -110,7 +115,8 @@ classDiagram
     }
 
     User "1" --> "*" Project : possède (owner)
-    Project "*" --> "*" User : équipe (members)
+    Project "1" --> "*" ProjectMember : contient (members)
+    ProjectMember "*" --> "1" User : référence
     Project "1" --> "*" Sprint : contient
     Project "1" --> "*" Epic : contient
     Project "1" --> "*" Issue : contient
@@ -132,7 +138,10 @@ classDiagram
 ## Rôle de Chaque Table
 
 ### Project
-Table racine du système. Représente un projet (ex. une application, un produit). Contient les sprints, epics et issues. Un `key` unique sert d'identifiant court (ex. `PROJ`). Chaque projet a un propriétaire (`owner_id` → `jhi_user`) et une équipe (`project_members`).
+Table racine du système. Représente un projet (ex. une application, un produit). Contient les sprints, epics et issues. Un `key` unique sert d'identifiant court (ex. `PROJ`). Chaque projet a un propriétaire (`owner_id` → `jhi_user`) et une équipe via la table `project_member`.
+
+### ProjectMember
+Table de jointure enrichie entre Project et User. Remplace l'ancienne table de jointure `project_members`. Chaque entrée possède un identifiant unique, un rôle (`MEMBER`, `LEAD`, etc.) et une date d'ajout. Permet une gestion d'équipe plus fine qu'un simple ManyToMany.
 
 ### Sprint
 Itération de développement dans un projet. Regroupe un ensemble d'issues à réaliser sur une période donnée. Peut être PLANIFIÉ, ACTIF, TERMINÉ ou ANNULÉ.
@@ -158,12 +167,12 @@ Trace d'audit détaillant chaque modification d'une issue. Enregistre l'action, 
 
 | Table | Dépend de | Est utilisé par |
 |-------|-----------|-----------------|
-| User | — | Project (owner, members) |
-| Project | User (owner) | Sprint, Epic, Issue |
+| User | — | Project (owner), ProjectMember |
+| Project | User (owner) | Sprint, Epic, Issue, ProjectMember |
+| ProjectMember | Project, User | — |
 | Sprint | Project | Issue |
 | Epic | Project | Issue |
 | Issue | Project, Sprint, Epic | Comment, Attachment, ActionHistory |
 | Comment | Issue | — |
 | Attachment | Issue | — |
 | ActionHistory | Issue | — |
-| project_members | Project, User | — |
