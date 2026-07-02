@@ -4,6 +4,7 @@ import com.gestiontaches.domain.Attachment;
 import com.gestiontaches.repository.AttachmentRepository;
 import com.gestiontaches.service.dto.AttachmentDTO;
 import com.gestiontaches.service.mapper.AttachmentMapper;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,5 +109,11 @@ public class AttachmentService {
     public void delete(Long id) {
         LOG.debug("Request to delete Attachment : {}", id);
         attachmentRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AttachmentDTO> findByIssueId(Long issueId) {
+        LOG.debug("Request to get Attachments for Issue : {}", issueId);
+        return attachmentRepository.findByIssueIdOrderByUploadedAtDesc(issueId).stream().map(attachmentMapper::toDto).toList();
     }
 }

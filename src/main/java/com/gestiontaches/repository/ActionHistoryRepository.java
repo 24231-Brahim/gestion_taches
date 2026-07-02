@@ -1,6 +1,7 @@
 package com.gestiontaches.repository;
 
 import com.gestiontaches.domain.ActionHistory;
+import java.util.List;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -9,4 +10,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface ActionHistoryRepository extends JpaRepository<ActionHistory, Long> {}
+public interface ActionHistoryRepository extends JpaRepository<ActionHistory, Long> {
+    List<ActionHistory> findByIssueIdOrderByCreatedAtDesc(Long issueId);
+}

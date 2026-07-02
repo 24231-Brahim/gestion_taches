@@ -1,8 +1,11 @@
 package com.gestiontaches.web.rest;
 
+import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.CommentRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
+import com.gestiontaches.security.SecurityUtils;
 import com.gestiontaches.service.CommentService;
+import com.gestiontaches.service.UserService;
 import com.gestiontaches.service.dto.CommentDTO;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -43,10 +46,12 @@ public class CommentResource {
     private final CommentService commentService;
 
     private final CommentRepository commentRepository;
+    private final UserService userService;
 
-    public CommentResource(CommentService commentService, CommentRepository commentRepository) {
+    public CommentResource(CommentService commentService, CommentRepository commentRepository, UserService userService) {
         this.commentService = commentService;
         this.commentRepository = commentRepository;
+        this.userService = userService;
     }
 
     /**
@@ -73,10 +78,35 @@ public class CommentResource {
         if (commentDTO.getId() != null) {
             throw new BadRequestAlertException("A new comment cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        User currentUser = userService
+            .getUserWithAuthoritiesByLogin(
+                SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
+                    new BadRequestAlertException("User not found", ENTITY_NAME, "usernotfound")
+                )
+            )
+            .orElseThrow(() -> new BadRequestAlertException("User not found", ENTITY_NAME, "usernotfound"));
+        commentDTO.setAuthor(new com.gestiontaches.service.dto.UserDTO(currentUser));
         commentDTO = commentService.save(commentDTO);
         return ResponseEntity.created(new URI("/api/comments/" + commentDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, commentDTO.getId().toString()))
             .body(commentDTO);
+    }
+
+    private void checkCommentOwnership(Long id) {
+        if (
+            !SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN) &&
+            !SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.PROJET_MANAGER)
+        ) {
+            CommentDTO existing = commentService
+                .findOne(id)
+                .orElseThrow(() -> new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound"));
+            String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
+                new BadRequestAlertException("User not found", ENTITY_NAME, "usernotfound")
+            );
+            if (existing.getAuthor() == null || !currentLogin.equals(existing.getAuthor().getLogin())) {
+                throw new BadRequestAlertException("Access denied: you do not own this comment", ENTITY_NAME, "accessdenied");
+            }
+        }
     }
 
     /**
@@ -115,6 +145,7 @@ public class CommentResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
+        checkCommentOwnership(id);
         commentDTO = commentService.update(commentDTO);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, commentDTO.getId().toString()))
@@ -158,6 +189,7 @@ public class CommentResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
+        checkCommentOwnership(id);
         Optional<CommentDTO> result = commentService.partialUpdate(commentDTO);
 
         return ResponseUtil.wrapOrNotFound(
@@ -172,6 +204,13 @@ public class CommentResource {
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of Comments in body.
      */
+    @GetMapping("/by-issue/{issueId}")
+    public ResponseEntity<List<CommentDTO>> getCommentsByIssue(@PathVariable("issueId") Long issueId) {
+        LOG.debug("REST request to get Comments for Issue : {}", issueId);
+        List<CommentDTO> comments = commentService.findByIssueId(issueId);
+        return ResponseEntity.ok(comments);
+    }
+
     @GetMapping("")
     public ResponseEntity<List<CommentDTO>> getAllComments(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get a page of Comments");
@@ -211,6 +250,7 @@ public class CommentResource {
     )
     public ResponseEntity<Void> deleteComment(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Comment : {}", id);
+        checkCommentOwnership(id);
         commentService.delete(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))

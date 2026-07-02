@@ -5,6 +5,7 @@ import com.gestiontaches.domain.enumeration.Priority;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Objects;
 
 /**
@@ -32,6 +33,10 @@ public class EpicDTO implements Serializable {
     private Instant createdAt;
 
     private Instant updatedAt;
+
+    private LocalDate startDate;
+
+    private LocalDate endDate;
 
     @NotNull
     private ProjectDTO project;
@@ -92,6 +97,22 @@ public class EpicDTO implements Serializable {
         this.updatedAt = updatedAt;
     }
 
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
     public ProjectDTO getProject() {
         return project;
     }
@@ -132,6 +153,8 @@ public class EpicDTO implements Serializable {
             ", priority='" + getPriority() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
+            ", startDate='" + getStartDate() + "'" +
+            ", endDate='" + getEndDate() + "'" +
             ", project=" + getProject() +
             "}";
     }

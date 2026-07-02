@@ -1,156 +1,122 @@
-<div>
-  <h2 id="page-heading" class="page-heading" data-cy="SprintHeading">
-    <span jhiTranslate="gestionTachesApp.sprint.home.title">Sprints</span>
-
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
-        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
-        <span jhiTranslate="gestionTachesApp.sprint.home.refreshListLabel">Actualiser la liste</span>
-      </button>
-
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-sprint"
-        [routerLink]="['/sprint/new']"
+<div class="sprint-page">
+  <div class="sprint-header">
+    <div class="sprint-header-left">
+      <select
+        class="sprint-selector form-control"
+        [ngModel]="selectedSprintId()"
+        (ngModelChange)="selectedSprintId.set($event); onSprintSelect()"
       >
-        <fa-icon icon="plus" />
-        <span jhiTranslate="gestionTachesApp.sprint.home.createLabel">Créer un nouveau Sprint</span>
+        @for (sp of sprints(); track sp.id) {
+          <option [value]="sp.id">{{ sp.name }} ({{ 'gestionTachesApp.SprintStatus.' + (sp.status ?? 'PLANNED') | translate }})</option>
+        }
+      </select>
+      <a [routerLink]="['/sprint/new']" class="btn btn-primary btn-sm">
+        <fa-icon icon="plus" /> {{ 'gestionTachesApp.sprint.home.createLabel' | translate }}
+      </a>
+    </div>
+    <div class="sprint-header-actions">
+      @if (selectedSprint(); as sp) {
+        @if (sp.project) {
+          <a [routerLink]="['/project', sp.project.id, 'view']" class="btn btn-outline-primary btn-sm">
+            <fa-icon icon="folder" /> {{ sp.project.name }}
+          </a>
+        }
+        <a [routerLink]="['/sprint', sp.id, 'edit']" class="btn btn-outline-primary btn-sm">
+          <fa-icon icon="pencil-alt" /> {{ 'entity.action.edit' | translate }}
+        </a>
+      }
+    </div>
+  </div>
+
+  @if (selectedSprint(); as sp) {
+    <div
+      class="sprint-header"
+      style="
+        border: 3px solid var(--color-outline-variant);
+        padding: 16px;
+        box-shadow: 4px 4px 0 var(--color-outline-variant);
+        background: var(--color-surface-container);
+        margin-bottom: 20px;
+      "
+    >
+      <div>
+        <h3 class="sprint-name">{{ sp.name }}</h3>
+        @if (sp.goal) {
+          <p class="sprint-goal">{{ sp.goal }}</p>
+        }
+        <div class="sprint-meta">
+          <span>{{ sp.startDate | formatMediumDate }} — {{ sp.endDate | formatMediumDate }}</span>
+          <span class="status-badge ms-2">{{ 'gestionTachesApp.SprintStatus.' + (sp.status ?? 'PLANNED') | translate }}</span>
+        </div>
+      </div>
+      <div class="sprint-header-actions">
+        @if (sp.status === 'PLANNED') {
+          <button class="btn btn-primary btn-sm" (click)="onStartSprint()" [disabled]="isSaving()">
+            <fa-icon icon="play" /> {{ 'gestionTachesApp.sprint.action.start' | translate }}
+          </button>
+        }
+        @if (sp.status === 'ACTIVE') {
+          <button class="btn btn-success btn-sm" (click)="onCompleteSprint()" [disabled]="isSaving()">
+            <fa-icon icon="check" /> {{ 'gestionTachesApp.sprint.action.complete' | translate }}
+          </button>
+        }
+        @if (sp.status === 'COMPLETED') {
+          <button class="btn btn-warning btn-sm" (click)="onReopenSprint()" [disabled]="isSaving()">
+            <fa-icon icon="undo" /> {{ 'gestionTachesApp.sprint.action.reopen' | translate }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-item" [class.active]="activeTab() === 'board'" (click)="setTab('board')">
+        <fa-icon icon="columns" class="me-1" /> {{ 'gestionTachesApp.sprint.board.tab' | translate }}
+      </button>
+      <button class="tab-item" [class.active]="activeTab() === 'planning'" (click)="setTab('planning')">
+        <fa-icon icon="clipboard-list" class="me-1" /> {{ 'gestionTachesApp.sprint.planning.tab' | translate }}
+      </button>
+      <button class="tab-item" [class.active]="activeTab() === 'burndown'" (click)="setTab('burndown')">
+        <fa-icon icon="chart-line" class="me-1" /> {{ 'gestionTachesApp.sprint.burndown.tab' | translate }}
       </button>
     </div>
-  </h2>
 
-  <jhi-alert-error />
-
-  <jhi-alert />
-
-  <jhi-filter [filters]="filters" />
-
-  @if (sprints().length === 0) {
-    <div class="alert alert-warning" id="no-result">
-      <span jhiTranslate="gestionTachesApp.sprint.home.notFound">Aucun Sprint trouvé</span>
-    </div>
-  } @else {
-    <div class="table-responsive table-entities" id="entities">
-      <table class="table" aria-describedby="page-heading">
-        <thead>
-          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" jhiSortBy="id">
-              <div class="d-flex">
-                <span jhiTranslate="global.field.id">ID</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="name">
-              <div class="d-flex">
-                <span jhiTranslate="gestionTachesApp.sprint.name">Name</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="goal">
-              <div class="d-flex">
-                <span jhiTranslate="gestionTachesApp.sprint.goal">Goal</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="startDate">
-              <div class="d-flex">
-                <span jhiTranslate="gestionTachesApp.sprint.startDate">Start Date</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="endDate">
-              <div class="d-flex">
-                <span jhiTranslate="gestionTachesApp.sprint.endDate">End Date</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="status">
-              <div class="d-flex">
-                <span jhiTranslate="gestionTachesApp.sprint.status">Status</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="project.name">
-              <div class="d-flex">
-                <span jhiTranslate="gestionTachesApp.sprint.project">Project</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (sprint of sprints(); track trackId(sprint)) {
-            <tr data-cy="entityTable">
-              <td>
-                <a [routerLink]="['/sprint', sprint.id, 'view']">{{ sprint.id }}</a>
-              </td>
-              <td>{{ sprint.name }}</td>
-              <td>{{ sprint.goal }}</td>
-              <td>{{ sprint.startDate | formatMediumDate }}</td>
-              <td>{{ sprint.endDate | formatMediumDate }}</td>
-              <td [jhiTranslate]="'gestionTachesApp.SprintStatus.' + (sprint.status ?? 'null')">
-                {{
-                  { null: '', PLANNED: 'PLANNED', ACTIVE: 'ACTIVE', COMPLETED: 'COMPLETED', CANCELLED: 'CANCELLED' }[
-                    sprint.status ?? 'null'
-                  ]
-                }}
-              </td>
-              <td>
-                @if (sprint.project) {
-                  <div>
-                    <a [routerLink]="['/project', sprint.project.id, 'view']">{{ sprint.project.name }}</a>
-                  </div>
-                }
-              </td>
-              <td class="text-end">
-                <div class="btn-group">
-                  <a [routerLink]="['/sprint', sprint.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
-                    <fa-icon icon="eye" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
-                  </a>
-
-                  <a [routerLink]="['/sprint', sprint.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                    <fa-icon icon="pencil-alt" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
-                  </a>
-
-                  <button type="submit" (click)="delete(sprint)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                    <fa-icon icon="times" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  }
-  @if (sprints().length > 0) {
-    <div>
-      <div class="d-flex justify-content-center">
-        <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
-      </div>
-
-      <div class="d-flex justify-content-center">
-        <ngb-pagination
-          [collectionSize]="totalItems()"
-          [page]="page()"
-          [pageSize]="itemsPerPage()"
-          [maxSize]="5"
-          [rotate]="true"
-          [boundaryLinks]="true"
-          (pageChange)="navigateToPage($event)"
+    @switch (activeTab()) {
+      @case ('board') {
+        <jhi-sprint-active-board
+          [sprint]="sp"
+          [issues]="issues()"
+          [canManage]="canManage"
+          (selectIssue)="onSelectIssue($event)"
+          (statusChange)="onStatusChange($event)"
+          (startSprint)="onStartSprint()"
+          (completeSprint)="onCompleteSprint()"
+          (reopenSprint)="onReopenSprint()"
         />
-      </div>
+      }
+      @case ('planning') {
+        <jhi-sprint-backlog-planning
+          [sprint]="sp"
+          [allIssues]="projectIssues()"
+          (assignToSprint)="onAssignToSprint($event)"
+          (removeFromSprint)="onRemoveFromSprint($event)"
+        />
+      }
+      @case ('burndown') {
+        <jhi-sprint-burndown-chart
+          [sprint]="sp"
+          [totalIssues]="issues().length"
+          [doneIssues]="issues().filter(i => i.status === 'DONE').length"
+          [daysLeft]="daysLeft()"
+        />
+      }
+    }
+  } @else {
+    <div class="no-sprint">
+      <fa-icon icon="tasks" size="3x" class="mb-3" />
+      <p jhiTranslate="gestionTachesApp.sprint.home.notFound"></p>
+      <a [routerLink]="['/sprint/new']" class="btn btn-primary">
+        <fa-icon icon="plus" /> {{ 'gestionTachesApp.sprint.home.createLabel' | translate }}
+      </a>
     </div>
   }
 </div>

@@ -34,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @IntegrationTest
 @AutoConfigureMockMvc
-@WithMockUser
+@WithMockUser(authorities = { "ROLE_ADMIN" })
 class ActionHistoryResourceIT {
 
     private static final String DEFAULT_ACTION = "AAAAAAAAAA";
@@ -499,6 +499,28 @@ class ActionHistoryResourceIT {
 
         // Validate the database contains one less item
         assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_DEVELOPER" })
+    void createActionHistory_asDeveloper_shouldSucceed() throws Exception {
+        long databaseSizeBeforeCreate = getRepositoryCount();
+        ActionHistoryDTO actionHistoryDTO = actionHistoryMapper.toDto(actionHistory);
+        restActionHistoryMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(actionHistoryDTO)))
+            .andExpect(status().isCreated());
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_USER" })
+    void createActionHistory_asUser_shouldForbid() throws Exception {
+        ActionHistoryDTO actionHistoryDTO = actionHistoryMapper.toDto(actionHistory);
+        restActionHistoryMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(actionHistoryDTO)))
+            .andExpect(status().isForbidden());
     }
 
     protected long getRepositoryCount() {

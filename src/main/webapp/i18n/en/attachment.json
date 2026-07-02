@@ -21,7 +21,11 @@
       "fileName": "File Name",
       "filePath": "File Path",
       "uploadedAt": "Uploaded At",
-      "issue": "Issue"
+      "issue": "Issue",
+      "form": {
+        "dropzone": "Drop files here or click to browse",
+        "browse": "Browse"
+      }
     }
   }
 }

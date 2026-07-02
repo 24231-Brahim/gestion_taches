@@ -1,26 +1,42 @@
 package com.gestiontaches.web.rest;
 
+import com.gestiontaches.domain.Attachment;
+import com.gestiontaches.domain.Issue;
 import com.gestiontaches.repository.AttachmentRepository;
+import com.gestiontaches.repository.IssueRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.AttachmentService;
 import com.gestiontaches.service.dto.AttachmentDTO;
+import com.gestiontaches.service.dto.IssueDTO;
+import com.gestiontaches.service.mapper.IssueMapper;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -41,12 +57,23 @@ public class AttachmentResource {
     private String applicationName;
 
     private final AttachmentService attachmentService;
-
     private final AttachmentRepository attachmentRepository;
+    private final IssueRepository issueRepository;
+    private final IssueMapper issueMapper;
 
-    public AttachmentResource(AttachmentService attachmentService, AttachmentRepository attachmentRepository) {
+    @Value("${app.upload.dir:uploads}")
+    private String uploadDir;
+
+    public AttachmentResource(
+        AttachmentService attachmentService,
+        AttachmentRepository attachmentRepository,
+        IssueRepository issueRepository,
+        IssueMapper issueMapper
+    ) {
         this.attachmentService = attachmentService;
         this.attachmentRepository = attachmentRepository;
+        this.issueRepository = issueRepository;
+        this.issueMapper = issueMapper;
     }
 
     /**
@@ -56,6 +83,59 @@ public class AttachmentResource {
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new attachmentDTO, or with status {@code 400 (Bad Request)} if the attachment has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
+    @PostMapping("/upload")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
+            "')"
+    )
+    public ResponseEntity<AttachmentDTO> uploadAttachment(@RequestParam("file") MultipartFile file, @RequestParam("issueId") Long issueId)
+        throws URISyntaxException, IOException {
+        LOG.debug("REST request to upload Attachment for Issue : {}", issueId);
+        Issue issue = issueRepository
+            .findById(issueId)
+            .orElseThrow(() -> new BadRequestAlertException("Issue not found", ENTITY_NAME, "idnotfound"));
+        String originalName = file.getOriginalFilename();
+        if (originalName == null || originalName.isBlank()) {
+            throw new BadRequestAlertException("File name is required", ENTITY_NAME, "filenamerequired");
+        }
+        String storedName = UUID.randomUUID() + "_" + originalName;
+        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Files.createDirectories(uploadPath);
+        Path filePath = uploadPath.resolve(storedName);
+        file.transferTo(filePath.toFile());
+        AttachmentDTO attachmentDTO = new AttachmentDTO();
+        attachmentDTO.setFileName(originalName);
+        attachmentDTO.setFilePath(storedName);
+        attachmentDTO.setUploadedAt(Instant.now());
+        attachmentDTO.setIssue(issueMapper.toDto(issue));
+        attachmentDTO = attachmentService.save(attachmentDTO);
+        return ResponseEntity.created(new URI("/api/attachments/" + attachmentDTO.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, attachmentDTO.getId().toString()))
+            .body(attachmentDTO);
+    }
+
+    @GetMapping("/download/{id}")
+    public ResponseEntity<Resource> downloadAttachment(@PathVariable("id") Long id) throws IOException {
+        LOG.debug("REST request to download Attachment : {}", id);
+        AttachmentDTO attachmentDTO = attachmentService
+            .findOne(id)
+            .orElseThrow(() -> new BadRequestAlertException("Attachment not found", ENTITY_NAME, "idnotfound"));
+        Path filePath = Paths.get(uploadDir).toAbsolutePath().normalize().resolve(attachmentDTO.getFilePath());
+        Resource resource = new UrlResource(filePath.toUri());
+        if (!resource.exists() || !resource.isReadable()) {
+            throw new BadRequestAlertException("File not found on disk", ENTITY_NAME, "filenotfound");
+        }
+        return ResponseEntity.ok()
+            .contentType(MediaType.APPLICATION_OCTET_STREAM)
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + attachmentDTO.getFileName() + "\"")
+            .body(resource);
+    }
+
     @PostMapping("")
     @PreAuthorize(
         "hasAnyAuthority('" +
@@ -170,6 +250,13 @@ public class AttachmentResource {
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of Attachments in body.
      */
+    @GetMapping("/by-issue/{issueId}")
+    public ResponseEntity<List<AttachmentDTO>> getAttachmentsByIssue(@PathVariable("issueId") Long issueId) {
+        LOG.debug("REST request to get Attachments for Issue : {}", issueId);
+        List<AttachmentDTO> attachments = attachmentService.findByIssueId(issueId);
+        return ResponseEntity.ok(attachments);
+    }
+
     @GetMapping("")
     public ResponseEntity<List<AttachmentDTO>> getAllAttachments(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get a page of Attachments");

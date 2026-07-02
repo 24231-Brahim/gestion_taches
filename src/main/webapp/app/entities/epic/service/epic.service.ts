@@ -11,9 +11,11 @@ import { IEpic, NewEpic } from '../epic.model';
 
 export type PartialUpdateEpic = Partial<IEpic> & Pick<IEpic, 'id'>;
 
-type RestOf<T extends IEpic | NewEpic> = Omit<T, 'createdAt' | 'updatedAt'> & {
+type RestOf<T extends IEpic | NewEpic> = Omit<T, 'createdAt' | 'updatedAt' | 'startDate' | 'endDate'> & {
   createdAt?: string | null;
   updatedAt?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
 };
 
 export type RestEpic = RestOf<IEpic>;
@@ -47,6 +49,8 @@ export class EpicsService {
       ...restEpic,
       createdAt: restEpic.createdAt ? dayjs(restEpic.createdAt) : undefined,
       updatedAt: restEpic.updatedAt ? dayjs(restEpic.updatedAt) : undefined,
+      startDate: restEpic.startDate ? dayjs(restEpic.startDate) : undefined,
+      endDate: restEpic.endDate ? dayjs(restEpic.endDate) : undefined,
     };
   }
 }
@@ -122,6 +126,8 @@ export class EpicService extends EpicsService {
       ...epic,
       createdAt: epic.createdAt?.toJSON() ?? null,
       updatedAt: epic.updatedAt?.toJSON() ?? null,
+      startDate: epic.startDate?.toJSON() ?? null,
+      endDate: epic.endDate?.toJSON() ?? null,
     };
   }
 

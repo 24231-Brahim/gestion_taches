@@ -23,7 +23,32 @@
       "startDate": "Start Date",
       "endDate": "End Date",
       "status": "Status",
-      "project": "Project"
+      "project": "Project",
+      "board": {
+        "tab": "Board",
+        "emptyColumn": "No issues"
+      },
+      "planning": {
+        "tab": "Planning",
+        "backlog": "Backlog",
+        "sprint": "Sprint",
+        "noBacklog": "All issues are assigned to a sprint",
+        "noIssues": "No issues in this sprint"
+      },
+      "burndown": {
+        "tab": "Burndown",
+        "total": "Total",
+        "done": "Done",
+        "remaining": "Remaining",
+        "velocity": "Velocity",
+        "days": "Days",
+        "issues": "Issues"
+      },
+      "action": {
+        "start": "Start Sprint",
+        "complete": "Complete Sprint",
+        "reopen": "Reopen Sprint"
+      }
     }
   }
 }

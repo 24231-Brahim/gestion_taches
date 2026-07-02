@@ -18,10 +18,14 @@
         "title": "Attachment"
       },
       "id": "ID",
-      "fileName": "File Name",
-      "filePath": "File Path",
-      "uploadedAt": "Uploaded At",
-      "issue": "Issue"
+      "fileName": "Nom du fichier",
+      "filePath": "Chemin du fichier",
+      "uploadedAt": "Uploadé le",
+      "issue": "Issue",
+      "form": {
+        "dropzone": "Déposez les fichiers ici ou cliquez pour parcourir",
+        "browse": "Parcourir"
+      }
     }
   }
 }

@@ -44,7 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 @IntegrationTest
 @ExtendWith(MockitoExtension.class)
 @AutoConfigureMockMvc
-@WithMockUser
+@WithMockUser(authorities = { "ROLE_ADMIN" })
 class SprintResourceIT {
 
     private static final String DEFAULT_NAME = "AAAAAAAAAA";
@@ -876,6 +876,38 @@ class SprintResourceIT {
 
         // Validate the database contains one less item
         assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_PROJET_MANAGER" })
+    void createSprint_asProjetManager_shouldSucceed() throws Exception {
+        long databaseSizeBeforeCreate = getRepositoryCount();
+        SprintDTO sprintDTO = sprintMapper.toDto(sprint);
+        restSprintMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(sprintDTO)))
+            .andExpect(status().isCreated());
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_DEVELOPER" })
+    void createSprint_asDeveloper_shouldForbid() throws Exception {
+        SprintDTO sprintDTO = sprintMapper.toDto(sprint);
+        restSprintMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(sprintDTO)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_USER" })
+    void createSprint_asUser_shouldForbid() throws Exception {
+        SprintDTO sprintDTO = sprintMapper.toDto(sprint);
+        restSprintMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(sprintDTO)))
+            .andExpect(status().isForbidden());
     }
 
     protected long getRepositoryCount() {

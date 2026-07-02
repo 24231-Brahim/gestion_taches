@@ -1,60 +1,89 @@
-<div class="d-flex justify-content-center">
-  <div class="col-12 col-lg-8">
-    @if (sprint(); as sprintRef) {
-      <div>
-        <h2 data-cy="sprintDetailsHeading"><span jhiTranslate="gestionTachesApp.sprint.detail.title">Sprint</span></h2>
-
-        <hr />
-
-        <jhi-alert-error />
-
-        <jhi-alert />
-
-        <dl class="row-md jh-entity-details">
-          <dt><span jhiTranslate="global.field.id">ID</span></dt>
-          <dd>
-            <span>{{ sprintRef.id }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.sprint.name">Name</span></dt>
-          <dd>
-            <span>{{ sprintRef.name }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.sprint.goal">Goal</span></dt>
-          <dd>
-            <span>{{ sprintRef.goal }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.sprint.startDate">Start Date</span></dt>
-          <dd>
-            <span>{{ sprintRef.startDate | formatMediumDate }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.sprint.endDate">End Date</span></dt>
-          <dd>
-            <span>{{ sprintRef.endDate | formatMediumDate }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.sprint.status">Status</span></dt>
-          <dd>
-            <span [jhiTranslate]="'gestionTachesApp.SprintStatus.' + (sprintRef.status ?? 'null')">{{
-              { null: '', PLANNED: 'PLANNED', ACTIVE: 'ACTIVE', COMPLETED: 'COMPLETED', CANCELLED: 'CANCELLED' }[sprintRef.status ?? 'null']
-            }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.sprint.project">Project</span></dt>
-          <dd>
-            @if (sprint()!.project) {
-              <div>
-                <a [routerLink]="['/project', sprint()!.project?.id, 'view']">{{ sprintRef.project?.name }}</a>
-              </div>
-            }
-          </dd>
-        </dl>
-
-        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
-        </button>
-
-        <button type="button" [routerLink]="['/sprint', sprintRef.id, 'edit']" class="btn btn-primary">
-          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
-        </button>
+<div class="sprint-detail-container">
+  @if (sprint(); as sp) {
+    <div class="sprint-header">
+      <div class="sprint-header-info">
+        <div>
+          <h3 class="sprint-name">{{ sp.name }}</h3>
+          @if (sp.goal) {
+            <p class="sprint-goal">{{ sp.goal }}</p>
+          }
+          <div class="sprint-meta">
+            <span>{{ sp.startDate | formatMediumDate }} — {{ sp.endDate | formatMediumDate }}</span>
+            <span class="status-badge ms-2">{{ 'gestionTachesApp.SprintStatus.' + (sp.status ?? 'PLANNED') | translate }}</span>
+          </div>
+          @if (sp.project) {
+            <div class="sprint-meta mt-1">
+              <a [routerLink]="['/project', sp.project.id, 'view']">{{ sp.project.name }}</a>
+            </div>
+          }
+        </div>
       </div>
+      <div class="sprint-header-actions">
+        <a [routerLink]="['/sprint', sp.id, 'edit']" class="btn btn-outline-primary btn-sm">
+          <fa-icon icon="pencil-alt" /> {{ 'entity.action.edit' | translate }}
+        </a>
+        @if (sp.status === 'PLANNED') {
+          <button class="btn btn-primary btn-sm" (click)="onStartSprint()" [disabled]="isSaving()">
+            <fa-icon icon="play" /> {{ 'gestionTachesApp.sprint.action.start' | translate }}
+          </button>
+        }
+        @if (sp.status === 'ACTIVE') {
+          <button class="btn btn-success btn-sm" (click)="onCompleteSprint()" [disabled]="isSaving()">
+            <fa-icon icon="check" /> {{ 'gestionTachesApp.sprint.action.complete' | translate }}
+          </button>
+        }
+        @if (sp.status === 'COMPLETED') {
+          <button class="btn btn-warning btn-sm" (click)="onReopenSprint()" [disabled]="isSaving()">
+            <fa-icon icon="undo" /> {{ 'gestionTachesApp.sprint.action.reopen' | translate }}
+          </button>
+        }
+        <a [routerLink]="['/sprint']" class="btn btn-ghost btn-sm">
+          <fa-icon icon="arrow-left" />
+        </a>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-item" [class.active]="activeTab() === 'board'" (click)="setTab('board')">
+        <fa-icon icon="columns" class="me-1" /> {{ 'gestionTachesApp.sprint.board.tab' | translate }}
+      </button>
+      <button class="tab-item" [class.active]="activeTab() === 'planning'" (click)="setTab('planning')">
+        <fa-icon icon="clipboard-list" class="me-1" /> {{ 'gestionTachesApp.sprint.planning.tab' | translate }}
+      </button>
+      <button class="tab-item" [class.active]="activeTab() === 'burndown'" (click)="setTab('burndown')">
+        <fa-icon icon="chart-line" class="me-1" /> {{ 'gestionTachesApp.sprint.burndown.tab' | translate }}
+      </button>
+    </div>
+
+    @switch (activeTab()) {
+      @case ('board') {
+        <jhi-sprint-active-board
+          [sprint]="sp"
+          [issues]="issues()"
+          [canManage]="canManage"
+          (selectIssue)="onSelectIssue($event)"
+          (statusChange)="onStatusChange($event)"
+          (startSprint)="onStartSprint()"
+          (completeSprint)="onCompleteSprint()"
+          (reopenSprint)="onReopenSprint()"
+        />
+      }
+      @case ('planning') {
+        <jhi-sprint-backlog-planning
+          [sprint]="sp"
+          [allIssues]="projectIssues()"
+          (assignToSprint)="onAssignToSprint($event)"
+          (removeFromSprint)="onRemoveFromSprint($event)"
+        />
+      }
+      @case ('burndown') {
+        <jhi-sprint-burndown-chart
+          [sprint]="sp"
+          [totalIssues]="issues().length"
+          [doneIssues]="issues().filter(i => i.status === 'DONE').length"
+          [daysLeft]="sp.endDate ? daysLeft() : 0"
+        />
+      }
     }
-  </div>
+  }
 </div>

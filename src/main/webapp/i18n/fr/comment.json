@@ -18,9 +18,14 @@
         "title": "Comment"
       },
       "id": "ID",
-      "content": "Content",
-      "createdAt": "Created At",
-      "issue": "Issue"
+      "content": "Contenu",
+      "createdAt": "Créé le",
+      "author": "Auteur",
+      "issue": "Issue",
+      "form": {
+        "placeholder": "Écrire un commentaire...",
+        "submit": "Ajouter"
+      }
     }
   }
 }

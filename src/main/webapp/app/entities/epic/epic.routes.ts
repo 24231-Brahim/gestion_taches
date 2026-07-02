@@ -8,7 +8,7 @@ import EpicResolve from './route/epic-routing-resolve.service';
 const epicRoute: Routes = [
   {
     path: '',
-    loadComponent: () => import('./list/epic').then(m => m.Epic),
+    loadComponent: () => import('./roadmap/epic-roadmap').then(m => m.EpicRoadmap),
     data: {
       defaultSort: `id,${ASC}`,
     },

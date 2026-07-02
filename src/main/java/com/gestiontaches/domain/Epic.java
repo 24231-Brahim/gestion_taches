@@ -8,6 +8,7 @@ import jakarta.validation.constraints.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.LocalDate;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -54,6 +55,12 @@ public class Epic implements Serializable {
 
     @Column(name = "updated_at")
     private Instant updatedAt;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
+    private LocalDate endDate;
 
     @ManyToOne(optional = false)
     @NotNull
@@ -153,6 +160,32 @@ public class Epic implements Serializable {
         this.updatedAt = updatedAt;
     }
 
+    public LocalDate getStartDate() {
+        return this.startDate;
+    }
+
+    public Epic startDate(LocalDate startDate) {
+        this.setStartDate(startDate);
+        return this;
+    }
+
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return this.endDate;
+    }
+
+    public Epic endDate(LocalDate endDate) {
+        this.setEndDate(endDate);
+        return this;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
     public Project getProject() {
         return this.project;
     }
@@ -196,6 +229,8 @@ public class Epic implements Serializable {
             ", priority='" + getPriority() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
+            ", startDate='" + getStartDate() + "'" +
+            ", endDate='" + getEndDate() + "'" +
             "}";
     }
 }

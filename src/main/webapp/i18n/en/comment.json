@@ -20,7 +20,12 @@
       "id": "ID",
       "content": "Content",
       "createdAt": "Created At",
-      "issue": "Issue"
+      "author": "Author",
+      "issue": "Issue",
+      "form": {
+        "placeholder": "Write a comment...",
+        "submit": "Add Comment"
+      }
     }
   }
 }

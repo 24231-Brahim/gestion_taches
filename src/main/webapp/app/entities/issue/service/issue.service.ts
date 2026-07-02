@@ -8,6 +8,7 @@ import { ApplicationConfigService } from 'app/core/config/application-config.ser
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
 import { IIssue, NewIssue } from '../issue.model';
+import { IUser } from 'app/entities/user/user.model';
 
 export type PartialUpdateIssue = Partial<IIssue> & Pick<IIssue, 'id'>;
 
@@ -87,6 +88,16 @@ export class IssueService extends IssuesService {
 
   delete(id: number): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
+  }
+
+  assign(issueId: number, userId: number): Observable<IIssue> {
+    return this.http
+      .patch<RestIssue>(`${this.resourceUrl}/${issueId}/assign`, { userId })
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
+  getAssignableUsers(): Observable<IUser[]> {
+    return this.http.get<IUser[]>(this.applicationConfigService.getEndpointFor('api/users/assignable'));
   }
 
   getIssueIdentifier(issue: Pick<IIssue, 'id'>): number {

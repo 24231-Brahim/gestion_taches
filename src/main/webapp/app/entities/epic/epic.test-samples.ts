@@ -27,6 +27,8 @@ export const sampleWithFullData: IEpic = {
   priority: 'HIGH',
   createdAt: dayjs('2026-06-23T22:35'),
   updatedAt: dayjs('2026-06-23T15:19'),
+  startDate: dayjs('2026-06-01'),
+  endDate: dayjs('2026-06-30'),
 };
 
 export const sampleWithNewData: NewEpic = {

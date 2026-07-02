@@ -34,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @IntegrationTest
 @AutoConfigureMockMvc
-@WithMockUser
+@WithMockUser(authorities = { "ROLE_ADMIN" })
 class CommentResourceIT {
 
     private static final String DEFAULT_CONTENT = "AAAAAAAAAA";
@@ -455,6 +455,28 @@ class CommentResourceIT {
 
         // Validate the database contains one less item
         assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_USER" })
+    void createComment_asUser_shouldSucceed() throws Exception {
+        long databaseSizeBeforeCreate = getRepositoryCount();
+        CommentDTO commentDTO = commentMapper.toDto(comment);
+        restCommentMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(commentDTO)))
+            .andExpect(status().isCreated());
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_USER" })
+    void deleteComment_asUser_shouldForbid() throws Exception {
+        var savedComment = commentRepository.saveAndFlush(comment);
+        restCommentMockMvc
+            .perform(delete(ENTITY_API_URL_ID, savedComment.getId()).accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
     }
 
     protected long getRepositoryCount() {

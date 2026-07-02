@@ -307,6 +307,12 @@ public class UserService {
         return authorityRepository.findAll().stream().map(Authority::getName).toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<UserDTO> getAssignableUsers() {
+        List<String> assignableRoles = List.of(AuthoritiesConstants.DEVELOPER, AuthoritiesConstants.PROJET_MANAGER);
+        return userRepository.findAllByAuthorityNames(assignableRoles).stream().map(UserDTO::new).toList();
+    }
+
     private void clearUserCaches(User user) {
         Objects.requireNonNull(cacheManager.getCache(UserRepository.USERS_BY_LOGIN_CACHE)).evictIfPresent(user.getLogin());
         if (user.getEmail() != null) {

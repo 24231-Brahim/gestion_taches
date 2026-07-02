@@ -55,6 +55,18 @@ public class PublicUserResource {
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 
+    /**
+     * {@code GET /users/assignable} : get all users with DEVELOPER or PROJET_MANAGER role.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the list of assignable users.
+     */
+    @GetMapping("/users/assignable")
+    public ResponseEntity<List<UserDTO>> getAssignableUsers() {
+        LOG.debug("REST request to get all assignable users");
+        List<UserDTO> users = userService.getAssignableUsers();
+        return ResponseEntity.ok(users);
+    }
+
     private boolean onlyContainsAllowedProperties(Pageable pageable) {
         return pageable.getSort().stream().map(Sort.Order::getProperty).allMatch(ALLOWED_ORDERED_PROPERTIES::contains);
     }

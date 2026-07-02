@@ -105,20 +105,57 @@
 - [x] Données de seed (Liquibase) : 2 projets, 4 sprints, 4 epics, 10 issues, 5 commentaires, 6 membres, 7 actions
 - [x] Bannières loading/error sur le dashboard
 
-## 📝 À faire (prochaines étapes)
+### Issue — Refactoring complet (Jira-like)
 
-### Layout — Finitions
+- [x] Backend : ajout de `assignee` (User many-to-one) dans `Issue.java`, `IssueDTO.java`, `IssueMapper.java`
+- [x] Liquibase : nouveau changelog `20260701000001_added_issue_assignee.xml` (FK `assignee_id` → `jhi_user`)
+- [x] Issue list refactored : onglets Backlog (table paginée) / Board (kanban), recherche textuelle, tri/filtres existants
+- [x] IssueKanbanBoard : drag-and-drop par colonne `IssueStatus`, cartes compactes (type, priorité, assigné), `@HostListener('document:dragend')`
+- [x] IssueDetailPanel : drawer latéral avec statut (select), description éditable, infos (sprint, epic, priority, type, dates, project), sections skeleton (comments, attachments, history)
+- [x] IssueHelper (`issue-helper.ts`) : maps couleur/icône/label pour IssueType, Priority, IssueStatus
+
+### Epic — Roadmap view
+
+- [x] Backend : ajout de `startDate` / `endDate` (LocalDate) dans `Epic.java`, `EpicDTO.java`
+- [x] Liquibase : nouveau changelog `20260701000000_added_epic_dates.xml` (colonnes `start_date`, `end_date`)
+- [x] EpicRoadmap : timeline horizontale barres par epic, filtre par statut, barre de progression %, responsive verticale mobile
+- [x] Route epic par défaut → `EpicRoadmap`
+
+### Frontend — i18n & icons
+
+- [x] Ajout icônes FontAwesome : `faArrowDown`, `faArrowUp`, `faClipboardList`, `faColumns`, `faExclamationTriangle`, `faGripVertical`, `faLayerGroup`, `faThLarge`, `faTimesCircle`, `faUserCheck`
+- [x] Clés i18n (en/fr) : `issue.home.backlog/board/search`, `issue.assignee`, `epic.home.roadmap/details`, `epic.startDate/endDate`, `global.messages.empty/notAssigned/unassigned`
+
+## 📝 À faire (prochaines étapes)
 
 - [ ] Ajouter les pages admin dans la sidebar (User Management, Metrics, Health, Configuration, Logs, API, H2)
 - [ ] Persister l'état collapsed de la sidebar (localStorage)
+- [ ] Corriger les erreurs TS dans `sprint.spec.ts` pour permettre `ng test`
+- [ ] Ajouter une page de liste des notifications complète (avec route dédiée)
+- [ ] Tester le flux assignation + notification avec l'UI
 
-### Tests
+### Règles métier — Ownership Comment
 
-- [ ] Vérifier que les `@WithMockUser` dans les tests IT sont à jour avec les nouveaux rôles
-- [ ] Ajouter des tests pour les nouveaux rôles DEVELOPER et PROJET_MANAGER
+- [x] `CommentResource.checkCommentOwnership()` : seul l'auteur du commentaire (ou ADMIN/PROJET_MANAGER) peut PUT/PATCH/DELETE
+- [x] Lève `BadRequestAlertException("Access denied")` si non autorisé
 
-### Fonctionnalités
+### Assignation des issues
 
-- [ ] Définir les règles métier par entité (qui peut faire quoi)
-- [ ] Implémenter la logique d'assignation des issues (uniquement DEVELOPER et PROJET_MANAGER)
-- [ ] Ajouter un système de notification quand une issue est assignée
+- [x] `PATCH /api/issues/{id}/assign` dans `IssueResource` — validation du rôle DEVELOPER ou PROJET_MANAGER
+- [x] `IssueService.assign()` — set l'assignee JPA et save + crée une notification
+- [x] `GET /api/users/assignable` dans `PublicUserResource` — liste des DEVELOPER + PROJET_MANAGER
+- [x] `UserRepository.findAllByAuthorityNames()` + `UserService.getAssignableUsers()`
+- [x] Frontend `IssueService.assign()` + `getAssignableUsers()` dans `issue.service.ts`
+- [x] Frontend `IssueDetailPanel` — selecteur d'assignee (dropdown avec lazy load via `effect`)
+- [x] `PATCH /api/issues/{id}/assign` crée une notification avec message "[username] vous a assigné à l'issue #{id} : {title}"
+
+### Notifications
+
+- [x] Entité `Notification.java` — id, userId, message, issueId, issueTitle, isRead, createdAt
+- [x] DTO `NotificationDTO.java`, Mapper `NotificationMapper.java`
+- [x] Repository `NotificationRepository.java` — findByUserId, countUnreadByUserId
+- [x] Service `NotificationService.java` — save, partialUpdate, findByUserId, countUnread
+- [x] Resource `NotificationResource.java` — GET /api/notifications, GET /api/notifications/unread-count, PATCH /{id}/read
+- [x] Liquibase changelog `20260702000000_added_entity_Notification.xml` inclus dans `master.xml`
+- [x] Frontend `NotificationService` — polling toutes les 30s, signal `unreadCount` + `notifications`
+- [x] Navbar — icône `faBell` avec badge du nombre non lu, dropdown liste des notifications

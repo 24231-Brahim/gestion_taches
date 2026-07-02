@@ -1,0 +1,45 @@
+<div class="kanban-board">
+  @for (col of getColumns(); track col.status) {
+    <div
+      class="kanban-column"
+      [class.kanban-column-drag-over]="dragOverStatus === col.status"
+      (dragover)="onDragOver($event, col.status)"
+      (dragleave)="onDragLeave()"
+      (drop)="onDrop($event, col.status)"
+    >
+      <div class="kanban-column-header" [style.border-top-color]="statusBadges[col.status]?.color">
+        <span class="kanban-column-title">{{ 'gestionTachesApp.IssueStatus.' + col.status | translate }}</span>
+        <span class="kanban-column-count">{{ col.issues.length }}</span>
+      </div>
+      <div class="kanban-column-body">
+        @for (issue of col.issues; track issue.id) {
+          <div
+            class="kanban-card"
+            draggable="true"
+            (dragstart)="onDragStart(issue)"
+            (click)="onIssueClick(issue)"
+            [class.kanban-card-dragging]="dragIssueId === issue.id"
+          >
+            <div class="kanban-card-top">
+              <fa-icon
+                [icon]="typeIcons[issue.type ?? 'STORY']"
+                [style.color]="typeColors[issue.type ?? 'STORY']"
+                [title]="'gestionTachesApp.IssueType.' + (issue.type ?? 'null') | translate"
+              />
+              <fa-icon
+                [icon]="priorityIcons[issue.priority ?? 'MEDIUM']"
+                [style.color]="priorityColors[issue.priority ?? 'MEDIUM']"
+                [title]="'gestionTachesApp.Priority.' + (issue.priority ?? 'null') | translate"
+              />
+              <span class="kanban-card-id">#{{ issue.id }}</span>
+            </div>
+            <div class="kanban-card-title">{{ issue.title }}</div>
+            <div class="kanban-card-footer">
+              <span class="assignee-initials">{{ getInitials(issue.assignee?.login) }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

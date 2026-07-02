@@ -381,3 +381,80 @@ Toutes les opérations de modification sur un projet (`delete`, `getMembers`, `a
 - **DashboardComponent** : 4 appels `httpResource` (projects, issues, doneCount, memberCount), 6 KPI cards computed via signals, graphiques SVG/HTML purs (barres progression + donut), timeline (10 dernières activity), quick actions (4 boutons).
 - **Composants standalone** : `KpiCardComponent`, `DashboardChartsComponent`, `DashboardListsComponent`, `DashboardTimelineComponent`, `DashboardQuickActionsComponent` — tous en `ChangeDetectionStrategy.OnPush`.
 - **Seeds Liquibase** : 7 fichiers CSV (project, sprint, epic, issue, comment, project_member, action_history) chargés via `20260630000000_added_seed_data.xml`.
+
+---
+
+## Issue — Refactoring complet (Jira-like, Juillet 2026)
+
+### Architecture
+
+```
+issue/
+├── list/issue.ts/.html          → Onglets Backlog (table) / Board (kanban), search
+├── kanban/issue-kanban-board.ts/.html → Colonnes drag-and-drop par IssueStatus
+├── detail/issue-detail-panel.ts/.html  → Drawer latéral avec infos + inline edit
+├── issue-helper.ts              → Maps couleur/icône/label (IssueType, Priority, Status)
+├── issue.model.ts               + assignee (UserDTO)
+└── service/issue.service.ts     (inchangé)
+```
+
+### Composants
+
+| Composant          | Signal Inputs / Outputs             | Description                                       |
+| ------------------ | ----------------------------------- | ------------------------------------------------- |
+| `Issue (list)`     | —                                   | Onglets Backlog/Board, search, pagination, drawer |
+| `IssueKanbanBoard` | `issues: IIssue[]`, `selectIssue`   | 4 colonnes (TODO, IN_PROGRESS, DONE, CANCELLED)   |
+| `IssueDetailPanel` | `issue: IIssue`, `visible: boolean` | Drawer overlay + sidebar + sections               |
+
+### Drawer (IssueDetailPanel)
+
+Layout : overlay → drawer flex-row (main 2/3 + sidebar 1/3).
+
+- Main : header (type icon + badge + title) → description (textarea inline edit) → metadata sections (sprint, epic, comments placeholder, attachments placeholder, history placeholder).
+- Sidebar : status (select → `partialUpdate`), assignee (avatar + login), priority (icon + label), type (icon + label), dates (createdAt, updatedAt), project.
+
+### Kanban (IssueKanbanBoard)
+
+- 4 colonnes générées depuis `Object.keys(IssueStatus)`.
+- Drag-and-drop natif HTML5 (`dragstart`, `dragover`, `drop`, `dragend`).
+- `partialUpdate` optimiste sur drop → rollback message via `AlertService`.
+- Cartes : type icon + id + title + priority icon + assignee initials.
+
+### Epic — Roadmap view
+
+```
+epic/
+├── roadmap/epic-roadmap.ts/.html  → Timeline horizontale
+├── epic.model.ts                  + startDate, endDate
+├── epic.routes.ts                 → default → EpicRoadmap
+└── service/epic.service.ts       + LocalDate conversion
+```
+
+- Roadmap ligne par epic : barre de progression (calculée via doneIssues/totalIssues), dates (start → end), status dot + label.
+- Filtre client-side par statut (select).
+- Légende en bas : statuts avec `keyvalue` pipe + `statusColors`.
+- Responsive : flex-column sur mobile (<768px).
+
+### Backend — Nouveaux champs
+
+#### Issue.assignee
+
+| Fichier            | Changement                                                                |
+| ------------------ | ------------------------------------------------------------------------- |
+| `Issue.java`       | `@ManyToOne User assignee`                                                |
+| `IssueDTO.java`    | `UserDTO assignee`                                                        |
+| `IssueMapper.java` | `@Mapping(target = "assignee", source = "assignee")` + `toDtoUserLogin()` |
+
+#### Epic.startDate / endDate
+
+| Fichier        | Changement                                 |
+| -------------- | ------------------------------------------ |
+| `Epic.java`    | `LocalDate startDate`, `LocalDate endDate` |
+| `EpicDTO.java` | `LocalDate startDate`, `LocalDate endDate` |
+
+### Notes
+
+- Les sections Comments, Attachments, History dans le drawer sont des placeholders vides (affichent "notFound" i18n). L'implémentation réelle nécessitera les formulaires de création + listes.
+- Le drawer utilise `FormsModule` + `[(ngModel)]` pour l'édition inline de la description. La sauvegarde se fait via `partialUpdate` à la perte de focus (`(blur)`).
+- Les icônes FontAwesome ont été ajoutées de manière atomique dans `font-awesome-icons.ts` pour le tree-shaking.
+- Les clés i18n suivent le pattern JHipster `gestionTachesApp.{entity}.{field}` sauf pour les globales (`global.messages.*`).

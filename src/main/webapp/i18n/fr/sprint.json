@@ -18,12 +18,37 @@
         "title": "Sprint"
       },
       "id": "ID",
-      "name": "Name",
-      "goal": "Goal",
-      "startDate": "Start Date",
-      "endDate": "End Date",
-      "status": "Status",
-      "project": "Project"
+      "name": "Nom",
+      "goal": "Objectif",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "status": "Statut",
+      "project": "Projet",
+      "board": {
+        "tab": "Tableau",
+        "emptyColumn": "Aucune issue"
+      },
+      "planning": {
+        "tab": "Planification",
+        "backlog": "Backlog",
+        "sprint": "Sprint",
+        "noBacklog": "Toutes les issues sont affectées à un sprint",
+        "noIssues": "Aucune issue dans ce sprint"
+      },
+      "burndown": {
+        "tab": "Burndown",
+        "total": "Total",
+        "done": "Terminé",
+        "remaining": "Restant",
+        "velocity": "Vélocité",
+        "days": "Jours",
+        "issues": "Issues"
+      },
+      "action": {
+        "start": "Démarrer",
+        "complete": "Terminer",
+        "reopen": "Rouvrir"
+      }
     }
   }
 }

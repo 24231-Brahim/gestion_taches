@@ -6,7 +6,9 @@
         "refreshListLabel": "Actualiser la liste",
         "createLabel": "Créer un nouveau Epic",
         "createOrEditLabel": "Créer ou éditer un Epic",
-        "notFound": "Aucun Epic trouvé"
+        "notFound": "Aucun Epic trouvé",
+        "roadmap": "Roadmap Epic",
+        "details": "Détails Epic"
       },
       "created": "Un nouveau Epic a été créé avec l'identifiant {{ param }}",
       "updated": "Le Epic avec l'identifiant {{ param }} a été mis à jour",
@@ -22,9 +24,11 @@
       "description": "Description",
       "status": "Status",
       "priority": "Priority",
-      "createdAt": "Created At",
-      "updatedAt": "Updated At",
-      "project": "Project"
+      "createdAt": "Créé le",
+      "updatedAt": "Mis à jour le",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "project": "Projet"
     }
   }
 }

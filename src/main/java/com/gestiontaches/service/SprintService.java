@@ -1,6 +1,7 @@
 package com.gestiontaches.service;
 
 import com.gestiontaches.domain.Sprint;
+import com.gestiontaches.domain.enumeration.SprintStatus;
 import com.gestiontaches.repository.SprintRepository;
 import com.gestiontaches.service.dto.SprintDTO;
 import com.gestiontaches.service.mapper.SprintMapper;
@@ -38,6 +39,7 @@ public class SprintService {
      */
     public SprintDTO save(SprintDTO sprintDTO) {
         LOG.debug("Request to save Sprint : {}", sprintDTO);
+        validateSingleActiveSprint(sprintDTO);
         Sprint sprint = sprintMapper.toEntity(sprintDTO);
         sprint = sprintRepository.save(sprint);
         return sprintMapper.toDto(sprint);
@@ -51,6 +53,7 @@ public class SprintService {
      */
     public SprintDTO update(SprintDTO sprintDTO) {
         LOG.debug("Request to update Sprint : {}", sprintDTO);
+        validateSingleActiveSprint(sprintDTO);
         Sprint sprint = sprintMapper.toEntity(sprintDTO);
         sprint = sprintRepository.save(sprint);
         return sprintMapper.toDto(sprint);
@@ -69,11 +72,25 @@ public class SprintService {
             .findById(sprintDTO.getId())
             .map(existingSprint -> {
                 sprintMapper.partialUpdate(existingSprint, sprintDTO);
-
+                validateSingleActiveSprint(sprintMapper.toDto(existingSprint));
                 return existingSprint;
             })
             .map(sprintRepository::save)
             .map(sprintMapper::toDto);
+    }
+
+    private void validateSingleActiveSprint(SprintDTO sprintDTO) {
+        if (sprintDTO.getStatus() == SprintStatus.ACTIVE && sprintDTO.getProject() != null && sprintDTO.getProject().getId() != null) {
+            Optional<Sprint> existingActive = sprintRepository.findByProjectIdAndStatus(
+                sprintDTO.getProject().getId(),
+                SprintStatus.ACTIVE
+            );
+            existingActive.ifPresent(s -> {
+                if (!s.getId().equals(sprintDTO.getId())) {
+                    throw new RuntimeException("A project can only have one active sprint at a time");
+                }
+            });
+        }
     }
 
     /**

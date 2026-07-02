@@ -37,5 +37,9 @@
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
     <include file="config/liquibase/changelog/20260625000000_added_entity_Project_owner.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260629000000_added_entity_ProjectMember.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20260630000000_added_seed_data.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260630000000_added_seed_data.xml" relativeToChangelogFile="false" context="prod"/>
+    <include file="config/liquibase/changelog/20260701000000_added_epic_dates.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260701000001_added_issue_assignee.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260701000002_added_comment_author.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260702000000_added_entity_Notification.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

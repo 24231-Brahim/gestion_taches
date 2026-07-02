@@ -1,6 +1,7 @@
 package com.gestiontaches.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.gestiontaches.domain.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serial;
@@ -40,6 +41,9 @@ public class Comment implements Serializable {
     @NotNull
     @JsonIgnoreProperties(value = { "commentses", "attachmentses", "histories", "sprint", "epic", "project" }, allowSetters = true)
     private Issue issue;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User author;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -92,6 +96,19 @@ public class Comment implements Serializable {
 
     public Comment issue(Issue issue) {
         this.setIssue(issue);
+        return this;
+    }
+
+    public User getAuthor() {
+        return this.author;
+    }
+
+    public void setAuthor(User author) {
+        this.author = author;
+    }
+
+    public Comment author(User author) {
+        this.setAuthor(author);
         return this;
     }
 

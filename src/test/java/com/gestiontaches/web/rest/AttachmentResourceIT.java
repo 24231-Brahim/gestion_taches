@@ -34,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @IntegrationTest
 @AutoConfigureMockMvc
-@WithMockUser
+@WithMockUser(authorities = { "ROLE_ADMIN" })
 class AttachmentResourceIT {
 
     private static final String DEFAULT_FILE_NAME = "AAAAAAAAAA";
@@ -489,6 +489,28 @@ class AttachmentResourceIT {
 
         // Validate the database contains one less item
         assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_DEVELOPER" })
+    void createAttachment_asDeveloper_shouldSucceed() throws Exception {
+        long databaseSizeBeforeCreate = getRepositoryCount();
+        AttachmentDTO attachmentDTO = attachmentMapper.toDto(attachment);
+        restAttachmentMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(attachmentDTO)))
+            .andExpect(status().isCreated());
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_USER" })
+    void createAttachment_asUser_shouldForbid() throws Exception {
+        AttachmentDTO attachmentDTO = attachmentMapper.toDto(attachment);
+        restAttachmentMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(attachmentDTO)))
+            .andExpect(status().isForbidden());
     }
 
     protected long getRepositoryCount() {

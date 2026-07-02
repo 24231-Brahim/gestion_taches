@@ -19,6 +19,7 @@ export interface IIssue {
   sprint?: Pick<ISprint, 'id' | 'name'> | null;
   epic?: Pick<IEpic, 'id' | 'title'> | null;
   project?: Pick<IProject, 'id' | 'name'> | null;
+  assignee?: { id: number; login: string } | null;
 }
 
 export type NewIssue = Omit<IIssue, 'id'> & { id: null };

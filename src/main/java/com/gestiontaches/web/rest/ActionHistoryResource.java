@@ -171,6 +171,13 @@ public class ActionHistoryResource {
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of Action Histories in body.
      */
+    @GetMapping("/by-issue/{issueId}")
+    public ResponseEntity<List<ActionHistoryDTO>> getHistoriesByIssue(@PathVariable("issueId") Long issueId) {
+        LOG.debug("REST request to get ActionHistories for Issue : {}", issueId);
+        List<ActionHistoryDTO> histories = actionHistoryService.findByIssueId(issueId);
+        return ResponseEntity.ok(histories);
+    }
+
     @GetMapping("")
     public ResponseEntity<List<ActionHistoryDTO>> getAllActionHistories(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get a page of ActionHistories");

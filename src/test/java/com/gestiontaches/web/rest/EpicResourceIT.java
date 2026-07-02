@@ -45,7 +45,7 @@ import org.springframework.transaction.annotation.Transactional;
 @IntegrationTest
 @ExtendWith(MockitoExtension.class)
 @AutoConfigureMockMvc
-@WithMockUser
+@WithMockUser(authorities = { "ROLE_ADMIN" })
 class EpicResourceIT {
 
     private static final String DEFAULT_TITLE = "AAAAAAAAAA";
@@ -868,6 +868,38 @@ class EpicResourceIT {
 
         // Validate the database contains one less item
         assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_PROJET_MANAGER" })
+    void createEpic_asProjetManager_shouldSucceed() throws Exception {
+        long databaseSizeBeforeCreate = getRepositoryCount();
+        EpicDTO epicDTO = epicMapper.toDto(epic);
+        restEpicMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(epicDTO)))
+            .andExpect(status().isCreated());
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_DEVELOPER" })
+    void createEpic_asDeveloper_shouldForbid() throws Exception {
+        EpicDTO epicDTO = epicMapper.toDto(epic);
+        restEpicMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(epicDTO)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_USER" })
+    void createEpic_asUser_shouldForbid() throws Exception {
+        EpicDTO epicDTO = epicMapper.toDto(epic);
+        restEpicMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(epicDTO)))
+            .andExpect(status().isForbidden());
     }
 
     protected long getRepositoryCount() {

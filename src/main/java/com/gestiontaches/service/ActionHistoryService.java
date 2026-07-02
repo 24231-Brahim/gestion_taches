@@ -4,6 +4,7 @@ import com.gestiontaches.domain.ActionHistory;
 import com.gestiontaches.repository.ActionHistoryRepository;
 import com.gestiontaches.service.dto.ActionHistoryDTO;
 import com.gestiontaches.service.mapper.ActionHistoryMapper;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,5 +109,11 @@ public class ActionHistoryService {
     public void delete(Long id) {
         LOG.debug("Request to delete ActionHistory : {}", id);
         actionHistoryRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ActionHistoryDTO> findByIssueId(Long issueId) {
+        LOG.debug("Request to get ActionHistories for Issue : {}", issueId);
+        return actionHistoryRepository.findByIssueIdOrderByCreatedAtDesc(issueId).stream().map(actionHistoryMapper::toDto).toList();
     }
 }

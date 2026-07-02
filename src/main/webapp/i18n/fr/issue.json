@@ -6,7 +6,10 @@
         "refreshListLabel": "Actualiser la liste",
         "createLabel": "Créer un nouveau Issue",
         "createOrEditLabel": "Créer ou éditer un Issue",
-        "notFound": "Aucun Issue trouvé"
+        "notFound": "Aucun Issue trouvé",
+        "backlog": "Backlog",
+        "board": "Tableau",
+        "search": "Rechercher des issues..."
       },
       "created": "Un nouveau Issue a été créé avec l'identifiant {{ param }}",
       "updated": "Le Issue avec l'identifiant {{ param }} a été mis à jour",
@@ -30,7 +33,8 @@
       "history": "History",
       "sprint": "Sprint",
       "epic": "Epic",
-      "project": "Project"
+      "project": "Project",
+      "assignee": "Assigné"
     }
   }
 }

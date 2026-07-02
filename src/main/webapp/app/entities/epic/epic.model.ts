@@ -12,6 +12,8 @@ export interface IEpic {
   priority?: keyof typeof Priority | null;
   createdAt?: dayjs.Dayjs | null;
   updatedAt?: dayjs.Dayjs | null;
+  startDate?: dayjs.Dayjs | null;
+  endDate?: dayjs.Dayjs | null;
   project?: Pick<IProject, 'id' | 'name'> | null;
 }
 

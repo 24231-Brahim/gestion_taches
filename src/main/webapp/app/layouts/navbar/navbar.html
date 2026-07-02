@@ -20,6 +20,33 @@
         }
       </a>
 
+      @if (account() !== null) {
+        <div ngbDropdown class="topbar-dropdown" display="dynamic" data-cy="notificationMenu">
+          <a class="topbar-icon-btn position-relative" ngbDropdownToggle href="javascript:void(0);" id="notification-menu">
+            <fa-icon icon="bell" />
+            @if (notificationService.unreadCount() > 0) {
+              <span class="notification-badge">{{ notificationService.unreadCount() }}</span>
+            }
+          </a>
+          <div class="dropdown-menu dropdown-menu-end notification-dropdown" ngbDropdownMenu aria-labelledby="notification-menu">
+            @if (notificationService.notifications().length === 0) {
+              <div class="dropdown-item text-muted text-center" jhiTranslate="global.messages.noNotifications"></div>
+            }
+            @for (notif of notificationService.notifications(); track notif.id) {
+              <a
+                class="dropdown-item notification-item"
+                [class.unread]="!notif.isRead"
+                href="javascript:void(0)"
+                (click)="markNotificationRead(notif); collapseNavbar()"
+              >
+                <div class="notification-message">{{ notif.message }}</div>
+                <small class="notification-date text-muted">{{ notif.createdAt | date: 'short' }}</small>
+              </a>
+            }
+          </div>
+        </div>
+      }
+
       @if (languages && languages.length > 1) {
         <div ngbDropdown class="topbar-dropdown" display="dynamic">
           <a class="topbar-icon-btn" ngbDropdownToggle href="javascript:void(0);" id="languagesnavBarDropdown">

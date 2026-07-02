@@ -121,7 +121,7 @@ export class DashboardComponent {
   );
   readonly error = computed(
     () =>
-      this.projectsResource.error() || this.issuesResource.error() || this.doneCountResource.error() || this.memberCountResource.error(),
+      this.projectsResource.error() ?? this.issuesResource.error() ?? this.doneCountResource.error() ?? this.memberCountResource.error(),
   );
   readonly recentProjects = computed(() =>
     [...this.projects()].sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? '')).slice(0, 5),

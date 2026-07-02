@@ -91,6 +91,9 @@ public class Issue implements Serializable {
     @JsonIgnoreProperties(value = { "sprintses", "epicses", "issueses" }, allowSetters = true)
     private Project project;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User assignee;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -320,6 +323,19 @@ public class Issue implements Serializable {
         return this.project;
     }
 
+    public User getAssignee() {
+        return this.assignee;
+    }
+
+    public void setAssignee(User assignee) {
+        this.assignee = assignee;
+    }
+
+    public Issue assignee(User assignee) {
+        this.setAssignee(assignee);
+        return this;
+    }
+
     public void setProject(Project project) {
         this.project = project;
     }
@@ -360,6 +376,7 @@ public class Issue implements Serializable {
             ", priority='" + getPriority() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
+            ", assignee='" + (getAssignee() != null ? getAssignee().getLogin() : "null") + "'" +
             "}";
     }
 }

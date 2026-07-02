@@ -1,0 +1,78 @@
+<div class="sprint-board">
+  <div class="sprint-board-header">
+    <div class="sprint-info">
+      <h3 class="sprint-name">{{ sprint()?.name }}</h3>
+      @if (sprint()?.goal) {
+        <p class="sprint-goal">{{ sprint()?.goal }}</p>
+      }
+      <div class="sprint-dates">
+        <span>{{ sprint()?.startDate | formatMediumDate }} — {{ sprint()?.endDate | formatMediumDate }}</span>
+        <span class="sprint-status-badge" [style.border-color]="statusBorder(sprint()?.status)">{{
+          'gestionTachesApp.SprintStatus.' + (sprint()?.status ?? 'PLANNED') | translate
+        }}</span>
+      </div>
+    </div>
+    @if (canManage()) {
+      <div class="sprint-actions">
+        @if (sprint()?.status === 'PLANNED') {
+          <button class="btn btn-primary btn-sm" (click)="startSprint.emit()">
+            <fa-icon icon="play" /> {{ 'gestionTachesApp.sprint.action.start' | translate }}
+          </button>
+        }
+        @if (sprint()?.status === 'ACTIVE') {
+          <button class="btn btn-success btn-sm" (click)="completeSprint.emit()">
+            <fa-icon icon="check" /> {{ 'gestionTachesApp.sprint.action.complete' | translate }}
+          </button>
+        }
+        @if (sprint()?.status === 'COMPLETED') {
+          <button class="btn btn-warning btn-sm" (click)="reopenSprint.emit()">
+            <fa-icon icon="undo" /> {{ 'gestionTachesApp.sprint.action.reopen' | translate }}
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="kanban-board">
+    @for (col of getColumns(); track col.status) {
+      <div
+        class="kanban-column"
+        [class.kanban-column-drag-over]="dragOverStatus === col.status"
+        (dragover)="onDragOver($event, col.status)"
+        (dragleave)="onDragLeave()"
+        (drop)="onDrop($event, col.status)"
+      >
+        <div class="kanban-column-header" [style.border-top-color]="getColumnColor(col.status)">
+          <span class="kanban-column-title">{{ 'gestionTachesApp.IssueStatus.' + col.status | translate }}</span>
+          <span class="kanban-column-count">{{ col.issues.length }}</span>
+        </div>
+        <div class="kanban-column-body">
+          @for (issue of col.issues; track issue.id) {
+            <div
+              class="kanban-card"
+              draggable="true"
+              (dragstart)="onDragStart(issue)"
+              [class.kanban-card-dragging]="dragIssueId === issue.id"
+              (click)="selectIssue.emit(issue)"
+            >
+              <div class="kanban-card-top">
+                <fa-icon [icon]="getTypeIcon(issue.type)" [style.color]="getTypeColor(issue.type)" size="sm" />
+                <span class="kanban-card-id">#{{ issue.id }}</span>
+              </div>
+              <div class="kanban-card-title">{{ issue.title }}</div>
+              <div class="kanban-card-footer">
+                <fa-icon [icon]="getPriorityIcon(issue.priority)" [style.color]="getPriorityColor(issue.priority)" size="sm" />
+                @if (issue.assignee) {
+                  <span class="assignee-initials">{{ getInitials(issue.assignee.login) }}</span>
+                }
+              </div>
+            </div>
+          }
+          @if (col.issues.length === 0) {
+            <div class="kanban-empty">{{ 'gestionTachesApp.sprint.board.emptyColumn' | translate }}</div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

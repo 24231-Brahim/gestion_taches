@@ -7,6 +7,7 @@ export interface IComment {
   content?: string | null;
   createdAt?: dayjs.Dayjs | null;
   issue?: Pick<IIssue, 'id'> | null;
+  author?: { id: number; login: string } | null;
 }
 
 export type NewComment = Omit<IComment, 'id'> & { id: null };

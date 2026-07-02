@@ -4,6 +4,7 @@ import com.gestiontaches.domain.Comment;
 import com.gestiontaches.repository.CommentRepository;
 import com.gestiontaches.service.dto.CommentDTO;
 import com.gestiontaches.service.mapper.CommentMapper;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,5 +109,11 @@ public class CommentService {
     public void delete(Long id) {
         LOG.debug("Request to delete Comment : {}", id);
         commentRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<CommentDTO> findByIssueId(Long issueId) {
+        LOG.debug("Request to get Comments for Issue : {}", issueId);
+        return commentRepository.findByIssueIdOrderByCreatedAtDesc(issueId).stream().map(commentMapper::toDto).toList();
     }
 }

@@ -1,0 +1,37 @@
+<div class="backlog-planning">
+  <div class="planning-columns">
+    <div class="planning-column backlog-column">
+      <h4 class="planning-column-title">{{ 'gestionTachesApp.sprint.planning.backlog' | translate }}</h4>
+      <div class="planning-column-body" (dragover)="$event.preventDefault()" (drop)="onDropBacklog($event)">
+        @for (issue of backlogIssues(); track issue.id) {
+          <div
+            class="planning-card"
+            draggable="true"
+            (dragstart)="onDragStart(issue)"
+            (dblclick)="assignToSprint.emit({ issueId: issue.id, sprintId: sprintId() })"
+          >
+            <span class="planning-card-title">{{ issue.title }}</span>
+            <span class="planning-card-id">#{{ issue.id }}</span>
+          </div>
+        }
+        @if (backlogIssues().length === 0) {
+          <div class="planning-empty">{{ 'gestionTachesApp.sprint.planning.noBacklog' | translate }}</div>
+        }
+      </div>
+    </div>
+    <div class="planning-column sprint-column">
+      <h4 class="planning-column-title">{{ sprint()?.name ?? ('gestionTachesApp.sprint.planning.sprint' | translate) }}</h4>
+      <div class="planning-column-body" (dragover)="$event.preventDefault()" (drop)="onDropSprint($event)">
+        @for (issue of sprintIssues(); track issue.id) {
+          <div class="planning-card" draggable="true" (dragstart)="onDragStart(issue)" (dblclick)="removeFromSprint.emit(issue.id)">
+            <span class="planning-card-title">{{ issue.title }}</span>
+            <span class="planning-card-id">#{{ issue.id }}</span>
+          </div>
+        }
+        @if (sprintIssues().length === 0) {
+          <div class="planning-empty">{{ 'gestionTachesApp.sprint.planning.noIssues' | translate }}</div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

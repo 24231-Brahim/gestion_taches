@@ -162,6 +162,48 @@ jhi-navbar {
   object-fit: cover;
 }
 
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: var(--color-error);
+  color: var(--color-on-error);
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  border-radius: 8px;
+  padding: 0 4px;
+}
+
+.notification-dropdown {
+  min-width: 320px !important;
+}
+
+.notification-item {
+  white-space: normal !important;
+  text-transform: none !important;
+  font-weight: 400 !important;
+  border-left: 3px solid transparent;
+
+  &.unread {
+    border-left-color: var(--color-primary);
+    background-color: var(--color-surface-container-high);
+  }
+
+  .notification-message {
+    font-size: var(--text-sm);
+    line-height: 1.3;
+    margin-bottom: 2px;
+  }
+
+  .notification-date {
+    font-size: var(--text-xs);
+  }
+}
+
 @media (max-width: 767px) {
   .topbar-inner {
     padding: 0 var(--stack-sm);

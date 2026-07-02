@@ -54,6 +54,7 @@ classDiagram
     class Comment {
         +String content
         +Instant createdAt
+        +User author
     }
 
     class Attachment {
@@ -122,6 +123,7 @@ classDiagram
     Project "1" --> "*" Issue : contient
     Sprint "1" --> "*" Issue : regroupe
     Epic "1" --> "*" Issue : catégorise
+    User "1" --> "*" Comment : écrit (author)
     Issue "1" --> "*" Comment : reçoit
     Issue "1" --> "*" Attachment : contient
     Issue "1" --> "*" ActionHistory : trace
@@ -153,7 +155,7 @@ Regroupement logique d'issues correspondant à une fonctionnalité transverse de
 Unité de travail atomique. Peut être un Story, Bug, Task, Subtask ou Improvement. Suit un cycle de vie complet (BACKLOG → DONE). Liée à un sprint et/ou un epic.
 
 ### Comment
-Commentaire texte attaché à une issue. Permet la discussion et le suivi collaboratif.
+Commentaire texte attaché à une issue. Possède un auteur (`author_id` → `jhi_user`). Permet la discussion et le suivi collaboratif.
 
 ### Attachment
 Fichier joint à une issue (capture d'écran, document, etc.). Stocke le chemin du fichier et son nom original.
@@ -173,6 +175,6 @@ Trace d'audit détaillant chaque modification d'une issue. Enregistre l'action, 
 | Sprint | Project | Issue |
 | Epic | Project | Issue |
 | Issue | Project, Sprint, Epic | Comment, Attachment, ActionHistory |
-| Comment | Issue | — |
+| Comment | Issue, User (author) | — |
 | Attachment | Issue | — |
 | ActionHistory | Issue | — |

@@ -23,6 +23,8 @@ public class CommentDTO implements Serializable {
     @NotNull
     private IssueDTO issue;
 
+    private UserDTO author;
+
     public Long getId() {
         return id;
     }
@@ -53,6 +55,14 @@ public class CommentDTO implements Serializable {
 
     public void setIssue(IssueDTO issue) {
         this.issue = issue;
+    }
+
+    public UserDTO getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(UserDTO author) {
+        this.author = author;
     }
 
     @Override

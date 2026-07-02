@@ -1,17 +1,25 @@
 package com.gestiontaches.web.rest;
 
+import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.IssueRepository;
+import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
+import com.gestiontaches.security.SecurityUtils;
 import com.gestiontaches.service.IssueQueryService;
 import com.gestiontaches.service.IssueService;
+import com.gestiontaches.service.NotificationService;
+import com.gestiontaches.service.UserService;
 import com.gestiontaches.service.criteria.IssueCriteria;
 import com.gestiontaches.service.dto.IssueDTO;
+import com.gestiontaches.service.dto.NotificationDTO;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -48,10 +56,26 @@ public class IssueResource {
 
     private final IssueQueryService issueQueryService;
 
-    public IssueResource(IssueService issueService, IssueRepository issueRepository, IssueQueryService issueQueryService) {
+    private final UserService userService;
+
+    private final NotificationService notificationService;
+
+    private final UserRepository userRepository;
+
+    public IssueResource(
+        IssueService issueService,
+        IssueRepository issueRepository,
+        IssueQueryService issueQueryService,
+        UserService userService,
+        NotificationService notificationService,
+        UserRepository userRepository
+    ) {
         this.issueService = issueService;
         this.issueRepository = issueRepository;
         this.issueQueryService = issueQueryService;
+        this.userService = userService;
+        this.notificationService = notificationService;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -211,6 +235,65 @@ public class IssueResource {
         LOG.debug("REST request to get Issue : {}", id);
         Optional<IssueDTO> issueDTO = issueService.findOne(id);
         return ResponseUtil.wrapOrNotFound(issueDTO);
+    }
+
+    /**
+     * {@code PATCH  /issues/:id/assign} : Assign a user to an issue.
+     *
+     * @param id the id of the issue to assign.
+     * @param body the request body containing userId.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated issueDTO.
+     */
+    @PatchMapping("/{id}/assign")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
+            "')"
+    )
+    public ResponseEntity<IssueDTO> assignIssue(@PathVariable("id") Long id, @RequestBody Map<String, Long> body) {
+        LOG.debug("REST request to assign user to Issue : {}", id);
+        Long userId = body.get("userId");
+        if (userId == null) {
+            throw new BadRequestAlertException("userId is required", ENTITY_NAME, "userIdrequired");
+        }
+        User user = userRepository
+            .findById(userId)
+            .orElseThrow(() -> new BadRequestAlertException("User not found", ENTITY_NAME, "usernotfound"));
+
+        boolean isAssignable = userService
+            .getUserWithAuthoritiesByLogin(user.getLogin())
+            .map(u ->
+                u
+                    .getAuthorities()
+                    .stream()
+                    .anyMatch(
+                        a -> AuthoritiesConstants.DEVELOPER.equals(a.getName()) || AuthoritiesConstants.PROJET_MANAGER.equals(a.getName())
+                    )
+            )
+            .orElse(false);
+        if (!isAssignable) {
+            throw new BadRequestAlertException("User must have DEVELOPER or PROJET_MANAGER role", ENTITY_NAME, "invalidrole");
+        }
+
+        IssueDTO result = issueService.assign(id, user);
+
+        String currentLogin = SecurityUtils.getCurrentUserLogin().orElse("System");
+        NotificationDTO notification = new NotificationDTO();
+        notification.setMessage(currentLogin + " vous a assigné à l'issue #" + id + " : " + result.getTitle());
+        notification.setIssueId(id);
+        notification.setIssueTitle(result.getTitle());
+        notification.setUserId(userId);
+        notification.setIsRead(false);
+        notification.setCreatedAt(Instant.now());
+        notificationService.save(notification);
+
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString()))
+            .body(result);
     }
 
     /**

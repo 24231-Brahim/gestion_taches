@@ -149,6 +149,12 @@
     "file": {
       "could.not.extract": "Could not extract file",
       "not.image": "File was expected to be an image but was found to be \"{{ fileType }}\""
+    },
+    "messages": {
+      "empty": "None",
+      "notAssigned": "Not assigned",
+      "unassigned": "Unassigned",
+      "noNotifications": "No notifications"
     }
   },
   "footer": "This is your footer"

@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -16,6 +17,7 @@ import { TranslateDirective } from 'app/shared/language';
 import FindLanguageFromKeyPipe from 'app/shared/language/find-language-from-key.pipe';
 
 import { ThemeService } from 'app/core/util/theme.service';
+import { NotificationService } from 'app/core/util/notification.service';
 
 import ActiveMenuDirective from './active-menu.directive';
 
@@ -36,9 +38,10 @@ import ActiveMenuDirective from './active-menu.directive';
     FindLanguageFromKeyPipe,
     TranslateDirective,
     TranslateModule,
+    DatePipe,
   ],
 })
-export default class Navbar implements OnInit {
+export default class Navbar implements OnInit, OnDestroy {
   readonly inProduction = signal(true);
   readonly isNavbarCollapsed = signal(true);
   readonly languages = LANGUAGES;
@@ -46,6 +49,7 @@ export default class Navbar implements OnInit {
   readonly version: string;
   readonly account = inject(AccountService).account;
   readonly themeService = inject(ThemeService);
+  readonly notificationService = inject(NotificationService);
 
   private readonly loginService = inject(LoginService);
   private readonly translateService = inject(TranslateService);
@@ -67,6 +71,11 @@ export default class Navbar implements OnInit {
       this.inProduction.set(profileInfo.inProduction ?? true);
       this.openAPIEnabled.set(profileInfo.openAPIEnabled ?? false);
     });
+    this.notificationService.startPolling();
+  }
+
+  ngOnDestroy(): void {
+    this.notificationService.stopPolling();
   }
 
   changeLanguage(languageKey: string): void {
@@ -76,6 +85,17 @@ export default class Navbar implements OnInit {
 
   collapseNavbar(): void {
     this.isNavbarCollapsed.set(true);
+  }
+
+  markNotificationRead(notification: any): void {
+    if (!notification.isRead) {
+      this.notificationService.markAsRead(notification.id).subscribe(() => {
+        this.notificationService.refresh();
+      });
+    }
+    if (notification.issueId) {
+      this.router.navigate(['/issue', notification.issueId]);
+    }
   }
 
   toggleMobileSidebar(): void {

@@ -1,6 +1,7 @@
 package com.gestiontaches.repository;
 
 import com.gestiontaches.domain.Sprint;
+import com.gestiontaches.domain.enumeration.SprintStatus;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -37,4 +38,6 @@ public interface SprintRepository extends JpaRepository<Sprint, Long>, JpaSpecif
 
     @Query("select sprint from Sprint sprint left join fetch sprint.project where sprint.id =:id")
     Optional<Sprint> findOneWithToOneRelationships(@Param("id") Long id);
+
+    Optional<Sprint> findByProjectIdAndStatus(Long projectId, SprintStatus status);
 }

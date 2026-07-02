@@ -1,6 +1,7 @@
 package com.gestiontaches.service;
 
 import com.gestiontaches.domain.Issue;
+import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.IssueRepository;
 import com.gestiontaches.service.dto.IssueDTO;
 import com.gestiontaches.service.mapper.IssueMapper;
@@ -105,5 +106,24 @@ public class IssueService {
     public void delete(Long id) {
         LOG.debug("Request to delete Issue : {}", id);
         issueRepository.deleteById(id);
+    }
+
+    /**
+     * Assign a user to an issue.
+     *
+     * @param issueId the id of the issue.
+     * @param user the user to assign.
+     * @return the updated issue DTO.
+     */
+    public IssueDTO assign(Long issueId, User user) {
+        LOG.debug("Request to assign user {} to Issue : {}", user.getLogin(), issueId);
+        return issueRepository
+            .findById(issueId)
+            .map(issue -> {
+                issue.setAssignee(user);
+                return issueRepository.save(issue);
+            })
+            .map(issueMapper::toDto)
+            .orElseThrow(() -> new RuntimeException("Issue not found with id " + issueId));
     }
 }

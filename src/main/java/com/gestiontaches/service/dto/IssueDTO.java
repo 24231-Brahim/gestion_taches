@@ -44,6 +44,8 @@ public class IssueDTO implements Serializable {
     @NotNull
     private ProjectDTO project;
 
+    private UserDTO assignee;
+
     public Long getId() {
         return id;
     }
@@ -126,6 +128,14 @@ public class IssueDTO implements Serializable {
 
     public ProjectDTO getProject() {
         return project;
+    }
+
+    public UserDTO getAssignee() {
+        return assignee;
+    }
+
+    public void setAssignee(UserDTO assignee) {
+        this.assignee = assignee;
     }
 
     public void setProject(ProjectDTO project) {
