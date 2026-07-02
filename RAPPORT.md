@@ -270,22 +270,23 @@ L'application suit une architecture **monolithique full-stack** avec séparation
                                   │ project       │
                                   │ commentses    │──► Set<Comment>
                                   │ attachmentses │──► Set<Attachment>
-                                  │ histories     │──► Set<ActionHistory>
-                                  └───────┬───────┘
-                                          │
-                        ┌─────────────────┼──────────────────┐
-                        │                 │                  │
-               ┌────────▼────┐  ┌─────────▼──────┐  ┌───────▼───────────┐
-               │   Comment   │  │   Attachment   │  │  ActionHistory     │
-               │────────────│  │───────────────│  │───────────────────│
-               │ id         │  │ id            │  │ id                │
-               │ content    │  │ fileName      │  │ action            │
-               │ createdAt  │  │ filePath      │  │ fieldChanged      │
-               │ issue      │  │ uploadedAt    │  │ oldValue          │
-               └────────────┘  │ issue         │  │ newValue          │
-                               └───────────────┘  │ createdAt         │
-                                                  │ issue             │
-                                                  └───────────────────┘
+│ histories     │──► Set<ActionHistory>
+│ assignee      │──► User
+                                   └───────┬───────┘
+                                           │
+                         ┌─────────────────┼──────────────────┬─────────────────────┐
+                         │                 │                  │                     │
+                ┌────────▼────┐  ┌─────────▼──────┐  ┌───────▼───────────┐  ┌──────▼──────────┐
+                │   Comment   │  │   Attachment   │  │  ActionHistory     │  │  Notification   │
+                │────────────│  │───────────────│  │───────────────────│  │─────────────────│
+                │ id         │  │ id            │  │ id                │  │ id              │
+                │ content    │  │ fileName      │  │ action            │  │ userId          │
+                │ createdAt  │  │ filePath      │  │ fieldChanged      │  │ message         │
+                │ issue      │  │ uploadedAt    │  │ oldValue          │  │ issueId         │
+                └────────────┘  │ issue         │  │ newValue          │  │ issueTitle      │
+                                └───────────────┘  │ createdAt         │  │ isRead          │
+                                                   │ issue             │  │ createdAt       │
+                                                   └───────────────────┘  └─────────────────┘
 ```
 
 ### 4.4 Architecture de Sécurité
@@ -348,6 +349,7 @@ L'application suit une architecture **monolithique full-stack** avec séparation
 | CRUD Project                  | ✅    | ✅             | ❌        | ❌   |
 | CRUD Sprint/Epic              | ✅    | ✅             | ❌        | ❌   |
 | CRUD Issue                    | ✅    | ✅             | ✅        | ❌   |
+| Assigner une Issue            | ✅    | ✅             | ✅        | ❌   |
 | Comment (POST)                | ✅    | ✅             | ✅        | ✅   |
 | Comment (PUT/PATCH/DEL)       | ✅    | ✅             | ✅        | ❌   |
 | Attachment/ActionHistory CRUD | ✅    | ✅             | ✅        | ❌   |
@@ -378,7 +380,56 @@ L'application suit une architecture **monolithique full-stack** avec séparation
 - 4 utilisateurs de test : `admin` (ADMIN), `manager` (PROJET_MANAGER), `dev` (DEVELOPER), `user` (USER)
 - Utilisateurs chargés via Liquibase (fichiers CSV)
 
-### 5.8 Corrections de Bugs
+### 5.8 Règles Métier — Ownership des Commentaires
+
+Depuis un commentaire n'appartient qu'à son auteur, seul l'utilisateur ayant créé le commentaire ou un administrateur (PROJET_MANAGER / ADMIN) peut le modifier ou le supprimer. Une méthode utilitaire `checkCommentOwnership()` dans `CommentResource.java` vérifie que l'utilisateur courant est bien l'auteur du commentaire avant toute opération PUT/PATCH/DELETE ; si ce n'est pas le cas, une `BadRequestAlertException("Access denied")` est levée.
+
+### 5.9 Assignation des Issues
+
+L'assignation d'une issue à un utilisateur est une fonctionnalité propre au workflow de gestion de projet. Elle permet d'attribuer une tâche à un développeur ou à un chef de projet.
+
+**Côté backend :**
+
+- Endpoint `PATCH /api/issues/{id}/assign` dans `IssueResource.java` — accepte un body contenant l'ID de l'utilisateur assigné
+- Seuls les rôles DEVELOPER, PROJET_MANAGER et ADMIN peuvent assigner une issue
+- L'assignee est stocké via une relation `@ManyToOne` entre `Issue` et `User` (colonne `assignee_id`)
+- `IssueService.assign()` met à jour l'assignee et sauvegarde l'entité
+- À chaque assignation, une notification est automatiquement créée à destination de l'utilisateur assigné
+- Endpoint `GET /api/users/assignable` retourne la liste des utilisateurs éligibles (rôles DEVELOPER et PROJET_MANAGER)
+- `UserRepository.findAllByAuthorityNames()` permet la récupération par requête JPQL
+
+**Côté frontend :**
+
+- `IssueService.assign()` et `getAssignableUsers()` dans `issue.service.ts`
+- Un `<select>` déroulant dans le drawer de détail (`IssueDetailPanel`) permet de choisir l'assignee
+- Le chargement de la liste est déclenché par un `effect()` Angular dès que le drawer devient visible
+
+### 5.10 Système de Notification
+
+Un système de notification in-app a été mis en place pour informer les utilisateurs lorsqu'une issue leur est assignée.
+
+**Côté backend :**
+
+- Nouvelle entité `Notification.java` avec les champs : `id`, `userId` (destinataire), `message`, `issueId`, `issueTitle`, `isRead` (booléen), `createdAt`
+- DTO et mapper MapStruct : `NotificationDTO.java`, `NotificationMapper.java`
+- Repository : `NotificationRepository.java` — méthodes `findByUserIdOrderByCreatedAtDesc()` et `countByUserIdAndIsReadFalse()`
+- Service : `NotificationService.java` — création, consultation, marquage comme lu
+- Resource REST : `NotificationResource.java`
+  - `GET /api/notifications` — liste des notifications de l'utilisateur courant
+  - `GET /api/notifications/unread-count` — nombre de notifications non lues
+  - `PATCH /api/notifications/{id}/read` — marquer une notification comme lue
+- Le message généré est de la forme : _"\[username\] vous a assigné à l'issue #{id} : {title}"_
+- Liquibase changelog : `20260702000000_added_entity_Notification.xml`
+
+**Côté frontend :**
+
+- `NotificationService` dans `app/core/util/notification.service.ts` — expose des signaux `unreadCount` et `notifications`
+- _Polling_ toutes les 30 secondes pour rafraîchir le compteur et la liste
+- Une icône de cloche (`fa-bell`) dans la **topbar** avec un badge rouge affichant le nombre de notifications non lues
+- Un dropdown listant les notifications (message + date) avec les non lues surlignées
+- Au clic sur une notification : marquage comme lu + navigation vers l'issue concernée
+
+### 5.11 Corrections de Bugs
 
 - **JWT claim `auth` jamais parsé** : ajout d'un `JwtAuthenticationConverter` custom dans `SecurityConfiguration.java`
 - **`ProjectService.update()`** : chargement de l'entité existante avant application des modifications pour ne pas écraser `owner_id` par NULL
@@ -407,7 +458,9 @@ L'application suit une architecture **monolithique full-stack** avec séparation
 ### 7.1 Priorité Haute
 
 - [x] **Gestion des erreurs frontend unifiée** : appliquer le fix `onSaveError()` avec `AlertService` sur tous les composants (Sprint, Epic, Issue, Comment, Attachment, ActionHistory)
-- [ ] **Tests des nouveaux rôles** : mettre à jour les `@WithMockUser` dans les tests d'intégration et ajouter des tests pour DEVELOPER et PROJET_MANAGER
+- [x] **Tests des nouveaux rôles** : mettre à jour les `@WithMockUser` dans les tests d'intégration et ajouter des tests pour DEVELOPER et PROJET_MANAGER
+- [ ] **Tests frontend** : corriger les erreurs TypeScript préexistantes dans `sprint.spec.ts` pour permettre `ng test`
+- [ ] **Tests complets des nouvelles fonctionnalités** : ajouter des tests d'intégration pour l'assignation des issues et les notifications
 
 ### 7.2 Priorité Moyenne
 
@@ -417,9 +470,9 @@ L'application suit une architecture **monolithique full-stack** avec séparation
 
 ### 7.3 Priorité Faible (Fonctionnalités Futures)
 
-- [ ] **Règles métier par entité** : définir qui peut faire quoi (assignation, transition de statut)
-- [ ] **Assignation des issues** : logique d'assignation réservée à DEVELOPER et PROJET_MANAGER
-- [ ] **Notifications** : système de notification quand une issue est assignée
+- [ ] **Tableau Kanbin complet** : intégration du drag-and-drop du statut des issues sur le dashboard
+- [ ] **Page de liste des notifications** : route dédiée avec historique complet
+- [ ] **Notifications par email** : envoi d'un email lors de l'assignation d'une issue
 
 ---
 
@@ -463,13 +516,23 @@ L'application suit une architecture **monolithique full-stack** avec séparation
 | Tests unitaires backend              | 🔄 Partiel     | À compléter pour nouveaux rôles |
 | Tests unitaires frontend             | ❌ Non démarré | Vitest à configurer davantage   |
 
-### 8.5 Phase 5 — Finalisation (Semaine 10)
+### 8.5 Phase 5 — Nouvelles Fonctionnalités (Semaine 10-11)
 
-| Tâche                             | Statut      | Commentaire                                 |
-| --------------------------------- | ----------- | ------------------------------------------- |
-| Gestion erreurs frontend uniforme | ✅ Terminé  | AlertService ajouté sur tous les composants |
-| Thème toggle dark/light           | ✅ Terminé  | ThemeService + localStorage + icônes        |
-| Documentation et rapport          | 🔄 En cours | Présent document                            |
+| Tâche                          | Statut     | Commentaire                                    |
+| ------------------------------ | ---------- | ---------------------------------------------- |
+| Ownership des commentaires     | ✅ Terminé | Vérification auteur avant PUT/PATCH/DELETE     |
+| Assignation des issues         | ✅ Terminé | PATCH + endpoint assignable users + UI drawer  |
+| Système de notification        | ✅ Terminé | Entité + service + polling topbar + icône bell |
+| Tests backend (91 tests)       | ✅ Terminé | 0 failure, 0 error                             |
+| Correction seed data Liquibase | ✅ Terminé | `context="prod"` pour éviter conflit tests H2  |
+
+### 8.6 Phase 6 — Finalisation (Semaine 12)
+
+| Tâche                    | Statut      | Commentaire                                 |
+| ------------------------ | ----------- | ------------------------------------------- |
+| Gestion erreurs frontend | ✅ Terminé  | AlertService ajouté sur tous les composants |
+| Thème toggle dark/light  | ✅ Terminé  | ThemeService + localStorage + icônes        |
+| Documentation et rapport | 🔄 En cours | Présent document                            |
 
 ---
 
@@ -529,7 +592,9 @@ Le système de sécurité **RBAC** avec cinq rôles distincts et une matrice d'a
 
 ### 10.3 Perspectives
 
-À court terme, les priorités sont l'uniformisation de la gestion des erreurs frontend et la complétion des tests. À moyen terme, l'ajout d'un système de notifications (email ou in-app), d'un vrai système d'assignation d'issues avec workflow de transitions, et d'un tableau Kanban serait naturel. À plus long terme, l'application pourrait évoluer vers une architecture microservices pour gérer la montée en charge et permettre le déploiement indépendant des différents modules.
+Les trois fonctionnalités ajoutées lors de cette phase — règles métier sur les commentaires, assignation des issues et notifications — complètent le socle fonctionnel de l'application en répondant à des besoins concrets de workflow agile. L'assignation avec notification automatique crée un circuit de communication entre les membres de l'équipe, tandis que la protection des commentaires renforce la fiabilité des données.
+
+À court terme, les priorités sont la correction des tests frontend et l'ajout de tests d'intégration pour les nouvelles fonctionnalités. À moyen terme, l'ajout d'un tableau Kanban complet, d'une page de notifications dédiée, et d'un système de notifications par email permettrait de rapprocher encore l'outil des standards du marché. À plus long terme, l'application pourrait évoluer vers une architecture microservices pour gérer la montée en charge et permettre le déploiement indépendant des différents modules.
 
 Le socle technique actuel est solide et extensible : l'architecture en couches, le typage strict (TypeScript, Java), les tests et la documentation permettent d'envisager sereinement l'ajout de nouvelles fonctionnalités.
 
