@@ -4,13 +4,13 @@
 
 ## Page de Titre
 
-| Champ                       | Valeur            |
-| --------------------------- | ----------------- |
-| **Nom du projet**           | Gestion de Tâches |
-| **Nom de l'auteur**         | Brahim            |
-| **Date**                    | Juin 2026         |
-| **Lieu**                    | Stage S4          |
-| **Encadrant / Institution** | [À compléter]     |
+| Champ                       | Valeur               |
+| --------------------------- | -------------------- |
+| **Nom du projet**           | Gestion de Tâches    |
+| **Nom de l'auteur**         | Brahim               |
+| **Date**                    | Juin 2026            |
+| **Lieu**                    | Stage S4             |
+| **Encadrant / Institution** | Med / [Nom de l'IUT] |
 
 ---
 
@@ -53,6 +53,9 @@ Enfin, je dédie ce travail à ma famille et à mes proches, pour leur soutien i
 | 6   | `./images/capture-detail-issue.png`  | Détail d'une issue avec commentaires         |
 | 7   | `./images/capture-sidebar.png`       | Sidebar collapsible et navigation            |
 | 8   | `./images/capture-mobile.png`        | Vue mobile avec BottomNav                    |
+| 9   | `./images/capture-dashboard.png`     | Dashboard avec KPIs, graphiques et timeline  |
+| 10  | `./images/capture-epic-roadmap.png`  | Vue Roadmap des epics avec timeline          |
+| 11  | `./images/capture-sprint-board.png`  | Sprint Board Kanban avec drag-and-drop       |
 
 ---
 
@@ -329,15 +332,30 @@ L'application suit une architecture **monolithique full-stack** avec séparation
 - CRUD complet pour chaque entité
 - Filtrage et pagination avancée via des _criteria_ (IssueQueryService, SprintQueryService, EpicQueryService)
 - Types d'issues : Story, Bug, Task, Subtask, Improvement
-- Statuts : TODO, IN_PROGRESS, DONE (Issue) ; PLANNED, ACTIVE, COMPLETED (Sprint)
-- Priorités : LOW, MEDIUM, HIGH, CRITICAL
+- Statuts : BACKLOG, TODO, IN_PROGRESS, IN_REVIEW, DONE, CANCELLED (Issue) ; PLANNED, ACTIVE, COMPLETED, CANCELLED (Sprint)
+- Priorités : LOWEST, LOW, MEDIUM, HIGH, HIGHEST
 - Association d'une issue à un sprint et/ou un epic
+
+**Refactoring Sprint (Board, Planning, Burndown) :**
+
+- Page détail sprint refondue avec 3 onglets : Board (Kanban 6 colonnes BACKLOG → CANCELLED avec drag-drop natif), Planning (backlog ↔ sprint en drag-drop), Burndown (graphique SVG avec 4 cartes stats : total, done, remaining, velocity)
+- `SprintService.validateSingleActiveSprint()` : validation empêchant l'activation d'un sprint si un autre est déjà ACTIF sur le même projet
+
+**Epic Roadmap :**
+
+- Timeline horizontale avec barres par epic, filtre par statut, barre de progression en %, responsive verticale sur mobile
+- Nouveaux champs `startDate` / `endDate` (LocalDate) dans l'entité Epic
+
+**Refactoring Issue (Backlog/Board + Detail Drawer) :**
+
+- Page issue list refondue avec deux onglets : Backlog (table paginée avec recherche textuelle et filtres) et Board (Kanban avec drag-and-drop par colonne IssueStatus)
+- IssueDetailPanel : drawer latéral avec statut (select), description éditable, informations détaillées (sprint, epic, priority, type, dates, project), et sections intégrées pour commentaires, pièces jointes et historique
 
 ### 5.3 Commentaires, Attachements et Historique
 
-- **Commentaires** : création, modification, suppression sur les issues
-- **Attachements** : suivi des fichiers joints (nom, chemin, date d'upload)
-- **ActionHistory** : audit trail complet des modifications sur une issue (champ modifié, ancienne/v nouvelle valeur)
+- **Commentaires** : création, modification, suppression sur les issues. Ajout du champ `author` (User). Nouvel endpoint `GET /api/comments/by-issue/{issueId}`. Auto-set de l'auteur à la création via `SecurityUtils.getCurrentUserLogin()`.
+- **Attachements** : upload réel de fichiers via `POST /api/attachments/upload?issueId=` avec stockage disque configurable (`${app.upload.dir:uploads}`). Download via `GET /api/attachments/download/{id}`. Nouvel endpoint `GET /api/attachments/by-issue/{issueId}`.
+- **ActionHistory** : audit trail complet des modifications sur une issue (champ modifié, ancienne/nouvelle valeur). Nouvel endpoint `GET /api/action-histories/by-issue/{issueId}`.
 
 ### 5.4 Sécurité RBAC
 
@@ -365,14 +383,20 @@ L'application suit une architecture **monolithique full-stack** avec séparation
 
 ### 5.6 Interface Utilisateur
 
-- **Sidebar collapsible** (256px ↔ 80px) avec navigation par entité
+- **Sidebar collapsible** (256px ↔ 80px) avec navigation par entité, overlay mobile, toggle chevron, communication hamburger ↔ sidebar via `document.body.classList` + MutationObserver
 - **BottomNav** mobile (visible <768px, 4 items : Accueil, Projets, Issues, Settings/Login)
-- **Topbar** avec branding, hamburger mobile, dropdowns (admin, compte, langue)
+- **Topbar** avec branding (logo.webp, favicon), hamburger mobile, dropdowns (admin, compte, langue), icône de notifications avec badge
+- **Dashboard** : page d'accueil avec 6 cartes KPI, graphiques (progress + donut SVG), listes, timeline d'activité, quick actions
+- **IssueDetailPanel** : drawer latéral pour la consultation et modification rapide d'une issue
+- **IssueKanbanBoard** : drag-and-drop natif par colonne de statut
+- **SprintActiveBoard** : kanban 6 colonnes avec drag-drop natif, boutons start/complete/reopen
+- **EpicRoadmap** : timeline horizontale avec barres de progression
 - **Boutons brutals** : offset shadow + hover translate
 - **Thème dark/light** : bascule instantanée via `data-theme` + persistance localStorage
-- Design system custom (variables CSS dark/light)
+- Design system custom (variables CSS dark/light, typographie Audiowide + JetBrains Mono)
 - **Internationalisation (i18n)** via ngx-translate
 - **Pagination** sur toutes les listes
+- **Branding** : logo `logo.webp`, favicon personnalisé, suppression des ressources JHipster
 - **Gestion des erreurs** avec AlertService sur tous les composants CRUD (Project, Sprint, Epic, Issue, Comment, Attachment, ActionHistory)
 
 ### 5.7 Données de Seed
@@ -436,6 +460,30 @@ Un système de notification in-app a été mis en place pour informer les utilis
 - **Ownership checks** sur `delete()`, `getMembers()`, `addMember()`, `removeMember()`
 - **Colonne `key` renommée en `project_key`** (mot réservé SQL)
 
+### 5.12 Dashboard / Page d'Accueil
+
+La page d'accueil de l'application a été entièrement repensée sous forme de **Dashboard** avec :
+
+- **6 cartes KPI** : Projets Actifs, Tâches Totales, Tâches Terminées, En Cours, En Retard, Membres — avec icônes FontAwesome et couleurs distinctives
+- **Graphiques** : diagramme de progression (barres horizontales par projet) et donut (répartition des statuts d'issues) en SVG pur
+- **Listes** : projets récents (5 derniers) et tâches récentes (10 dernières) avec indicateur de statut
+- **Timeline** : activité récente (créations, modifications) ordonnée chronologiquement
+- **Quick Actions** : boutons d'accès rapide (Nouveau Projet, Nouvelle Issue, Voir Board, Voir Roadmap)
+- **Gestion des erreurs** : bannières de chargement et d'erreur sur chaque section
+- Données de seed démo (2 projets, 4 sprints, 4 epics, 10 issues, 5 commentaires, 6 membres, 7 actions)
+
+### 5.13 Design System & Branding
+
+Un design system complet a été créé pour l'application :
+
+- **CSS custom properties** : variables dark/light pour toutes les couleurs (fond, texte, bordures, accents), typographie, espacements
+- **Typographie** : Audiowide (titres) + JetBrains Mono (code/métadonnées) via Google Fonts
+- **Boutons brutals** : offset shadow avec hover translate, border-width: 3px, border-radius: 0
+- **Thème dark/light** : bascule instantanée via l'attribut `data-theme` sur `<html>`, persistance dans localStorage
+- **Surcharge Bootstrap** : variables Bootstrap redéfinies avec les couleurs du thème, suppression des border-radius, bordures épaisses (3px)
+- **Branding** : logo `logo.webp` dans la topbar et favicon, suppression des ressources JHipster par défaut
+- **Accessibilité** : contrastes respectés, états de focus visibles
+
 ---
 
 ## 6. Démonstration / Captures d'écran
@@ -450,6 +498,9 @@ Un système de notification in-app a été mis en place pour informer les utilis
 | `![Sidebar collapsible](./images/capture-sidebar.png)`     | Sidebar de navigation (état déplié/replié)                                 |
 | `![Vue mobile](./images/capture-mobile.png)`               | Interface en version mobile avec BottomNav                                 |
 | `![Matrice des accès](./images/matrice-acces.png)`         | Tableau récapitulatif des permissions RBAC                                 |
+| `![Dashboard](./images/capture-dashboard.png)`             | Dashboard avec KPIs, graphiques et timeline                                |
+| `![Epic Roadmap](./images/capture-epic-roadmap.png)`       | Vue Roadmap des epics avec timeline horizontale et barres de progression   |
+| `![Sprint Board](./images/capture-sprint-board.png)`       | Sprint Board Kanban avec drag-and-drop par colonne de statut               |
 
 ---
 
@@ -516,22 +567,28 @@ Un système de notification in-app a été mis en place pour informer les utilis
 | Tests unitaires backend              | 🔄 Partiel     | À compléter pour nouveaux rôles |
 | Tests unitaires frontend             | ❌ Non démarré | Vitest à configurer davantage   |
 
-### 8.5 Phase 5 — Nouvelles Fonctionnalités (Semaine 10-11)
+### 8.5 Phase 5 — Refactoring Sprint / Issue / Epic (Semaine 10-11)
 
-| Tâche                          | Statut     | Commentaire                                    |
-| ------------------------------ | ---------- | ---------------------------------------------- |
-| Ownership des commentaires     | ✅ Terminé | Vérification auteur avant PUT/PATCH/DELETE     |
-| Assignation des issues         | ✅ Terminé | PATCH + endpoint assignable users + UI drawer  |
-| Système de notification        | ✅ Terminé | Entité + service + polling topbar + icône bell |
-| Tests backend (91 tests)       | ✅ Terminé | 0 failure, 0 error                             |
-| Correction seed data Liquibase | ✅ Terminé | `context="prod"` pour éviter conflit tests H2  |
+| Tâche                                        | Statut     | Commentaire                                               |
+| -------------------------------------------- | ---------- | --------------------------------------------------------- |
+| Refactoring Sprint (Board/Planning/Burndown) | ✅ Terminé | 3 onglets, kanban avec drag-drop, burndown SVG            |
+| Epic Roadmap                                 | ✅ Terminé | Timeline horizontale, barres de progression               |
+| Refactoring Issue (Backlog/Board + Drawer)   | ✅ Terminé | Onglets, Kanban, IssueDetailPanel avec sous-composants    |
+| Comment author + endpoints by-issue          | ✅ Terminé | Champ author, endpoints dédiés Comment/Attachment/History |
+| Upload/download fichiers (Attachment)        | ✅ Terminé | Multipart, stockage disque, download                      |
+| Dashboard / Page d'accueil                   | ✅ Terminé | 6 KPIs, graphiques SVG, timeline, quick actions           |
+| Ownership des commentaires                   | ✅ Terminé | Vérification auteur avant PUT/PATCH/DELETE                |
+| Assignation des issues                       | ✅ Terminé | PATCH + endpoint assignable users + UI drawer             |
+| Système de notification                      | ✅ Terminé | Entité + service + polling topbar + icône bell            |
+| Design system & branding                     | ✅ Terminé | Variables CSS dark/light, brutalism, logo, favicon        |
+| Tests backend (91 tests)                     | ✅ Terminé | 0 failure, 0 error                                        |
+| Correction seed data Liquibase               | ✅ Terminé | `context="prod"` pour éviter conflit tests H2             |
 
 ### 8.6 Phase 6 — Finalisation (Semaine 12)
 
 | Tâche                    | Statut      | Commentaire                                 |
 | ------------------------ | ----------- | ------------------------------------------- |
 | Gestion erreurs frontend | ✅ Terminé  | AlertService ajouté sur tous les composants |
-| Thème toggle dark/light  | ✅ Terminé  | ThemeService + localStorage + icônes        |
 | Documentation et rapport | 🔄 En cours | Présent document                            |
 
 ---
