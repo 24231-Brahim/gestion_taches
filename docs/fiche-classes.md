@@ -2,6 +2,8 @@
 
 ## 1. Diagramme de Classes (Class Diagram)
 
+Ce diagramme modélise la structure statique du système : les entités métier (User, Project, Issue, etc.), leurs attributs, leurs types (enumérations) et les associations qui les relient (propriétaire, membres, sprint, epic, commentaires, etc.).
+
 ```mermaid
 classDiagram
     class User {
@@ -232,6 +234,8 @@ flowchart TD
 
 ## 3. Diagramme de Séquence (Sequence Diagram)
 
+Ce diagramme montre les interactions temporelles entre les acteurs et les composants du système pour des scénarios clés : assignation d'une issue, création d'un projet et changement de statut via le tableau Kanban.
+
 ### 3.1 Assignation d'une issue
 
 ```mermaid
@@ -311,6 +315,8 @@ sequenceDiagram
 
 ## 4. Diagramme d'Activité (Activity Diagram)
 
+Ce diagramme modélise les flux de travail du système : le cycle de vie complet d'une issue (de la création à la validation ou l'annulation) et le processus de gestion d'un sprint (démarrage, complétion, annulation).
+
 ### Cycle de vie d'une Issue
 
 ```mermaid
@@ -358,6 +364,8 @@ flowchart LR
 ---
 
 ## 5. Diagramme d'États (State Machine Diagram)
+
+Ce diagramme décrit les différents états possibles des entités et les transitions autorisées : cycle de vie d'une issue (BACKLOG → TODO → IN_PROGRESS → IN_REVIEW → DONE), d'un sprint (PLANNED → ACTIVE → COMPLETED) et d'un epic (TODO → IN_PROGRESS → DONE).
 
 ### Issue States
 
@@ -410,6 +418,8 @@ stateDiagram-v2
 
 ## 6. Diagramme de Déploiement (Deployment Diagram)
 
+Ce diagramme représente l'architecture physique du système : le client Angular (SPA + PWA), le serveur Spring Boot (API, services, sécurité, cache), la base de données PostgreSQL, le système de fichiers pour les uploads, et les outils de monitoring (Actuator, SonarQube).
+
 ```mermaid
 flowchart TD
     subgraph Navigateur[Client - Navigateur]
@@ -453,6 +463,8 @@ flowchart TD
 ---
 
 ## 7. Diagramme de Composants (Component Diagram)
+
+Ce diagramme montre l'organisation des modules logiciels du système : le frontend Angular (pages, services, modules partagés) et le backend Spring Boot (controllers REST, services métier, accès aux données, sécurité), ainsi que leurs interactions.
 
 ```mermaid
 flowchart TD
@@ -536,6 +548,8 @@ flowchart TD
 ---
 
 ## 8. Diagramme de Paquetages (Package Diagram)
+
+Ce diagramme illustre la structure des paquetages du projet : l'organisation du backend (domain, repository, service, web.rest, config, security, aop) et du frontend (entities, core, shared, layouts, home, admin), avec leurs dépendances.
 
 ```mermaid
 flowchart TD
@@ -647,6 +661,8 @@ flowchart TD
 
 ## 9. Diagramme d'Objets (Object Diagram)
 
+Ce diagramme présente un snapshot concret d'instances du système à un moment donné : un projet "Site Web" avec ses sprints, epics, issues, commentaires et utilisateurs, illustrant les relations entre objets réels.
+
 ### Exemple d'instances en cours d'exécution
 
 ```mermaid
@@ -739,6 +755,8 @@ classDiagram
 
 ## 10. Diagramme de Communication (Communication Diagram)
 
+Ce diagramme montre les interactions entre les objets et acteurs lors de la création d'un commentaire sur une issue, en mettant l'accent sur l'ordre des messages échangés (de l'ouverture de l'issue jusqu'à l'affichage du commentaire).
+
 ### Création d'un commentaire sur une issue
 
 ```mermaid
@@ -771,6 +789,8 @@ flowchart TD
 ---
 
 ## 11. Diagramme de Timing (Timing Diagram)
+
+Ce diagramme illustre l'évolution temporelle d'un sprint sur 20 jours, du démarrage (PLANNED → ACTIVE) jusqu'à la complétion, en passant par les jalons clés (développement, revue, validation). Un tableau associé détaille les métriques temporelles d'une issue.
 
 ### Cycle de vie d'un Sprint (20 jours)
 
@@ -817,6 +837,8 @@ flowchart LR
 
 ## 12. Diagramme de Structure Composite (Composite Structure Diagram)
 
+Ce diagramme décompose la structure interne d'une Issue : ses propriétés (titre, type, statut, priorité), ses parties (commentaires, pièces jointes, historique) et ses références externes (projet, sprint, epic, assignee). Un tableau décrit les ports et interfaces associés.
+
 ### Structure interne d'une Issue
 
 ```mermaid
@@ -861,6 +883,8 @@ flowchart TD
 ---
 
 ## 13. Diagramme de Profils (Profile Diagram)
+
+Ce diagramme définit les stéréotypes UML personnalisés utilisés dans le projet (Entity, Service, RestController, DTO, Enum) avec leurs tags associés, et montre leur application aux classes concrètes du système.
 
 ### Stéréotypes et Tags appliqués au projet
 
@@ -929,6 +953,8 @@ classDiagram
 ---
 
 ## 14. Diagramme de Vue d'Ensemble des Interactions (Interaction Overview Diagram)
+
+Ce diagramme offre une vue d'ensemble du flux de création d'une issue, combinant sous-diagrammes (création, commentaire, upload de fichier) et une référence vers un diagramme de séquence externe (assignation), permettant de visualiser un processus complet.
 
 ### Création d'une issue avec commentaire et pièce jointe
 
