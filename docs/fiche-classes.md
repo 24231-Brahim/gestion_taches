@@ -154,30 +154,28 @@ classDiagram
 ## 2. Diagramme de Cas d'Utilisation (Use Case Diagram)
 
 ```mermaid
-flowchart TD
-    subgraph Acteurs
-        A[Admin]
-        PM[Project Manager]
-        DEV[Developer]
-        U[User]
-    end
+graph LR
+    A["fa:fa-user Admin"]
+    PM["fa:fa-user Chef de Projet"]
+    DEV["fa:fa-user Développeur"]
+    U["fa:fa-user Utilisateur"]
 
-    subgraph Système[Système de Gestion de Tâches]
-        UC1[Gérer les projets]
-        UC2[Gérer les membres]
-        UC3[Gérer les sprints]
-        UC4[Gérer les epics]
-        UC5[Gérer les issues]
-        UC6[Tableau Kanban]
-        UC7[Roadmap Epic]
-        UC8[Burndown Chart]
-        UC9[Commenter une issue]
-        UC10[Joindre un fichier]
-        UC11[Consulter le dashboard]
-        UC12[Gérer les notifications]
-        UC13[Administrer le système]
-        UC14[S'authentifier]
-        UC15[S'inscrire]
+    subgraph Systeme["Système de Gestion de Tâches"]
+        UC1("Gérer les projets")
+        UC2("Gérer les membres")
+        UC3("Gérer les sprints")
+        UC4("Gérer les epics")
+        UC5("Gérer les issues")
+        UC6("Tableau Kanban")
+        UC7("Roadmap Epic")
+        UC8("Burndown Chart")
+        UC9("Commenter une issue")
+        UC10("Joindre un fichier")
+        UC11("Consulter le dashboard")
+        UC12("Gérer les notifications")
+        UC13("Administrer le système")
+        UC14("S'authentifier")
+        UC15("S'inscrire")
     end
 
     A --> UC1
@@ -760,31 +758,33 @@ Ce diagramme montre les interactions entre les objets et acteurs lors de la cré
 ### Création d'un commentaire sur une issue
 
 ```mermaid
-flowchart TD
-    1[Utilisateur] -->|2: Saisit le texte| F[Formulaire]
-    1 -->|1: Ouvre l'issue| D[IssueDetail]
-    F -->|3: submit()| CS[CommentService.create]
-    CS -->|4: POST /api/comments| API[CommentResource]
-    API -->|5: checkCommentOwnership| API
-    API -->|6: save| SVC[CommentService]
-    SVC -->|7: findUser| US[UserService]
-    SVC -->|8: save| REP[CommentRepository]
-    REP -->|9: INSERT| DB[(Database)]
-    DB -->|10: Comment| REP
-    REP -->|11: CommentDTO| SVC
-    SVC -->|12: Response| API
-    API -->|13: 201 Created| CS
-    CS -->|14: Mise à jour liste| D
-    D -->|15: Affiche nouveau commentaire| 1
-```
+sequenceDiagram
+    actor User as Utilisateur
+    participant D as IssueDetail
+    participant F as Formulaire
+    participant CS as CommentService
+    participant API as CommentResource
+    participant SVC as CommentService
+    participant US as UserService
+    participant REP as CommentRepository
+    participant DB as Database
 
-**Liens :**
-- `1` → `D` : navigation
-- `F` → `CS` : appel de méthode
-- `CS` → `API` : requête HTTP
-- `API` → `SVC` : appel service
-- `SVC` → `REP` : persistence JPA
-- `REP` → `DB` : requête SQL
+    User->>D: 1: Ouvre l'issue
+    User->>F: 2: Saisit le texte
+    F->>CS: 3: submit()
+    CS->>API: 4: POST /api/comments
+    API->>API: 5: Vérifier propriété
+    API->>SVC: 6: save()
+    SVC->>US: 7: findUser()
+    SVC->>REP: 8: save()
+    REP->>DB: 9: INSERT
+    DB-->>REP: 10: Comment
+    REP-->>SVC: 11: CommentDTO
+    SVC-->>API: 12: Response
+    API-->>CS: 13: 201 Created
+    CS-->>D: 14: Mettre à jour liste
+    D-->>User: 15: Afficher commentaire
+```
 
 ---
 
@@ -1007,7 +1007,7 @@ Ce diagramme combine plusieurs diagrammes de séquence et d'activité pour montr
 | # | Diagramme UML | Type | Outil utilisé | Fichier/Package couvert |
 |---|---|---|---|---|
 | 1 | Diagramme de classes | Structure | Mermaid `classDiagram` | `domain/`, `domain/enumeration/` |
-| 2 | Diagramme de cas d'utilisation | Comportement | Mermaid `flowchart` | Fonctionnalités du système |
+| 2 | Diagramme de cas d'utilisation | Comportement | Mermaid `graph` + `fa:fa-user` | Fonctionnalités du système |
 | 3 | Diagramme de séquence | Comportement | Mermaid `sequenceDiagram` | Assignation, création projet, Kanban |
 | 4 | Diagramme d'activité | Comportement | Mermaid `flowchart` | Cycle de vie issue, processus sprint |
 | 5 | Diagramme d'états | Comportement | Mermaid `stateDiagram-v2` | Issue, Sprint, Epic |
@@ -1015,7 +1015,7 @@ Ce diagramme combine plusieurs diagrammes de séquence et d'activité pour montr
 | 7 | Diagramme de composants | Structure | Mermaid `flowchart` | Modules Angular + Spring |
 | 8 | Diagramme de paquetages | Structure | Mermaid `flowchart` | Structure des packages |
 | 9 | Diagramme d'objets | Structure | Mermaid `classDiagram` | Instances d'exemple |
-| 10 | Diagramme de communication | Comportement | Mermaid `flowchart` | Création d'un commentaire |
+| 10 | Diagramme de communication | Comportement | Mermaid `sequenceDiagram` | Création d'un commentaire |
 | 11 | Diagramme de timing | Comportement | Mermaid `flowchart` | Cycle de sprint + métriques |
 | 12 | Diagramme de structure composite | Structure | Mermaid `flowchart` | Structure interne d'une Issue |
 | 13 | Diagramme de profils | Structure | Mermaid `classDiagram` | Stéréotypes JHipster |
