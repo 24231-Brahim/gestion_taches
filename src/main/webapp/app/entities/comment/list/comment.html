@@ -33,13 +33,6 @@
       <table class="table" aria-describedby="page-heading">
         <thead>
           <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" jhiSortBy="id">
-              <div class="d-flex">
-                <span jhiTranslate="global.field.id">ID</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
             <th scope="col" jhiSortBy="content">
               <div class="d-flex">
                 <span jhiTranslate="gestionTachesApp.comment.content">Content</span>
@@ -66,9 +59,6 @@
         <tbody infinite-scroll (scrolled)="loadNextPage()" [infiniteScrollDisabled]="!hasMorePage()" [infiniteScrollDistance]="0">
           @for (comment of comments(); track trackId(comment)) {
             <tr data-cy="entityTable">
-              <td>
-                <a [routerLink]="['/comment', comment.id, 'view']">{{ comment.id }}</a>
-              </td>
               <td>{{ comment.content }}</td>
               <td>{{ comment.createdAt | formatMediumDatetime }}</td>
               <td>

@@ -125,7 +125,7 @@ public class ProjectService {
             return projectRepository.findAll(pageable).map(projectMapper::toDto);
         }
         String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
-        return projectRepository.findByOwnerLogin(login, pageable).map(projectMapper::toDto);
+        return projectRepository.findByOwnerLoginOrMemberLogin(login, pageable).map(projectMapper::toDto);
     }
 
     /**
@@ -141,7 +141,13 @@ public class ProjectService {
             return projectRepository.findById(id).map(projectMapper::toDto);
         }
         String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
-        return projectRepository.findByIdAndOwnerLogin(id, login).map(projectMapper::toDto);
+        return projectRepository.findByIdAndOwnerLoginOrMemberLogin(id, login).map(projectMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<ProjectDTO> findOneByKey(String key) {
+        LOG.debug("Request to get Project by key : {}", key);
+        return projectRepository.findByKey(key).map(projectMapper::toDto);
     }
 
     /**

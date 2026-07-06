@@ -18,7 +18,7 @@ export interface IIssue {
   updatedAt?: dayjs.Dayjs | null;
   sprint?: Pick<ISprint, 'id' | 'name'> | null;
   epic?: Pick<IEpic, 'id' | 'title'> | null;
-  project?: Pick<IProject, 'id' | 'name'> | null;
+  project?: Pick<IProject, 'id' | 'name' | 'key'> | null;
   assignee?: { id: number; login: string } | null;
 }
 

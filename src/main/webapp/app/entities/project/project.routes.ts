@@ -10,12 +10,12 @@ const projectRoute: Routes = [
     path: '',
     loadComponent: () => import('./list/project').then(m => m.Project),
     data: {
-      defaultSort: `id,${ASC}`,
+      defaultSort: `key,${ASC}`,
     },
     canActivate: [UserRouteAccessService],
   },
   {
-    path: ':id/view',
+    path: ':key/view',
     loadComponent: () => import('./detail/project-detail').then(m => m.ProjectDetail),
     resolve: {
       project: ProjectResolve,
@@ -31,7 +31,7 @@ const projectRoute: Routes = [
     canActivate: [UserRouteAccessService],
   },
   {
-    path: ':id/edit',
+    path: ':key/edit',
     loadComponent: () => import('./update/project-update').then(m => m.ProjectUpdate),
     resolve: {
       project: ProjectResolve,

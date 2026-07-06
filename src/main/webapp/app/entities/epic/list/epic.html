@@ -35,13 +35,6 @@
       <table class="table" aria-describedby="page-heading">
         <thead>
           <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" jhiSortBy="id">
-              <div class="d-flex">
-                <span jhiTranslate="global.field.id">ID</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
             <th scope="col" jhiSortBy="title">
               <div class="d-flex">
                 <span jhiTranslate="gestionTachesApp.epic.title">Title</span>
@@ -96,9 +89,6 @@
         <tbody>
           @for (epic of epics(); track trackId(epic)) {
             <tr data-cy="entityTable">
-              <td>
-                <a [routerLink]="['/epic', epic.id, 'view']">{{ epic.id }}</a>
-              </td>
               <td>{{ epic.title }}</td>
               <td>{{ epic.description }}</td>
               <td [jhiTranslate]="'gestionTachesApp.EpicStatus.' + (epic.status ?? 'null')">
@@ -114,7 +104,7 @@
               <td>
                 @if (epic.project) {
                   <div>
-                    <a [routerLink]="['/project', epic.project.id, 'view']">{{ epic.project.name }}</a>
+                    <a [routerLink]="['/project', epic.project.key, 'view']">{{ epic.project.name }}</a>
                   </div>
                 }
               </td>

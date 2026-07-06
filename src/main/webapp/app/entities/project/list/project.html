@@ -39,9 +39,9 @@
       <table class="table" aria-describedby="page-heading">
         <thead>
           <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" jhiSortBy="id">
+            <th scope="col" jhiSortBy="key">
               <div class="d-flex">
-                <span jhiTranslate="global.field.id">ID</span>
+                <span jhiTranslate="gestionTachesApp.project.key">Key</span>
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
@@ -54,12 +54,6 @@
             <th scope="col" jhiSortBy="description">
               <div class="d-flex">
                 <span jhiTranslate="gestionTachesApp.project.description">Description</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="key">
-              <div class="d-flex">
-                <span jhiTranslate="gestionTachesApp.project.key">Key</span>
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
@@ -76,13 +70,10 @@
           @for (project of projects(); track trackId(project)) {
             <tr data-cy="entityTable">
               <td>
-                <a [routerLink]="['/project', project.id, 'view']">{{ project.id }}</a>
+                <span class="badge border-primary">{{ project.key }}</span>
               </td>
               <td>{{ project.name }}</td>
               <td>{{ project.description }}</td>
-              <td>
-                <span class="badge border-primary">{{ project.key }}</span>
-              </td>
               <td>{{ project.createdAt | formatMediumDatetime }}</td>
               <td class="text-end">
                 <div class="btn-group">
@@ -106,11 +97,11 @@
                       </button>
                     </div>
                   </div>
-                  <a [routerLink]="['/project', project.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                  <a [routerLink]="['/project', project.key, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
                     <fa-icon icon="eye" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
                   </a>
-                  <a [routerLink]="['/project', project.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                  <a [routerLink]="['/project', project.key, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
                     <fa-icon icon="pencil-alt" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
                   </a>

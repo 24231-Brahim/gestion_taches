@@ -14,7 +14,7 @@ export interface IEpic {
   updatedAt?: dayjs.Dayjs | null;
   startDate?: dayjs.Dayjs | null;
   endDate?: dayjs.Dayjs | null;
-  project?: Pick<IProject, 'id' | 'name'> | null;
+  project?: Pick<IProject, 'id' | 'name' | 'key'> | null;
 }
 
 export type NewEpic = Omit<IEpic, 'id'> & { id: null };

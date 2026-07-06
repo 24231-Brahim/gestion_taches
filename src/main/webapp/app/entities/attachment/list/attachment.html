@@ -33,13 +33,6 @@
       <table class="table" aria-describedby="page-heading">
         <thead>
           <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" jhiSortBy="id">
-              <div class="d-flex">
-                <span jhiTranslate="global.field.id">ID</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
             <th scope="col" jhiSortBy="fileName">
               <div class="d-flex">
                 <span jhiTranslate="gestionTachesApp.attachment.fileName">File Name</span>
@@ -73,9 +66,6 @@
         <tbody infinite-scroll (scrolled)="loadNextPage()" [infiniteScrollDisabled]="!hasMorePage()" [infiniteScrollDistance]="0">
           @for (attachment of attachments(); track trackId(attachment)) {
             <tr data-cy="entityTable">
-              <td>
-                <a [routerLink]="['/attachment', attachment.id, 'view']">{{ attachment.id }}</a>
-              </td>
               <td>{{ attachment.fileName }}</td>
               <td>{{ attachment.filePath }}</td>
               <td>{{ attachment.uploadedAt | formatMediumDatetime }}</td>

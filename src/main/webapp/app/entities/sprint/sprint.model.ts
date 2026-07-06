@@ -10,7 +10,7 @@ export interface ISprint {
   startDate?: dayjs.Dayjs | null;
   endDate?: dayjs.Dayjs | null;
   status?: keyof typeof SprintStatus | null;
-  project?: Pick<IProject, 'id' | 'name'> | null;
+  project?: Pick<IProject, 'id' | 'name' | 'key'> | null;
 }
 
 export type NewSprint = Omit<ISprint, 'id'> & { id: null };

@@ -182,6 +182,19 @@ public class ProjectResource {
     }
 
     /**
+     * {@code GET  /projects/by-key/:key} : get the project by its key.
+     *
+     * @param key the key of the project to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the projectDTO, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/by-key/{key}")
+    public ResponseEntity<ProjectDTO> getProjectByKey(@PathVariable("key") String key) {
+        LOG.debug("REST request to get Project by key : {}", key);
+        Optional<ProjectDTO> projectDTO = projectService.findOneByKey(key);
+        return ResponseUtil.wrapOrNotFound(projectDTO);
+    }
+
+    /**
      * {@code DELETE  /projects/:id} : delete the "id" project.
      *
      * @param id the id of the projectDTO to delete.

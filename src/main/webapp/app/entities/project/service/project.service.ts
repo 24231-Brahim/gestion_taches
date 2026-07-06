@@ -80,6 +80,12 @@ export class ProjectService extends ProjectsService {
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 
+  findByKey(key: string): Observable<IProject> {
+    return this.http
+      .get<RestProject>(`${this.resourceUrl}/by-key/${encodeURIComponent(key)}`)
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
   query(req?: any): Observable<HttpResponse<IProject[]>> {
     const options = createRequestOption(req);
     return this.http

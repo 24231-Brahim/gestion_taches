@@ -8,7 +8,6 @@
           {{ typeIcons[iss.type ?? 'STORY'] }}
         </span>
         <span [jhiTranslate]="'gestionTachesApp.IssueType.' + (iss.type ?? 'null')" class="fw-bold"></span>
-        <span class="text-muted">#{{ iss.id }}</span>
       </div>
       <button class="btn btn-sm btn-ghost" (click)="close()()">
         <fa-icon icon="times" />
@@ -118,7 +117,7 @@
         <div class="issue-field-group">
           <span class="issue-field-label" jhiTranslate="gestionTachesApp.issue.project"></span>
           @if (iss.project) {
-            <a [routerLink]="['/project', iss.project.id, 'view']">{{ iss.project.name }}</a>
+            <a [routerLink]="['/project', iss.project.key, 'view']">{{ iss.project.name }}</a>
           }
         </div>
 

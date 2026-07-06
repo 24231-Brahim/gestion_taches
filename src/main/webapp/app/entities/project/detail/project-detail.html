@@ -13,10 +13,6 @@
         <jhi-alert />
 
         <dl class="row-md jh-entity-details">
-          <dt><span jhiTranslate="global.field.id">ID</span></dt>
-          <dd>
-            <span>{{ projectRef.id }}</span>
-          </dd>
           <dt><span jhiTranslate="gestionTachesApp.project.name">Name</span></dt>
           <dd>
             <span>{{ projectRef.name }}</span>
@@ -138,7 +134,7 @@
           <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
         </button>
 
-        <button type="button" [routerLink]="['/project', projectRef.id, 'edit']" class="btn btn-primary">
+        <button type="button" [routerLink]="['/project', projectRef.key, 'edit']" class="btn btn-primary">
           <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
         </button>
       </div>

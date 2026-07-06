@@ -11,10 +11,6 @@
         <jhi-alert />
 
         <dl class="row-md jh-entity-details">
-          <dt><span jhiTranslate="global.field.id">ID</span></dt>
-          <dd>
-            <span>{{ issueRef.id }}</span>
-          </dd>
           <dt><span jhiTranslate="gestionTachesApp.issue.title">Title</span></dt>
           <dd>
             <span>{{ issueRef.title }}</span>
@@ -79,7 +75,7 @@
           <dd>
             @if (issue()!.project) {
               <div>
-                <a [routerLink]="['/project', issue()!.project?.id, 'view']">{{ issueRef.project?.name }}</a>
+                <a [routerLink]="['/project', issue()!.project?.key, 'view']">{{ issueRef.project?.name }}</a>
               </div>
             }
           </dd>

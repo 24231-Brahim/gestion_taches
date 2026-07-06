@@ -531,65 +531,54 @@ Un design system complet a été créé pour l'application :
 
 ### 8.1 Phase 1 — Initialisation du Projet (Semaine 1-2)
 
-| Tâche                            | Statut     | Commentaire                        |
-| -------------------------------- | ---------- | ---------------------------------- |
-| Génération JHipster (modèle JDL) | ✅ Terminé | 7 entités déclarées                |
-| Configuration BDD et Liquibase   | ✅ Terminé | H2 dev, PostgreSQL prod            |
-| Authentification JWT             | ✅ Terminé | Custom converter pour claim `auth` |
+| Tâche                                 | Statut     | Commentaire                        |
+| ------------------------------------- | ---------- | ---------------------------------- |
+| Génération JHipster (modèle JDL)      | ✅ Terminé | 7 entités déclarées                |
+| Configuration BDD et Liquibase        | ✅ Terminé | H2 dev, PostgreSQL prod            |
+| Authentification JWT                  | ✅ Terminé | Custom converter pour claim `auth` |
+| CRUD Project + owner + membres        | ✅ Terminé | Filtrage par propriétaire          |
+| CRUD Sprint/Epic/Issue                | ✅ Terminé | Avec critères de recherche         |
+| CRUD Comment/Attachment/ActionHistory | ✅ Terminé | Audit trail fonctionnel            |
+| RBAC (@PreAuthorize)                  | ✅ Terminé | Matrice complète déployée          |
 
-### 8.2 Phase 2 — Fonctionnalités Métier (Semaine 3-5)
+### 8.2 Phase 2 — Frontend & Design (Semaine 3-4)
 
-| Tâche                                 | Statut     | Commentaire                |
-| ------------------------------------- | ---------- | -------------------------- |
-| CRUD Project + owner + membres        | ✅ Terminé | Filtrage par propriétaire  |
-| CRUD Sprint/Epic/Issue                | ✅ Terminé | Avec critères de recherche |
-| CRUD Comment/Attachment/ActionHistory | ✅ Terminé | Audit trail fonctionnel    |
-| RBAC (@PreAuthorize)                  | ✅ Terminé | Matrice complète déployée  |
+| Tâche                      | Statut     | Commentaire                      |
+| -------------------------- | ---------- | -------------------------------- |
+| Design system (CSS custom) | ✅ Terminé | Brutalist, dark/light variables  |
+| Sidebar collapsible        | ✅ Terminé | Desktop 256px/80px               |
+| BottomNav mobile           | ✅ Terminé | 4 items responsifs               |
+| Topbar + branding          | ✅ Terminé | Logo, favicon, dropdowns         |
+| Dashboard / Page d'accueil | ✅ Terminé | 6 KPIs, graphiques SVG, timeline |
+| CRUD Angular généré        | ✅ Terminé | Pages liste/détail/update        |
+| Epic Roadmap               | ✅ Terminé | Timeline horizontale, barres     |
 
-### 8.3 Phase 3 — Frontend & Design (Semaine 6-7)
+### 8.3 Phase 3 — Refactoring & Métier Avancé (Semaine 5-6)
 
-| Tâche                      | Statut     | Commentaire                     |
-| -------------------------- | ---------- | ------------------------------- |
-| Design system (CSS custom) | ✅ Terminé | Brutalist, dark/light variables |
-| Sidebar collapsible        | ✅ Terminé | Desktop 256px/80px              |
-| BottomNav mobile           | ✅ Terminé | 4 items responsifs              |
-| Topbar + branding          | ✅ Terminé | Logo, favicon, dropdowns        |
-| CRUD Angular généré        | ✅ Terminé | Pages liste/détail/update       |
+| Tâche                                        | Statut     | Commentaire                                    |
+| -------------------------------------------- | ---------- | ---------------------------------------------- |
+| Refactoring Sprint (Board/Planning/Burndown) | ✅ Terminé | 3 onglets, kanban drag-drop, burndown SVG      |
+| Refactoring Issue (Backlog/Board + Drawer)   | ✅ Terminé | Onglets, Kanban, IssueDetailPanel              |
+| Comment author + endpoints by-issue          | ✅ Terminé | Endpoints dédiés Comment/Attachment/History    |
+| Upload/download fichiers (Attachment)        | ✅ Terminé | Multipart, stockage disque, download           |
+| Ownership des commentaires                   | ✅ Terminé | Vérification auteur avant PUT/PATCH/DELETE     |
+| Assignation des issues                       | ✅ Terminé | PATCH + assignable users + UI drawer           |
+| Système de notification                      | ✅ Terminé | Entité + service + polling topbar + icône bell |
+| Tests backend (91 tests)                     | ✅ Terminé | 0 failure, 0 error                             |
+| Correction seed data Liquibase               | ✅ Terminé | `context="prod"` pour éviter conflit tests H2  |
 
-### 8.4 Phase 4 — Tests & Corrections (Semaine 8-9)
+### 8.4 Phase 4 — Finalisation & Tests (Semaine 7-8)
 
-| Tâche                                | Statut         | Commentaire                     |
-| ------------------------------------ | -------------- | ------------------------------- |
-| Correction bug JWT claim `auth`      | ✅ Terminé     | `JwtAuthenticationConverter`    |
-| Correction `ProjectService.update()` | ✅ Terminé     | Préservation de `owner_id`      |
-| Ownership checks                     | ✅ Terminé     | Méthode `checkOwnership()`      |
-| Renommage `key` → `project_key`      | ✅ Terminé     | Conflit SQL résolu              |
-| Tests unitaires backend              | 🔄 Partiel     | À compléter pour nouveaux rôles |
-| Tests unitaires frontend             | ❌ Non démarré | Vitest à configurer davantage   |
-
-### 8.5 Phase 5 — Refactoring Sprint / Issue / Epic (Semaine 10-11)
-
-| Tâche                                        | Statut     | Commentaire                                               |
-| -------------------------------------------- | ---------- | --------------------------------------------------------- |
-| Refactoring Sprint (Board/Planning/Burndown) | ✅ Terminé | 3 onglets, kanban avec drag-drop, burndown SVG            |
-| Epic Roadmap                                 | ✅ Terminé | Timeline horizontale, barres de progression               |
-| Refactoring Issue (Backlog/Board + Drawer)   | ✅ Terminé | Onglets, Kanban, IssueDetailPanel avec sous-composants    |
-| Comment author + endpoints by-issue          | ✅ Terminé | Champ author, endpoints dédiés Comment/Attachment/History |
-| Upload/download fichiers (Attachment)        | ✅ Terminé | Multipart, stockage disque, download                      |
-| Dashboard / Page d'accueil                   | ✅ Terminé | 6 KPIs, graphiques SVG, timeline, quick actions           |
-| Ownership des commentaires                   | ✅ Terminé | Vérification auteur avant PUT/PATCH/DELETE                |
-| Assignation des issues                       | ✅ Terminé | PATCH + endpoint assignable users + UI drawer             |
-| Système de notification                      | ✅ Terminé | Entité + service + polling topbar + icône bell            |
-| Design system & branding                     | ✅ Terminé | Variables CSS dark/light, brutalism, logo, favicon        |
-| Tests backend (91 tests)                     | ✅ Terminé | 0 failure, 0 error                                        |
-| Correction seed data Liquibase               | ✅ Terminé | `context="prod"` pour éviter conflit tests H2             |
-
-### 8.6 Phase 6 — Finalisation (Semaine 12)
-
-| Tâche                    | Statut      | Commentaire                                 |
-| ------------------------ | ----------- | ------------------------------------------- |
-| Gestion erreurs frontend | ✅ Terminé  | AlertService ajouté sur tous les composants |
-| Documentation et rapport | 🔄 En cours | Présent document                            |
+| Tâche                                | Statut         | Commentaire                          |
+| ------------------------------------ | -------------- | ------------------------------------ |
+| Correction bug JWT claim `auth`      | ✅ Terminé     | `JwtAuthenticationConverter`         |
+| Correction `ProjectService.update()` | ✅ Terminé     | Préservation de `owner_id`           |
+| Ownership checks                     | ✅ Terminé     | Méthode `checkOwnership()`           |
+| Renommage `key` → `project_key`      | ✅ Terminé     | Conflit SQL résolu                   |
+| Gestion erreurs frontend             | ✅ Terminé     | AlertService sur tous les composants |
+| Tests unitaires backend              | 🔄 Partiel     | À compléter pour nouveaux rôles      |
+| Tests unitaires frontend             | ❌ Non démarré | Vitest à configurer davantage        |
+| Documentation et rapport             | 🔄 En cours    | Présent document                     |
 
 ---
 

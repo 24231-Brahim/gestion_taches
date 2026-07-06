@@ -13,7 +13,7 @@
           </div>
           @if (sp.project) {
             <div class="sprint-meta mt-1">
-              <a [routerLink]="['/project', sp.project.id, 'view']">{{ sp.project.name }}</a>
+              <a [routerLink]="['/project', sp.project.key, 'view']">{{ sp.project.name }}</a>
             </div>
           }
         </div>

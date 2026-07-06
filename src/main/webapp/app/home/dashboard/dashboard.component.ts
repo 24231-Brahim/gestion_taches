@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { httpResource } from '@angular/common/http';
+import { HttpParams, httpResource } from '@angular/common/http';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { KpiCardComponent } from './kpi-card.component';
 import { DashboardChartsComponent } from './charts.component';
@@ -138,15 +138,15 @@ export class DashboardComponent {
   private readonly applicationConfigService = inject(ApplicationConfigService);
   private readonly projectsResource = httpResource<any[]>(() => ({
     url: this.applicationConfigService.getEndpointFor('api/projects'),
-    params: { page: '0', size: '500' },
+    params: new HttpParams().set('page', '0').set('size', '500'),
   }));
   private readonly issuesResource = httpResource<any[]>(() => ({
     url: this.applicationConfigService.getEndpointFor('api/issues'),
-    params: { page: '0', size: '500' },
+    params: new HttpParams().set('page', '0').set('size', '500'),
   }));
   private readonly doneCountResource = httpResource<number>(() => ({
     url: this.applicationConfigService.getEndpointFor('api/issues/count'),
-    params: { 'status.equals': 'DONE' },
+    params: new HttpParams().set('status.equals', 'DONE'),
   }));
   private readonly memberCountResource = httpResource<number>(() => ({
     url: this.applicationConfigService.getEndpointFor('api/projects/members/count'),

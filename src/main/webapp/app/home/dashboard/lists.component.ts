@@ -15,7 +15,7 @@ import { RouterLink } from '@angular/router';
           @if (recentProjects().length > 0) {
             <div class="list-items">
               @for (p of recentProjects(); track p.id) {
-                <a [routerLink]="['/project', p.id, 'view']" class="list-item">
+                <a [routerLink]="['/project', p.key, 'view']" class="list-item">
                   <span class="item-name">{{ p.name }}</span>
                   <span class="item-key">{{ p.key }}</span>
                 </a>

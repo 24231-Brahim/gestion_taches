@@ -15,4 +15,12 @@ import org.springframework.stereotype.Repository;
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     Page<Project> findByOwnerLogin(String login, Pageable pageable);
     Optional<Project> findByIdAndOwnerLogin(Long id, String login);
+
+    @Query("SELECT DISTINCT p FROM Project p LEFT JOIN p.projectMembers pm WHERE p.owner.login = ?1 OR pm.user.login = ?1")
+    Page<Project> findByOwnerLoginOrMemberLogin(String login, Pageable pageable);
+
+    @Query("SELECT DISTINCT p FROM Project p LEFT JOIN p.projectMembers pm WHERE p.id = ?1 AND (p.owner.login = ?2 OR pm.user.login = ?2)")
+    Optional<Project> findByIdAndOwnerLoginOrMemberLogin(Long id, String login);
+
+    Optional<Project> findByKey(String key);
 }

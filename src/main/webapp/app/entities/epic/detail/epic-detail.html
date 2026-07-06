@@ -11,10 +11,6 @@
         <jhi-alert />
 
         <dl class="row-md jh-entity-details">
-          <dt><span jhiTranslate="global.field.id">ID</span></dt>
-          <dd>
-            <span>{{ epicRef.id }}</span>
-          </dd>
           <dt><span jhiTranslate="gestionTachesApp.epic.title">Title</span></dt>
           <dd>
             <span>{{ epicRef.title }}</span>
@@ -47,7 +43,7 @@
           <dd>
             @if (epic()!.project) {
               <div>
-                <a [routerLink]="['/project', epic()!.project?.id, 'view']">{{ epicRef.project?.name }}</a>
+                <a [routerLink]="['/project', epic()!.project?.key, 'view']">{{ epicRef.project?.name }}</a>
               </div>
             }
           </dd>

@@ -8,11 +8,11 @@ import { IProject } from '../project.model';
 import { ProjectService } from '../service/project.service';
 
 const projectResolve = (route: ActivatedRouteSnapshot): Observable<null | IProject> => {
-  const { id } = route.params;
-  if (id) {
+  const { key } = route.params;
+  if (key) {
     const router = inject(Router);
     const service = inject(ProjectService);
-    return service.find(id).pipe(
+    return service.findByKey(key).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 404) {
           router.navigate(['404']);
