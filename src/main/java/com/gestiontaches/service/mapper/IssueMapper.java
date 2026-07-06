@@ -21,6 +21,7 @@ public interface IssueMapper extends EntityMapper<IssueDTO, Issue> {
     @Mapping(target = "epic", source = "epic", qualifiedByName = "epicTitle")
     @Mapping(target = "project", source = "project", qualifiedByName = "projectName")
     @Mapping(target = "assignee", source = "assignee", qualifiedByName = "userLogin")
+    @Mapping(target = "createdBy", source = "createdBy", qualifiedByName = "userLogin")
     IssueDTO toDto(Issue s);
 
     @Named("sprintName")

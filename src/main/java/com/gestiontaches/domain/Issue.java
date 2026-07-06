@@ -94,6 +94,9 @@ public class Issue implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     private User assignee;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User createdBy;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -336,6 +339,19 @@ public class Issue implements Serializable {
         return this;
     }
 
+    public User getCreatedBy() {
+        return this.createdBy;
+    }
+
+    public void setCreatedBy(User user) {
+        this.createdBy = user;
+    }
+
+    public Issue createdBy(User user) {
+        this.setCreatedBy(user);
+        return this;
+    }
+
     public void setProject(Project project) {
         this.project = project;
     }
@@ -377,6 +393,7 @@ public class Issue implements Serializable {
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", assignee='" + (getAssignee() != null ? getAssignee().getLogin() : "null") + "'" +
+            ", createdBy='" + (getCreatedBy() != null ? getCreatedBy().getLogin() : "null") + "'" +
             "}";
     }
 }

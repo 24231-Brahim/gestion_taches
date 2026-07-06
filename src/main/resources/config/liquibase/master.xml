@@ -42,4 +42,6 @@
     <include file="config/liquibase/changelog/20260701000001_added_issue_assignee.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260701000002_added_comment_author.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260702000000_added_entity_Notification.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260703000000_added_action_history_user.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260704000000_added_issue_created_by.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

@@ -358,14 +358,18 @@ Toutes les opérations de modification sur un projet (`delete`, `getMembers`, `a
 - **RBAC** : 5 rôles avec `@PreAuthorize` sur tous les endpoints
 - **Projet owner/membres** : auto-assignation owner, filtrage par propriétaire, endpoints de gestion d'équipe
 - **JWT custom converter** : parse le claim `auth` pour Spring Security OAuth2 RS
+- **Assignation des issues** : endpoint `PATCH /api/issues/{id}/assign`, liste des utilisateurs assignables, sélecteur dans le drawer
+- **Système de notification** : entité `Notification`, service + polling 30s, icône cloche avec badge dans la topbar, dropdown
+- **Ownership des commentaires** : vérification auteur avant PUT/PATCH/DELETE
+- **Sprint refactoring** : board kanban 6 colonnes, planning backlog↔sprint, burndown chart SVG
+- **Issue refactoring** : onglets Backlog/Board, drawer latéral avec sections comments/attachments/history intégrées
+- **Epic roadmap** : timeline horizontale avec barres de progression, filtre par statut
 
 ### ❌ Non implémenté (reste à faire)
 
-- ~~**Gestion des erreurs frontend uniforme** : `onSaveError()` avec `AlertService` manquant sur Sprint, Epic, Issue, Comment, Attachment, ActionHistory~~ ✅ Fait
 - **Tests des nouveaux rôles** : `@WithMockUser` obsolètes dans les IT, tests manquants pour DEVELOPER et PROJET_MANAGER
 - **Pages admin dans la sidebar** : User Management, Metrics, Health, Configuration, Logs, API, H2 Console absents
 - **Persistance sidebar** : l'état collapsed n'est pas sauvegardé dans `localStorage`
-- **Notifications** : pas de système de notification pour les assignations d'issues
 
 ### ✅ Réalisé (après la rédaction initiale)
 
@@ -375,6 +379,12 @@ Toutes les opérations de modification sur un projet (`delete`, `getMembers`, `a
 - **Optimisation `addMember()`** : chargement unique du projet au lieu de deux requêtes.
 - **Endpoint PATCH /members/{userId}** : modification du rôle d'un membre avec `checkOwnership`.
 - **Frontend — Section Membres** : tableau liste + ajout + inline edit rôle + suppression dans `project-detail`, avec conditionnement des boutons par `*jhiHasAnyAuthority`, refetch automatique après chaque mutation, clés i18n fr/en.
+- **Règle métier — Ownership commentaire** : `CommentResource.checkCommentOwnership()` vérifie que seul l'auteur (ou ADMIN/PM) peut modifier/supprimer.
+- **Assignation des issues** : `PATCH /api/issues/{id}/assign` avec validation rôle, `GET /api/users/assignable`, sélecteur dans le drawer.
+- **Système de notification** : entité `Notification`, service backend, polling frontend 30s, icône `faBell` avec badge dans topbar, dropdown liste, marquage lu + navigation.
+- **Sprint refactoring** : 3 onglets (Board/Planning/Burndown), `SprintActiveBoard` kanban drag-drop, `SprintBacklogPlanning`, `SprintBurndownChart` SVG.
+- **Comment/Attachment/ActionHistory endpoints** : `GET /by-issue/{issueId}` pour chaque entité, upload multipart files.
+- **Issue drawer** : remplacement des placeholders par `IssueCommentList`, `IssueAttachmentList`, `IssueActivityFeed`.
 
 ### Dashboard d'accueil
 
@@ -454,7 +464,7 @@ epic/
 
 ### Notes
 
-- Les sections Comments, Attachments, History dans le drawer sont des placeholders vides (affichent "notFound" i18n). L'implémentation réelle nécessitera les formulaires de création + listes.
+- Les sections Comments, Attachments, History dans le drawer sont intégrées avec des composants réels : `IssueCommentList`, `IssueAttachmentList`, `IssueActivityFeed` — CRUD complet, upload/download fichiers, historique chronologique.
 - Le drawer utilise `FormsModule` + `[(ngModel)]` pour l'édition inline de la description. La sauvegarde se fait via `partialUpdate` à la perte de focus (`(blur)`).
 - Les icônes FontAwesome ont été ajoutées de manière atomique dans `font-awesome-icons.ts` pour le tree-shaking.
 - Les clés i18n suivent le pattern JHipster `gestionTachesApp.{entity}.{field}` sauf pour les globales (`global.messages.*`).

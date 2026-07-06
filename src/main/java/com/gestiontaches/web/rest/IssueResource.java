@@ -1,7 +1,9 @@
 package com.gestiontaches.web.rest;
 
+import com.gestiontaches.domain.Project;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.IssueRepository;
+import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
@@ -28,6 +30,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -62,13 +65,16 @@ public class IssueResource {
 
     private final UserRepository userRepository;
 
+    private final ProjectRepository projectRepository;
+
     public IssueResource(
         IssueService issueService,
         IssueRepository issueRepository,
         IssueQueryService issueQueryService,
         UserService userService,
         NotificationService notificationService,
-        UserRepository userRepository
+        UserRepository userRepository,
+        ProjectRepository projectRepository
     ) {
         this.issueService = issueService;
         this.issueRepository = issueRepository;
@@ -76,6 +82,45 @@ public class IssueResource {
         this.userService = userService;
         this.notificationService = notificationService;
         this.userRepository = userRepository;
+        this.projectRepository = projectRepository;
+    }
+
+    /**
+     * {@code POST  /projects/{projectId}/issues} : Create a new issue for a specific project.
+     * Only the project owner (or ADMIN) can create issues.
+     *
+     * @param projectId the id of the project.
+     * @param issueDTO the issueDTO to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new issueDTO,
+     *         or {@code 403 (Forbidden)} if the user is not the owner, or {@code 400 (Bad Request)} if the issue has already an ID.
+     * @throws URISyntaxException if the Location URI syntax is incorrect.
+     */
+    @PostMapping("/projects/{projectId}/issues")
+    public ResponseEntity<IssueDTO> createIssueForProject(@PathVariable("projectId") Long projectId, @Valid @RequestBody IssueDTO issueDTO)
+        throws URISyntaxException {
+        LOG.debug("REST request to save Issue for Project {} : {}", projectId, issueDTO);
+        if (issueDTO.getId() != null) {
+            throw new BadRequestAlertException("A new issue cannot already have an ID", ENTITY_NAME, "idexists");
+        }
+
+        Project project = projectRepository
+            .findById(projectId)
+            .orElseThrow(() -> new BadRequestAlertException("Project not found", "project", "idnotfound"));
+
+        String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
+        boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
+        if (!isAdmin && !project.getOwner().getLogin().equals(currentLogin)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        issueDTO.setProject(new com.gestiontaches.service.dto.ProjectDTO());
+        issueDTO.getProject().setId(projectId);
+        issueDTO.getProject().setName(project.getName());
+
+        issueDTO = issueService.createForProject(issueDTO, projectId);
+        return ResponseEntity.created(new URI("/api/issues/" + issueDTO.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, issueDTO.getId().toString()))
+            .body(issueDTO);
     }
 
     /**

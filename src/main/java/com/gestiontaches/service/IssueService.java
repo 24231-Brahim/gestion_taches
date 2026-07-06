@@ -1,8 +1,12 @@
 package com.gestiontaches.service;
 
 import com.gestiontaches.domain.Issue;
+import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.IssueRepository;
+import com.gestiontaches.repository.ProjectMemberRepository;
+import com.gestiontaches.repository.UserRepository;
+import com.gestiontaches.security.SecurityUtils;
 import com.gestiontaches.service.dto.IssueDTO;
 import com.gestiontaches.service.mapper.IssueMapper;
 import java.util.Optional;
@@ -26,9 +30,20 @@ public class IssueService {
 
     private final IssueMapper issueMapper;
 
-    public IssueService(IssueRepository issueRepository, IssueMapper issueMapper) {
+    private final UserRepository userRepository;
+
+    private final ProjectMemberRepository projectMemberRepository;
+
+    public IssueService(
+        IssueRepository issueRepository,
+        IssueMapper issueMapper,
+        UserRepository userRepository,
+        ProjectMemberRepository projectMemberRepository
+    ) {
         this.issueRepository = issueRepository;
         this.issueMapper = issueMapper;
+        this.userRepository = userRepository;
+        this.projectMemberRepository = projectMemberRepository;
     }
 
     /**
@@ -40,6 +55,11 @@ public class IssueService {
     public IssueDTO save(IssueDTO issueDTO) {
         LOG.debug("Request to save Issue : {}", issueDTO);
         Issue issue = issueMapper.toEntity(issueDTO);
+        String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
+        User currentUser = userRepository
+            .findOneByLogin(currentLogin)
+            .orElseThrow(() -> new RuntimeException("User not found: " + currentLogin));
+        issue.setCreatedBy(currentUser);
         issue = issueRepository.save(issue);
         return issueMapper.toDto(issue);
     }
@@ -99,6 +119,39 @@ public class IssueService {
     }
 
     /**
+     * Create an issue for a specific project with ownership validation.
+     *
+     * @param issueDTO the issue to create.
+     * @param projectId the project id.
+     * @return the persisted issue DTO.
+     */
+    public IssueDTO createForProject(IssueDTO issueDTO, Long projectId) {
+        LOG.debug("Request to save Issue for Project {} : {}", projectId, issueDTO);
+        Issue issue = issueMapper.toEntity(issueDTO);
+        String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
+        User currentUser = userRepository
+            .findOneByLogin(currentLogin)
+            .orElseThrow(() -> new RuntimeException("User not found: " + currentLogin));
+        issue.setCreatedBy(currentUser);
+        if (issue.getStatus() == null) {
+            issue.setStatus(com.gestiontaches.domain.enumeration.IssueStatus.BACKLOG);
+        }
+        if (issue.getCreatedAt() == null) {
+            issue.setCreatedAt(java.time.Instant.now());
+        }
+        if (issue.getAssignee() != null) {
+            Long assigneeId = issue.getAssignee().getId();
+            if (assigneeId != null) {
+                projectMemberRepository
+                    .findByProjectIdAndUserId(projectId, assigneeId)
+                    .orElseThrow(() -> new RuntimeException("Assignee must be a member of the project"));
+            }
+        }
+        issue = issueRepository.save(issue);
+        return issueMapper.toDto(issue);
+    }
+
+    /**
      * Delete the issue by id.
      *
      * @param id the id of the entity.
@@ -120,6 +173,10 @@ public class IssueService {
         return issueRepository
             .findById(issueId)
             .map(issue -> {
+                // Verify user is a member of the project
+                ProjectMember member = projectMemberRepository
+                    .findByProjectIdAndUserId(issue.getProject().getId(), user.getId())
+                    .orElseThrow(() -> new RuntimeException("User is not a member of the project for this issue"));
                 issue.setAssignee(user);
                 return issueRepository.save(issue);
             })

@@ -61,6 +61,13 @@ export class IssueService extends IssuesService {
     return this.http.post<RestIssue>(this.resourceUrl, copy).pipe(map(res => this.convertResponseFromServer(res)));
   }
 
+  createForProject(projectId: number, issue: NewIssue): Observable<IIssue> {
+    const copy = this.convertValueFromClient(issue);
+    return this.http
+      .post<RestIssue>(`${this.applicationConfigService.getEndpointFor('api/projects')}/${encodeURIComponent(projectId)}/issues`, copy)
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
   update(issue: IIssue): Observable<IIssue> {
     const copy = this.convertValueFromClient(issue);
     return this.http

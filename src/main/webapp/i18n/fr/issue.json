@@ -34,7 +34,8 @@
       "sprint": "Sprint",
       "epic": "Epic",
       "project": "Project",
-      "assignee": "Assigné"
+      "assignee": "Assigné",
+      "createdBy": "Créé par"
     }
   }
 }

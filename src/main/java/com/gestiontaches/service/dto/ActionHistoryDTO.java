@@ -32,6 +32,8 @@ public class ActionHistoryDTO implements Serializable {
     @NotNull
     private IssueDTO issue;
 
+    private UserDTO user;
+
     public Long getId() {
         return id;
     }
@@ -86,6 +88,14 @@ public class ActionHistoryDTO implements Serializable {
 
     public void setIssue(IssueDTO issue) {
         this.issue = issue;
+    }
+
+    public UserDTO getUser() {
+        return user;
+    }
+
+    public void setUser(UserDTO user) {
+        this.user = user;
     }
 
     @Override

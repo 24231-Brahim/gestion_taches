@@ -20,6 +20,7 @@ export interface IIssue {
   epic?: Pick<IEpic, 'id' | 'title'> | null;
   project?: Pick<IProject, 'id' | 'name' | 'key'> | null;
   assignee?: { id: number; login: string } | null;
+  createdBy?: { id: number; login: string } | null;
 }
 
 export type NewIssue = Omit<IIssue, 'id'> & { id: null };

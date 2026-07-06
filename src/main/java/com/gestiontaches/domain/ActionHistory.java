@@ -1,6 +1,7 @@
 package com.gestiontaches.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.gestiontaches.domain.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serial;
@@ -52,6 +53,10 @@ public class ActionHistory implements Serializable {
     @NotNull
     @JsonIgnoreProperties(value = { "commentses", "attachmentses", "histories", "sprint", "epic", "project" }, allowSetters = true)
     private Issue issue;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = { "authorities" }, allowSetters = true)
+    private User user;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -146,6 +151,19 @@ public class ActionHistory implements Serializable {
         return this;
     }
 
+    public User getUser() {
+        return this.user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public ActionHistory user(User user) {
+        this.setUser(user);
+        return this;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -175,6 +193,7 @@ public class ActionHistory implements Serializable {
             ", oldValue='" + getOldValue() + "'" +
             ", newValue='" + getNewValue() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
+            ", user='" + (getUser() != null ? getUser().getLogin() : "null") + "'" +
             "}";
     }
 }

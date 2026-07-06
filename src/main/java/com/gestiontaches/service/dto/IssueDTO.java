@@ -46,6 +46,8 @@ public class IssueDTO implements Serializable {
 
     private UserDTO assignee;
 
+    private UserDTO createdBy;
+
     public Long getId() {
         return id;
     }
@@ -138,6 +140,14 @@ public class IssueDTO implements Serializable {
         this.assignee = assignee;
     }
 
+    public UserDTO getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(UserDTO createdBy) {
+        this.createdBy = createdBy;
+    }
+
     public void setProject(ProjectDTO project) {
         this.project = project;
     }
@@ -178,6 +188,8 @@ public class IssueDTO implements Serializable {
             ", sprint=" + getSprint() +
             ", epic=" + getEpic() +
             ", project=" + getProject() +
+            ", assignee=" + getAssignee() +
+            ", createdBy=" + getCreatedBy() +
             "}";
     }
 }

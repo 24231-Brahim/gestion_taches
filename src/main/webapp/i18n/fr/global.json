@@ -106,7 +106,8 @@
       "open": "Ouvrir",
       "save": "Sauvegarder",
       "view": "Voir",
-      "show": "Afficher {{otherEntity}}"
+      "show": "Afficher {{otherEntity}}",
+      "related": "Liés"
     },
     "detail": {
       "field": "Champ",
@@ -152,6 +153,7 @@
     },
     "messages": {
       "empty": "Aucun",
+      "notSet": "Non défini",
       "notAssigned": "Non assigné",
       "unassigned": "Non assigné",
       "noNotifications": "Aucune notification"

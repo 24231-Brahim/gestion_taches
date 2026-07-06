@@ -27,16 +27,18 @@ public interface IssueRepository extends JpaRepository<Issue, Long>, JpaSpecific
     }
 
     @Query(
-        value = "select issue from Issue issue left join fetch issue.sprint left join fetch issue.epic left join fetch issue.project",
+        value = "select issue from Issue issue left join fetch issue.sprint left join fetch issue.epic left join fetch issue.project left join fetch issue.assignee left join fetch issue.createdBy",
         countQuery = "select count(issue) from Issue issue"
     )
     Page<Issue> findAllWithToOneRelationships(Pageable pageable);
 
-    @Query("select issue from Issue issue left join fetch issue.sprint left join fetch issue.epic left join fetch issue.project")
+    @Query(
+        "select issue from Issue issue left join fetch issue.sprint left join fetch issue.epic left join fetch issue.project left join fetch issue.assignee left join fetch issue.createdBy"
+    )
     List<Issue> findAllWithToOneRelationships();
 
     @Query(
-        "select issue from Issue issue left join fetch issue.sprint left join fetch issue.epic left join fetch issue.project where issue.id =:id"
+        "select issue from Issue issue left join fetch issue.sprint left join fetch issue.epic left join fetch issue.project left join fetch issue.assignee left join fetch issue.createdBy where issue.id =:id"
     )
     Optional<Issue> findOneWithToOneRelationships(@Param("id") Long id);
 }

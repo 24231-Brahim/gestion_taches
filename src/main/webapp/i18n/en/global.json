@@ -106,7 +106,8 @@
       "open": "Open",
       "save": "Save",
       "view": "View",
-      "show": "Show {{otherEntity}}"
+      "show": "Show {{otherEntity}}",
+      "related": "Related"
     },
     "detail": {
       "field": "Field",
@@ -152,6 +153,7 @@
     },
     "messages": {
       "empty": "None",
+      "notSet": "Not set",
       "notAssigned": "Not assigned",
       "unassigned": "Unassigned",
       "noNotifications": "No notifications"

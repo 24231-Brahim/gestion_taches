@@ -1,8 +1,11 @@
 package com.gestiontaches.service;
 
 import com.gestiontaches.domain.ActionHistory;
+import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.ActionHistoryRepository;
+import com.gestiontaches.security.SecurityUtils;
 import com.gestiontaches.service.dto.ActionHistoryDTO;
+import com.gestiontaches.service.dto.UserDTO;
 import com.gestiontaches.service.mapper.ActionHistoryMapper;
 import java.util.List;
 import java.util.Optional;
@@ -26,9 +29,16 @@ public class ActionHistoryService {
 
     private final ActionHistoryMapper actionHistoryMapper;
 
-    public ActionHistoryService(ActionHistoryRepository actionHistoryRepository, ActionHistoryMapper actionHistoryMapper) {
+    private final UserService userService;
+
+    public ActionHistoryService(
+        ActionHistoryRepository actionHistoryRepository,
+        ActionHistoryMapper actionHistoryMapper,
+        UserService userService
+    ) {
         this.actionHistoryRepository = actionHistoryRepository;
         this.actionHistoryMapper = actionHistoryMapper;
+        this.userService = userService;
     }
 
     /**
@@ -39,6 +49,10 @@ public class ActionHistoryService {
      */
     public ActionHistoryDTO save(ActionHistoryDTO actionHistoryDTO) {
         LOG.debug("Request to save ActionHistory : {}", actionHistoryDTO);
+        User currentUser = userService
+            .getUserWithAuthoritiesByLogin(SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("No user logged in")))
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        actionHistoryDTO.setUser(new UserDTO(currentUser));
         ActionHistory actionHistory = actionHistoryMapper.toEntity(actionHistoryDTO);
         actionHistory = actionHistoryRepository.save(actionHistory);
         return actionHistoryMapper.toDto(actionHistory);

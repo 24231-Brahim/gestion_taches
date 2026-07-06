@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
@@ -9,13 +9,20 @@ import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
-import { FormatMediumDatetimePipe } from 'app/shared/date';
+import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
 import { IProject, IProjectMember } from '../project.model';
 import { ProjectService } from '../service/project.service';
 import { UserService } from 'app/entities/user/service/user.service';
 import { IUser } from 'app/entities/user/user.model';
+import { ISprint } from 'app/entities/sprint/sprint.model';
+import { SprintService } from 'app/entities/sprint/service/sprint.service';
+import { IIssue, NewIssue } from 'app/entities/issue/issue.model';
+import { IssueService } from 'app/entities/issue/service/issue.service';
+import { IssueType } from 'app/entities/enumerations/issue-type.model';
+import { IssueStatus } from 'app/entities/enumerations/issue-status.model';
+import { Priority } from 'app/entities/enumerations/priority.model';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,6 +36,7 @@ import { IUser } from 'app/entities/user/user.model';
     TranslateModule,
     RouterLink,
     FormatMediumDatetimePipe,
+    FormatMediumDatePipe,
     FormsModule,
     HasAnyAuthorityDirective,
   ],
@@ -44,17 +52,61 @@ export class ProjectDetail {
   readonly editingMemberId = signal<number | null>(null);
   readonly editingRole = signal('');
 
+  readonly sprints = signal<ISprint[]>([]);
+  readonly issues = signal<IIssue[]>([]);
+
+  // Issue creation form
+  readonly showIssueForm = signal(false);
+  readonly newIssueTitle = signal('');
+  readonly newIssueDescription = signal('');
+  readonly newIssueType = signal<keyof typeof IssueType>('TASK');
+  readonly newIssuePriority = signal<keyof typeof Priority>('MEDIUM');
+  readonly newIssueSprintId = signal<number | null>(null);
+  readonly newIssueAssigneeId = signal<number | null>(null);
+  readonly isCreatingIssue = signal(false);
+
+  readonly issueTypeValues = Object.keys(IssueType);
+  readonly priorityValues = Object.keys(Priority);
+
+  readonly isOwner = computed(() => {
+    const proj = this.project();
+    const account = this.accountService.account();
+    if (!proj || !account) {
+      return false;
+    }
+    if (account.authorities.includes('ROLE_ADMIN')) {
+      return true;
+    }
+    return proj.ownerLogin === account.login;
+  });
+
   private readonly projectService = inject(ProjectService);
   private readonly accountService = inject(AccountService);
   private readonly alertService = inject(AlertService);
   private readonly userService = inject(UserService);
+  private readonly sprintService = inject(SprintService);
+  private readonly issueService = inject(IssueService);
 
   constructor() {
     effect(() => {
       const proj = this.project();
       if (proj?.id) {
         this.loadMembers(proj.id);
+        this.loadSprints(proj.id);
+        this.loadIssues(proj.id);
       }
+    });
+  }
+
+  loadSprints(projectId: number): void {
+    this.sprintService.query({ 'projectId.equals': projectId }).subscribe({
+      next: res => this.sprints.set(res.body ?? []),
+    });
+  }
+
+  loadIssues(projectId: number): void {
+    this.issueService.query({ 'projectId.equals': projectId, size: 100 }).subscribe({
+      next: res => this.issues.set(res.body ?? []),
     });
   }
 
@@ -123,6 +175,59 @@ export class ProjectDetail {
         this.alertService.addAlert({ type: 'success', translationKey: 'gestionTachesApp.project.member.updated' });
       },
       error: () => this.alertService.addAlert({ type: 'danger', translationKey: 'gestionTachesApp.project.member.error.update' }),
+    });
+  }
+
+  toggleIssueForm(): void {
+    this.showIssueForm.update(v => !v);
+    if (!this.showIssueForm()) {
+      this.resetIssueForm();
+    }
+  }
+
+  resetIssueForm(): void {
+    this.newIssueTitle.set('');
+    this.newIssueDescription.set('');
+    this.newIssueType.set('TASK');
+    this.newIssuePriority.set('MEDIUM');
+    this.newIssueSprintId.set(null);
+    this.newIssueAssigneeId.set(null);
+  }
+
+  createIssue(projectId: number): void {
+    const title = this.newIssueTitle();
+    if (!title) {
+      return;
+    }
+    this.isCreatingIssue.set(true);
+
+    const newIssue: NewIssue = {
+      id: null,
+      title,
+      description: this.newIssueDescription() || null,
+      type: this.newIssueType(),
+      status: 'BACKLOG',
+      priority: this.newIssuePriority(),
+      project: { id: projectId, name: this.project()?.name ?? null, key: this.project()?.key ?? null },
+      sprint: this.newIssueSprintId() ? { id: this.newIssueSprintId()!, name: '' } : null,
+      assignee: this.newIssueAssigneeId()
+        ? { id: this.newIssueAssigneeId()!, login: this.members().find(m => m.userId === this.newIssueAssigneeId())?.userLogin ?? '' }
+        : null,
+      createdBy: null,
+    };
+
+    this.issueService.createForProject(projectId, newIssue).subscribe({
+      next: () => {
+        this.loadIssues(projectId);
+        this.showIssueForm.set(false);
+        this.resetIssueForm();
+        this.isCreatingIssue.set(false);
+        this.alertService.addAlert({ type: 'success', translationKey: 'gestionTachesApp.issue.created' });
+      },
+      error: () => {
+        this.isCreatingIssue.set(false);
+        this.alertService.addAlert({ type: 'danger', translationKey: 'error.general' });
+      },
     });
   }
 

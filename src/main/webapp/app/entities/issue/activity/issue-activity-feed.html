@@ -6,6 +6,9 @@
         <div class="activity-dot"></div>
         <div class="activity-content">
           <span class="activity-action">{{ h.action }}</span>
+          @if (h.user?.login) {
+            <span class="activity-detail"> — par {{ h.user?.login }}</span>
+          }
           @if (h.fieldChanged) {
             <span class="activity-detail"> — {{ h.fieldChanged }}: {{ h.oldValue }} → {{ h.newValue }}</span>
           }

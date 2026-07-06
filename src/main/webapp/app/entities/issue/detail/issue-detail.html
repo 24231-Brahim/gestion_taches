@@ -71,6 +71,22 @@
               </div>
             }
           </dd>
+          <dt><span jhiTranslate="gestionTachesApp.issue.createdBy">Created By</span></dt>
+          <dd>
+            @if (issueRef.createdBy) {
+              <span>{{ issueRef.createdBy.login }}</span>
+            } @else {
+              <span class="text-muted" jhiTranslate="global.messages.notAssigned"></span>
+            }
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.issue.assignee">Assignee</span></dt>
+          <dd>
+            @if (issueRef.assignee) {
+              <span>{{ issueRef.assignee.login }}</span>
+            } @else {
+              <span class="text-muted" jhiTranslate="global.messages.unassigned"></span>
+            }
+          </dd>
           <dt><span jhiTranslate="gestionTachesApp.issue.project">Project</span></dt>
           <dd>
             @if (issue()!.project) {

@@ -53,6 +53,16 @@ export class SprintUpdate implements OnInit {
 
       this.loadRelationshipsOptions();
     });
+
+    // Pre-select project from query params (e.g. when coming from project-detail)
+    this.activatedRoute.queryParams.subscribe(params => {
+      const projectId = params['projectId'];
+      if (projectId && !this.sprint) {
+        this.projectService.find(Number(projectId)).subscribe(project => {
+          this.editForm.patchValue({ project });
+        });
+      }
+    });
   }
 
   previousState(): void {

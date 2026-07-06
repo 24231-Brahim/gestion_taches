@@ -22,7 +22,7 @@ import { IssueService } from '../service/issue.service';
 
 import { IssueFormGroup, IssueFormService } from './issue-form.service';
 import { EpicService } from 'app/entities/epic/service/epic.service';
-import { IProject } from 'app/entities/project/project.model';
+import { IProject, IProjectMember } from 'app/entities/project/project.model';
 import { ProjectService } from 'app/entities/project/service/project.service';
 
 @Component({
@@ -41,6 +41,7 @@ export class IssueUpdate implements OnInit {
   sprintsSharedCollection = signal<ISprint[]>([]);
   epicsSharedCollection = signal<IEpic[]>([]);
   projectsSharedCollection = signal<IProject[]>([]);
+  projectMembers = signal<IProjectMember[]>([]);
 
   protected issueService = inject(IssueService);
   protected issueFormService = inject(IssueFormService);
@@ -59,6 +60,14 @@ export class IssueUpdate implements OnInit {
   compareEpic = (o1: IEpic | null, o2: IEpic | null): boolean => this.epicService.compareEpic(o1, o2);
 
   compareProject = (o1: IProject | null, o2: IProject | null): boolean => this.projectService.compareProject(o1, o2);
+  compareProjectMember = (o1: { id: number; login: string } | null, o2: { id: number; login: string } | null): boolean =>
+    o1 !== null && o2 !== null ? o1.id === o2.id : o1 === o2;
+
+  loadProjectMembers(projectId: number): void {
+    this.projectService.getMembers(projectId).subscribe({
+      next: members => this.projectMembers.set(members),
+    });
+  }
 
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ issue }) => {
@@ -68,6 +77,26 @@ export class IssueUpdate implements OnInit {
       }
 
       this.loadRelationshipsOptions();
+    });
+
+    // Pre-select project from query params (e.g. when coming from project-detail)
+    this.activatedRoute.queryParams.subscribe(params => {
+      const projectId: string | undefined = params['projectId'];
+      if (projectId && !this.issue) {
+        this.projectService.find(Number(projectId)).subscribe(project => {
+          this.editForm.patchValue({ project });
+          this.loadProjectMembers(project.id);
+        });
+      }
+    });
+
+    // Watch for project changes to load members
+    this.editForm.get('project')?.valueChanges.subscribe(project => {
+      const projectVal = project as IProject | null;
+      if (projectVal?.id) {
+        this.loadProjectMembers(projectVal.id);
+        this.editForm.patchValue({ assignee: null }, { emitEvent: false });
+      }
     });
   }
 
@@ -133,6 +162,13 @@ export class IssueUpdate implements OnInit {
       .query()
       .pipe(map((res: HttpResponse<IProject[]>) => res.body ?? []))
       .pipe(map((projects: IProject[]) => this.projectService.addProjectToCollectionIfMissing<IProject>(projects, this.issue?.project)))
-      .subscribe((projects: IProject[]) => this.projectsSharedCollection.set(projects));
+      .subscribe((projects: IProject[]) => {
+        this.projectsSharedCollection.set(projects);
+        // Load project members if project is known
+        const projectId = this.issue?.project?.id ?? projects.find(p => this.editForm.get('project')?.value?.id === p.id)?.id;
+        if (projectId) {
+          this.loadProjectMembers(projectId);
+        }
+      });
   }
 }

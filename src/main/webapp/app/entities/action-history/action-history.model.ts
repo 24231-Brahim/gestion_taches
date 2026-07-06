@@ -10,6 +10,7 @@ export interface IActionHistory {
   newValue?: string | null;
   createdAt?: dayjs.Dayjs | null;
   issue?: Pick<IIssue, 'id'> | null;
+  user?: { id: number; login: string } | null;
 }
 
 export type NewActionHistory = Omit<IActionHistory, 'id'> & { id: null };

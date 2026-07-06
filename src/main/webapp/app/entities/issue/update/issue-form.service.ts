@@ -43,6 +43,7 @@ type IssueFormGroupContent = {
   sprint: FormControl<IssueFormRawValue['sprint']>;
   epic: FormControl<IssueFormRawValue['epic']>;
   project: FormControl<IssueFormRawValue['project']>;
+  assignee: FormControl<IssueFormRawValue['assignee']>;
 };
 
 export type IssueFormGroup = FormGroup<IssueFormGroupContent>;
@@ -86,6 +87,7 @@ export class IssueFormService {
       project: new FormControl(issueRawValue.project, {
         validators: [Validators.required],
       }),
+      assignee: new FormControl(issueRawValue.assignee),
     });
   }
 
