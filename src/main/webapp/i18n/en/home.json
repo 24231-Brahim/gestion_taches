@@ -1,0 +1,50 @@
+{
+  "home": {
+    "title": "Welcome, Java Hipster!",
+    "subtitle": "This is your homepage",
+    "logged": {
+      "message": "You are logged in as user \"{{username}}\"."
+    },
+    "question": "If you have any questions on JHipster:",
+    "link": {
+      "homepage": "JHipster homepage",
+      "stackoverflow": "JHipster on Stack Overflow",
+      "bugtracker": "JHipster bug tracker",
+      "chat": "JHipster public chat room",
+      "follow": "follow @jhipster on Twitter"
+    },
+    "like": "If you like JHipster, don't forget to give us a star on",
+    "github": "GitHub"
+  },
+  "dashboard": {
+    "noData": "No data",
+    "loading": "Loading dashboard data...",
+    "error": "Failed to load dashboard data",
+    "kpi": {
+      "totalProjects": "Total Projects",
+      "activeProjects": "Active Projects",
+      "totalTasks": "Total Tasks",
+      "completedTasks": "Completed",
+      "overdueTasks": "Overdue Tasks",
+      "teamMembers": "Team Members"
+    },
+    "charts": {
+      "projectProgress": "PROJECT PROGRESS",
+      "taskDistribution": "TASK DISTRIBUTION"
+    },
+    "lists": {
+      "recentProjects": "RECENT PROJECTS",
+      "recentTasks": "RECENT TASKS"
+    },
+    "timeline": {
+      "title": "RECENT ACTIVITY"
+    },
+    "quickActions": {
+      "title": "QUICK ACTIONS",
+      "newProject": "New Project",
+      "newIssue": "New Issue",
+      "viewProjects": "View Projects",
+      "viewIssues": "View Issues"
+    }
+  }
+}

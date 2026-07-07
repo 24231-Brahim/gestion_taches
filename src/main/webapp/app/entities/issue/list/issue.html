@@ -1,0 +1,157 @@
+<div class="issue-page">
+  <div class="issue-page-header">
+    <h2 id="page-heading" data-cy="IssueHeading" class="page-heading">
+      <span jhiTranslate="gestionTachesApp.issue.home.title">Issues</span>
+    </h2>
+    <div class="d-flex gap-2 align-items-center">
+      <div class="view-mode-tabs">
+        <button class="btn btn-sm" [class.btn-active]="viewMode() === 'list'" (click)="setViewMode('list')">
+          <fa-icon icon="list" /><span class="d-none d-md-inline ms-1" jhiTranslate="gestionTachesApp.issue.home.backlog">Backlog</span>
+        </button>
+        <button class="btn btn-sm" [class.btn-active]="viewMode() === 'kanban'" (click)="setViewMode('kanban')">
+          <fa-icon icon="columns" /><span class="d-none d-md-inline ms-1" jhiTranslate="gestionTachesApp.issue.home.board">Board</span>
+        </button>
+      </div>
+      <button class="btn btn-info btn-sm" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+      </button>
+      <button id="jh-create-entity" data-cy="entityCreateButton" class="btn btn-primary btn-sm" [routerLink]="['/issue/new']">
+        <fa-icon icon="plus" /><span jhiTranslate="gestionTachesApp.issue.home.createLabel"></span>
+      </button>
+    </div>
+  </div>
+
+  <jhi-alert-error />
+  <jhi-alert />
+
+  <div class="issue-toolbar">
+    <div class="search-box">
+      <fa-icon icon="search" class="search-icon" />
+      <input
+        type="text"
+        class="form-control form-control-sm"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        [placeholder]="'gestionTachesApp.issue.home.search' | translate"
+      />
+    </div>
+    <jhi-filter [filters]="filters" />
+  </div>
+
+  @if (viewMode() === 'list') {
+    @if (filteredIssues().length === 0) {
+      <div class="alert alert-warning" id="no-result">
+        <span jhiTranslate="gestionTachesApp.issue.home.notFound">Aucun Issue trouvé</span>
+      </div>
+    } @else {
+      <div class="table-responsive table-entities" id="entities">
+        <table class="table" aria-describedby="page-heading">
+          <thead>
+            <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+              <th scope="col" jhiSortBy="type">
+                <div class="d-flex"><span jhiTranslate="gestionTachesApp.issue.type">Type</span><fa-icon class="p-1" icon="sort" /></div>
+              </th>
+              <th scope="col" jhiSortBy="title">
+                <div class="d-flex"><span jhiTranslate="gestionTachesApp.issue.title">Title</span><fa-icon class="p-1" icon="sort" /></div>
+              </th>
+              <th scope="col" jhiSortBy="status">
+                <div class="d-flex">
+                  <span jhiTranslate="gestionTachesApp.issue.status">Status</span><fa-icon class="p-1" icon="sort" />
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="priority">
+                <div class="d-flex">
+                  <span jhiTranslate="gestionTachesApp.issue.priority">Priority</span><fa-icon class="p-1" icon="sort" />
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="sprint.name">
+                <div class="d-flex">
+                  <span jhiTranslate="gestionTachesApp.issue.sprint">Sprint</span><fa-icon class="p-1" icon="sort" />
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="epic.title">
+                <div class="d-flex"><span jhiTranslate="gestionTachesApp.issue.epic">Epic</span><fa-icon class="p-1" icon="sort" /></div>
+              </th>
+              <th scope="col"><span jhiTranslate="gestionTachesApp.issue.assignee">Assignee</span></th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (issue of filteredIssues(); track trackId(issue)) {
+              <tr data-cy="entityTable" class="issue-row" (click)="onSelectIssue(issue)">
+                <td>
+                  <fa-icon
+                    [icon]="typeIcons[issue.type ?? 'STORY']"
+                    [style.color]="typeColors[issue.type ?? 'STORY']"
+                    [title]="'gestionTachesApp.IssueType.' + (issue.type ?? 'null') | translate"
+                  />
+                </td>
+                <td class="issue-title-cell">{{ issue.title }}</td>
+                <td>
+                  <span class="status-badge" [style.background]="statusBadges[issue.status ?? 'BACKLOG']?.color">
+                    {{ 'gestionTachesApp.IssueStatus.' + (issue.status ?? 'null') | translate }}
+                  </span>
+                </td>
+                <td>
+                  <fa-icon
+                    [icon]="priorityIcons[issue.priority ?? 'MEDIUM']"
+                    [style.color]="priorityColors[issue.priority ?? 'MEDIUM']"
+                    class="me-1"
+                  />
+                  <span>{{ 'gestionTachesApp.Priority.' + (issue.priority ?? 'null') | translate }}</span>
+                </td>
+                <td>
+                  @if (issue.sprint) {
+                    {{ issue.sprint.name }}
+                  }
+                </td>
+                <td>
+                  @if (issue.epic) {
+                    {{ issue.epic.title }}
+                  }
+                </td>
+                <td>
+                  @if (issue.assignee) {
+                    <span class="assignee-initials-sm" [title]="issue.assignee.login">{{ issue.assignee.login }}</span>
+                  }
+                </td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm" (click)="$event.stopPropagation()">
+                    <a [routerLink]="['/issue', issue.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                      <fa-icon icon="pencil-alt" />
+                    </a>
+                    <button type="submit" (click)="delete(issue)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                      <fa-icon icon="times" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    @if (issues().length > 0) {
+      <div>
+        <div class="d-flex justify-content-center">
+          <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+        </div>
+        <div class="d-flex justify-content-center">
+          <ngb-pagination
+            [collectionSize]="totalItems()"
+            [page]="page()"
+            [pageSize]="itemsPerPage()"
+            [maxSize]="5"
+            [rotate]="true"
+            [boundaryLinks]="true"
+            (pageChange)="navigateToPage($event)"
+          />
+        </div>
+      </div>
+    }
+  } @else {
+    <jhi-issue-kanban-board [issues]="filteredIssues()" (selectIssue)="onSelectIssue($event)" />
+  }
+
+  <jhi-issue-detail-panel [issue]="selectedIssue()" [visible]="drawerVisible()" [close]="onCloseDrawer.bind(this)" />
+</div>

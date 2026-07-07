@@ -1,0 +1,11 @@
+{
+  "gestionTachesApp": {
+    "SprintStatus": {
+      "null": "",
+      "PLANNED": "PLANNED",
+      "ACTIVE": "ACTIVE",
+      "COMPLETED": "COMPLETED",
+      "CANCELLED": "CANCELLED"
+    }
+  }
+}

@@ -1,0 +1,56 @@
+<div class="d-flex justify-content-center">
+  <div class="col-12 col-lg-8">
+    @if (actionHistory(); as actionHistoryRef) {
+      <div>
+        <h2 data-cy="actionHistoryDetailsHeading">
+          <span jhiTranslate="gestionTachesApp.actionHistory.detail.title">Action History</span>
+        </h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="gestionTachesApp.actionHistory.action">Action</span></dt>
+          <dd>
+            <span>{{ actionHistoryRef.action }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.actionHistory.fieldChanged">Field Changed</span></dt>
+          <dd>
+            <span>{{ actionHistoryRef.fieldChanged }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.actionHistory.oldValue">Old Value</span></dt>
+          <dd>
+            <span>{{ actionHistoryRef.oldValue }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.actionHistory.newValue">New Value</span></dt>
+          <dd>
+            <span>{{ actionHistoryRef.newValue }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.actionHistory.createdAt">Created At</span></dt>
+          <dd>
+            <span>{{ actionHistoryRef.createdAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.actionHistory.issue">Issue</span></dt>
+          <dd>
+            @if (actionHistory()!.issue) {
+              <div>
+                <a [routerLink]="['/issue', actionHistory()!.issue?.id, 'view']">{{ actionHistoryRef.issue?.id }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+        </button>
+
+        <button type="button" [routerLink]="['/action-history', actionHistoryRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

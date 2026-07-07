@@ -1,0 +1,5 @@
+id;title;description;status;priority;created_at;updated_at;project_id
+1001;User Authentication;Implement user login and registration functionality;TODO;HIGH;2026-06-20 10:00:00;2026-06-20 10:00:00;1001
+1002;Dashboard;Build the main dashboard with charts and KPIs;IN_PROGRESS;HIGH;2026-06-20 10:00:00;2026-06-25 14:00:00;1001
+1003;Client Management;Manage client profiles and accounts;TODO;MEDIUM;2026-06-22 14:30:00;2026-06-22 14:30:00;1002
+1004;Reporting System;Generate reports and analytics;IN_PROGRESS;MEDIUM;2026-06-22 14:30:00;2026-06-28 09:00:00;1002

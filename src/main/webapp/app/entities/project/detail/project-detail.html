@@ -1,0 +1,310 @@
+<div class="d-flex justify-content-center">
+  <div class="col-12 col-lg-8">
+    @if (project(); as projectRef) {
+      <div>
+        <h2 class="page-heading" data-cy="projectDetailsHeading">
+          <span jhiTranslate="gestionTachesApp.project.detail.title">Project</span>
+        </h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="gestionTachesApp.project.name">Name</span></dt>
+          <dd>
+            <span>{{ projectRef.name }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.project.description">Description</span></dt>
+          <dd>
+            <span>{{ projectRef.description }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.project.key">Key</span></dt>
+          <dd>
+            <span class="badge border-primary">{{ projectRef.key }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.project.createdAt">Created At</span></dt>
+          <dd>
+            <span>{{ projectRef.createdAt | formatMediumDatetime }}</span>
+          </dd>
+        </dl>
+
+        <hr />
+
+        <div class="d-flex align-items-center mb-3">
+          <h3 class="mb-0" jhiTranslate="gestionTachesApp.project.members">Members</h3>
+          <button class="btn btn-primary btn-sm ms-2" *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_PROJET_MANAGER']" (click)="toggleAddForm()">
+            <fa-icon icon="user-plus" />&nbsp;<span jhiTranslate="gestionTachesApp.project.member.add">Add member</span>
+          </button>
+        </div>
+
+        @if (showAddForm()) {
+          <div class="card mb-3 border">
+            <div class="card-body">
+              <div class="row g-2 align-items-end">
+                <div class="col-auto">
+                  <select class="form-select" [(ngModel)]="selectedUserId" aria-label="User">
+                    <option [ngValue]="null" disabled jhiTranslate="gestionTachesApp.project.member.selectUser">Select a user</option>
+                    @for (user of users(); track user.id) {
+                      @if (!members().find(m => m.userId === user.id)) {
+                        <option [ngValue]="user.id">{{ user.login }}</option>
+                      }
+                    }
+                  </select>
+                </div>
+                <div class="col-auto">
+                  <input type="text" class="form-control" [(ngModel)]="newMemberRole" placeholder="Role" maxlength="50" />
+                </div>
+                <div class="col-auto">
+                  <button class="btn btn-primary" (click)="addMember(projectRef.id)" [disabled]="!selectedUserId()">
+                    <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+                  </button>
+                  <button class="btn btn-secondary ms-1" (click)="toggleAddForm()">
+                    <fa-icon icon="times" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th jhiTranslate="gestionTachesApp.project.member.userLogin">User</th>
+                <th jhiTranslate="gestionTachesApp.project.member.role">Role</th>
+                <th jhiTranslate="gestionTachesApp.project.member.joinedAt">Joined At</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (member of members(); track member.id) {
+                <tr>
+                  <td><fa-icon icon="user" class="me-1" />{{ member.userLogin }}</td>
+                  <td>
+                    @if (editingMemberId() === member.id) {
+                      <div class="d-flex gap-1 align-items-center">
+                        <input
+                          type="text"
+                          class="form-control form-control-sm"
+                          style="width: 120px"
+                          [(ngModel)]="editingRole"
+                          maxlength="50"
+                        />
+                        <button class="btn btn-sm btn-primary" (click)="saveRole(projectRef.id, member)">
+                          <fa-icon icon="save" />
+                        </button>
+                        <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">
+                          <fa-icon icon="times" />
+                        </button>
+                      </div>
+                    } @else {
+                      <span class="badge border-primary">{{ member.role }}</span>
+                    }
+                  </td>
+                  <td>{{ member.joinedAt | formatMediumDatetime }}</td>
+                  <td>
+                    <div class="d-flex gap-1" *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_PROJET_MANAGER']">
+                      @if (editingMemberId() !== member.id) {
+                        <button class="btn btn-sm btn-warning" (click)="startEdit(member)">
+                          <fa-icon icon="pencil-alt" />
+                        </button>
+                      }
+                      <button class="btn btn-sm btn-danger" (click)="removeMember(projectRef.id, member.userId!)">
+                        <fa-icon icon="trash-alt" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="text-center text-muted" jhiTranslate="gestionTachesApp.project.member.empty">No members yet</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <hr />
+
+        <div class="d-flex align-items-center mb-3">
+          <h3 class="mb-0" jhiTranslate="gestionTachesApp.project.sprints">Sprints</h3>
+          <a
+            class="btn btn-primary btn-sm ms-2"
+            *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_PROJET_MANAGER']"
+            [routerLink]="['/sprint/new']"
+            [queryParams]="{ projectId: projectRef.id }"
+          >
+            <fa-icon icon="plus" />&nbsp;<span jhiTranslate="gestionTachesApp.sprint.home.createLabel">Create a new Sprint</span>
+          </a>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th jhiTranslate="gestionTachesApp.sprint.name">Name</th>
+                <th jhiTranslate="gestionTachesApp.sprint.goal">Goal</th>
+                <th jhiTranslate="gestionTachesApp.sprint.status">Status</th>
+                <th jhiTranslate="gestionTachesApp.sprint.startDate">Start Date</th>
+                <th jhiTranslate="gestionTachesApp.sprint.endDate">End Date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (sprint of sprints(); track sprint.id) {
+                <tr>
+                  <td>
+                    <a [routerLink]="['/sprint', sprint.id, 'view']">{{ sprint.name }}</a>
+                  </td>
+                  <td>{{ sprint.goal }}</td>
+                  <td>{{ 'gestionTachesApp.SprintStatus.' + (sprint.status ?? 'null') | translate }}</td>
+                  <td>{{ sprint.startDate | formatMediumDate }}</td>
+                  <td>{{ sprint.endDate | formatMediumDate }}</td>
+                  <td>
+                    <a [routerLink]="['/sprint', sprint.id, 'edit']" class="btn btn-sm btn-warning">
+                      <fa-icon icon="pencil-alt" />
+                    </a>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="text-center text-muted" jhiTranslate="gestionTachesApp.sprint.home.notFound">No Sprints found</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <hr />
+
+        <div class="d-flex align-items-center mb-3">
+          <h3 class="mb-0" jhiTranslate="gestionTachesApp.project.issues">Issues</h3>
+          @if (isOwner()) {
+            <button class="btn btn-primary btn-sm ms-2" (click)="toggleIssueForm()">
+              <fa-icon icon="plus" />&nbsp;<span jhiTranslate="gestionTachesApp.issue.home.createLabel">Create a new Issue</span>
+            </button>
+          }
+        </div>
+
+        @if (showIssueForm()) {
+          <div class="card mb-3 border">
+            <div class="card-body">
+              <h5 class="card-title" jhiTranslate="gestionTachesApp.issue.home.createLabel">Create a new Issue</h5>
+              <div class="row g-2">
+                <div class="col-12">
+                  <label class="form-label" for="issue-title" jhiTranslate="gestionTachesApp.issue.title">Title</label>
+                  <input type="text" class="form-control" id="issue-title" [(ngModel)]="newIssueTitle" placeholder="Title" required />
+                </div>
+                <div class="col-12">
+                  <label class="form-label" for="issue-desc" jhiTranslate="gestionTachesApp.issue.description">Description</label>
+                  <textarea
+                    class="form-control"
+                    id="issue-desc"
+                    [(ngModel)]="newIssueDescription"
+                    placeholder="Description"
+                    rows="2"
+                  ></textarea>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label" for="issue-type" jhiTranslate="gestionTachesApp.issue.type">Type</label>
+                  <select class="form-control" id="issue-type" [(ngModel)]="newIssueType">
+                    @for (type of issueTypeValues; track $index) {
+                      <option [value]="type">{{ 'gestionTachesApp.IssueType.' + type | translate }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label" for="issue-priority" jhiTranslate="gestionTachesApp.issue.priority">Priority</label>
+                  <select class="form-control" id="issue-priority" [(ngModel)]="newIssuePriority">
+                    @for (prio of priorityValues; track $index) {
+                      <option [value]="prio">{{ 'gestionTachesApp.Priority.' + prio | translate }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label" for="issue-sprint" jhiTranslate="gestionTachesApp.issue.sprint">Sprint</label>
+                  <select class="form-control" id="issue-sprint" [(ngModel)]="newIssueSprintId">
+                    <option [ngValue]="null" jhiTranslate="global.messages.notSet">Not set</option>
+                    @for (sprint of sprints(); track sprint.id) {
+                      <option [ngValue]="sprint.id">{{ sprint.name }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label" for="issue-assignee" jhiTranslate="gestionTachesApp.issue.assignee">Assignee</label>
+                  <select class="form-control" id="issue-assignee" [(ngModel)]="newIssueAssigneeId">
+                    <option [ngValue]="null" jhiTranslate="global.messages.unassigned">Unassigned</option>
+                    @for (member of members(); track member.userId!) {
+                      <option [ngValue]="member.userId">{{ member.userLogin }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+              <div class="mt-3 d-flex gap-1">
+                <button class="btn btn-primary" (click)="createIssue(projectRef.id)" [disabled]="!newIssueTitle() || isCreatingIssue()">
+                  <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+                </button>
+                <button class="btn btn-secondary" (click)="toggleIssueForm()">
+                  <fa-icon icon="times" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th jhiTranslate="gestionTachesApp.issue.title">Title</th>
+                <th jhiTranslate="gestionTachesApp.issue.type">Type</th>
+                <th jhiTranslate="gestionTachesApp.issue.status">Status</th>
+                <th jhiTranslate="gestionTachesApp.issue.priority">Priority</th>
+                <th jhiTranslate="gestionTachesApp.issue.assignee">Assignee</th>
+                <th jhiTranslate="gestionTachesApp.issue.createdBy">Created By</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (issue of issues(); track issue.id) {
+                <tr>
+                  <td>
+                    <a [routerLink]="['/issue', issue.id, 'view']">{{ issue.title }}</a>
+                  </td>
+                  <td>{{ 'gestionTachesApp.IssueType.' + (issue.type ?? 'null') | translate }}</td>
+                  <td>{{ 'gestionTachesApp.IssueStatus.' + (issue.status ?? 'null') | translate }}</td>
+                  <td>{{ 'gestionTachesApp.Priority.' + (issue.priority ?? 'null') | translate }}</td>
+                  <td>{{ issue.assignee?.login ?? ('global.messages.unassigned' | translate) }}</td>
+                  <td>{{ issue.createdBy?.login ?? ('global.messages.notAssigned' | translate) }}</td>
+                  <td>
+                    <a [routerLink]="['/issue', issue.id, 'edit']" class="btn btn-sm btn-warning">
+                      <fa-icon icon="pencil-alt" />
+                    </a>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="7" class="text-center text-muted" jhiTranslate="gestionTachesApp.issue.home.notFound">No Issues found</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <hr />
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+        </button>
+
+        <button type="button" [routerLink]="['/project', projectRef.key, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

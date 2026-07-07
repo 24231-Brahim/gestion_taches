@@ -1,0 +1,89 @@
+<div class="roadmap-page">
+  <div class="roadmap-header">
+    <h2 class="page-heading">
+      <fa-icon icon="layer-group" class="me-2" />
+      <span jhiTranslate="gestionTachesApp.epic.home.roadmap">Epic Roadmap</span>
+    </h2>
+    <div class="d-flex gap-2 align-items-center">
+      <button class="btn btn-info btn-sm" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span jhiTranslate="gestionTachesApp.epic.home.refreshListLabel"></span>
+      </button>
+      <a id="jh-create-entity" data-cy="entityCreateButton" class="btn btn-primary btn-sm" [routerLink]="['/epic/new']">
+        <fa-icon icon="plus" /><span jhiTranslate="gestionTachesApp.epic.home.createLabel"></span>
+      </a>
+    </div>
+  </div>
+
+  <jhi-alert-error />
+  <jhi-alert />
+
+  <div class="roadmap-toolbar">
+    <div class="d-flex gap-2">
+      <select class="form-control form-control-sm" [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)">
+        <option value="">All Statuses</option>
+        <option value="TODO">{{ 'gestionTachesApp.EpicStatus.TODO' | translate }}</option>
+        <option value="IN_PROGRESS">{{ 'gestionTachesApp.EpicStatus.IN_PROGRESS' | translate }}</option>
+        <option value="DONE">{{ 'gestionTachesApp.EpicStatus.DONE' | translate }}</option>
+        <option value="CANCELLED">{{ 'gestionTachesApp.EpicStatus.CANCELLED' | translate }}</option>
+      </select>
+    </div>
+    <jhi-filter [filters]="filters" />
+  </div>
+
+  @if (epicsWithProgress().length === 0) {
+    <div class="alert alert-warning">
+      <span jhiTranslate="gestionTachesApp.epic.home.notFound"></span>
+    </div>
+  } @else {
+    <div class="roadmap-container">
+      <div class="roadmap-timeline-header">
+        <div class="roadmap-month-labels">
+          <span class="roadmap-label-start">Start</span>
+          <span class="roadmap-label-end">End</span>
+        </div>
+      </div>
+
+      <div class="roadmap-list">
+        @for (epic of epicsWithProgress(); track trackId(epic)) {
+          <div class="roadmap-epic-row">
+            <div class="roadmap-epic-info">
+              <a [routerLink]="['/epic', epic.id, 'view']" class="roadmap-epic-title">{{ epic.title }}</a>
+              <div class="roadmap-epic-meta">
+                <span class="status-dot" [style.background]="statusColors[epic.status ?? 'TODO']"></span>
+                <span>{{ 'gestionTachesApp.EpicStatus.' + (epic.status ?? 'null') | translate }}</span>
+                <span class="roadmap-epic-dates">{{ getEpicDates(epic) }}</span>
+              </div>
+            </div>
+            <div class="roadmap-epic-bar-container">
+              <div class="roadmap-epic-bar-track">
+                <div
+                  class="roadmap-epic-bar"
+                  [style.width.%]="epic.progress"
+                  [style.background]="statusColors[epic.status ?? 'TODO']"
+                  [style.border-radius]="epic.progress >= 100 ? '6px' : '6px 0 0 6px'"
+                >
+                  <span class="roadmap-epic-bar-label">
+                    @if (epic.progress > 15) {
+                      {{ epic.progress }}%
+                    }
+                  </span>
+                </div>
+              </div>
+              <span class="roadmap-pct">{{ epic.progress }}%</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="roadmap-legend">
+      @for (entry of statusColors | keyvalue; track entry.key) {
+        <span class="roadmap-legend-item">
+          <span class="legend-dot" [style.background]="entry.value"></span>
+          <span>{{ 'gestionTachesApp.EpicStatus.' + entry.key | translate }}</span>
+        </span>
+      }
+    </div>
+  }
+</div>

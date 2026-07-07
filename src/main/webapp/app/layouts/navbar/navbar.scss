@@ -1,0 +1,215 @@
+jhi-navbar {
+  display: block;
+}
+
+.topbar {
+  height: 56px;
+  background-color: var(--color-surface) !important;
+  border-bottom: 2px solid var(--color-primary-container);
+  padding: 0;
+  font-family: var(--font-mono);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  width: 100%;
+}
+
+.topbar-start {
+  display: flex;
+  align-items: center;
+  gap: var(--stack-sm);
+}
+
+.topbar-end {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--stack-sm);
+  color: var(--color-primary);
+  text-decoration: none;
+  padding: 0;
+  line-height: 1;
+
+  &:hover {
+    color: var(--color-primary);
+  }
+
+  .topbar-version {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+  }
+}
+
+.topbar-logo {
+  height: 32px;
+  width: auto;
+  display: block;
+}
+
+.topbar-menu-btn {
+  background: none;
+  border: 2px solid var(--color-primary);
+  border-radius: 0;
+  color: var(--color-on-surface);
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: var(--text-base);
+  line-height: 1;
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast);
+
+  &:hover {
+    background-color: var(--color-primary);
+    color: var(--color-bg);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--color-secondary);
+    outline-offset: 2px;
+  }
+}
+
+.topbar-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: var(--color-on-surface);
+  text-decoration: none;
+  font-size: var(--text-lg);
+  border: none;
+  border-radius: 6px;
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast);
+
+  &:hover {
+    color: var(--color-primary);
+    background-color: var(--color-surface-container-high);
+  }
+
+  &.active {
+    color: var(--color-primary-container);
+  }
+}
+
+.topbar-dropdown {
+  .dropdown-menu {
+    border: 2px solid var(--color-primary);
+    border-radius: 0;
+    background-color: var(--color-surface-container);
+    padding: 4px 0;
+    box-shadow: var(--shadow-brutal);
+    margin-top: 6px;
+    min-width: 220px;
+
+    .dropdown-item {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-on-surface);
+      padding: 0.5rem 1rem;
+      border-bottom: 1px solid var(--color-outline-variant);
+      font-weight: 700;
+      transition:
+        color var(--transition-fast),
+        background-color var(--transition-fast);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover {
+        color: var(--color-primary);
+        background-color: var(--color-surface-container-high);
+      }
+
+      &.active {
+        color: var(--color-bg);
+        background-color: var(--color-primary);
+      }
+    }
+  }
+
+  .dropdown-toggle::after {
+    display: none;
+  }
+}
+
+.profile-image {
+  width: 30px;
+  height: 30px;
+  border-radius: 9999px;
+  border: 2px solid var(--color-primary);
+  object-fit: cover;
+}
+
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: var(--color-error);
+  color: var(--color-on-error);
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  border-radius: 8px;
+  padding: 0 4px;
+}
+
+.notification-dropdown {
+  min-width: 320px !important;
+}
+
+.notification-item {
+  white-space: normal !important;
+  text-transform: none !important;
+  font-weight: 400 !important;
+  border-left: 3px solid transparent;
+
+  &.unread {
+    border-left-color: var(--color-primary);
+    background-color: var(--color-surface-container-high);
+  }
+
+  .notification-message {
+    font-size: var(--text-sm);
+    line-height: 1.3;
+    margin-bottom: 2px;
+  }
+
+  .notification-date {
+    font-size: var(--text-xs);
+  }
+}
+
+@media (max-width: 767px) {
+  .topbar-inner {
+    padding: 0 var(--stack-sm);
+  }
+
+  .topbar-title {
+    font-size: var(--text-base);
+  }
+}

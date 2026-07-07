@@ -1,0 +1,34 @@
+{
+  "gestionTachesApp": {
+    "epic": {
+      "home": {
+        "title": "Epics",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Epic",
+        "createOrEditLabel": "Create or edit a Epic",
+        "notFound": "No Epics found",
+        "roadmap": "Epic Roadmap",
+        "details": "Epic Details"
+      },
+      "created": "A new Epic is created with identifier {{ param }}",
+      "updated": "A Epic is updated with identifier {{ param }}",
+      "deleted": "A Epic is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Epic {{ id }}?"
+      },
+      "detail": {
+        "title": "Epic"
+      },
+      "id": "ID",
+      "title": "Title",
+      "description": "Description",
+      "status": "Status",
+      "priority": "Priority",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "project": "Project"
+    }
+  }
+}

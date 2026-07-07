@@ -1,0 +1,154 @@
+<div>
+  <h2 id="page-heading" class="page-heading" data-cy="EpicHeading">
+    <span jhiTranslate="gestionTachesApp.epic.home.title">Epics</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span jhiTranslate="gestionTachesApp.epic.home.refreshListLabel">Actualiser la liste</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-epic"
+        [routerLink]="['/epic/new']"
+      >
+        <fa-icon icon="plus" />
+        <span jhiTranslate="gestionTachesApp.epic.home.createLabel">Créer un nouveau Epic</span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error />
+
+  <jhi-alert />
+
+  <jhi-filter [filters]="filters" />
+
+  @if (epics().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span jhiTranslate="gestionTachesApp.epic.home.notFound">Aucun Epic trouvé</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" jhiSortBy="title">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.epic.title">Title</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="description">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.epic.description">Description</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="status">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.epic.status">Status</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="priority">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.epic.priority">Priority</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="createdAt">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.epic.createdAt">Created At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="updatedAt">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.epic.updatedAt">Updated At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="project.name">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.epic.project">Project</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (epic of epics(); track trackId(epic)) {
+            <tr data-cy="entityTable">
+              <td>{{ epic.title }}</td>
+              <td>{{ epic.description }}</td>
+              <td [jhiTranslate]="'gestionTachesApp.EpicStatus.' + (epic.status ?? 'null')">
+                {{ { null: '', TODO: 'TODO', IN_PROGRESS: 'IN_PROGRESS', DONE: 'DONE', CANCELLED: 'CANCELLED' }[epic.status ?? 'null'] }}
+              </td>
+              <td [jhiTranslate]="'gestionTachesApp.Priority.' + (epic.priority ?? 'null')">
+                {{
+                  { null: '', LOWEST: 'LOWEST', LOW: 'LOW', MEDIUM: 'MEDIUM', HIGH: 'HIGH', HIGHEST: 'HIGHEST' }[epic.priority ?? 'null']
+                }}
+              </td>
+              <td>{{ epic.createdAt | formatMediumDatetime }}</td>
+              <td>{{ epic.updatedAt | formatMediumDatetime }}</td>
+              <td>
+                @if (epic.project) {
+                  <div>
+                    <a [routerLink]="['/project', epic.project.key, 'view']">{{ epic.project.name }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/epic', epic.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
+                  </a>
+
+                  <a [routerLink]="['/epic', epic.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(epic)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+  @if (epics().length > 0) {
+    <div>
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [page]="page()"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    </div>
+  }
+</div>

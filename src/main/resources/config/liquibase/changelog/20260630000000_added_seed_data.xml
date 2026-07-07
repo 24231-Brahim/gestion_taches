@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet author="jhipster" id="20260630000000-1">
+        <loadData file="config/liquibase/data/project.csv" separator=";" tableName="project">
+            <column name="id" type="numeric"/>
+            <column name="created_at" type="datetime"/>
+            <column name="owner_id" type="numeric"/>
+        </loadData>
+        <loadData file="config/liquibase/data/sprint.csv" separator=";" tableName="sprint">
+            <column name="id" type="numeric"/>
+            <column name="start_date" type="date"/>
+            <column name="end_date" type="date"/>
+            <column name="project_id" type="numeric"/>
+        </loadData>
+        <loadData file="config/liquibase/data/epic.csv" separator=";" tableName="epic">
+            <column name="id" type="numeric"/>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+            <column name="project_id" type="numeric"/>
+        </loadData>
+        <loadData file="config/liquibase/data/issue.csv" separator=";" tableName="issue">
+            <column name="id" type="numeric"/>
+            <column name="created_at" type="datetime"/>
+            <column name="updated_at" type="datetime"/>
+            <column name="sprint_id" type="numeric"/>
+            <column name="epic_id" type="numeric"/>
+            <column name="project_id" type="numeric"/>
+        </loadData>
+        <loadData file="config/liquibase/data/project_member.csv" separator=";" tableName="project_member">
+            <column name="id" type="numeric"/>
+            <column name="project_id" type="numeric"/>
+            <column name="user_id" type="numeric"/>
+            <column name="joined_at" type="datetime"/>
+        </loadData>
+        <loadData file="config/liquibase/data/comment.csv" separator=";" tableName="comment">
+            <column name="id" type="numeric"/>
+            <column name="created_at" type="datetime"/>
+            <column name="issue_id" type="numeric"/>
+        </loadData>
+        <loadData file="config/liquibase/data/action_history.csv" separator=";" tableName="action_history">
+            <column name="id" type="numeric"/>
+            <column name="created_at" type="datetime"/>
+            <column name="issue_id" type="numeric"/>
+        </loadData>
+    </changeSet>
+</databaseChangeLog>

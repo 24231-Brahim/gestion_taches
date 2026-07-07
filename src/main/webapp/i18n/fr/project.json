@@ -1,0 +1,47 @@
+{
+  "gestionTachesApp": {
+    "project": {
+      "home": {
+        "title": "Projects",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Project",
+        "createOrEditLabel": "Créer ou éditer un Project",
+        "notFound": "Aucun Project trouvé"
+      },
+      "created": "Un nouveau Project a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Project avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Project avec l'identifiant {{ param }} a été supprimé",
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Project {{ id }} ?"
+      },
+      "detail": {
+        "title": "Project"
+      },
+      "id": "ID",
+      "name": "Name",
+      "description": "Description",
+      "key": "Key",
+      "createdAt": "Created At",
+      "sprints": "Sprints",
+      "epics": "Epics",
+      "issues": "Issues",
+      "members": "Membres",
+      "member": {
+        "add": "Ajouter un membre",
+        "added": "Membre ajouté au projet",
+        "removed": "Membre retiré du projet",
+        "updated": "Rôle du membre mis à jour",
+        "userLogin": "Utilisateur",
+        "role": "Rôle",
+        "joinedAt": "Date d'ajout",
+        "selectUser": "Sélectionner un utilisateur",
+        "empty": "Aucun membre pour le moment",
+        "error": {
+          "add": "Erreur lors de l'ajout du membre",
+          "remove": "Erreur lors du retrait du membre",
+          "update": "Erreur lors de la mise à jour du rôle"
+        }
+      }
+    }
+  }
+}

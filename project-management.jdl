@@ -1,0 +1,152 @@
+// ============================================================
+//  JDL — Système de gestion de projet (type Jira)
+// ============================================================
+
+// ─────────────────────────────────────────────
+//  ENTITÉS
+// ─────────────────────────────────────────────
+
+entity Project {
+    name        String      required minlength(1) maxlength(100)
+    description String      maxlength(500)
+    key         String      required unique minlength(2) maxlength(10)
+    createdAt   Instant     required
+}
+
+entity Sprint {
+    name        String      required minlength(1) maxlength(100)
+    goal        String      maxlength(500)
+    startDate   LocalDate
+    endDate     LocalDate
+    status      SprintStatus required
+}
+
+entity Epic {
+    title       String      required minlength(1) maxlength(200)
+    description String      maxlength(1000)
+    status      EpicStatus  required
+    priority    Priority    required
+    createdAt   Instant     required
+    updatedAt   Instant
+}
+
+entity Issue {
+    title       String      required minlength(1) maxlength(200)
+    description String      maxlength(5000)
+    type        IssueType   required
+    status      IssueStatus required
+    priority    Priority    required
+    createdAt   Instant     required
+    updatedAt   Instant
+}
+
+entity Comment {
+    content     String      required minlength(1) maxlength(2000)
+    createdAt   Instant     required
+}
+
+entity Attachment {
+    fileName    String      required minlength(1) maxlength(255)
+    filePath    String      required maxlength(1000)
+    uploadedAt  Instant     required
+}
+
+entity ActionHistory {
+    action       String     required minlength(1) maxlength(100)
+    fieldChanged String     maxlength(100)
+    oldValue     String     maxlength(500)
+    newValue     String     maxlength(500)
+    createdAt    Instant    required
+}
+
+// ─────────────────────────────────────────────
+//  ENUMERATIONS
+// ─────────────────────────────────────────────
+
+enum SprintStatus {
+    PLANNED,
+    ACTIVE,
+    COMPLETED,
+    CANCELLED
+}
+
+enum EpicStatus {
+    TODO,
+    IN_PROGRESS,
+    DONE,
+    CANCELLED
+}
+
+enum IssueType {
+    STORY,
+    BUG,
+    TASK,
+    SUBTASK,
+    IMPROVEMENT
+}
+
+enum IssueStatus {
+    BACKLOG,
+    TODO,
+    IN_PROGRESS,
+    IN_REVIEW,
+    DONE,
+    CANCELLED
+}
+
+enum Priority {
+    LOWEST,
+    LOW,
+    MEDIUM,
+    HIGH,
+    HIGHEST
+}
+
+// ─────────────────────────────────────────────
+//  RELATIONS
+// ─────────────────────────────────────────────
+
+relationship OneToMany {
+    Project{sprints} to Sprint{project(name) required}
+}
+
+relationship OneToMany {
+    Project{epics} to Epic{project(name) required}
+}
+
+relationship OneToMany {
+    Project{issues} to Issue{project(name) required}
+}
+
+relationship ManyToOne {
+    Issue{sprint(name)} to Sprint
+}
+
+relationship ManyToOne {
+    Issue{epic(title)} to Epic
+}
+
+relationship OneToMany {
+    Issue{comments} to Comment{issue required}
+}
+
+relationship OneToMany {
+    Issue{attachments} to Attachment{issue required}
+}
+
+relationship OneToMany {
+    Issue{history} to ActionHistory{issue required}
+}
+
+// ─────────────────────────────────────────────
+//  OPTIONS
+// ─────────────────────────────────────────────
+
+paginate Project, Sprint, Epic, Issue with pagination
+paginate Comment, Attachment, ActionHistory with infinite-scroll
+
+dto * with mapstruct
+
+service * with serviceClass
+
+filter Issue, Sprint, Epic

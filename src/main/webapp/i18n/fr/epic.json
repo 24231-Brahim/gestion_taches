@@ -1,0 +1,34 @@
+{
+  "gestionTachesApp": {
+    "epic": {
+      "home": {
+        "title": "Epics",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Epic",
+        "createOrEditLabel": "Créer ou éditer un Epic",
+        "notFound": "Aucun Epic trouvé",
+        "roadmap": "Roadmap Epic",
+        "details": "Détails Epic"
+      },
+      "created": "Un nouveau Epic a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Epic avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Epic avec l'identifiant {{ param }} a été supprimé",
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Epic {{ id }} ?"
+      },
+      "detail": {
+        "title": "Epic"
+      },
+      "id": "ID",
+      "title": "Title",
+      "description": "Description",
+      "status": "Status",
+      "priority": "Priority",
+      "createdAt": "Créé le",
+      "updatedAt": "Mis à jour le",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "project": "Projet"
+    }
+  }
+}

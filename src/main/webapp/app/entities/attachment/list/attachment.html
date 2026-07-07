@@ -1,0 +1,103 @@
+<div>
+  <h2 id="page-heading" class="page-heading" data-cy="AttachmentHeading">
+    <span jhiTranslate="gestionTachesApp.attachment.home.title">Attachments</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <span jhiTranslate="gestionTachesApp.attachment.home.refreshListLabel">Actualiser la liste</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-attachment"
+        [routerLink]="['/attachment/new']"
+      >
+        <fa-icon icon="plus" />
+        <span jhiTranslate="gestionTachesApp.attachment.home.createLabel">Créer un nouveau Attachment</span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error />
+
+  <jhi-alert />
+
+  @if (attachments().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span jhiTranslate="gestionTachesApp.attachment.home.notFound">Aucun Attachment trouvé</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" jhiSortBy="fileName">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.attachment.fileName">File Name</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="filePath">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.attachment.filePath">File Path</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="uploadedAt">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.attachment.uploadedAt">Uploaded At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="issue.id">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.attachment.issue">Issue</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody infinite-scroll (scrolled)="loadNextPage()" [infiniteScrollDisabled]="!hasMorePage()" [infiniteScrollDistance]="0">
+          @for (attachment of attachments(); track trackId(attachment)) {
+            <tr data-cy="entityTable">
+              <td>{{ attachment.fileName }}</td>
+              <td>{{ attachment.filePath }}</td>
+              <td>{{ attachment.uploadedAt | formatMediumDatetime }}</td>
+              <td>
+                @if (attachment.issue) {
+                  <div>
+                    <a [routerLink]="['/issue', attachment.issue.id, 'view']">{{ attachment.issue.id }}</a>
+                  </div>
+                }
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/attachment', attachment.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
+                  </a>
+
+                  <a [routerLink]="['/attachment', attachment.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(attachment)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

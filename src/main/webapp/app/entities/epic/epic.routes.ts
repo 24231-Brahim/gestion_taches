@@ -1,0 +1,43 @@
+import { Routes } from '@angular/router';
+
+import { ASC } from 'app/config/navigation.constants';
+import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
+
+import EpicResolve from './route/epic-routing-resolve.service';
+
+const epicRoute: Routes = [
+  {
+    path: '',
+    loadComponent: () => import('./roadmap/epic-roadmap').then(m => m.EpicRoadmap),
+    data: {
+      defaultSort: `id,${ASC}`,
+    },
+    canActivate: [UserRouteAccessService],
+  },
+  {
+    path: ':id/view',
+    loadComponent: () => import('./detail/epic-detail').then(m => m.EpicDetail),
+    resolve: {
+      epic: EpicResolve,
+    },
+    canActivate: [UserRouteAccessService],
+  },
+  {
+    path: 'new',
+    loadComponent: () => import('./update/epic-update').then(m => m.EpicUpdate),
+    resolve: {
+      epic: EpicResolve,
+    },
+    canActivate: [UserRouteAccessService],
+  },
+  {
+    path: ':id/edit',
+    loadComponent: () => import('./update/epic-update').then(m => m.EpicUpdate),
+    resolve: {
+      epic: EpicResolve,
+    },
+    canActivate: [UserRouteAccessService],
+  },
+];
+
+export default epicRoute;

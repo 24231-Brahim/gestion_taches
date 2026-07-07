@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="20260704000000-1" author="jhipster">
+        <addColumn tableName="issue">
+            <column name="created_by_id" type="bigint" remarks="Reference to the user who created this issue">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet id="20260704000000-2" author="jhipster">
+        <addForeignKeyConstraint
+            baseTableName="issue"
+            baseColumnNames="created_by_id"
+            constraintName="fk_issue__created_by_id"
+            referencedTableName="jhi_user"
+            referencedColumnNames="id"/>
+    </changeSet>
+</databaseChangeLog>

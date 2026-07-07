@@ -1,0 +1,132 @@
+@if (visible() && issue(); as iss) {
+  <div class="issue-drawer-overlay" (click)="close()()"></div>
+  <div class="issue-drawer">
+    <div class="issue-drawer-header">
+      <div class="d-flex align-items-center gap-2">
+        <fa-icon [icon]="typeIcons[iss.type ?? 'STORY']" [style.color]="typeColors[iss.type ?? 'STORY']" />
+        <span class="issue-type-badge" [style.background]="typeColors[iss.type ?? 'STORY']">
+          {{ typeIcons[iss.type ?? 'STORY'] }}
+        </span>
+        <span [jhiTranslate]="'gestionTachesApp.IssueType.' + (iss.type ?? 'null')" class="fw-bold"></span>
+      </div>
+      <button class="btn btn-sm btn-ghost" (click)="close()()">
+        <fa-icon icon="times" />
+      </button>
+    </div>
+
+    <div class="issue-drawer-body">
+      <div class="issue-drawer-main">
+        <h4 class="issue-drawer-title">{{ iss.title }}</h4>
+
+        <div class="issue-section">
+          <span class="issue-section-label" jhiTranslate="gestionTachesApp.issue.description"></span>
+          <p class="issue-description">{{ iss.description || ('global.messages.empty' | translate) }}</p>
+        </div>
+
+        <div class="issue-section">
+          <span class="issue-section-label" jhiTranslate="gestionTachesApp.issue.sprint"></span>
+          <p>
+            @if (iss.sprint) {
+              <a [routerLink]="['/sprint', iss.sprint.id, 'view']">{{ iss.sprint.name }}</a>
+            } @else {
+              <span class="text-muted" jhiTranslate="global.messages.notAssigned"></span>
+            }
+          </p>
+        </div>
+
+        <div class="issue-section">
+          <span class="issue-section-label" jhiTranslate="gestionTachesApp.issue.epic"></span>
+          <p>
+            @if (iss.epic) {
+              <a [routerLink]="['/epic', iss.epic.id, 'view']">{{ iss.epic.title }}</a>
+            } @else {
+              <span class="text-muted" jhiTranslate="global.messages.notAssigned"></span>
+            }
+          </p>
+        </div>
+
+        <div class="issue-section">
+          <jhi-issue-comment-list [issueId]="iss.id" />
+        </div>
+
+        <div class="issue-section">
+          <jhi-issue-attachment-list [issueId]="iss.id" />
+        </div>
+
+        <div class="issue-section">
+          <jhi-issue-activity-feed [issueId]="iss.id" />
+        </div>
+      </div>
+
+      <div class="issue-drawer-sidebar">
+        <div class="issue-field-group">
+          <span class="issue-field-label" jhiTranslate="gestionTachesApp.issue.status"></span>
+          <select
+            class="form-control form-control-sm"
+            [ngModel]="iss.status"
+            (ngModelChange)="onStatusChange(iss, $event)"
+            [disabled]="isSaving()"
+          >
+            @for (st of issueStatusValues; track st) {
+              <option [value]="st">{{ 'gestionTachesApp.IssueStatus.' + st | translate }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="issue-field-group">
+          <span class="issue-field-label" jhiTranslate="gestionTachesApp.issue.assignee"></span>
+          <select
+            class="form-control form-control-sm"
+            [ngModel]="iss.assignee?.id ?? ''"
+            (ngModelChange)="onAssignChange(iss, $event)"
+            [disabled]="isSaving()"
+          >
+            <option value="" jhiTranslate="global.messages.unassigned"></option>
+            @for (user of assignableUsers(); track user.id) {
+              <option [value]="user.id">{{ user.login }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="issue-field-group">
+          <span class="issue-field-label" jhiTranslate="gestionTachesApp.issue.priority"></span>
+          <div class="d-flex align-items-center gap-1">
+            <fa-icon [icon]="priorityIcons[iss.priority ?? 'MEDIUM']" [style.color]="priorityColors[iss.priority ?? 'MEDIUM']" />
+            <span>{{ 'gestionTachesApp.Priority.' + (iss.priority ?? 'null') | translate }}</span>
+          </div>
+        </div>
+
+        <div class="issue-field-group">
+          <span class="issue-field-label" jhiTranslate="gestionTachesApp.issue.type"></span>
+          <div class="d-flex align-items-center gap-1">
+            <fa-icon [icon]="typeIcons[iss.type ?? 'STORY']" [style.color]="typeColors[iss.type ?? 'STORY']" />
+            <span>{{ 'gestionTachesApp.IssueType.' + (iss.type ?? 'null') | translate }}</span>
+          </div>
+        </div>
+
+        <div class="issue-field-group">
+          <span class="issue-field-label" jhiTranslate="gestionTachesApp.issue.createdAt"></span>
+          <span>{{ iss.createdAt | formatMediumDatetime }}</span>
+        </div>
+
+        <div class="issue-field-group">
+          <span class="issue-field-label" jhiTranslate="gestionTachesApp.issue.updatedAt"></span>
+          <span>{{ iss.updatedAt | formatMediumDatetime }}</span>
+        </div>
+
+        <div class="issue-field-group">
+          <span class="issue-field-label" jhiTranslate="gestionTachesApp.issue.project"></span>
+          @if (iss.project) {
+            <a [routerLink]="['/project', iss.project.key, 'view']">{{ iss.project.name }}</a>
+          }
+        </div>
+
+        <div class="issue-drawer-actions">
+          <a [routerLink]="['/issue', iss.id, 'edit']" class="btn btn-primary btn-sm w-100">
+            <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+}

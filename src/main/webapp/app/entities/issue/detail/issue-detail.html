@@ -1,0 +1,110 @@
+<div class="d-flex justify-content-center">
+  <div class="col-12 col-lg-8">
+    @if (issue(); as issueRef) {
+      <div>
+        <h2 data-cy="issueDetailsHeading"><span jhiTranslate="gestionTachesApp.issue.detail.title">Issue</span></h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="gestionTachesApp.issue.title">Title</span></dt>
+          <dd>
+            <span>{{ issueRef.title }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.issue.description">Description</span></dt>
+          <dd>
+            <span>{{ issueRef.description }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.issue.type">Type</span></dt>
+          <dd>
+            <span [jhiTranslate]="'gestionTachesApp.IssueType.' + (issueRef.type ?? 'null')">{{
+              { null: '', STORY: 'STORY', BUG: 'BUG', TASK: 'TASK', SUBTASK: 'SUBTASK', IMPROVEMENT: 'IMPROVEMENT' }[
+                issueRef.type ?? 'null'
+              ]
+            }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.issue.status">Status</span></dt>
+          <dd>
+            <span [jhiTranslate]="'gestionTachesApp.IssueStatus.' + (issueRef.status ?? 'null')">{{
+              {
+                null: '',
+                BACKLOG: 'BACKLOG',
+                TODO: 'TODO',
+                IN_PROGRESS: 'IN_PROGRESS',
+                IN_REVIEW: 'IN_REVIEW',
+                DONE: 'DONE',
+                CANCELLED: 'CANCELLED',
+              }[issueRef.status ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.issue.priority">Priority</span></dt>
+          <dd>
+            <span [jhiTranslate]="'gestionTachesApp.Priority.' + (issueRef.priority ?? 'null')">{{
+              { null: '', LOWEST: 'LOWEST', LOW: 'LOW', MEDIUM: 'MEDIUM', HIGH: 'HIGH', HIGHEST: 'HIGHEST' }[issueRef.priority ?? 'null']
+            }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.issue.createdAt">Created At</span></dt>
+          <dd>
+            <span>{{ issueRef.createdAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.issue.updatedAt">Updated At</span></dt>
+          <dd>
+            <span>{{ issueRef.updatedAt | formatMediumDatetime }}</span>
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.issue.sprint">Sprint</span></dt>
+          <dd>
+            @if (issue()!.sprint) {
+              <div>
+                <a [routerLink]="['/sprint', issue()!.sprint?.id, 'view']">{{ issueRef.sprint?.name }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.issue.epic">Epic</span></dt>
+          <dd>
+            @if (issue()!.epic) {
+              <div>
+                <a [routerLink]="['/epic', issue()!.epic?.id, 'view']">{{ issueRef.epic?.title }}</a>
+              </div>
+            }
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.issue.createdBy">Created By</span></dt>
+          <dd>
+            @if (issueRef.createdBy) {
+              <span>{{ issueRef.createdBy.login }}</span>
+            } @else {
+              <span class="text-muted" jhiTranslate="global.messages.notAssigned"></span>
+            }
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.issue.assignee">Assignee</span></dt>
+          <dd>
+            @if (issueRef.assignee) {
+              <span>{{ issueRef.assignee.login }}</span>
+            } @else {
+              <span class="text-muted" jhiTranslate="global.messages.unassigned"></span>
+            }
+          </dd>
+          <dt><span jhiTranslate="gestionTachesApp.issue.project">Project</span></dt>
+          <dd>
+            @if (issue()!.project) {
+              <div>
+                <a [routerLink]="['/project', issue()!.project?.key, 'view']">{{ issueRef.project?.name }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
+        </button>
+
+        <button type="button" [routerLink]="['/issue', issueRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>
