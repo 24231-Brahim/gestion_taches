@@ -207,7 +207,76 @@ graph LR
     U --> UC14
     U --> UC15
 ```
+############ 2eme diagramme de cas d'utilsation :
+graph LR
 
+    U["👤 Utilisateur"]
+
+    A["👨‍💼 Admin"]
+    PM["📋 Chef de Projet"]
+    DEV["💻 Développeur"]
+
+    U --> A
+    U --> PM
+    U --> DEV
+
+    subgraph "Système de Gestion de Projet"
+
+        UC1("S'authentifier")
+        UC2("Consulter le tableau de bord")
+        UC3("Consulter les notifications")
+
+        UC4("Gérer les projets")
+        UC5("Gérer les membres")
+        UC6("Gérer les sprints")
+        UC7("Gérer les epics")
+        UC8("Gérer les issues")
+
+        UC9("Consulter le backlog")
+        UC10("Utiliser le tableau Kanban")
+        UC11("Consulter la Roadmap")
+        UC12("Consulter le Burndown Chart")
+
+        UC13("Commenter une issue")
+        UC14("Ajouter une pièce jointe")
+
+        UC15("Administrer le système")
+    end
+
+    %% Fonctions communes
+    U --> UC1
+    U --> UC2
+    U --> UC3
+
+    %% Admin
+    A --> UC4
+    A --> UC5
+    A --> UC6
+    A --> UC7
+    A --> UC8
+    A --> UC15
+
+    %% Chef de projet
+    PM --> UC4
+    PM --> UC5
+    PM --> UC6
+    PM --> UC7
+    PM --> UC8
+    PM --> UC9
+    PM --> UC10
+    PM --> UC11
+    PM --> UC12
+    PM --> UC13
+    PM --> UC14
+
+    %% Développeur
+    DEV --> UC8
+    DEV --> UC9
+    DEV --> UC10
+    DEV --> UC11
+    DEV --> UC12
+    DEV --> UC13
+    DEV --> UC14
 ### Description des Cas d'Utilisation
 
 | Code | Nom | Acteurs | Description |
