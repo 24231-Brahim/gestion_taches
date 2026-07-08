@@ -18,10 +18,8 @@ classDiagram
     }
 
     class Role {
-        <<enumeration>>
-        ADMIN
-        PROJECT_MANAGER
-        DEVELOPER
+        +Long user_id
+        +Role role
     }
 
     class Project {
@@ -102,17 +100,11 @@ classDiagram
 
     class TaskStatus {
         <<enumeration>>
-        OPEN
-        TO_DO
+        NEW
         IN_PROGRESS
-        ON_HOLD
-        IN_REVIEW
-        QA_TESTING
-        REOPENED
+        CODE_REVIEW
         READY_FOR_RELEASE
         DONE
-        CLOSED
-        CANCELLED
     }
 
     class Priority {
@@ -124,9 +116,9 @@ classDiagram
         HIGHEST
     }
 
-    User --> Role
     User "1" --> "*" Project : possède (owner)
     User "1" --> "*" Notification : reçoit
+    User "1" --> "*" Role
     Project "1" --> "*" ProjectMember : contient (members)
     ProjectMember "*" --> "1" User : référence
     Project "1" --> "*" Sprint : contient
@@ -138,7 +130,6 @@ classDiagram
     User "1" --> "*" Task : assigné (assignee)
     Task "1" --> "*" Comment : reçoit
     Task "1" --> "*" Attachment : contient
-    Task "1" --> "*" Notification : génère
     Sprint --> SprintStatus
     Epic --> EpicStatus
     Task --> TaskStatus
