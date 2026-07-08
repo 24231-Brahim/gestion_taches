@@ -5,6 +5,7 @@
 Ce diagramme modélise la structure statique du système : les entités métier (User, Project, Issue, etc.), leurs attributs, leurs types (enumérations) et les associations qui les relient (propriétaire, membres, sprint, epic, commentaires, etc.).
 
 ```mermaid
+
 classDiagram
     class User {
         +Long id
@@ -12,9 +13,19 @@ classDiagram
         +String firstName
         +String lastName
         +String email
+        +String password
+        +Role role
+    }
+
+    class Role {
+        <<enumeration>>
+        ADMIN
+        PROJECT_MANAGER
+        DEVELOPER
     }
 
     class Project {
+        +long id
         +String name
         +String description
         +String project_key
@@ -22,8 +33,10 @@ classDiagram
     }
 
     class ProjectMember {
-        +String role
-        +Instant joinedAt
+        +long id
+        +long project_id
+        +long user_id
+        +LocalDate joined_at
     }
 
     class Sprint {
@@ -45,11 +58,10 @@ classDiagram
         +LocalDate endDate
     }
 
-    class Issue {
+    class Task {
         +String title
         +String description
-        +IssueType type
-        +IssueStatus status
+        +TaskStatus status
         +Priority priority
         +Instant createdAt
         +Instant updatedAt
@@ -58,7 +70,6 @@ classDiagram
     class Comment {
         +String content
         +Instant createdAt
-        +User author
     }
 
     class Attachment {
@@ -67,19 +78,8 @@ classDiagram
         +Instant uploadedAt
     }
 
-    class ActionHistory {
-        +String action
-        +String fieldChanged
-        +String oldValue
-        +String newValue
-        +Instant createdAt
-    }
-
     class Notification {
         +String message
-        +Long issueId
-        +String issueTitle
-        +Long userId
         +Boolean isRead
         +Instant createdAt
     }
@@ -100,22 +100,18 @@ classDiagram
         CANCELLED
     }
 
-    class IssueType {
+    class TaskStatus {
         <<enumeration>>
-        STORY
-        BUG
-        TASK
-        SUBTASK
-        IMPROVEMENT
-    }
-
-    class IssueStatus {
-        <<enumeration>>
-        BACKLOG
-        TODO
+        OPEN
+        TO_DO
         IN_PROGRESS
+        ON_HOLD
         IN_REVIEW
+        QA_TESTING
+        REOPENED
+        READY_FOR_RELEASE
         DONE
+        CLOSED
         CANCELLED
     }
 
@@ -128,25 +124,28 @@ classDiagram
         HIGHEST
     }
 
+    User --> Role
     User "1" --> "*" Project : possède (owner)
+    User "1" --> "*" Notification : reçoit
     Project "1" --> "*" ProjectMember : contient (members)
     ProjectMember "*" --> "1" User : référence
     Project "1" --> "*" Sprint : contient
     Project "1" --> "*" Epic : contient
-    Project "1" --> "*" Issue : contient
-    Sprint "1" --> "*" Issue : regroupe
-    Epic "1" --> "*" Issue : catégorise
+    Project "1" --> "*" Task : contient
+    Sprint "1" --> "0..*" Task : regroupe
+    Epic "1" --> "0..*" Task : catégorise
     User "1" --> "*" Comment : écrit (author)
-    User "1" --> "*" Issue : assigné (assignee)
-    Issue "1" --> "*" Comment : reçoit
-    Issue "1" --> "*" Attachment : contient
-    Issue "1" --> "*" ActionHistory : trace
+    User "1" --> "*" Task : assigné (assignee)
+    Task "1" --> "*" Comment : reçoit
+    Task "1" --> "*" Attachment : contient
+    Task "1" --> "*" Notification : génère
     Sprint --> SprintStatus
     Epic --> EpicStatus
-    Issue --> IssueType
-    Issue --> IssueStatus
+    Task --> TaskStatus
     Epic --> Priority
-    Issue --> Priority
+    Task --> Priority
+
+
 ```
 
 ---
