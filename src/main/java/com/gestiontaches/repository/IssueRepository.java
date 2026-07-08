@@ -41,4 +41,9 @@ public interface IssueRepository extends JpaRepository<Issue, Long>, JpaSpecific
         "select issue from Issue issue left join fetch issue.sprint left join fetch issue.epic left join fetch issue.project left join fetch issue.assignee left join fetch issue.createdBy where issue.id =:id"
     )
     Optional<Issue> findOneWithToOneRelationships(@Param("id") Long id);
+
+    @Query(
+        "select issue from Issue issue left join fetch issue.sprint left join fetch issue.epic left join fetch issue.project left join fetch issue.assignee left join fetch issue.createdBy where issue.project.id = :projectId"
+    )
+    List<Issue> findAllByProjectIdWithToOneRelationships(@Param("projectId") Long projectId);
 }

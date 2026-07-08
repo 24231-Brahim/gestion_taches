@@ -34,6 +34,11 @@ const routes: Routes = [
     title: 'login.title',
   },
   {
+    path: 'notifications',
+    loadComponent: () => import('./notifications/notification-list'),
+    title: 'global.menu.notifications',
+  },
+  {
     path: '',
     loadChildren: () => import('./entities/entity.routes'),
   },

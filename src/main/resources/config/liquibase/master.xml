@@ -44,4 +44,5 @@
     <include file="config/liquibase/changelog/20260702000000_added_entity_Notification.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260703000000_added_action_history_user.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260704000000_added_issue_created_by.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260705000000_added_project_role_enum.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

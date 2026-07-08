@@ -1,6 +1,7 @@
 package com.gestiontaches.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.gestiontaches.domain.enumeration.ProjectRole;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serial;
@@ -33,9 +34,9 @@ public class ProjectMember implements Serializable {
     private User user;
 
     @NotNull
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @Column(name = "role", length = 50, nullable = false)
-    private String role;
+    private ProjectRole role;
 
     @NotNull
     @Column(name = "joined_at", nullable = false)
@@ -80,15 +81,15 @@ public class ProjectMember implements Serializable {
         return this;
     }
 
-    public String getRole() {
+    public ProjectRole getRole() {
         return this.role;
     }
 
-    public void setRole(String role) {
+    public void setRole(ProjectRole role) {
         this.role = role;
     }
 
-    public ProjectMember role(String role) {
+    public ProjectMember role(ProjectRole role) {
         this.setRole(role);
         return this;
     }

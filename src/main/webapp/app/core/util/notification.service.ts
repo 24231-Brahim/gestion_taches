@@ -1,7 +1,7 @@
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
-import { Observable, interval, switchMap, tap } from 'rxjs';
+import { Observable, interval, map, switchMap, tap } from 'rxjs';
 
 export interface INotification {
   id: number;
@@ -47,7 +47,16 @@ export class NotificationService {
     return this.http.get<INotification[]>(this.resourceUrl);
   }
 
+  getNotificationsPaginated(page: number, size: number): Observable<HttpResponse<INotification[]>> {
+    const params = new HttpParams().set('page', page).set('size', size).set('sort', 'createdAt,desc');
+    return this.http.get<INotification[]>(this.resourceUrl, { params, observe: 'response' });
+  }
+
   markAsRead(id: number): Observable<any> {
     return this.http.patch(`${this.resourceUrl}/${id}/read`, {});
+  }
+
+  markAllAsRead(): Observable<void> {
+    return this.http.patch<void>(`${this.resourceUrl}/read-all`, {});
   }
 }

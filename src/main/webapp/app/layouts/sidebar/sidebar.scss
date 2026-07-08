@@ -134,6 +134,31 @@ jhi-sidebar {
   text-overflow: ellipsis;
 }
 
+.sidebar-section-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 16px;
+  margin: 0 8px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-muted);
+
+  fa-icon {
+    font-size: var(--text-sm);
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+}
+
+.collapsed .sidebar-section-label .sidebar-label {
+  display: none;
+}
+
 .sidebar-divider {
   border: none;
   border-top: 1px solid var(--color-outline-variant);

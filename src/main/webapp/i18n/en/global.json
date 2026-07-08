@@ -38,7 +38,8 @@
         "database": "Database",
         "jhipster-needle-menu-add-admin-element": "JHipster will add additional menu entries here (do not translate!)"
       },
-      "language": "Language"
+      "language": "Language",
+      "notifications": "Notifications"
     },
     "form": {
       "username.label": "Username",
@@ -53,6 +54,9 @@
       "email.placeholder": "Your email"
     },
     "messages": {
+      "viewAllNotifications": "View all",
+      "markAllAsRead": "Mark all as read",
+      "noNotifications": "No notifications",
       "info": {
         "authenticated": {
           "prefix": "If you want to ",
@@ -104,6 +108,7 @@
       "delete": "Delete",
       "edit": "Edit",
       "open": "Open",
+      "exportCsv": "CSV",
       "save": "Save",
       "view": "View",
       "show": "Show {{otherEntity}}",
@@ -156,7 +161,9 @@
       "notSet": "Not set",
       "notAssigned": "Not assigned",
       "unassigned": "Unassigned",
-      "noNotifications": "No notifications"
+      "noNotifications": "No notifications",
+      "viewAllNotifications": "View all",
+      "markAllAsRead": "Mark all as read"
     }
   },
   "footer": "This is your footer"

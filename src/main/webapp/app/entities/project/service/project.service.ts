@@ -7,6 +7,7 @@ import { Observable, map } from 'rxjs';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
+import { ProjectRole } from 'app/entities/enumerations/project-role.model';
 import { IProject, IProjectMember, NewProject } from '../project.model';
 
 export type PartialUpdateProject = Partial<IProject> & Pick<IProject, 'id'>;
@@ -101,6 +102,10 @@ export class ProjectService extends ProjectsService {
     return this.http.get<IProjectMember[]>(`${this.resourceUrl}/${encodeURIComponent(id)}/members`);
   }
 
+  getMyRoles(): Observable<IProjectMember[]> {
+    return this.http.get<IProjectMember[]>(`${this.resourceUrl}/my-roles`);
+  }
+
   addMember(projectId: number, userId: number): Observable<undefined> {
     return this.http.post<undefined>(`${this.resourceUrl}/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`, null);
   }
@@ -109,7 +114,7 @@ export class ProjectService extends ProjectsService {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`);
   }
 
-  updateMemberRole(projectId: number, userId: number, role: string): Observable<undefined> {
+  updateMemberRole(projectId: number, userId: number, role: ProjectRole | string): Observable<undefined> {
     return this.http.patch<undefined>(`${this.resourceUrl}/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`, {
       role,
     });

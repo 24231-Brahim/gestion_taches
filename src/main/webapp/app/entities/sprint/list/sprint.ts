@@ -197,9 +197,9 @@ export class Sprint implements OnInit {
   private issuesEffect = effect(() => {
     const raw = this.issueService.issues();
     if (raw && raw.length > 0) {
-      this.issues.set(raw.filter(i => i.sprint?.id === this.selectedSprintId()) as IIssue[]);
-      this.projectIssues.set(raw as IIssue[]);
-    } else if (raw && raw.length === 0 && this.issueService.issuesResource.hasValue()) {
+      this.issues.set(raw.filter(i => i.sprint?.id === this.selectedSprintId()));
+      this.projectIssues.set(raw);
+    } else if (raw?.length === 0 && this.issueService.issuesResource.hasValue()) {
       this.issues.set([]);
       this.projectIssues.set([]);
     }
@@ -243,7 +243,7 @@ export class Sprint implements OnInit {
 
   onAssignToSprint(event: { issueId: number; sprintId: number }): void {
     this.isSaving.set(true);
-    this.issueService.partialUpdate({ id: event.issueId, sprint: { id: event.sprintId } as any }).subscribe({
+    this.issueService.partialUpdate({ id: event.issueId, sprint: { id: event.sprintId } }).subscribe({
       next: () => {
         this.isSaving.set(false);
         this.refreshIssues();
@@ -258,7 +258,7 @@ export class Sprint implements OnInit {
 
   onRemoveFromSprint(issueId: number): void {
     this.isSaving.set(true);
-    this.issueService.partialUpdate({ id: issueId, sprint: null as any }).subscribe({
+    this.issueService.partialUpdate({ id: issueId, sprint: null }).subscribe({
       next: () => {
         this.isSaving.set(false);
         this.refreshIssues();

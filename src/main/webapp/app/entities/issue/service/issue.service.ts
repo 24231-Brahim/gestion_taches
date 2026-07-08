@@ -64,7 +64,10 @@ export class IssueService extends IssuesService {
   createForProject(projectId: number, issue: NewIssue): Observable<IIssue> {
     const copy = this.convertValueFromClient(issue);
     return this.http
-      .post<RestIssue>(`${this.applicationConfigService.getEndpointFor('api/projects')}/${encodeURIComponent(projectId)}/issues`, copy)
+      .post<RestIssue>(
+        `${this.applicationConfigService.getEndpointFor('api/issues/projects')}/${encodeURIComponent(projectId)}/issues`,
+        copy,
+      )
       .pipe(map(res => this.convertResponseFromServer(res)));
   }
 

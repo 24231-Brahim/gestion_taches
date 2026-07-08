@@ -35,15 +35,28 @@ public class JwtAuthenticationTestUtils {
     }
 
     public static String createValidTokenForUser(String jwtKey, String user) {
+        return createToken(jwtKey, user, List.of(ADMIN), null);
+    }
+
+    public static String createValidTokenForUser(String jwtKey, String user, List<String> authorities) {
+        return createToken(jwtKey, user, authorities, null);
+    }
+
+    public static String createToken(String jwtKey, String user, List<String> authorities, Long userId) {
         JwtEncoder encoder = jwtEncoder(jwtKey);
 
         var now = Instant.now();
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
             .issuedAt(now)
-            .expiresAt(now.plusSeconds(60))
+            .expiresAt(now.plusSeconds(60000))
             .subject(user)
-            .claims(customClaim -> customClaim.put(AUTHORITIES_CLAIM, List.of(ADMIN)))
+            .claims(customClaim -> {
+                customClaim.put(AUTHORITIES_CLAIM, authorities);
+                if (userId != null) {
+                    customClaim.put("userId", userId);
+                }
+            })
             .build();
 
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();

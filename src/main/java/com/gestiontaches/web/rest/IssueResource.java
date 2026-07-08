@@ -3,7 +3,6 @@ package com.gestiontaches.web.rest;
 import com.gestiontaches.domain.Project;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.IssueRepository;
-import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
@@ -65,16 +64,13 @@ public class IssueResource {
 
     private final UserRepository userRepository;
 
-    private final ProjectRepository projectRepository;
-
     public IssueResource(
         IssueService issueService,
         IssueRepository issueRepository,
         IssueQueryService issueQueryService,
         UserService userService,
         NotificationService notificationService,
-        UserRepository userRepository,
-        ProjectRepository projectRepository
+        UserRepository userRepository
     ) {
         this.issueService = issueService;
         this.issueRepository = issueRepository;
@@ -82,7 +78,6 @@ public class IssueResource {
         this.userService = userService;
         this.notificationService = notificationService;
         this.userRepository = userRepository;
-        this.projectRepository = projectRepository;
     }
 
     /**
@@ -103,19 +98,8 @@ public class IssueResource {
             throw new BadRequestAlertException("A new issue cannot already have an ID", ENTITY_NAME, "idexists");
         }
 
-        Project project = projectRepository
-            .findById(projectId)
-            .orElseThrow(() -> new BadRequestAlertException("Project not found", "project", "idnotfound"));
-
-        String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
-        boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
-        if (!isAdmin && !project.getOwner().getLogin().equals(currentLogin)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-
         issueDTO.setProject(new com.gestiontaches.service.dto.ProjectDTO());
         issueDTO.getProject().setId(projectId);
-        issueDTO.getProject().setName(project.getName());
 
         issueDTO = issueService.createForProject(issueDTO, projectId);
         return ResponseEntity.created(new URI("/api/issues/" + issueDTO.getId()))

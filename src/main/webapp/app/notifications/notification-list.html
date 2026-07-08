@@ -1,0 +1,51 @@
+<div class="page-heading">
+  <h1 jhiTranslate="global.menu.notifications">Notifications</h1>
+  @if (notifications().length > 0) {
+    <button class="btn btn-sm btn-outline-primary" (click)="markAllAsRead()">
+      <fa-icon icon="check" />
+      <span jhiTranslate="global.messages.markAllAsRead">Tout marquer comme lu</span>
+    </button>
+  }
+</div>
+
+<div class="notifications-container">
+  @if (notifications().length === 0) {
+    <div class="empty-state">
+      <fa-icon icon="bell" size="3x" />
+      <p jhiTranslate="global.messages.noNotifications">Aucune notification</p>
+    </div>
+  }
+
+  @for (notif of notifications(); track notif.id) {
+    <div class="notification-card" [class.unread]="!notif.isRead" (click)="markAsRead(notif)" role="button" tabindex="0">
+      <div class="notification-indicator">
+        @if (!notif.isRead) {
+          <span class="unread-dot"></span>
+        }
+      </div>
+      <div class="notification-content">
+        <div class="notification-message">{{ notif.message }}</div>
+        <div class="notification-meta">
+          <span class="notification-date">{{ notif.createdAt | date: 'medium' }}</span>
+          @if (notif.issueTitle) {
+            <span class="notification-issue">— {{ notif.issueTitle }}</span>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+@if (totalItems() > size()) {
+  <div class="d-flex justify-content-center mt-3">
+    <ngb-pagination
+      [collectionSize]="totalItems()"
+      [page]="page() + 1"
+      [pageSize]="size()"
+      [maxSize]="5"
+      [rotate]="true"
+      [boundaryLinks]="true"
+      (pageChange)="loadPage($event - 1)"
+    />
+  </div>
+}

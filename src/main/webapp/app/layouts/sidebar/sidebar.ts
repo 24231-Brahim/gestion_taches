@@ -5,6 +5,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { AccountService } from 'app/core/auth/account.service';
+import { ProfileService } from 'app/layouts/profiles/profile.service';
 import { TranslateDirective } from 'app/shared/language';
 
 @Component({
@@ -22,12 +23,19 @@ export default class Sidebar implements OnDestroy {
   readonly collapsed = signal(false);
   readonly isMobile = signal(window.innerWidth < 768);
   readonly mobileOpen = signal(false);
+  readonly inProduction = signal(true);
+  readonly openAPIEnabled = signal(false);
 
+  private readonly profileService = inject(ProfileService);
   private readonly bodyObserver = new MutationObserver(() => {
     this.mobileOpen.set(document.body.classList.contains('sidebar-mobile-open'));
   });
 
   constructor() {
+    this.profileService.getProfileInfo().subscribe(profileInfo => {
+      this.inProduction.set(profileInfo.inProduction ?? true);
+      this.openAPIEnabled.set(profileInfo.openAPIEnabled ?? false);
+    });
     this.bodyObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
   }
 

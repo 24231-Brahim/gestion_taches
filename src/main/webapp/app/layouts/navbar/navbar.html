@@ -43,6 +43,13 @@
                 <small class="notification-date text-muted">{{ notif.createdAt | date: 'short' }}</small>
               </a>
             }
+            @if (notificationService.notifications().length > 0) {
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item text-center" routerLink="/notifications" (click)="collapseNavbar()">
+                <fa-icon icon="arrow-right" [fixedWidth]="true" />
+                <span jhiTranslate="global.messages.viewAllNotifications">Voir tout</span>
+              </a>
+            }
           </div>
         </div>
       }

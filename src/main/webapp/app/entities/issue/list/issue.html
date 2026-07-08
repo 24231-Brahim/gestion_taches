@@ -15,6 +15,9 @@
       <button class="btn btn-info btn-sm" (click)="load()" [disabled]="isLoading()">
         <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
       </button>
+      <a class="btn btn-success btn-sm" [href]="csvExportUrl" download="issues.csv">
+        <fa-icon icon="download" /><span class="d-none d-md-inline ms-1" jhiTranslate="entity.action.exportCsv">CSV</span>
+      </a>
       <button id="jh-create-entity" data-cy="entityCreateButton" class="btn btn-primary btn-sm" [routerLink]="['/issue/new']">
         <fa-icon icon="plus" /><span jhiTranslate="gestionTachesApp.issue.home.createLabel"></span>
       </button>
@@ -117,12 +120,16 @@
                 </td>
                 <td class="text-end">
                   <div class="btn-group btn-group-sm" (click)="$event.stopPropagation()">
-                    <a [routerLink]="['/issue', issue.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                      <fa-icon icon="pencil-alt" />
-                    </a>
-                    <button type="submit" (click)="delete(issue)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                      <fa-icon icon="times" />
-                    </button>
+                    @if (canEditIssue(issue)) {
+                      <a [routerLink]="['/issue', issue.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                        <fa-icon icon="pencil-alt" />
+                      </a>
+                    }
+                    @if (canDeleteIssue(issue)) {
+                      <button type="submit" (click)="delete(issue)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                        <fa-icon icon="times" />
+                      </button>
+                    }
                   </div>
                 </td>
               </tr>

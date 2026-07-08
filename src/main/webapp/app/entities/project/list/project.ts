@@ -10,6 +10,7 @@ import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription, combineLatest, filter, tap } from 'rxjs';
 
+import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { Alert } from 'app/shared/alert/alert';
@@ -55,6 +56,7 @@ export class Project implements OnInit {
   readonly page = signal(1);
   readonly error = signal<string | null>(null);
 
+  readonly csvExportUrl: string;
   readonly router = inject(Router);
   readonly projectService = inject(ProjectService);
   readonly isLoading = this.projectService.projectsResource.isLoading;
@@ -63,6 +65,8 @@ export class Project implements OnInit {
   readonly modalService = inject(NgbModal);
 
   constructor() {
+    const appConfig = inject(ApplicationConfigService);
+    this.csvExportUrl = appConfig.getEndpointFor('api/export/csv/projects');
     effect(() => {
       const headers = this.projectService.projectsResource.headers();
       if (headers) {

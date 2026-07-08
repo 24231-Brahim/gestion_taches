@@ -1,5 +1,6 @@
 package com.gestiontaches.service.dto;
 
+import com.gestiontaches.domain.enumeration.ProjectRole;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
@@ -17,8 +18,7 @@ public class ProjectMemberDTO implements Serializable {
     private String userLogin;
 
     @NotNull
-    @Size(max = 50)
-    private String role;
+    private ProjectRole role;
 
     @NotNull
     private Instant joinedAt;
@@ -55,11 +55,11 @@ public class ProjectMemberDTO implements Serializable {
         this.userLogin = userLogin;
     }
 
-    public String getRole() {
+    public ProjectRole getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(ProjectRole role) {
         this.role = role;
     }
 

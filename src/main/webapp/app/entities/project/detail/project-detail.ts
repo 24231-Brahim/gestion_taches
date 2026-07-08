@@ -1,17 +1,19 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, Signal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+
+import dayjs from 'dayjs/esm';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
+import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
-import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
 import { IProject, IProjectMember } from '../project.model';
 import { ProjectService } from '../service/project.service';
 import { UserService } from 'app/entities/user/service/user.service';
@@ -21,8 +23,8 @@ import { SprintService } from 'app/entities/sprint/service/sprint.service';
 import { IIssue, NewIssue } from 'app/entities/issue/issue.model';
 import { IssueService } from 'app/entities/issue/service/issue.service';
 import { IssueType } from 'app/entities/enumerations/issue-type.model';
-import { IssueStatus } from 'app/entities/enumerations/issue-status.model';
 import { Priority } from 'app/entities/enumerations/priority.model';
+import { ProjectRole } from 'app/entities/enumerations/project-role.model';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,7 +40,6 @@ import { Priority } from 'app/entities/enumerations/priority.model';
     FormatMediumDatetimePipe,
     FormatMediumDatePipe,
     FormsModule,
-    HasAnyAuthorityDirective,
   ],
 })
 export class ProjectDetail {
@@ -48,9 +49,9 @@ export class ProjectDetail {
   readonly showAddForm = signal(false);
   readonly users = signal<IUser[]>([]);
   readonly selectedUserId = signal<number | null>(null);
-  readonly newMemberRole = signal('MEMBER');
+  readonly newMemberRole = signal<ProjectRole>(ProjectRole.MEMBER);
   readonly editingMemberId = signal<number | null>(null);
-  readonly editingRole = signal('');
+  readonly editingRole = signal<ProjectRole | ''>('');
 
   readonly sprints = signal<ISprint[]>([]);
   readonly issues = signal<IIssue[]>([]);
@@ -68,21 +69,47 @@ export class ProjectDetail {
   readonly issueTypeValues = Object.keys(IssueType);
   readonly priorityValues = Object.keys(Priority);
 
-  readonly isOwner = computed(() => {
-    const proj = this.project();
+  readonly userProjectRole: Signal<ProjectRole | null> = computed(() => {
     const account = this.accountService.account();
-    if (!proj || !account) {
-      return false;
+    if (!account) {
+      return null;
     }
     if (account.authorities.includes('ROLE_ADMIN')) {
-      return true;
+      return ProjectRole.OWNER;
     }
-    return proj.ownerLogin === account.login;
+    const member = this.members().find(m => m.userLogin === account.login);
+    return member?.role ?? null;
+  });
+
+  readonly canManageMembers = computed(() => {
+    const role = this.userProjectRole();
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
+  });
+
+  readonly canManageSprints = computed(() => {
+    const role = this.userProjectRole();
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
+  });
+
+  readonly canCreateIssues = computed(() => {
+    return this.userProjectRole() !== null;
+  });
+
+  readonly canExportCsv = computed(() => {
+    const role = this.userProjectRole();
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
+  });
+
+  readonly csvExportUrl = computed(() => {
+    const proj = this.project();
+    if (!proj?.id) return '';
+    return this.applicationConfigService.getEndpointFor(`api/export/csv/projects/${proj.id}/issues`);
   });
 
   private readonly projectService = inject(ProjectService);
   private readonly accountService = inject(AccountService);
   private readonly alertService = inject(AlertService);
+  private readonly applicationConfigService = inject(ApplicationConfigService);
   private readonly userService = inject(UserService);
   private readonly sprintService = inject(SprintService);
   private readonly issueService = inject(IssueService);
@@ -140,7 +167,7 @@ export class ProjectDetail {
         this.loadMembers(projectId);
         this.showAddForm.set(false);
         this.selectedUserId.set(null);
-        this.newMemberRole.set('MEMBER');
+        this.newMemberRole.set(ProjectRole.MEMBER);
         this.alertService.addAlert({ type: 'success', translationKey: 'gestionTachesApp.project.member.added' });
       },
       error: () => this.alertService.addAlert({ type: 'danger', translationKey: 'gestionTachesApp.project.member.error.add' }),
@@ -208,6 +235,8 @@ export class ProjectDetail {
       type: this.newIssueType(),
       status: 'BACKLOG',
       priority: this.newIssuePriority(),
+      createdAt: dayjs(),
+      updatedAt: dayjs(),
       project: { id: projectId, name: this.project()?.name ?? null, key: this.project()?.key ?? null },
       sprint: this.newIssueSprintId() ? { id: this.newIssueSprintId()!, name: '' } : null,
       assignee: this.newIssueAssigneeId()

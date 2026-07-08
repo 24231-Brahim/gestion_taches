@@ -3,6 +3,7 @@ package com.gestiontaches.service;
 import com.gestiontaches.domain.Issue;
 import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.User;
+import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.repository.IssueRepository;
 import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.UserRepository;
@@ -34,16 +35,20 @@ public class IssueService {
 
     private final ProjectMemberRepository projectMemberRepository;
 
+    private final ProjectPermissionService projectPermissionService;
+
     public IssueService(
         IssueRepository issueRepository,
         IssueMapper issueMapper,
         UserRepository userRepository,
-        ProjectMemberRepository projectMemberRepository
+        ProjectMemberRepository projectMemberRepository,
+        ProjectPermissionService projectPermissionService
     ) {
         this.issueRepository = issueRepository;
         this.issueMapper = issueMapper;
         this.userRepository = userRepository;
         this.projectMemberRepository = projectMemberRepository;
+        this.projectPermissionService = projectPermissionService;
     }
 
     /**
@@ -54,6 +59,14 @@ public class IssueService {
      */
     public IssueDTO save(IssueDTO issueDTO) {
         LOG.debug("Request to save Issue : {}", issueDTO);
+        if (issueDTO.getProject() != null && issueDTO.getProject().getId() != null) {
+            projectPermissionService.requireProjectRole(
+                issueDTO.getProject().getId(),
+                ProjectRole.OWNER,
+                ProjectRole.MANAGER,
+                ProjectRole.MEMBER
+            );
+        }
         Issue issue = issueMapper.toEntity(issueDTO);
         String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
         User currentUser = userRepository
@@ -72,6 +85,9 @@ public class IssueService {
      */
     public IssueDTO update(IssueDTO issueDTO) {
         LOG.debug("Request to update Issue : {}", issueDTO);
+        if (issueDTO.getId() != null) {
+            checkIssueUpdatePermission(issueDTO.getId());
+        }
         Issue issue = issueMapper.toEntity(issueDTO);
         issue = issueRepository.save(issue);
         return issueMapper.toDto(issue);
@@ -85,6 +101,9 @@ public class IssueService {
      */
     public Optional<IssueDTO> partialUpdate(IssueDTO issueDTO) {
         LOG.debug("Request to partially update Issue : {}", issueDTO);
+        if (issueDTO.getId() != null) {
+            checkIssueUpdatePermission(issueDTO.getId());
+        }
 
         return issueRepository
             .findById(issueDTO.getId())
@@ -95,6 +114,20 @@ public class IssueService {
             })
             .map(issueRepository::save)
             .map(issueMapper::toDto);
+    }
+
+    private void checkIssueUpdatePermission(Long issueId) {
+        Issue existing = issueRepository.findById(issueId).orElseThrow(() -> new RuntimeException("Issue not found"));
+        Long projectId = existing.getProject().getId();
+        Long currentUserId = SecurityUtils.getCurrentUserId().orElseThrow(() -> new RuntimeException("Current user not found"));
+        ProjectRole role = projectPermissionService.getCurrentUserRole(projectId);
+        if (role == ProjectRole.OWNER || role == ProjectRole.MANAGER) {
+            return;
+        }
+        if (role == ProjectRole.MEMBER && existing.getCreatedBy() != null && existing.getCreatedBy().getId().equals(currentUserId)) {
+            return;
+        }
+        throw new RuntimeException("Access denied: you can only update your own issues");
     }
 
     /**
@@ -127,6 +160,7 @@ public class IssueService {
      */
     public IssueDTO createForProject(IssueDTO issueDTO, Long projectId) {
         LOG.debug("Request to save Issue for Project {} : {}", projectId, issueDTO);
+        projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER, ProjectRole.MEMBER);
         Issue issue = issueMapper.toEntity(issueDTO);
         String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
         User currentUser = userRepository
@@ -158,7 +192,19 @@ public class IssueService {
      */
     public void delete(Long id) {
         LOG.debug("Request to delete Issue : {}", id);
-        issueRepository.deleteById(id);
+        Issue issue = issueRepository.findById(id).orElseThrow(() -> new RuntimeException("Issue not found"));
+        Long projectId = issue.getProject().getId();
+        Long currentUserId = SecurityUtils.getCurrentUserId().orElseThrow(() -> new RuntimeException("Current user not found"));
+        ProjectRole role = projectPermissionService.getCurrentUserRole(projectId);
+        if (role == ProjectRole.OWNER || role == ProjectRole.MANAGER) {
+            issueRepository.deleteById(id);
+            return;
+        }
+        if (role == ProjectRole.MEMBER && issue.getCreatedBy() != null && issue.getCreatedBy().getId().equals(currentUserId)) {
+            issueRepository.deleteById(id);
+            return;
+        }
+        throw new RuntimeException("Access denied: you can only delete your own issues");
     }
 
     /**
@@ -173,6 +219,7 @@ public class IssueService {
         return issueRepository
             .findById(issueId)
             .map(issue -> {
+                projectPermissionService.requireProjectRole(issue.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
                 // Verify user is a member of the project
                 ProjectMember member = projectMemberRepository
                     .findByProjectIdAndUserId(issue.getProject().getId(), user.getId())

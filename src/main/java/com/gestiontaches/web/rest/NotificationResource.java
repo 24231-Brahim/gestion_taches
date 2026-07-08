@@ -13,10 +13,15 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
+import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
 
 @RestController
@@ -40,10 +45,15 @@ public class NotificationResource {
 
     @GetMapping("")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<NotificationDTO>> getNotifications() {
+    public ResponseEntity<List<NotificationDTO>> getNotifications(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         Long userId = getCurrentUserId();
-        List<NotificationDTO> notifications = notificationService.findByUserId(userId);
-        return ResponseEntity.ok(notifications);
+        if (pageable.isUnpaged()) {
+            List<NotificationDTO> notifications = notificationService.findByUserId(userId);
+            return ResponseEntity.ok(notifications);
+        }
+        Page<NotificationDTO> page = notificationService.findByUserId(userId, pageable);
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
     @GetMapping("/unread-count")
@@ -62,6 +72,15 @@ public class NotificationResource {
         dto.setIsRead(true);
         Optional<NotificationDTO> result = notificationService.partialUpdate(dto);
         return ResponseUtil.wrapOrNotFound(result);
+    }
+
+    @PatchMapping("/read-all")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> markAllAsRead() {
+        LOG.debug("REST request to mark all notifications as read");
+        Long userId = getCurrentUserId();
+        notificationService.markAllAsRead(userId);
+        return ResponseEntity.ok().build();
     }
 
     private Long getCurrentUserId() {

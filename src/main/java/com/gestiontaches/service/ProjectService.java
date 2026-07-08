@@ -3,6 +3,7 @@ package com.gestiontaches.service;
 import com.gestiontaches.domain.Project;
 import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.User;
+import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.repository.UserRepository;
@@ -43,18 +44,22 @@ public class ProjectService {
 
     private final ProjectMemberMapper projectMemberMapper;
 
+    private final ProjectPermissionService projectPermissionService;
+
     public ProjectService(
         ProjectRepository projectRepository,
         ProjectMapper projectMapper,
         UserRepository userRepository,
         ProjectMemberRepository projectMemberRepository,
-        ProjectMemberMapper projectMemberMapper
+        ProjectMemberMapper projectMemberMapper,
+        ProjectPermissionService projectPermissionService
     ) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
         this.userRepository = userRepository;
         this.projectMemberRepository = projectMemberRepository;
         this.projectMemberMapper = projectMemberMapper;
+        this.projectPermissionService = projectPermissionService;
     }
 
     /**
@@ -70,6 +75,8 @@ public class ProjectService {
         User owner = userRepository.findOneByLogin(currentLogin).orElseThrow(() -> new RuntimeException("User not found: " + currentLogin));
         project.setOwner(owner);
         project = projectRepository.save(project);
+        ProjectMember member = new ProjectMember().project(project).user(owner).role(ProjectRole.OWNER).joinedAt(Instant.now());
+        projectMemberRepository.save(member);
         return projectMapper.toDto(project);
     }
 
@@ -81,6 +88,7 @@ public class ProjectService {
      */
     public ProjectDTO update(ProjectDTO projectDTO) {
         LOG.debug("Request to update Project : {}", projectDTO);
+        projectPermissionService.requireProjectRole(projectDTO.getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
         return projectRepository
             .findById(projectDTO.getId())
             .map(existingProject -> {
@@ -100,6 +108,7 @@ public class ProjectService {
      */
     public Optional<ProjectDTO> partialUpdate(ProjectDTO projectDTO) {
         LOG.debug("Request to partially update Project : {}", projectDTO);
+        projectPermissionService.requireProjectRole(projectDTO.getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
 
         return projectRepository
             .findById(projectDTO.getId())
@@ -157,45 +166,60 @@ public class ProjectService {
      */
     public void delete(Long id) {
         LOG.debug("Request to delete Project : {}", id);
-        checkOwnership(id);
+        projectPermissionService.requireProjectRole(id, ProjectRole.OWNER);
         projectRepository.deleteById(id);
     }
 
     public Set<ProjectMemberDTO> getMembers(Long projectId) {
         LOG.debug("Request to get members of Project : {}", projectId);
-        Project project = projectRepository.findById(projectId).orElseThrow(() -> new RuntimeException("Project not found"));
-        checkOwnership(project);
+        projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER);
         List<ProjectMember> members = projectMemberRepository.findByProjectId(projectId);
         return members.stream().map(projectMemberMapper::toDto).collect(Collectors.toSet());
     }
 
     public void addMember(Long projectId, Long userId) {
         LOG.debug("Request to add user {} to Project {}", userId, projectId);
+        projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER);
         Project project = projectRepository.findById(projectId).orElseThrow(() -> new RuntimeException("Project not found"));
-        checkOwnership(project);
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         if (projectMemberRepository.findByProjectIdAndUserId(projectId, userId).isPresent()) {
             throw new RuntimeException("User is already a member of this project");
         }
-        ProjectMember member = new ProjectMember().project(project).user(user).role("MEMBER").joinedAt(Instant.now());
+        ProjectMember member = new ProjectMember().project(project).user(user).role(ProjectRole.MEMBER).joinedAt(Instant.now());
         projectMemberRepository.save(member);
     }
 
     public void removeMember(Long projectId, Long userId) {
         LOG.debug("Request to remove user {} from Project {}", userId, projectId);
-        checkOwnership(projectId);
+        projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER);
         ProjectMember member = projectMemberRepository
             .findByProjectIdAndUserId(projectId, userId)
             .orElseThrow(() -> new RuntimeException("Member not found"));
+        ProjectRole currentRole = projectPermissionService.getCurrentUserRole(projectId);
+        if (currentRole == ProjectRole.MANAGER && member.getRole() == ProjectRole.OWNER) {
+            throw new RuntimeException("Access denied: managers cannot remove the project owner");
+        }
+        if (member.getRole() == ProjectRole.OWNER) {
+            long ownerCount = projectMemberRepository.countByProjectIdAndRole(projectId, ProjectRole.OWNER);
+            if (ownerCount <= 1) {
+                throw new RuntimeException("Cannot remove the last owner of the project");
+            }
+        }
         projectMemberRepository.delete(member);
     }
 
     public void updateMemberRole(Long projectId, Long userId, ProjectMemberDTO memberDTO) {
         LOG.debug("Request to update role of user {} in Project {}", userId, projectId);
-        checkOwnership(projectId);
+        projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER);
         ProjectMember member = projectMemberRepository
             .findByProjectIdAndUserId(projectId, userId)
             .orElseThrow(() -> new RuntimeException("Member not found"));
+        if (member.getRole() == ProjectRole.OWNER && memberDTO.getRole() != ProjectRole.OWNER) {
+            long ownerCount = projectMemberRepository.countByProjectIdAndRole(projectId, ProjectRole.OWNER);
+            if (ownerCount <= 1) {
+                throw new RuntimeException("Cannot change role of the last owner of the project");
+            }
+        }
         member.setRole(memberDTO.getRole());
         projectMemberRepository.save(member);
     }
@@ -205,17 +229,12 @@ public class ProjectService {
         return projectMemberRepository.countDistinctUsers();
     }
 
-    private void checkOwnership(Long projectId) {
-        Project project = projectRepository.findById(projectId).orElseThrow(() -> new RuntimeException("Project not found"));
-        checkOwnership(project);
-    }
-
-    private void checkOwnership(Project project) {
-        if (!SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
-            String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
-            if (!project.getOwner().getLogin().equals(login)) {
-                throw new RuntimeException("Access denied: you do not own this project");
-            }
-        }
+    @Transactional(readOnly = true)
+    public Set<ProjectMemberDTO> getCurrentUserMemberships() {
+        LOG.debug("Request to get current user memberships");
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
+        User user = userRepository.findOneByLogin(login).orElseThrow(() -> new RuntimeException("User not found"));
+        List<ProjectMember> members = projectMemberRepository.findByUserId(user.getId());
+        return members.stream().map(projectMemberMapper::toDto).collect(Collectors.toSet());
     }
 }

@@ -62,5 +62,53 @@
         <span class="sidebar-label" jhiTranslate="global.menu.account.settings">Settings</span>
       </a>
     }
+
+    @if (account()?.authorities?.includes('ROLE_ADMIN')) {
+      <hr class="sidebar-divider" />
+
+      <div class="sidebar-section-label">
+        <fa-icon icon="users-cog" [fixedWidth]="true" />
+        <span class="sidebar-label" jhiTranslate="global.menu.admin.main">Administration</span>
+      </div>
+
+      <a class="sidebar-item" routerLink="/user-management" routerLinkActive="active" (click)="closeMobile()">
+        <fa-icon icon="users" [fixedWidth]="true" />
+        <span class="sidebar-label" jhiTranslate="userManagement.home.title">User Management</span>
+      </a>
+
+      <a class="sidebar-item" routerLink="/admin/metrics" routerLinkActive="active" (click)="closeMobile()">
+        <fa-icon icon="tachometer-alt" [fixedWidth]="true" />
+        <span class="sidebar-label" jhiTranslate="global.menu.admin.metrics">Metrics</span>
+      </a>
+
+      <a class="sidebar-item" routerLink="/admin/health" routerLinkActive="active" (click)="closeMobile()">
+        <fa-icon icon="heart" [fixedWidth]="true" />
+        <span class="sidebar-label" jhiTranslate="global.menu.admin.health">Health</span>
+      </a>
+
+      <a class="sidebar-item" routerLink="/admin/configuration" routerLinkActive="active" (click)="closeMobile()">
+        <fa-icon icon="cogs" [fixedWidth]="true" />
+        <span class="sidebar-label" jhiTranslate="global.menu.admin.configuration">Configuration</span>
+      </a>
+
+      <a class="sidebar-item" routerLink="/admin/logs" routerLinkActive="active" (click)="closeMobile()">
+        <fa-icon icon="tasks" [fixedWidth]="true" />
+        <span class="sidebar-label" jhiTranslate="global.menu.admin.logs">Logs</span>
+      </a>
+
+      @if (openAPIEnabled()) {
+        <a class="sidebar-item" routerLink="/admin/docs" routerLinkActive="active" (click)="closeMobile()">
+          <fa-icon icon="book" [fixedWidth]="true" />
+          <span class="sidebar-label" jhiTranslate="global.menu.admin.apidocs">API</span>
+        </a>
+      }
+
+      @if (!inProduction()) {
+        <a class="sidebar-item" href="./h2-console/" target="_blank" (click)="closeMobile()">
+          <fa-icon icon="database" [fixedWidth]="true" />
+          <span class="sidebar-label" jhiTranslate="global.menu.admin.database">Database</span>
+        </a>
+      }
+    }
   </nav>
 </aside>

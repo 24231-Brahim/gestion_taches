@@ -126,9 +126,43 @@
 - [x] Ajout icônes FontAwesome : `faArrowDown`, `faArrowUp`, `faClipboardList`, `faColumns`, `faExclamationTriangle`, `faGripVertical`, `faLayerGroup`, `faThLarge`, `faTimesCircle`, `faUserCheck`
 - [x] Clés i18n (en/fr) : `issue.home.backlog/board/search`, `issue.assignee`, `epic.home.roadmap/details`, `epic.startDate/endDate`, `global.messages.empty/notAssigned/unassigned`
 
+## ✅ Fait (Tâche 1 — Rôles projet fonctionnels)
+
+### Backend — Rôles projet
+
+- [x] Création de l'enum `ProjectRole` (OWNER, MANAGER, MEMBER)
+- [x] `ProjectMember.java` / `ProjectMemberDTO.java` : passage de `String` → `ProjectRole` avec `@Enumerated(EnumType.STRING)`
+- [x] `ProjectPermissionService.java` : service de vérification des rôles projet par utilisateur connecté (fallback login si JWT userId absent)
+- [x] `ProjectService.java` : remplacement de `checkOwnership()` par vérifications de rôle (OWNER: tout ; MANAGER: update + manage members sauf OWNER ; MEMBER: read only)
+- [x] `IssueService.java` : tout membre peut créer ; OWNER/MANAGER peuvent tout modifier/supprimer ; MEMBER peut seulement modifier/supprimer ses propres issues
+- [x] `SprintService.java` / `EpicService.java` : OWNER/MANAGER seulement pour CRUD
+- [x] `@PreAuthorize` élargi à `ROLE_USER` sur ProjectResource, SprintResource, EpicResource (le contrôle fin est dans les services)
+- [x] Liquibase changelog `20260705000000_added_project_role_enum.xml` : validation des rôles existants
+- [x] `ProjectMemberRepository.java` : ajout de `countByProjectIdAndRole()`
+- [x] `IssueResource.createIssueForProject()` : suppression du check manuel d'ownership (délégué au service)
+
+### Frontend — Rôles projet
+
+- [x] Création de l'enum TypeScript `ProjectRole`
+- [x] `IProjectMember.role` typé `ProjectRole | null`
+- [x] `project-detail.ts` : signaux `userProjectRole`, `canManageMembers`, `canManageSprints`, `canCreateIssues`
+- [x] `project-detail.html` : remplacement des `*jhiHasAnyAuthority` par conditions basées sur le rôle projet
+- [x] Sélecteur de rôle en dropdown (OWNER/MANAGER/MEMBER) dans le formulaire d'édition
+
+### Tests
+
+- [x] 21 tests d'intégration dans `ProjectRolePermissionIT.java` couvrant OWNER/MANAGER/MEMBER/outsider pour toutes les opérations CRUD
+
+## ✅ Fait (Tâche 2 — Liens admin dans la sidebar)
+
+- [x] Injection de `ProfileService` dans la sidebar pour `inProduction` et `openAPIEnabled`
+- [x] Section "Administration" dans la sidebar (visible seulement pour ROLE_ADMIN)
+- [x] Liens : User Management, Metrics, Health, Configuration, Logs, API (conditionnel), H2 (conditionnel, dev only)
+- [x] Icônes et traductions i18n existantes réutilisées
+- [x] `.sidebar-section-label` style pour l'en-tête de section
+
 ## 📝 À faire (prochaines étapes)
 
-- [ ] Ajouter les pages admin dans la sidebar (User Management, Metrics, Health, Configuration, Logs, API, H2)
 - [ ] Persister l'état collapsed de la sidebar (localStorage)
 - [ ] Corriger les erreurs TS dans `sprint.spec.ts` pour permettre `ng test`
 - [ ] Ajouter une page de liste des notifications complète (avec route dédiée)

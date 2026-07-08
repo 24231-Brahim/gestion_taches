@@ -10,8 +10,10 @@ import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription, combineLatest, tap } from 'rxjs';
 
+import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
+import { AccountService } from 'app/core/auth/account.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { FormatMediumDatetimePipe } from 'app/shared/date';
@@ -19,6 +21,8 @@ import { Filter, FilterOptions, IFilterOption, IFilterOptions } from 'app/shared
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
+import { ProjectRole } from 'app/entities/enumerations/project-role.model';
+import { ProjectService } from 'app/entities/project/service/project.service';
 import { IssueDeleteDialog } from '../delete/issue-delete-dialog';
 import { IssueDetailPanel } from '../detail/issue-detail-panel';
 import { IssueKanbanBoard } from '../kanban/issue-kanban-board';
@@ -159,6 +163,7 @@ export class Issue implements OnInit {
     return this.issues().filter(i => i.title?.toLowerCase().includes(q));
   });
 
+  readonly csvExportUrl: string;
   readonly router = inject(Router);
   readonly issueService = inject(IssueService);
   readonly isLoading = this.issueService.issuesResource.isLoading;
@@ -167,12 +172,18 @@ export class Issue implements OnInit {
   readonly priorityColors = PRIORITY_COLORS;
   readonly priorityIcons = PRIORITY_ICONS;
   readonly statusBadges = STATUS_BADGES;
+  readonly userProjectRoles = signal<Map<number, ProjectRole>>(new Map());
+  readonly currentUserLogin = computed(() => this.accountService.account()?.login ?? null);
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly sortService = inject(SortService);
   protected readonly filterOptions = toSignal(this.filters.filterChanges);
   protected modalService = inject(NgbModal);
+  protected readonly accountService = inject(AccountService);
+  protected readonly projectService = inject(ProjectService);
 
   constructor() {
+    const appConfig = inject(ApplicationConfigService);
+    this.csvExportUrl = appConfig.getEndpointFor('api/export/csv/issues');
     effect(() => {
       const headers = this.issueService.issuesResource.headers();
       if (headers) {
@@ -192,6 +203,16 @@ export class Issue implements OnInit {
     });
   }
 
+  canEditIssue(issue: IIssue): boolean {
+    const role = this.userProjectRoles().get(issue.project?.id ?? -1);
+    if (!role) return false;
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER || issue.createdBy?.login === this.currentUserLogin();
+  }
+
+  canDeleteIssue(issue: IIssue): boolean {
+    return this.canEditIssue(issue);
+  }
+
   trackId = (item: IIssue): number => this.issueService.getIssueIdentifier(item);
 
   ngOnInit(): void {
@@ -201,6 +222,19 @@ export class Issue implements OnInit {
         tap(() => this.load()),
       )
       .subscribe();
+    this.loadUserProjectRoles();
+  }
+
+  loadUserProjectRoles(): void {
+    this.projectService.getMyRoles().subscribe(members => {
+      const map = new Map<number, ProjectRole>();
+      for (const m of members) {
+        if (m.projectId != null && m.role != null) {
+          map.set(m.projectId, m.role);
+        }
+      }
+      this.userProjectRoles.set(map);
+    });
   }
 
   delete(issue: IIssue): void {

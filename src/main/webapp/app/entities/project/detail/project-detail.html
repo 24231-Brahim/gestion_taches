@@ -35,9 +35,11 @@
 
         <div class="d-flex align-items-center mb-3">
           <h3 class="mb-0" jhiTranslate="gestionTachesApp.project.members">Members</h3>
-          <button class="btn btn-primary btn-sm ms-2" *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_PROJET_MANAGER']" (click)="toggleAddForm()">
-            <fa-icon icon="user-plus" />&nbsp;<span jhiTranslate="gestionTachesApp.project.member.add">Add member</span>
-          </button>
+          @if (canManageMembers()) {
+            <button class="btn btn-primary btn-sm ms-2" (click)="toggleAddForm()">
+              <fa-icon icon="user-plus" />&nbsp;<span jhiTranslate="gestionTachesApp.project.member.add">Add member</span>
+            </button>
+          }
         </div>
 
         @if (showAddForm()) {
@@ -53,9 +55,6 @@
                       }
                     }
                   </select>
-                </div>
-                <div class="col-auto">
-                  <input type="text" class="form-control" [(ngModel)]="newMemberRole" placeholder="Role" maxlength="50" />
                 </div>
                 <div class="col-auto">
                   <button class="btn btn-primary" (click)="addMember(projectRef.id)" [disabled]="!selectedUserId()">
@@ -87,13 +86,11 @@
                   <td>
                     @if (editingMemberId() === member.id) {
                       <div class="d-flex gap-1 align-items-center">
-                        <input
-                          type="text"
-                          class="form-control form-control-sm"
-                          style="width: 120px"
-                          [(ngModel)]="editingRole"
-                          maxlength="50"
-                        />
+                        <select class="form-select form-select-sm" style="width: 140px" [(ngModel)]="editingRole">
+                          <option [ngValue]="'OWNER'">OWNER</option>
+                          <option [ngValue]="'MANAGER'">MANAGER</option>
+                          <option [ngValue]="'MEMBER'">MEMBER</option>
+                        </select>
                         <button class="btn btn-sm btn-primary" (click)="saveRole(projectRef.id, member)">
                           <fa-icon icon="save" />
                         </button>
@@ -107,16 +104,18 @@
                   </td>
                   <td>{{ member.joinedAt | formatMediumDatetime }}</td>
                   <td>
-                    <div class="d-flex gap-1" *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_PROJET_MANAGER']">
-                      @if (editingMemberId() !== member.id) {
-                        <button class="btn btn-sm btn-warning" (click)="startEdit(member)">
-                          <fa-icon icon="pencil-alt" />
+                    @if (canManageMembers()) {
+                      <div class="d-flex gap-1">
+                        @if (editingMemberId() !== member.id) {
+                          <button class="btn btn-sm btn-warning" (click)="startEdit(member)">
+                            <fa-icon icon="pencil-alt" />
+                          </button>
+                        }
+                        <button class="btn btn-sm btn-danger" (click)="removeMember(projectRef.id, member.userId!)">
+                          <fa-icon icon="trash-alt" />
                         </button>
-                      }
-                      <button class="btn btn-sm btn-danger" (click)="removeMember(projectRef.id, member.userId!)">
-                        <fa-icon icon="trash-alt" />
-                      </button>
-                    </div>
+                      </div>
+                    }
                   </td>
                 </tr>
               } @empty {
@@ -132,14 +131,11 @@
 
         <div class="d-flex align-items-center mb-3">
           <h3 class="mb-0" jhiTranslate="gestionTachesApp.project.sprints">Sprints</h3>
-          <a
-            class="btn btn-primary btn-sm ms-2"
-            *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_PROJET_MANAGER']"
-            [routerLink]="['/sprint/new']"
-            [queryParams]="{ projectId: projectRef.id }"
-          >
-            <fa-icon icon="plus" />&nbsp;<span jhiTranslate="gestionTachesApp.sprint.home.createLabel">Create a new Sprint</span>
-          </a>
+          @if (canManageSprints()) {
+            <a class="btn btn-primary btn-sm ms-2" [routerLink]="['/sprint/new']" [queryParams]="{ projectId: projectRef.id }">
+              <fa-icon icon="plus" />&nbsp;<span jhiTranslate="gestionTachesApp.sprint.home.createLabel">Create a new Sprint</span>
+            </a>
+          }
         </div>
 
         <div class="table-responsive">
@@ -183,10 +179,15 @@
 
         <div class="d-flex align-items-center mb-3">
           <h3 class="mb-0" jhiTranslate="gestionTachesApp.project.issues">Issues</h3>
-          @if (isOwner()) {
+          @if (canCreateIssues()) {
             <button class="btn btn-primary btn-sm ms-2" (click)="toggleIssueForm()">
               <fa-icon icon="plus" />&nbsp;<span jhiTranslate="gestionTachesApp.issue.home.createLabel">Create a new Issue</span>
             </button>
+          }
+          @if (canExportCsv()) {
+            <a class="btn btn-success btn-sm ms-2" [href]="csvExportUrl()" download>
+              <fa-icon icon="download" />&nbsp;<span jhiTranslate="entity.action.exportCsv">CSV</span>
+            </a>
           }
         </div>
 

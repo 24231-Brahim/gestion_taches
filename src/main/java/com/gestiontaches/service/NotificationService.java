@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,12 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
+    public Page<NotificationDTO> findByUserId(Long userId, Pageable pageable) {
+        LOG.debug("Request to get paginated Notifications for user : {}", userId);
+        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable).map(notificationMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
     public long countUnreadByUserId(Long userId) {
         return notificationRepository.countByUserIdAndIsReadFalse(userId);
     }
@@ -55,5 +63,10 @@ public class NotificationService {
             })
             .map(notificationRepository::save)
             .map(notificationMapper::toDto);
+    }
+
+    public int markAllAsRead(Long userId) {
+        LOG.debug("Request to mark all notifications as read for user : {}", userId);
+        return notificationRepository.markAllAsReadByUserId(userId);
     }
 }

@@ -38,7 +38,8 @@
         "database": "Base de données",
         "jhipster-needle-menu-add-admin-element": "JHipster will add additional menu entries here (do not translate!)"
       },
-      "language": "Langue"
+      "language": "Langue",
+      "notifications": "Notifications"
     },
     "form": {
       "username.label": "Nom d'utilisateur",
@@ -53,6 +54,9 @@
       "email.placeholder": "Votre email"
     },
     "messages": {
+      "viewAllNotifications": "Voir tout",
+      "markAllAsRead": "Tout marquer comme lu",
+      "noNotifications": "Aucune notification",
       "info": {
         "authenticated": {
           "prefix": "Si vous voulez vous ",
