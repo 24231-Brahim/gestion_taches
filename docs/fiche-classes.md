@@ -207,7 +207,7 @@ graph LR
     U --> UC14
     U --> UC15
 ```
-############ 2eme diagramme de cas d'utilsation :
+```mermaid
 graph LR
 
     U["👤 Utilisateur"]
@@ -297,7 +297,7 @@ graph LR
 | UC14 | Authentification | Tous | Se connecter / se déconnecter (JWT) |
 | UC15 | Inscription | U | Créer un compte |
 
----
+```
 
 ## 3. Diagramme de Séquence (Sequence Diagram)
 
