@@ -118,16 +118,17 @@ classDiagram
 
     User "1" --> "*" Project : possède (owner)
     User "1" --> "*" Notification : reçoit
-    User "*" -- "*" Role
+    User "*" -- "*" Role : possède (roles)
     Project "1" --> "*" ProjectMember : contient (members)
-    ProjectMember "*" --> "1" User : référence
+    ProjectMember "*" --> "1" User : référence (member)
     Project "1" --> "*" Sprint : contient
     Project "1" --> "*" Epic : contient
     Project "1" --> "*" Task : contient
     Sprint "1" --> "0..*" Task : regroupe
     Epic "1" --> "0..*" Task : catégorise
-    User "1" --> "*" Comment : écrit (author)
     User "1" --> "*" Task : assigné (assignee)
+    User "1" --> "*" Task : crée (createdBy)
+    User "1" --> "*" Comment : écrit (author)
     Task "1" --> "*" Comment : reçoit
     Task "1" --> "*" Attachment : contient
     Sprint --> SprintStatus
