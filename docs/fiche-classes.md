@@ -14,12 +14,12 @@ classDiagram
         +String lastName
         +String email
         +String password
-        +Role role
     }
 
     class Role {
-        +Long user_id
-        +Role role
+        +Long id
+        +String name
+        +String description
     }
 
     class Project {
@@ -118,7 +118,7 @@ classDiagram
 
     User "1" --> "*" Project : possède (owner)
     User "1" --> "*" Notification : reçoit
-    User "1" --> "*" Role
+    User "*" --> "*" Role
     Project "1" --> "*" ProjectMember : contient (members)
     ProjectMember "*" --> "1" User : référence
     Project "1" --> "*" Sprint : contient
