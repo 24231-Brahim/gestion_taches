@@ -118,7 +118,7 @@ classDiagram
 
     User "1" --> "*" Project : possède (owner)
     User "1" --> "*" Notification : reçoit
-    User "*" --> "*" Role
+    User "*" -- "*" Role
     Project "1" --> "*" ProjectMember : contient (members)
     ProjectMember "*" --> "1" User : référence
     Project "1" --> "*" Sprint : contient
