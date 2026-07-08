@@ -1,152 +1,133 @@
-// ============================================================
-//  JDL — Système de gestion de projet (type Jira)
-// ============================================================
+// JDL - Modèle de gestion de projets (type Jira)
+// Généré à partir du diagramme de classe fourni
+// Remarque : l'entité User est l'entité "User" native de JHipster
+// (login, firstName, lastName, email, password sont déjà gérés par JHipster).
+// Elle n'est donc pas redéfinie ici, seulement référencée dans les relations.
+// =========================================================
 
-// ─────────────────────────────────────────────
-//  ENTITÉS
-// ─────────────────────────────────────────────
+entity Role {
+  name String required,
+  description String
+}
 
 entity Project {
-    name        String      required minlength(1) maxlength(100)
-    description String      maxlength(500)
-    key         String      required unique minlength(2) maxlength(10)
-    createdAt   Instant     required
+  name String required,
+  description String,
+  projectKey String required,
+  createdAt Instant
+}
+
+entity ProjectMember {
+  joinedAt LocalDate
 }
 
 entity Sprint {
-    name        String      required minlength(1) maxlength(100)
-    goal        String      maxlength(500)
-    startDate   LocalDate
-    endDate     LocalDate
-    status      SprintStatus required
+  name String required,
+  goal String,
+  startDate LocalDate,
+  endDate LocalDate,
+  status SprintStatus
 }
 
 entity Epic {
-    title       String      required minlength(1) maxlength(200)
-    description String      maxlength(1000)
-    status      EpicStatus  required
-    priority    Priority    required
-    createdAt   Instant     required
-    updatedAt   Instant
+  title String required,
+  description String,
+  status EpicStatus,
+  priority Priority,
+  createdAt Instant,
+  updatedAt Instant,
+  startDate LocalDate,
+  endDate LocalDate
 }
 
-entity Issue {
-    title       String      required minlength(1) maxlength(200)
-    description String      maxlength(5000)
-    type        IssueType   required
-    status      IssueStatus required
-    priority    Priority    required
-    createdAt   Instant     required
-    updatedAt   Instant
+entity Task {
+  title String required,
+  description String,
+  status TaskStatus,
+  priority Priority,
+  createdAt Instant,
+  updatedAt Instant
 }
 
 entity Comment {
-    content     String      required minlength(1) maxlength(2000)
-    createdAt   Instant     required
+  content String required,
+  createdAt Instant
 }
 
 entity Attachment {
-    fileName    String      required minlength(1) maxlength(255)
-    filePath    String      required maxlength(1000)
-    uploadedAt  Instant     required
+  fileName String required,
+  filePath String required,
+  uploadedAt Instant
 }
 
-entity ActionHistory {
-    action       String     required minlength(1) maxlength(100)
-    fieldChanged String     maxlength(100)
-    oldValue     String     maxlength(500)
-    newValue     String     maxlength(500)
-    createdAt    Instant    required
+entity Notification {
+  message String required,
+  isRead Boolean,
+  createdAt Instant
 }
 
-// ─────────────────────────────────────────────
-//  ENUMERATIONS
-// ─────────────────────────────────────────────
+// =========================================================
+// Enumérations
+// =========================================================
 
 enum SprintStatus {
-    PLANNED,
-    ACTIVE,
-    COMPLETED,
-    CANCELLED
+  PLANNED, ACTIVE, COMPLETED, CANCELLED
 }
 
 enum EpicStatus {
-    TODO,
-    IN_PROGRESS,
-    DONE,
-    CANCELLED
+  TODO, IN_PROGRESS, DONE, CANCELLED
 }
 
-enum IssueType {
-    STORY,
-    BUG,
-    TASK,
-    SUBTASK,
-    IMPROVEMENT
-}
-
-enum IssueStatus {
-    BACKLOG,
-    TODO,
-    IN_PROGRESS,
-    IN_REVIEW,
-    DONE,
-    CANCELLED
+enum TaskStatus {
+  NEW, IN_PROGRESS, CODE_REVIEW, READY_FOR_RELEASE, DONE
 }
 
 enum Priority {
-    LOWEST,
-    LOW,
-    MEDIUM,
-    HIGH,
-    HIGHEST
+  LOWEST, LOW, MEDIUM, HIGH, HIGHEST
 }
 
-// ─────────────────────────────────────────────
-//  RELATIONS
-// ─────────────────────────────────────────────
-
-relationship OneToMany {
-    Project{sprints} to Sprint{project(name) required}
-}
-
-relationship OneToMany {
-    Project{epics} to Epic{project(name) required}
-}
-
-relationship OneToMany {
-    Project{issues} to Issue{project(name) required}
-}
+// =========================================================
+// Relations Many-to-One vers l'entité User (native JHipster)
+// =========================================================
 
 relationship ManyToOne {
-    Issue{sprint(name)} to Sprint
+  Project{owner} to User
+  Notification{user} to User
+  ProjectMember{member} to User
+  Task{assignee} to User
+  Task{createdBy} to User
+  Comment{author} to User
 }
 
-relationship ManyToOne {
-    Issue{epic(title)} to Epic
+// =========================================================
+// Relation Many-to-Many User <-> Role
+// =========================================================
+
+relationship ManyToMany {
+  User{role(name)} to Role{user}
 }
+
+
+// =========================================================
+// Relations One-to-Many (avec côté inverse ManyToOne implicite)
+// =========================================================
 
 relationship OneToMany {
-    Issue{comments} to Comment{issue required}
+  Project{member} to ProjectMember{project}
+  Project{sprint} to Sprint{project}
+  Project{epic} to Epic{project}
+  Project{task} to Task{project}
+  Sprint{task} to Task{sprint}
+  Epic{task} to Task{epic}
+  Task{comment} to Comment{task}
+  Task{attachment} to Attachment{task}
 }
 
-relationship OneToMany {
-    Issue{attachments} to Attachment{issue required}
-}
+// =========================================================
+// Options
+// =========================================================
 
-relationship OneToMany {
-    Issue{history} to ActionHistory{issue required}
-}
-
-// ─────────────────────────────────────────────
-//  OPTIONS
-// ─────────────────────────────────────────────
-
-paginate Project, Sprint, Epic, Issue with pagination
-paginate Comment, Attachment, ActionHistory with infinite-scroll
-
-dto * with mapstruct
-
-service * with serviceClass
-
-filter Issue, Sprint, Epic
+paginate Project, Sprint, Epic, Task, Comment, Attachment, Notification with pagination
+dto Project, Sprint, Epic, Task with mapstruct
+service Project, ProjectMember, Sprint, Epic, Task, Comment, Attachment, Notification, Role with serviceImpl
+filter Project, Sprint, Epic, Task
