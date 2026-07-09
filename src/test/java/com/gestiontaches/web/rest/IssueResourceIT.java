@@ -14,6 +14,7 @@ import com.gestiontaches.domain.Epic;
 import com.gestiontaches.domain.Issue;
 import com.gestiontaches.domain.Project;
 import com.gestiontaches.domain.Sprint;
+import com.gestiontaches.domain.User;
 import com.gestiontaches.domain.enumeration.IssueStatus;
 import com.gestiontaches.domain.enumeration.IssueType;
 import com.gestiontaches.domain.enumeration.Priority;
@@ -780,6 +781,87 @@ class IssueResourceIT {
 
     @Test
     @Transactional
+    @WithMockUser(username = "developer", authorities = { "ROLE_DEVELOPER" })
+    void putExistingIssue_asAssignedDeveloper_shouldSucceed() throws Exception {
+        User assignee = createUser("developer");
+        issue.setAssignee(assignee);
+        insertedIssue = issueRepository.saveAndFlush(issue);
+
+        long databaseSizeBeforeUpdate = getRepositoryCount();
+
+        Issue updatedIssue = issueRepository.findById(issue.getId()).orElseThrow();
+        em.detach(updatedIssue);
+        updatedIssue.title(UPDATED_TITLE).status(UPDATED_STATUS).updatedAt(UPDATED_UPDATED_AT);
+        IssueDTO issueDTO = issueMapper.toDto(updatedIssue);
+
+        restIssueMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, issueDTO.getId()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(issueDTO))
+            )
+            .andExpect(status().isOk());
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertThat(getPersistedIssue(issue).getTitle()).isEqualTo(UPDATED_TITLE);
+        assertThat(getPersistedIssue(issue).getStatus()).isEqualTo(UPDATED_STATUS);
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "developer", authorities = { "ROLE_DEVELOPER" })
+    void patchIssueStatus_asAssignedDeveloper_shouldMoveIssueOnKanbanBoard() throws Exception {
+        User assignee = createUser("developer");
+        issue.setAssignee(assignee);
+        insertedIssue = issueRepository.saveAndFlush(issue);
+
+        long databaseSizeBeforeUpdate = getRepositoryCount();
+
+        Issue partialUpdatedIssue = new Issue();
+        partialUpdatedIssue.setId(issue.getId());
+        partialUpdatedIssue.status(IssueStatus.IN_PROGRESS);
+
+        restIssueMockMvc
+            .perform(
+                patch(ENTITY_API_URL_ID, partialUpdatedIssue.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(om.writeValueAsBytes(partialUpdatedIssue))
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value(IssueStatus.IN_PROGRESS.toString()));
+
+        Issue persistedIssue = getPersistedIssue(issue);
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertThat(persistedIssue.getStatus()).isEqualTo(IssueStatus.IN_PROGRESS);
+        assertThat(persistedIssue.getUpdatedAt()).isNotNull();
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "developer", authorities = { "ROLE_DEVELOPER" })
+    void putExistingIssue_asUnassignedDeveloper_shouldForbid() throws Exception {
+        User assignee = createUser("otherdeveloper");
+        issue.setAssignee(assignee);
+        insertedIssue = issueRepository.saveAndFlush(issue);
+
+        long databaseSizeBeforeUpdate = getRepositoryCount();
+
+        Issue updatedIssue = issueRepository.findById(issue.getId()).orElseThrow();
+        em.detach(updatedIssue);
+        updatedIssue.title(UPDATED_TITLE).status(UPDATED_STATUS).updatedAt(UPDATED_UPDATED_AT);
+        IssueDTO issueDTO = issueMapper.toDto(updatedIssue);
+
+        restIssueMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, issueDTO.getId()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(issueDTO))
+            )
+            .andExpect(status().isForbidden());
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertThat(getPersistedIssue(issue).getTitle()).isEqualTo(DEFAULT_TITLE);
+        assertThat(getPersistedIssue(issue).getStatus()).isEqualTo(DEFAULT_STATUS);
+    }
+
+    @Test
+    @Transactional
     void putNonExistingIssue() throws Exception {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         issue.setId(longCount.incrementAndGet());
@@ -982,6 +1064,21 @@ class IssueResourceIT {
 
     @Test
     @Transactional
+    @WithMockUser(authorities = { "ROLE_DEVELOPER" })
+    void deleteIssue_asDeveloper_shouldForbid() throws Exception {
+        insertedIssue = issueRepository.saveAndFlush(issue);
+
+        long databaseSizeBeforeDelete = getRepositoryCount();
+
+        restIssueMockMvc
+            .perform(delete(ENTITY_API_URL_ID, issue.getId()).accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+
+        assertSameRepositoryCount(databaseSizeBeforeDelete);
+    }
+
+    @Test
+    @Transactional
     @WithMockUser(authorities = { "ROLE_PROJET_MANAGER" })
     void createIssue_asProjetManager_shouldSucceed() throws Exception {
         long databaseSizeBeforeCreate = getRepositoryCount();
@@ -1032,6 +1129,15 @@ class IssueResourceIT {
 
     protected Issue getPersistedIssue(Issue issue) {
         return issueRepository.findById(issue.getId()).orElseThrow();
+    }
+
+    private User createUser(String login) {
+        User user = UserResourceIT.createEntity();
+        user.setLogin(login);
+        user.setEmail(login + "@localhost");
+        em.persist(user);
+        em.flush();
+        return user;
     }
 
     protected void assertPersistedIssueToMatchAllProperties(Issue expectedIssue) {

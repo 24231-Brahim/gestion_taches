@@ -150,7 +150,7 @@
       </div>
     }
   } @else {
-    <jhi-issue-kanban-board [issues]="filteredIssues()" (selectIssue)="onSelectIssue($event)" />
+    <jhi-issue-kanban-board [issues]="filteredIssues()" (selectIssue)="onSelectIssue($event)" (issueMoved)="onIssueMoved($event)" />
   }
 
   <jhi-issue-detail-panel [issue]="selectedIssue()" [visible]="drawerVisible()" [close]="onCloseDrawer.bind(this)" />

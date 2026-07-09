@@ -223,6 +223,13 @@ export class Issue implements OnInit {
     this.selectedIssue.set(null);
   }
 
+  onIssueMoved(updatedIssue: IIssue): void {
+    this.issues.update(issues => issues.map(issue => (issue.id === updatedIssue.id ? updatedIssue : issue)));
+    if (this.selectedIssue()?.id === updatedIssue.id) {
+      this.selectedIssue.set(updatedIssue);
+    }
+  }
+
   setViewMode(mode: ViewMode): void {
     this.viewMode.set(mode);
   }

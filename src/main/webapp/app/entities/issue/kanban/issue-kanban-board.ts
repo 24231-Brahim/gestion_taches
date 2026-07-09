@@ -130,6 +130,7 @@ interface KanbanColumn {
 export class IssueKanbanBoard {
   readonly issues = input<IIssue[]>([]);
   readonly selectIssue = output<IIssue>();
+  readonly issueMoved = output<IIssue>();
 
   readonly typeColors = ISSUE_TYPE_COLORS;
   readonly typeIcons = ISSUE_TYPE_ICONS;
@@ -181,8 +182,8 @@ export class IssueKanbanBoard {
       return;
     }
     this.issueService.partialUpdate({ id: issue.id, status: targetStatus as keyof typeof IssueStatus }).subscribe({
-      next: () => {
-        issue.status = targetStatus as keyof typeof IssueStatus;
+      next: updatedIssue => {
+        this.issueMoved.emit(updatedIssue);
         this.dragIssueId = null;
       },
       error: (err: HttpErrorResponse) => {

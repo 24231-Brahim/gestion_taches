@@ -11,7 +11,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gestiontaches.IntegrationTest;
 import com.gestiontaches.domain.Comment;
 import com.gestiontaches.domain.Issue;
+import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.CommentRepository;
+import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.service.dto.CommentDTO;
 import com.gestiontaches.service.mapper.CommentMapper;
 import jakarta.persistence.EntityManager;
@@ -54,6 +56,9 @@ class CommentResourceIT {
 
     @Autowired
     private CommentRepository commentRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private CommentMapper commentMapper;
@@ -471,6 +476,110 @@ class CommentResourceIT {
 
     @Test
     @Transactional
+    @WithMockUser(username = "dev", authorities = { "ROLE_DEVELOPER" })
+    void createComment_asDeveloper_shouldSetCurrentUserAsAuthor() throws Exception {
+        long databaseSizeBeforeCreate = getRepositoryCount();
+        CommentDTO commentDTO = commentMapper.toDto(comment);
+
+        var returnedCommentDTO = om.readValue(
+            restCommentMockMvc
+                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(commentDTO)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(),
+            CommentDTO.class
+        );
+
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        insertedComment = commentMapper.toEntity(returnedCommentDTO);
+        assertThat(getPersistedComment(insertedComment).getAuthor().getLogin()).isEqualTo("dev");
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "dev", authorities = { "ROLE_DEVELOPER" })
+    void putExistingComment_asAuthorDeveloper_shouldSucceed() throws Exception {
+        comment.setAuthor(getUser("dev"));
+        insertedComment = commentRepository.saveAndFlush(comment);
+
+        long databaseSizeBeforeUpdate = getRepositoryCount();
+
+        Comment updatedComment = commentRepository.findById(comment.getId()).orElseThrow();
+        em.detach(updatedComment);
+        updatedComment.content(UPDATED_CONTENT).createdAt(UPDATED_CREATED_AT);
+        CommentDTO commentDTO = commentMapper.toDto(updatedComment);
+
+        restCommentMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, commentDTO.getId()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(commentDTO))
+            )
+            .andExpect(status().isOk());
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertThat(getPersistedComment(comment).getContent()).isEqualTo(UPDATED_CONTENT);
+        assertThat(getPersistedComment(comment).getAuthor().getLogin()).isEqualTo("dev");
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "dev", authorities = { "ROLE_DEVELOPER" })
+    void putExistingComment_asNonAuthorDeveloper_shouldForbid() throws Exception {
+        comment.setAuthor(getUser("user"));
+        insertedComment = commentRepository.saveAndFlush(comment);
+
+        long databaseSizeBeforeUpdate = getRepositoryCount();
+
+        Comment updatedComment = commentRepository.findById(comment.getId()).orElseThrow();
+        em.detach(updatedComment);
+        updatedComment.content(UPDATED_CONTENT).createdAt(UPDATED_CREATED_AT);
+        CommentDTO commentDTO = commentMapper.toDto(updatedComment);
+
+        restCommentMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, commentDTO.getId()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(commentDTO))
+            )
+            .andExpect(status().isForbidden());
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertThat(getPersistedComment(comment).getContent()).isEqualTo(DEFAULT_CONTENT);
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "dev", authorities = { "ROLE_DEVELOPER" })
+    void deleteComment_asAuthorDeveloper_shouldSucceed() throws Exception {
+        comment.setAuthor(getUser("dev"));
+        insertedComment = commentRepository.saveAndFlush(comment);
+
+        long databaseSizeBeforeDelete = getRepositoryCount();
+
+        restCommentMockMvc
+            .perform(delete(ENTITY_API_URL_ID, comment.getId()).accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNoContent());
+
+        assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
+        insertedComment = null;
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "dev", authorities = { "ROLE_DEVELOPER" })
+    void deleteComment_asNonAuthorDeveloper_shouldForbid() throws Exception {
+        comment.setAuthor(getUser("user"));
+        insertedComment = commentRepository.saveAndFlush(comment);
+
+        long databaseSizeBeforeDelete = getRepositoryCount();
+
+        restCommentMockMvc
+            .perform(delete(ENTITY_API_URL_ID, comment.getId()).accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+
+        assertSameRepositoryCount(databaseSizeBeforeDelete);
+    }
+
+    @Test
+    @Transactional
     @WithMockUser(authorities = { "ROLE_USER" })
     void deleteComment_asUser_shouldForbid() throws Exception {
         var savedComment = commentRepository.saveAndFlush(comment);
@@ -497,6 +606,10 @@ class CommentResourceIT {
 
     protected Comment getPersistedComment(Comment comment) {
         return commentRepository.findById(comment.getId()).orElseThrow();
+    }
+
+    private User getUser(String login) {
+        return userRepository.findOneByLogin(login).orElseThrow();
     }
 
     protected void assertPersistedCommentToMatchAllProperties(Comment expectedComment) {

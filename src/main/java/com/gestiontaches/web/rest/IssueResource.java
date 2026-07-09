@@ -348,15 +348,7 @@ public class IssueResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize(
-        "hasAnyAuthority('" +
-            AuthoritiesConstants.ADMIN +
-            "', '" +
-            AuthoritiesConstants.PROJET_MANAGER +
-            "', '" +
-            AuthoritiesConstants.DEVELOPER +
-            "')"
-    )
+    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
     public ResponseEntity<Void> deleteIssue(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Issue : {}", id);
         issueService.delete(id);

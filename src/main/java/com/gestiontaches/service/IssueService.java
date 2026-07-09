@@ -6,14 +6,17 @@ import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.IssueRepository;
 import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.UserRepository;
+import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
 import com.gestiontaches.service.dto.IssueDTO;
 import com.gestiontaches.service.mapper.IssueMapper;
+import java.time.Instant;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -72,9 +75,20 @@ public class IssueService {
      */
     public IssueDTO update(IssueDTO issueDTO) {
         LOG.debug("Request to update Issue : {}", issueDTO);
-        Issue issue = issueMapper.toEntity(issueDTO);
-        issue = issueRepository.save(issue);
-        return issueMapper.toDto(issue);
+        return issueRepository
+            .findById(issueDTO.getId())
+            .map(existingIssue -> {
+                checkCanUpdateIssue(existingIssue);
+                boolean statusChanged = isStatusChanged(existingIssue, issueDTO);
+                issueMapper.partialUpdate(existingIssue, issueDTO);
+                if (statusChanged) {
+                    existingIssue.setUpdatedAt(Instant.now());
+                }
+                return existingIssue;
+            })
+            .map(issueRepository::save)
+            .map(issueMapper::toDto)
+            .orElseThrow(() -> new RuntimeException("Issue not found"));
     }
 
     /**
@@ -89,7 +103,12 @@ public class IssueService {
         return issueRepository
             .findById(issueDTO.getId())
             .map(existingIssue -> {
+                checkCanUpdateIssue(existingIssue);
+                boolean statusChanged = isStatusChanged(existingIssue, issueDTO);
                 issueMapper.partialUpdate(existingIssue, issueDTO);
+                if (statusChanged) {
+                    existingIssue.setUpdatedAt(Instant.now());
+                }
 
                 return existingIssue;
             })
@@ -182,5 +201,25 @@ public class IssueService {
             })
             .map(issueMapper::toDto)
             .orElseThrow(() -> new RuntimeException("Issue not found with id " + issueId));
+    }
+
+    private void checkCanUpdateIssue(Issue issue) {
+        if (SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN, AuthoritiesConstants.PROJET_MANAGER)) {
+            return;
+        }
+
+        if (!SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.DEVELOPER)) {
+            return;
+        }
+
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
+        User assignee = issue.getAssignee();
+        if (assignee == null || !login.equals(assignee.getLogin())) {
+            throw new AccessDeniedException("Developer can only update assigned issues");
+        }
+    }
+
+    private boolean isStatusChanged(Issue issue, IssueDTO issueDTO) {
+        return issueDTO.getStatus() != null && issue.getStatus() != issueDTO.getStatus();
     }
 }

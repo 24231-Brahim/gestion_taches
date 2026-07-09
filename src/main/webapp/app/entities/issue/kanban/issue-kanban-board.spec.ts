@@ -95,15 +95,20 @@ describe('IssueKanbanBoard', () => {
     expect(comp.dragOverStatus).toBeNull();
   });
 
-  it('onDrop should call partialUpdate when status differs', () => {
+  it('onDrop should call partialUpdate and emit updated issue when status differs', () => {
     fixture.componentRef.setInput('issues', mockIssues);
     fixture.detectChanges();
+    const updatedIssue = { ...mockIssues[0], status: 'DONE' as const };
+    const spy = vitest.fn();
+    issueServiceMock.partialUpdate.mockReturnValue(of(updatedIssue));
+    comp.issueMoved.subscribe(spy);
     comp.dragIssueId = mockIssues[0].id;
     const event = new DragEvent('drop');
     vitest.spyOn(event, 'preventDefault');
     comp.onDrop(event, 'DONE');
     expect(event.preventDefault).toHaveBeenCalled();
     expect(issueServiceMock.partialUpdate).toHaveBeenCalledWith({ id: mockIssues[0].id, status: 'DONE' });
+    expect(spy).toHaveBeenCalledWith(updatedIssue);
   });
 
   it('onDrop should not call partialUpdate when status is same', () => {
