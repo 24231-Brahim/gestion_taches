@@ -23,7 +23,7 @@ classDiagram
     }
 
     class Project {
-        +long id
+        +Long id
         +String name
         +String description
         +String project_key
@@ -31,9 +31,7 @@ classDiagram
     }
 
     class ProjectMember {
-        +long id
-        +long project_id
-        +long user_id
+        +Long id
         +LocalDate joined_at
     }
 
@@ -116,27 +114,48 @@ classDiagram
         HIGHEST
     }
 
-    User "1" --> "*" Project : possède (owner)
+    %% =========================
+    %% Relations
+    %% =========================
+
+    %% Un utilisateur possède un seul rôle
+    Role "1" <-- "*" User : role
+
+    %% Un utilisateur peut être propriétaire de plusieurs projets
+    User "1" --> "*" Project : owner
+
+    %% Notifications
     User "1" --> "*" Notification : reçoit
-    User "*" -- "*" Role : possède (roles)
-    Project "1" --> "*" ProjectMember : contient (members)
-    ProjectMember "*" --> "1" User : référence (member)
+
+    %% Membres des projets
+    Project "1" --> "*" ProjectMember : contient
+    ProjectMember "*" --> "1" User : membre
+
+    %% Sprints, Epics et Tasks
     Project "1" --> "*" Sprint : contient
     Project "1" --> "*" Epic : contient
     Project "1" --> "*" Task : contient
+
     Sprint "1" --> "0..*" Task : regroupe
     Epic "1" --> "0..*" Task : catégorise
-    User "1" --> "*" Task : assigné (assignee)
-    User "1" --> "*" Task : crée (createdBy)
-    User "1" --> "*" Comment : écrit (author)
+
+    %% Affectation et création des tâches
+    User "1" --> "*" Task : assignee
+    User "1" --> "*" Task : createdBy
+
+    %% Commentaires
+    User "1" --> "*" Comment : author
     Task "1" --> "*" Comment : reçoit
+
+    %% Pièces jointes
     Task "1" --> "*" Attachment : contient
+
+    %% Énumérations
     Sprint --> SprintStatus
     Epic --> EpicStatus
     Task --> TaskStatus
     Epic --> Priority
     Task --> Priority
-
 
 ```
 
