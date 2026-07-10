@@ -98,11 +98,12 @@ classDiagram
 
     class TaskStatus {
         <<enumeration>>
+        USER_STORY
         NEW
         IN_PROGRESS
-        CODE_REVIEW
         READY_FOR_RELEASE
         DONE
+        NEEDS_INFO
     }
 
     class Priority {
