@@ -58,7 +58,10 @@ entity ActionHistory {
     newValue     String     maxlength(500)
     createdAt    Instant    required
 }
-
+entity ProjectMember {
+    role String required
+    joinedAt Instant required
+}
 // ─────────────────────────────────────────────
 //  ENUMERATIONS
 // ─────────────────────────────────────────────
@@ -137,7 +140,28 @@ relationship OneToMany {
 relationship OneToMany {
     Issue{history} to ActionHistory{issue required}
 }
+relationship OneToMany {
+    Project{members} to ProjectMember{project required}
+}
 
+relationship ManyToOne {
+    ProjectMember{user(login) required} to User
+}
+relationship ManyToOne {
+    Project{owner(login) required} to User
+}
+relationship ManyToOne {
+    Issue{assignee(login)} to User
+}
+relationship ManyToOne {
+    Issue{creator(login) required} to User
+}
+relationship ManyToOne {
+    Comment{author(login) required} to User
+}
+relationship ManyToOne {
+    Attachment{uploadedBy(login) required} to User
+}
 // ─────────────────────────────────────────────
 //  OPTIONS
 // ─────────────────────────────────────────────

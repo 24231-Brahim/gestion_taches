@@ -1,6 +1,8 @@
 package com.gestiontaches.repository;
 
 import com.gestiontaches.domain.Issue;
+import com.gestiontaches.domain.enumeration.IssueStatus;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -41,4 +43,11 @@ public interface IssueRepository extends JpaRepository<Issue, Long>, JpaSpecific
         "select issue from Issue issue left join fetch issue.sprint left join fetch issue.epic left join fetch issue.project left join fetch issue.assignee left join fetch issue.createdBy where issue.id =:id"
     )
     Optional<Issue> findOneWithToOneRelationships(@Param("id") Long id);
+
+    long countByAssigneeLogin(String login);
+
+    long countByAssigneeLoginAndStatus(String login, IssueStatus status);
+
+    @Query("SELECT COUNT(issue) FROM Issue issue WHERE issue.assignee.login = ?1 AND issue.status <> ?2 AND issue.createdAt < ?3")
+    long countOverdueAssignedIssues(String login, IssueStatus status, Instant asOf);
 }

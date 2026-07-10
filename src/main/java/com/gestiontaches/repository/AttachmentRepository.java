@@ -2,7 +2,7 @@ package com.gestiontaches.repository;
 
 import com.gestiontaches.domain.Attachment;
 import java.util.List;
-import org.springframework.data.jpa.repository.*;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 /**

@@ -98,30 +98,28 @@ import { DashboardQuickActionsComponent } from './quick-actions.component';
 export class DashboardComponent {
   readonly projects = computed<any[]>(() => this.projectsResource.value() ?? []);
   readonly issues = computed<any[]>(() => this.issuesResource.value() ?? []);
-  readonly totalProjects = computed(() => this.projects().length);
-  readonly activeProjects = computed(() => {
-    const active = new Set<number>();
-    for (const issue of this.issues()) {
-      if (issue.status === 'IN_PROGRESS' && issue.project?.id) {
-        active.add(issue.project.id);
-      }
-    }
-    return active.size;
-  });
-  readonly totalTasks = computed(() => this.issues().length);
-  readonly completedTasks = computed(() => this.doneCountResource.value() ?? 0);
-  readonly overdueTasks = computed(() => this.issues().filter(i => i.status !== 'DONE' && i.status !== 'CANCELLED').length);
+  readonly stats = computed<any>(() => this.statsResource.value() ?? {});
+  readonly totalProjects = computed(() => this.stats().totalProjects ?? 0);
+  readonly activeProjects = computed(() => this.stats().activeProjects ?? 0);
+  readonly totalTasks = computed(() => this.stats().totalTasks ?? 0);
+  readonly completedTasks = computed(() => this.stats().completedTasks ?? 0);
+  readonly overdueTasks = computed(() => this.stats().overdueTasks ?? 0);
   readonly teamMembers = computed(() => this.memberCountResource.value() ?? 0);
   readonly loading = computed(
     () =>
       this.projectsResource.isLoading() ||
       this.issuesResource.isLoading() ||
+      this.statsResource.isLoading() ||
       this.doneCountResource.isLoading() ||
       this.memberCountResource.isLoading(),
   );
   readonly error = computed(
     () =>
-      this.projectsResource.error() ?? this.issuesResource.error() ?? this.doneCountResource.error() ?? this.memberCountResource.error(),
+      this.projectsResource.error() ??
+      this.issuesResource.error() ??
+      this.statsResource.error() ??
+      this.doneCountResource.error() ??
+      this.memberCountResource.error(),
   );
   readonly recentProjects = computed(() =>
     [...this.projects()].sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? '')).slice(0, 5),
@@ -143,6 +141,9 @@ export class DashboardComponent {
   private readonly issuesResource = httpResource<any[]>(() => ({
     url: this.applicationConfigService.getEndpointFor('api/issues'),
     params: new HttpParams().set('page', '0').set('size', '500'),
+  }));
+  private readonly statsResource = httpResource<any>(() => ({
+    url: this.applicationConfigService.getEndpointFor('api/developer-dashboard/statistics'),
   }));
   private readonly doneCountResource = httpResource<number>(() => ({
     url: this.applicationConfigService.getEndpointFor('api/issues/count'),
