@@ -98,7 +98,6 @@ classDiagram
 
     class TaskStatus {
         <<enumeration>>
-        USER_STORY
         NEW
         IN_PROGRESS
         READY_FOR_TEST
