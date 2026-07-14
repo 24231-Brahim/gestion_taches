@@ -37,12 +37,16 @@ spring:
       indent-output: true
   datasource:
     url: jdbc:postgresql://localhost:5432/gestion_taches
-    username: brahim
-    password: 123456
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password:
+    hikari:
+      auto-commit: false
   h2:
     console:
-      # JHipster uses a custom h2-console initializer
-      enabled: true
+      enabled: false
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
   liquibase:
     contexts: dev
   mail:

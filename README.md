@@ -2,13 +2,13 @@
 
 Système de gestion de projet (type Jira) généré avec **JHipster 9.1.0**.
 
-| Technologie      | Choix                            |
-| ---------------- | -------------------------------- |
-| Backend          | Spring Boot 4.0.6 (Java 17)      |
-| Frontend         | Angular 21.2.14                  |
-| Base de données  | PostgreSQL (H2 en développement) |
-| Build            | Maven                            |
-| Authentification | JWT                              |
+| Technologie      | Choix                       |
+| ---------------- | --------------------------- |
+| Backend          | Spring Boot 4.0.6 (Java 17) |
+| Frontend         | Angular 21.2.14             |
+| Base de données  | PostgreSQL 16               |
+| Build            | Maven                       |
+| Authentification | JWT                         |
 
 ### Entités
 
@@ -72,6 +72,33 @@ gestion_taches/
 ├── .yo-rc.json                 # Configuration JHipster
 └── tsconfig.json               # Configuration TypeScript
 ```
+
+## Prérequis
+
+Pour le développement, PostgreSQL 16 doit être installé et configuré localement :
+
+| Élément         | Valeur           |
+| --------------- | ---------------- |
+| PostgreSQL      | Version 16       |
+| Base de données | `gestion_taches` |
+| Hôte            | `localhost`      |
+| Port            | `5432`           |
+| Utilisateur     | `postgres`       |
+| Mot de passe    | vide             |
+
+Étapes préalables au lancement :
+
+1. Installer PostgreSQL 16.
+2. Créer la base de données `gestion_taches` :
+   ```sql
+   CREATE DATABASE gestion_taches;
+   ```
+3. Vérifier que l'utilisateur `postgres` peut se connecter sans mot de passe sur `localhost:5432`.
+   Si l'authentification échoue, vérifier le fichier `pg_hba.conf` et s'assurer que la ligne pour `127.0.0.1/32` utilise la méthode `trust` :
+   ```
+   host  all  all  127.0.0.1/32  trust
+   ```
+   Puis redémarrer le service PostgreSQL.
 
 ## Development
 
