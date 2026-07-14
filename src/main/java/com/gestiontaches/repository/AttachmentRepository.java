@@ -11,5 +11,5 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface AttachmentRepository extends JpaRepository<Attachment, Long> {
-    List<Attachment> findByIssueIdOrderByUploadedAtDesc(Long issueId);
+    List<Attachment> findByTaskIdOrderByUploadedAtDesc(Long taskId);
 }

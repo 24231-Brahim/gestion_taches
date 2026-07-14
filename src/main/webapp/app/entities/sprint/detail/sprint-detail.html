@@ -59,9 +59,9 @@
       @case ('board') {
         <jhi-sprint-active-board
           [sprint]="sp"
-          [issues]="issues()"
+          [tasks]="tasks()"
           [canManage]="canManage"
-          (selectIssue)="onSelectIssue($event)"
+          (selectTask)="onSelectTask($event)"
           (statusChange)="onStatusChange($event)"
           (startSprint)="onStartSprint()"
           (completeSprint)="onCompleteSprint()"
@@ -71,7 +71,7 @@
       @case ('planning') {
         <jhi-sprint-backlog-planning
           [sprint]="sp"
-          [allIssues]="projectIssues()"
+          [allTasks]="projectTasks()"
           (assignToSprint)="onAssignToSprint($event)"
           (removeFromSprint)="onRemoveFromSprint($event)"
         />
@@ -79,8 +79,8 @@
       @case ('burndown') {
         <jhi-sprint-burndown-chart
           [sprint]="sp"
-          [totalIssues]="issues().length"
-          [doneIssues]="issues().filter(i => i.status === 'DONE').length"
+          [totalTasks]="tasks().length"
+          [doneTasks]="tasks().filter(i => i.status === 'DONE').length"
           [daysLeft]="sp.endDate ? daysLeft() : 0"
         />
       }

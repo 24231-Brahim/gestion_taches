@@ -19,11 +19,11 @@
           <dd>
             <span>{{ commentRef.createdAt | formatMediumDatetime }}</span>
           </dd>
-          <dt><span jhiTranslate="gestionTachesApp.comment.issue">Issue</span></dt>
+          <dt><span jhiTranslate="gestionTachesApp.comment.task">Task</span></dt>
           <dd>
-            @if (comment()!.issue) {
+            @if (comment()!.task) {
               <div>
-                <a [routerLink]="['/issue', comment()!.issue?.id, 'view']">{{ commentRef.issue?.id }}</a>
+                <a [routerLink]="['/task', comment()!.task!.id, 'view']">{{ commentRef.task!.id }}</a>
               </div>
             }
           </dd>

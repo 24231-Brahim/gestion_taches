@@ -182,7 +182,7 @@ Déclarées dans `app/config/font-awesome-icons.ts` et enregistrées via `iconLi
 | POST / PUT / PATCH / DELETE | ADMIN, PROJET_MANAGER |
 | GET                         | Tous les authentifiés |
 
-### Issue
+### Task
 
 | Méthode                     | Rôles autorisés                  |
 | --------------------------- | -------------------------------- |
@@ -204,14 +204,12 @@ Déclarées dans `app/config/font-awesome-icons.ts` et enregistrées via `iconLi
 | POST / PUT / PATCH / DELETE | ADMIN, PROJET_MANAGER, DEVELOPER |
 | GET                         | Tous les authentifiés            |
 
-### ActionHistory
+### Attachment
 
 | Méthode                     | Rôles autorisés                  |
 | --------------------------- | -------------------------------- |
 | POST / PUT / PATCH / DELETE | ADMIN, PROJET_MANAGER, DEVELOPER |
 | GET                         | Tous les authentifiés            |
-
-### UserResource (gestion des utilisateurs)
 
 | Méthode | Rôles autorisés  |
 | ------- | ---------------- |
@@ -325,7 +323,7 @@ Toutes les opérations de modification sur un projet (`delete`, `getMembers`, `a
 ## Fichiers modifiés
 
 - `src/main/java/com/gestiontaches/security/AuthoritiesConstants.java` — ajout des constantes DEVELOPER et PROJET_MANAGER
-- `src/main/java/com/gestiontaches/domain/Project.java` — ajout owner + members (puis remplacé par `@OneToMany projectMembers`)
+- `src/main/java/com/gestiontaches/domain/Project.java` — ajout owner + members (puis remplacé par `@OneToMany projectMembers`) + `issueses` → `tasks`
 - `src/main/java/com/gestiontaches/domain/ProjectMember.java` — nouvelle entité (id, project, user, role, joinedAt) + `@Table(uniqueConstraints)`
 - `src/main/java/com/gestiontaches/repository/ProjectMemberRepository.java` — nouveau repository + suppression code mort
 - `src/main/java/com/gestiontaches/service/dto/ProjectDTO.java` — ajout ownerId, ownerLogin, projectMembers (Set<ProjectMemberDTO>)
@@ -336,8 +334,23 @@ Toutes les opérations de modification sur un projet (`delete`, `getMembers`, `a
 - `src/main/java/com/gestiontaches/service/ProjectService.java` — set owner, filtre findAll/findOne, gestion team via ProjectMemberRepository, ownership checks, update() preserves owner, updateMemberRole
 - `src/main/java/com/gestiontaches/web/rest/ProjectResource.java` — endpoints team (retourne `Set<ProjectMemberDTO>`), GET filtré + PATCH /members/{userId}
 - `src/main/java/com/gestiontaches/config/SecurityConfiguration.java` — JwtAuthenticationConverter bean
-- `src/main/resources/config/liquibase/changelog/20260625000000_added_entity_Project_owner.xml` — owner_id + table project_members
-- `src/main/resources/config/liquibase/changelog/20260629000000_added_entity_ProjectMember.xml` — table project_member avec migration des données
+- `src/main/resources/config/liquibase/changelog/20260713000000_rename_issue_to_task.xml` — migration Issue→Task (rename table, colonnes, drop action_history)
+- `src/main/java/com/gestiontaches/domain/Task.java` — nouvelle entité (remplace Issue.java)
+- `src/main/java/com/gestiontaches/domain/enumeration/TaskStatus.java` — nouvel enum (remplace IssueStatus)
+- `src/main/java/com/gestiontaches/repository/TaskRepository.java` — nouveau repository
+- `src/main/java/com/gestiontaches/service/TaskService.java` — nouveau service avec permission checks
+- `src/main/java/com/gestiontaches/service/TaskQueryService.java` — nouveau query service
+- `src/main/java/com/gestiontaches/service/dto/TaskDTO.java` — nouveau DTO
+- `src/main/java/com/gestiontaches/service/mapper/TaskMapper.java` — nouveau mapper
+- `src/main/java/com/gestiontaches/service/criteria/TaskCriteria.java` — nouveaux critères
+- `src/main/java/com/gestiontaches/web/rest/TaskResource.java` — nouveau contrôleur REST `/api/tasks`
+- `src/main/java/com/gestiontaches/domain/Comment.java` — relation `issue` → `task`
+- `src/main/java/com/gestiontaches/domain/Attachment.java` — relation `issue` → `task`
+- `src/main/java/com/gestiontaches/domain/Notification.java` — conversion des champs bruts en relations JPA (Task, User)
+- `src/main/java/com/gestiontaches/service/dto/NotificationDTO.java` — mappings JPA + setters backward-compatible
+- `src/main/java/com/gestiontaches/service/mapper/NotificationMapper.java` — mappings pour Task et User
+- `src/main/java/com/gestiontaches/repository/NotificationRepository.java` — requêtes JPA avec `user.id`
+- `src/main/java/com/gestiontaches/config/CacheConfiguration.java` — `Issue` → `Task` cache
 - `src/main/webapp/app/entities/project/project.model.ts` — ajout `IProjectMember` + `projectMembers`
 - `src/main/webapp/app/entities/project/service/project.service.ts` — ajout `getMembers()`, `addMember()`, `removeMember()`, `updateMemberRole()`
 - `src/main/webapp/app/entities/project/detail/project-detail.ts` — gestion des membres (signals, CRUD)
@@ -345,6 +358,8 @@ Toutes les opérations de modification sur un projet (`delete`, `getMembers`, `a
 - `src/main/webapp/i18n/fr/project.json` — clés de traduction membres
 - `src/main/webapp/i18n/en/project.json` — clés de traduction membres
 - `src/test/java/com/gestiontaches/web/rest/ProjectResourceIT.java` — @WithMockUser avec ROLE_ADMIN
+- `src/test/java/com/gestiontaches/web/rest/TaskResourceIT.java` — tests d'intégration CRUD Task
+- `src/test/java/com/gestiontaches/web/rest/ProjectRolePermissionIT.java` — 21 tests rôles projet
 
 ---
 
@@ -358,18 +373,18 @@ Toutes les opérations de modification sur un projet (`delete`, `getMembers`, `a
 - **RBAC** : 5 rôles avec `@PreAuthorize` sur tous les endpoints
 - **Projet owner/membres** : auto-assignation owner, filtrage par propriétaire, endpoints de gestion d'équipe
 - **JWT custom converter** : parse le claim `auth` pour Spring Security OAuth2 RS
-- **Assignation des issues** : endpoint `PATCH /api/issues/{id}/assign`, liste des utilisateurs assignables, sélecteur dans le drawer
+- **Assignation des tâches** : endpoint `PATCH /api/tasks/{id}/assign`, liste des utilisateurs assignables, sélecteur dans le drawer
 - **Système de notification** : entité `Notification`, service + polling 30s, icône cloche avec badge dans la topbar, dropdown
 - **Ownership des commentaires** : vérification auteur avant PUT/PATCH/DELETE
 - **Sprint refactoring** : board kanban 6 colonnes, planning backlog↔sprint, burndown chart SVG
-- **Issue refactoring** : onglets Backlog/Board, drawer latéral avec sections comments/attachments/history intégrées
+- **Issue refactoring → Task refactoring** : onglets Backlog/Board, drawer latéral avec sections comments/attachments intégrées (renommage complet Issue→Task).
 - **Epic roadmap** : timeline horizontale avec barres de progression, filtre par statut
 
 ### ❌ Non implémenté (reste à faire)
 
-- **Tests des nouveaux rôles** : `@WithMockUser` obsolètes dans les IT, tests manquants pour DEVELOPER et PROJET_MANAGER
-- **Pages admin dans la sidebar** : User Management, Metrics, Health, Configuration, Logs, API, H2 Console absents
 - **Persistance sidebar** : l'état collapsed n'est pas sauvegardé dans `localStorage`
+- **Page notifications** : aucune page dédiée (seulement le dropdown dans la topbar)
+- **Frontend Issue→Task** : les fichiers Angular (`src/main/webapp/app/entities/issue/`) ne sont pas encore renommés en `task/`
 
 ### ✅ Réalisé (après la rédaction initiale)
 
@@ -380,55 +395,55 @@ Toutes les opérations de modification sur un projet (`delete`, `getMembers`, `a
 - **Endpoint PATCH /members/{userId}** : modification du rôle d'un membre avec `checkOwnership`.
 - **Frontend — Section Membres** : tableau liste + ajout + inline edit rôle + suppression dans `project-detail`, avec conditionnement des boutons par `*jhiHasAnyAuthority`, refetch automatique après chaque mutation, clés i18n fr/en.
 - **Règle métier — Ownership commentaire** : `CommentResource.checkCommentOwnership()` vérifie que seul l'auteur (ou ADMIN/PM) peut modifier/supprimer.
-- **Assignation des issues** : `PATCH /api/issues/{id}/assign` avec validation rôle, `GET /api/users/assignable`, sélecteur dans le drawer.
+- **Assignation des tâches** : `PATCH /api/tasks/{id}/assign` avec validation rôle, `GET /api/users/assignable`, sélecteur dans le drawer.
 - **Système de notification** : entité `Notification`, service backend, polling frontend 30s, icône `faBell` avec badge dans topbar, dropdown liste, marquage lu + navigation.
 - **Sprint refactoring** : 3 onglets (Board/Planning/Burndown), `SprintActiveBoard` kanban drag-drop, `SprintBacklogPlanning`, `SprintBurndownChart` SVG.
-- **Comment/Attachment/ActionHistory endpoints** : `GET /by-issue/{issueId}` pour chaque entité, upload multipart files.
-- **Issue drawer** : remplacement des placeholders par `IssueCommentList`, `IssueAttachmentList`, `IssueActivityFeed`.
+- **Comment/Attachment endpoints** : `GET /by-task/{taskId}` pour chaque entité, upload multipart files.
+- **Task drawer** : remplacement des placeholders par `TaskCommentList`, `TaskAttachmentList`, `TaskActivityFeed`.
 
 ### Dashboard d'accueil
 
-- **DashboardComponent** : 4 appels `httpResource` (projects, issues, doneCount, memberCount), 6 KPI cards computed via signals, graphiques SVG/HTML purs (barres progression + donut), timeline (10 dernières activity), quick actions (4 boutons).
+- **DashboardComponent** : 4 appels `httpResource` (projects, tasks, doneCount, memberCount), 6 KPI cards computed via signals, graphiques SVG/HTML purs (barres progression + donut), timeline (10 dernières activity), quick actions (4 boutons).
 - **Composants standalone** : `KpiCardComponent`, `DashboardChartsComponent`, `DashboardListsComponent`, `DashboardTimelineComponent`, `DashboardQuickActionsComponent` — tous en `ChangeDetectionStrategy.OnPush`.
-- **Seeds Liquibase** : 7 fichiers CSV (project, sprint, epic, issue, comment, project_member, action_history) chargés via `20260630000000_added_seed_data.xml`.
+- **Seeds Liquibase** : fichiers CSV (project, sprint, epic, task, comment, project_member) chargés via `20260630000000_added_seed_data.xml`.
 
 ---
 
-## Issue — Refactoring complet (Jira-like, Juillet 2026)
+## Task — Refactoring complet (Jira-like, Juillet 2026)
 
 ### Architecture
 
 ```
-issue/
-├── list/issue.ts/.html          → Onglets Backlog (table) / Board (kanban), search
-├── kanban/issue-kanban-board.ts/.html → Colonnes drag-and-drop par IssueStatus
-├── detail/issue-detail-panel.ts/.html  → Drawer latéral avec infos + inline edit
-├── issue-helper.ts              → Maps couleur/icône/label (IssueType, Priority, Status)
-├── issue.model.ts               + assignee (UserDTO)
-└── service/issue.service.ts     (inchangé)
+task/
+├── list/task.ts/.html          → Onglets Backlog (table) / Board (kanban), search
+├── kanban/task-kanban-board.ts/.html → Colonnes drag-and-drop par TaskStatus
+├── detail/task-detail-panel.ts/.html  → Drawer latéral avec infos + inline edit
+├── task-helper.ts              → Maps couleur/icône/label (Priority, TaskStatus)
+├── task.model.ts               + assignee (UserDTO)
+└── service/task.service.ts     (inchangé)
 ```
 
 ### Composants
 
-| Composant          | Signal Inputs / Outputs             | Description                                       |
-| ------------------ | ----------------------------------- | ------------------------------------------------- |
-| `Issue (list)`     | —                                   | Onglets Backlog/Board, search, pagination, drawer |
-| `IssueKanbanBoard` | `issues: IIssue[]`, `selectIssue`   | 4 colonnes (TODO, IN_PROGRESS, DONE, CANCELLED)   |
-| `IssueDetailPanel` | `issue: IIssue`, `visible: boolean` | Drawer overlay + sidebar + sections               |
+| Composant         | Signal Inputs / Outputs           | Description                                                     |
+| ----------------- | --------------------------------- | --------------------------------------------------------------- |
+| `Task (list)`     | —                                 | Onglets Backlog/Board, search, pagination, drawer               |
+| `TaskKanbanBoard` | `tasks: ITask[]`, `selectTask`    | 5 colonnes (NEW, IN_PROGRESS, READY_FOR_TEST, DONE, NEEDS_INFO) |
+| `TaskDetailPanel` | `task: ITask`, `visible: boolean` | Drawer overlay + sidebar + sections                             |
 
-### Drawer (IssueDetailPanel)
+### Drawer (TaskDetailPanel)
 
 Layout : overlay → drawer flex-row (main 2/3 + sidebar 1/3).
 
-- Main : header (type icon + badge + title) → description (textarea inline edit) → metadata sections (sprint, epic, comments placeholder, attachments placeholder, history placeholder).
-- Sidebar : status (select → `partialUpdate`), assignee (avatar + login), priority (icon + label), type (icon + label), dates (createdAt, updatedAt), project.
+- Main : header (title + status badge) → description (textarea inline edit) → metadata sections (sprint, epic, comments placeholder, attachments placeholder).
+- Sidebar : status (select → `partialUpdate`), assignee (avatar + login), priority (icon + label), dates (createdAt, updatedAt), project.
 
-### Kanban (IssueKanbanBoard)
+### Kanban (TaskKanbanBoard)
 
-- 4 colonnes générées depuis `Object.keys(IssueStatus)`.
+- 5 colonnes générées depuis `Object.keys(TaskStatus)`.
 - Drag-and-drop natif HTML5 (`dragstart`, `dragover`, `drop`, `dragend`).
 - `partialUpdate` optimiste sur drop → rollback message via `AlertService`.
-- Cartes : type icon + id + title + priority icon + assignee initials.
+- Cartes : id + title + priority icon + assignee initials.
 
 ### Epic — Roadmap view
 
@@ -447,13 +462,13 @@ epic/
 
 ### Backend — Nouveaux champs
 
-#### Issue.assignee
+#### Task.assignee
 
-| Fichier            | Changement                                                                |
-| ------------------ | ------------------------------------------------------------------------- |
-| `Issue.java`       | `@ManyToOne User assignee`                                                |
-| `IssueDTO.java`    | `UserDTO assignee`                                                        |
-| `IssueMapper.java` | `@Mapping(target = "assignee", source = "assignee")` + `toDtoUserLogin()` |
+| Fichier           | Changement                                                                |
+| ----------------- | ------------------------------------------------------------------------- |
+| `Task.java`       | `@ManyToOne User assignee`                                                |
+| `TaskDTO.java`    | `UserDTO assignee`                                                        |
+| `TaskMapper.java` | `@Mapping(target = "assignee", source = "assignee")` + `toDtoUserLogin()` |
 
 #### Epic.startDate / endDate
 
@@ -464,7 +479,7 @@ epic/
 
 ### Notes
 
-- Les sections Comments, Attachments, History dans le drawer sont intégrées avec des composants réels : `IssueCommentList`, `IssueAttachmentList`, `IssueActivityFeed` — CRUD complet, upload/download fichiers, historique chronologique.
+- Les sections Comments, Attachments dans le drawer sont intégrées avec des composants réels : `TaskCommentList`, `TaskAttachmentList` — CRUD complet, upload/download fichiers.
 - Le drawer utilise `FormsModule` + `[(ngModel)]` pour l'édition inline de la description. La sauvegarde se fait via `partialUpdate` à la perte de focus (`(blur)`).
 - Les icônes FontAwesome ont été ajoutées de manière atomique dans `font-awesome-icons.ts` pour le tree-shaking.
 - Les clés i18n suivent le pattern JHipster `gestionTachesApp.{entity}.{field}` sauf pour les globales (`global.messages.*`).

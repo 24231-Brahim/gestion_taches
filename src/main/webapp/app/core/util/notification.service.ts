@@ -6,8 +6,8 @@ import { Observable, interval, map, switchMap, tap } from 'rxjs';
 export interface INotification {
   id: number;
   message: string;
-  issueId?: number;
-  issueTitle?: string;
+  taskId?: number;
+  taskTitle?: string;
   userId: number;
   isRead: boolean;
   createdAt: string;

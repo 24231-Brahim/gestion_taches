@@ -3,18 +3,18 @@
     <div class="planning-column backlog-column">
       <h4 class="planning-column-title">{{ 'gestionTachesApp.sprint.planning.backlog' | translate }}</h4>
       <div class="planning-column-body" (dragover)="$event.preventDefault()" (drop)="onDropBacklog($event)">
-        @for (issue of backlogIssues(); track issue.id) {
+        @for (task of backlogTasks(); track task.id) {
           <div
             class="planning-card"
             draggable="true"
-            (dragstart)="onDragStart(issue)"
-            (dblclick)="assignToSprint.emit({ issueId: issue.id, sprintId: sprintId() })"
+            (dragstart)="onDragStart(task)"
+            (dblclick)="assignToSprint.emit({ taskId: task.id, sprintId: sprintId() })"
           >
-            <span class="planning-card-title">{{ issue.title }}</span>
-            <span class="planning-card-id">#{{ issue.id }}</span>
+            <span class="planning-card-title">{{ task.title }}</span>
+            <span class="planning-card-id">#{{ task.id }}</span>
           </div>
         }
-        @if (backlogIssues().length === 0) {
+        @if (backlogTasks().length === 0) {
           <div class="planning-empty">{{ 'gestionTachesApp.sprint.planning.noBacklog' | translate }}</div>
         }
       </div>
@@ -22,13 +22,13 @@
     <div class="planning-column sprint-column">
       <h4 class="planning-column-title">{{ sprint()?.name ?? ('gestionTachesApp.sprint.planning.sprint' | translate) }}</h4>
       <div class="planning-column-body" (dragover)="$event.preventDefault()" (drop)="onDropSprint($event)">
-        @for (issue of sprintIssues(); track issue.id) {
-          <div class="planning-card" draggable="true" (dragstart)="onDragStart(issue)" (dblclick)="removeFromSprint.emit(issue.id)">
-            <span class="planning-card-title">{{ issue.title }}</span>
-            <span class="planning-card-id">#{{ issue.id }}</span>
+        @for (task of sprintTasks(); track task.id) {
+          <div class="planning-card" draggable="true" (dragstart)="onDragStart(task)" (dblclick)="removeFromSprint.emit(task.id)">
+            <span class="planning-card-title">{{ task.title }}</span>
+            <span class="planning-card-id">#{{ task.id }}</span>
           </div>
         }
-        @if (sprintIssues().length === 0) {
+        @if (sprintTasks().length === 0) {
           <div class="planning-empty">{{ 'gestionTachesApp.sprint.planning.noIssues' | translate }}</div>
         }
       </div>

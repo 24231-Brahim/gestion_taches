@@ -56,13 +56,13 @@ import { ISprint } from '../sprint.model';
 })
 export class SprintBurndownChart {
   readonly sprint = input<ISprint | null>(null);
-  readonly totalIssues = input<number>(0);
-  readonly doneIssues = input<number>(0);
+  readonly totalTasks = input<number>(0);
+  readonly doneTasks = input<number>(0);
   readonly daysLeft = input<number>(0);
 
   readonly actualPoints = computed(() => {
-    const total = this.totalIssues();
-    const done = this.doneIssues();
+    const total = this.totalTasks();
+    const done = this.doneTasks();
     const xStart = 40;
     const xEnd = 290;
     const yTop = 40;

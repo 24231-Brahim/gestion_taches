@@ -2,19 +2,19 @@
   <div class="burndown-stats">
     <div class="stat-card">
       <span class="stat-label">{{ 'gestionTachesApp.sprint.burndown.total' | translate }}</span>
-      <span class="stat-value">{{ totalIssues() }}</span>
+      <span class="stat-value">{{ totalTasks() }}</span>
     </div>
     <div class="stat-card">
       <span class="stat-label">{{ 'gestionTachesApp.sprint.burndown.done' | translate }}</span>
-      <span class="stat-value done">{{ doneIssues() }}</span>
+      <span class="stat-value done">{{ doneTasks() }}</span>
     </div>
     <div class="stat-card">
       <span class="stat-label">{{ 'gestionTachesApp.sprint.burndown.remaining' | translate }}</span>
-      <span class="stat-value remaining">{{ totalIssues() - doneIssues() }}</span>
+      <span class="stat-value remaining">{{ totalTasks() - doneTasks() }}</span>
     </div>
     <div class="stat-card">
       <span class="stat-label">{{ 'gestionTachesApp.sprint.burndown.velocity' | translate }}</span>
-      <span class="stat-value velocity">{{ doneIssues() }}</span>
+      <span class="stat-value velocity">{{ doneTasks() }}</span>
     </div>
   </div>
 
@@ -34,7 +34,7 @@
         {{ 'gestionTachesApp.sprint.burndown.days' | translate }}
       </text>
       <text x="10" y="100" text-anchor="middle" fill="var(--color-text-muted, #6a8fac)" font-size="10" transform="rotate(-90, 10, 100)">
-        {{ 'gestionTachesApp.sprint.burndown.issues' | translate }}
+        {{ 'gestionTachesApp.sprint.burndown.tasks' | translate }}
       </text>
     </svg>
   </div>

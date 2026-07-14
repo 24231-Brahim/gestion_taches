@@ -90,19 +90,19 @@
         </div>
 
         <div class="mb-3">
-          <label class="form-label" for="field_issue" jhiTranslate="gestionTachesApp.attachment.issue">Issue</label>
-          <select class="form-control" id="field_issue" data-cy="issue" name="issue" formControlName="issue" [compareWith]="compareIssue">
-            @if (editForm.get(['issue'])!.value === null) {
+          <label class="form-label" for="field_task" jhiTranslate="gestionTachesApp.attachment.task">Tâche</label>
+          <select class="form-control" id="field_task" data-cy="task" name="task" formControlName="task" [compareWith]="compareTask">
+            @if (editForm.get(['task'])!.value === null) {
               <option [ngValue]="null" selected></option>
             }
-            @for (issueOption of issuesSharedCollection(); track $index) {
-              <option [ngValue]="issueOption">{{ issueOption.id }}</option>
+            @for (taskOption of tasksSharedCollection(); track $index) {
+              <option [ngValue]="taskOption">{{ taskOption.id }}</option>
             }
           </select>
         </div>
-        @if (editForm.get(['issue'])!.invalid && (editForm.get(['issue'])!.dirty || editForm.get(['issue'])!.touched)) {
+        @if (editForm.get(['task'])!.invalid && (editForm.get(['task'])!.dirty || editForm.get(['task'])!.touched)) {
           <div>
-            @if (editForm.get(['issue'])?.errors?.required) {
+            @if (editForm.get(['task'])?.errors?.required) {
               <small class="form-text text-danger" jhiTranslate="entity.validation.required">Ce champ est obligatoire.</small>
             }
           </div>

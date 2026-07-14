@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gestiontaches.IntegrationTest;
 import com.gestiontaches.domain.Comment;
-import com.gestiontaches.domain.Issue;
+import com.gestiontaches.domain.Task;
 import com.gestiontaches.repository.CommentRepository;
 import com.gestiontaches.service.dto.CommentDTO;
 import com.gestiontaches.service.mapper.CommentMapper;
@@ -77,15 +77,15 @@ class CommentResourceIT {
     public static Comment createEntity(EntityManager em) {
         Comment comment = new Comment().content(DEFAULT_CONTENT).createdAt(DEFAULT_CREATED_AT);
         // Add required entity
-        Issue issue;
-        if (TestUtil.findAll(em, Issue.class).isEmpty()) {
-            issue = IssueResourceIT.createEntity(em);
-            em.persist(issue);
+        Task task;
+        if (TestUtil.findAll(em, Task.class).isEmpty()) {
+            task = TaskResourceIT.createEntity(em);
+            em.persist(task);
             em.flush();
         } else {
-            issue = TestUtil.findAll(em, Issue.class).get(0);
+            task = TestUtil.findAll(em, Task.class).get(0);
         }
-        comment.setIssue(issue);
+        comment.setTask(task);
         return comment;
     }
 
@@ -98,15 +98,15 @@ class CommentResourceIT {
     public static Comment createUpdatedEntity(EntityManager em) {
         Comment updatedComment = new Comment().content(UPDATED_CONTENT).createdAt(UPDATED_CREATED_AT);
         // Add required entity
-        Issue issue;
-        if (TestUtil.findAll(em, Issue.class).isEmpty()) {
-            issue = IssueResourceIT.createUpdatedEntity(em);
-            em.persist(issue);
+        Task task;
+        if (TestUtil.findAll(em, Task.class).isEmpty()) {
+            task = TaskResourceIT.createUpdatedEntity(em);
+            em.persist(task);
             em.flush();
         } else {
-            issue = TestUtil.findAll(em, Issue.class).get(0);
+            task = TestUtil.findAll(em, Task.class).get(0);
         }
-        updatedComment.setIssue(issue);
+        updatedComment.setTask(task);
         return updatedComment;
     }
 

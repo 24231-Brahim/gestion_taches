@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gestiontaches.IntegrationTest;
 import com.gestiontaches.domain.Attachment;
-import com.gestiontaches.domain.Issue;
+import com.gestiontaches.domain.Task;
 import com.gestiontaches.repository.AttachmentRepository;
 import com.gestiontaches.service.dto.AttachmentDTO;
 import com.gestiontaches.service.mapper.AttachmentMapper;
@@ -80,15 +80,15 @@ class AttachmentResourceIT {
     public static Attachment createEntity(EntityManager em) {
         Attachment attachment = new Attachment().fileName(DEFAULT_FILE_NAME).filePath(DEFAULT_FILE_PATH).uploadedAt(DEFAULT_UPLOADED_AT);
         // Add required entity
-        Issue issue;
-        if (TestUtil.findAll(em, Issue.class).isEmpty()) {
-            issue = IssueResourceIT.createEntity(em);
-            em.persist(issue);
+        Task task;
+        if (TestUtil.findAll(em, Task.class).isEmpty()) {
+            task = TaskResourceIT.createEntity(em);
+            em.persist(task);
             em.flush();
         } else {
-            issue = TestUtil.findAll(em, Issue.class).get(0);
+            task = TestUtil.findAll(em, Task.class).get(0);
         }
-        attachment.setIssue(issue);
+        attachment.setTask(task);
         return attachment;
     }
 
@@ -104,15 +104,15 @@ class AttachmentResourceIT {
             .filePath(UPDATED_FILE_PATH)
             .uploadedAt(UPDATED_UPLOADED_AT);
         // Add required entity
-        Issue issue;
-        if (TestUtil.findAll(em, Issue.class).isEmpty()) {
-            issue = IssueResourceIT.createUpdatedEntity(em);
-            em.persist(issue);
+        Task task;
+        if (TestUtil.findAll(em, Task.class).isEmpty()) {
+            task = TaskResourceIT.createUpdatedEntity(em);
+            em.persist(task);
             em.flush();
         } else {
-            issue = TestUtil.findAll(em, Issue.class).get(0);
+            task = TestUtil.findAll(em, Task.class).get(0);
         }
-        updatedAttachment.setIssue(issue);
+        updatedAttachment.setTask(task);
         return updatedAttachment;
     }
 

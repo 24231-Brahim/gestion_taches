@@ -7,8 +7,8 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
-import { IIssue } from 'app/entities/issue/issue.model';
-import { IssueService } from 'app/entities/issue/service/issue.service';
+import { ITask } from 'app/entities/task/task.model';
+import { TaskService } from 'app/entities/task/service/task.service';
 import { AlertService } from 'app/core/util/alert.service';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { TranslateDirective } from 'app/shared/language';
@@ -27,11 +27,11 @@ export class CommentUpdate implements OnInit {
   readonly isSaving = signal(false);
   comment: IComment | null = null;
 
-  issuesSharedCollection = signal<IIssue[]>([]);
+  tasksSharedCollection = signal<ITask[]>([]);
 
   protected commentService = inject(CommentService);
   protected commentFormService = inject(CommentFormService);
-  protected issueService = inject(IssueService);
+  protected taskService = inject(TaskService);
   protected activatedRoute = inject(ActivatedRoute);
   protected alertService = inject(AlertService);
   protected translateService = inject(TranslateService);
@@ -39,7 +39,7 @@ export class CommentUpdate implements OnInit {
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: CommentFormGroup = this.commentFormService.createCommentFormGroup();
 
-  compareIssue = (o1: IIssue | null, o2: IIssue | null): boolean => this.issueService.compareIssue(o1, o2);
+  compareTask = (o1: ITask | null, o2: ITask | null): boolean => this.taskService.compareTask(o1, o2);
 
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ comment }) => {
@@ -90,14 +90,14 @@ export class CommentUpdate implements OnInit {
     this.comment = comment;
     this.commentFormService.resetForm(this.editForm, comment);
 
-    this.issuesSharedCollection.update(issues => this.issueService.addIssueToCollectionIfMissing<IIssue>(issues, comment.issue));
+    this.tasksSharedCollection.update(tasks => this.taskService.addTaskToCollectionIfMissing<ITask>(tasks, comment.task));
   }
 
   protected loadRelationshipsOptions(): void {
-    this.issueService
+    this.taskService
       .query()
-      .pipe(map((res: HttpResponse<IIssue[]>) => res.body ?? []))
-      .pipe(map((issues: IIssue[]) => this.issueService.addIssueToCollectionIfMissing<IIssue>(issues, this.comment?.issue)))
-      .subscribe((issues: IIssue[]) => this.issuesSharedCollection.set(issues));
+      .pipe(map((res: HttpResponse<ITask[]>) => res.body ?? []))
+      .pipe(map((tasks: ITask[]) => this.taskService.addTaskToCollectionIfMissing<ITask>(tasks, this.comment?.task)))
+      .subscribe((tasks: ITask[]) => this.tasksSharedCollection.set(tasks));
   }
 }

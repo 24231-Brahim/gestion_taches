@@ -27,9 +27,9 @@ const routes: Routes = [
     loadChildren: () => import('./epic/epic.routes'),
   },
   {
-    path: 'issue',
-    data: { pageTitle: 'gestionTachesApp.issue.home.title' },
-    loadChildren: () => import('./issue/issue.routes'),
+    path: 'task',
+    data: { pageTitle: 'gestionTachesApp.task.home.title' },
+    loadChildren: () => import('./task/task.routes'),
   },
   {
     path: 'comment',

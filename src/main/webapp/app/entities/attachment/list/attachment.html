@@ -54,9 +54,9 @@
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
-            <th scope="col" jhiSortBy="issue.id">
+            <th scope="col" jhiSortBy="task.id">
               <div class="d-flex">
-                <span jhiTranslate="gestionTachesApp.attachment.issue">Issue</span>
+                <span jhiTranslate="gestionTachesApp.attachment.task">Task</span>
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
@@ -70,9 +70,9 @@
               <td>{{ attachment.filePath }}</td>
               <td>{{ attachment.uploadedAt | formatMediumDatetime }}</td>
               <td>
-                @if (attachment.issue) {
+                @if (attachment.task) {
                   <div>
-                    <a [routerLink]="['/issue', attachment.issue.id, 'view']">{{ attachment.issue.id }}</a>
+                    <a [routerLink]="['/task', attachment.task.id, 'view']">{{ attachment.task.id }}</a>
                   </div>
                 }
               </td>

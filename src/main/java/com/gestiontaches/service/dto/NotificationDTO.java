@@ -12,12 +12,11 @@ public class NotificationDTO implements Serializable {
     @NotNull
     private String message;
 
-    private Long issueId;
+    private TaskDTO task;
 
-    private String issueTitle;
+    private String taskTitle;
 
-    @NotNull
-    private Long userId;
+    private UserDTO user;
 
     @NotNull
     private Boolean isRead;
@@ -41,28 +40,55 @@ public class NotificationDTO implements Serializable {
         this.message = message;
     }
 
-    public Long getIssueId() {
-        return issueId;
+    public TaskDTO getTask() {
+        return task;
     }
 
-    public void setIssueId(Long issueId) {
-        this.issueId = issueId;
+    public void setTask(TaskDTO task) {
+        this.task = task;
     }
 
-    public String getIssueTitle() {
-        return issueTitle;
+    public String getTaskTitle() {
+        return taskTitle;
     }
 
-    public void setIssueTitle(String issueTitle) {
-        this.issueTitle = issueTitle;
+    public void setTaskTitle(String taskTitle) {
+        this.taskTitle = taskTitle;
     }
 
-    public Long getUserId() {
-        return userId;
+    public UserDTO getUser() {
+        return user;
+    }
+
+    public void setUser(UserDTO user) {
+        this.user = user;
+    }
+
+    // Keep backward-compatible setters for raw IDs
+    public void setTaskId(Long taskId) {
+        if (taskId != null) {
+            if (this.task == null) {
+                this.task = new TaskDTO();
+            }
+            this.task.setId(taskId);
+        }
+    }
+
+    public Long getTaskId() {
+        return this.task != null ? this.task.getId() : null;
     }
 
     public void setUserId(Long userId) {
-        this.userId = userId;
+        if (userId != null) {
+            if (this.user == null) {
+                this.user = new UserDTO();
+            }
+            this.user.setId(userId);
+        }
+    }
+
+    public Long getUserId() {
+        return this.user != null ? this.user.getId() : null;
     }
 
     public Boolean getIsRead() {
@@ -103,13 +129,9 @@ public class NotificationDTO implements Serializable {
             ", message='" +
             getMessage() +
             "'" +
-            ", issueId=" +
-            getIssueId() +
-            ", issueTitle='" +
-            getIssueTitle() +
+            ", taskTitle='" +
+            getTaskTitle() +
             "'" +
-            ", userId=" +
-            getUserId() +
             ", isRead=" +
             getIsRead() +
             ", createdAt='" +

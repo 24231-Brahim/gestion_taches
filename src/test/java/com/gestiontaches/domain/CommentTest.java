@@ -1,7 +1,7 @@
 package com.gestiontaches.domain;
 
 import static com.gestiontaches.domain.CommentTestSamples.*;
-import static com.gestiontaches.domain.IssueTestSamples.*;
+import static com.gestiontaches.domain.TaskTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.gestiontaches.web.rest.TestUtil;
@@ -24,14 +24,14 @@ class CommentTest {
     }
 
     @Test
-    void issueTest() {
+    void taskTest() {
         Comment comment = getCommentRandomSampleGenerator();
-        Issue issueBack = getIssueRandomSampleGenerator();
+        Task taskBack = getTaskRandomSampleGenerator();
 
-        comment.setIssue(issueBack);
-        assertThat(comment.getIssue()).isEqualTo(issueBack);
+        comment.setTask(taskBack);
+        assertThat(comment.getTask()).isEqualTo(taskBack);
 
-        comment.issue(null);
-        assertThat(comment.getIssue()).isNull();
+        comment.task(null);
+        assertThat(comment.getTask()).isNull();
     }
 }

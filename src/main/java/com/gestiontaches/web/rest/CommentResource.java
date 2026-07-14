@@ -204,10 +204,10 @@ public class CommentResource {
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of Comments in body.
      */
-    @GetMapping("/by-issue/{issueId}")
-    public ResponseEntity<List<CommentDTO>> getCommentsByIssue(@PathVariable("issueId") Long issueId) {
-        LOG.debug("REST request to get Comments for Issue : {}", issueId);
-        List<CommentDTO> comments = commentService.findByIssueId(issueId);
+    @GetMapping("/by-task/{taskId}")
+    public ResponseEntity<List<CommentDTO>> getCommentsByTask(@PathVariable("taskId") Long taskId) {
+        LOG.debug("REST request to get Comments for Task : {}", taskId);
+        List<CommentDTO> comments = commentService.findByTaskId(taskId);
         return ResponseEntity.ok(comments);
     }
 

@@ -1,0 +1,160 @@
+<div class="task-page">
+  <div class="task-page-header">
+    <h2 id="page-heading" data-cy="IssueHeading" class="page-heading">
+      <span jhiTranslate="gestionTachesApp.task.home.title">Tasks</span>
+    </h2>
+    <div class="d-flex gap-2 align-items-center">
+      <div class="view-mode-tabs">
+        <button class="btn btn-sm" [class.btn-active]="viewMode() === 'list'" (click)="setViewMode('list')">
+          <fa-icon icon="list" /><span class="d-none d-md-inline ms-1" jhiTranslate="gestionTachesApp.task.home.backlog">Backlog</span>
+        </button>
+        <button class="btn btn-sm" [class.btn-active]="viewMode() === 'kanban'" (click)="setViewMode('kanban')">
+          <fa-icon icon="columns" /><span class="d-none d-md-inline ms-1" jhiTranslate="gestionTachesApp.task.home.board">Board</span>
+        </button>
+      </div>
+      <button class="btn btn-info btn-sm" (click)="load()" [disabled]="isLoading()">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+      </button>
+      <a class="btn btn-success btn-sm" [href]="csvExportUrl" download="tasks.csv">
+        <fa-icon icon="download" /><span class="d-none d-md-inline ms-1" jhiTranslate="entity.action.exportCsv">CSV</span>
+      </a>
+      <button id="jh-create-entity" data-cy="entityCreateButton" class="btn btn-primary btn-sm" [routerLink]="['/task/new']">
+        <fa-icon icon="plus" /><span jhiTranslate="gestionTachesApp.task.home.createLabel"></span>
+      </button>
+    </div>
+  </div>
+
+  <jhi-alert-error />
+  <jhi-alert />
+
+  <div class="task-toolbar">
+    <div class="search-box">
+      <fa-icon icon="search" class="search-icon" />
+      <input
+        type="text"
+        class="form-control form-control-sm"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        [placeholder]="'gestionTachesApp.task.home.search' | translate"
+      />
+    </div>
+    <jhi-filter [filters]="filters" />
+  </div>
+
+  @if (viewMode() === 'list') {
+    @if (filteredTasks().length === 0) {
+      <div class="alert alert-warning" id="no-result">
+        <span jhiTranslate="gestionTachesApp.task.home.notFound">Aucune Tâche trouvée</span>
+      </div>
+    } @else {
+      <div class="table-responsive table-entities" id="entities">
+        <table class="table" aria-describedby="page-heading">
+          <thead>
+            <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+              <th scope="col" jhiSortBy="type">
+                <div class="d-flex"><span jhiTranslate="gestionTachesApp.task.type">Type</span><fa-icon class="p-1" icon="sort" /></div>
+              </th>
+              <th scope="col" jhiSortBy="title">
+                <div class="d-flex"><span jhiTranslate="gestionTachesApp.task.title">Title</span><fa-icon class="p-1" icon="sort" /></div>
+              </th>
+              <th scope="col" jhiSortBy="status">
+                <div class="d-flex"><span jhiTranslate="gestionTachesApp.task.status">Status</span><fa-icon class="p-1" icon="sort" /></div>
+              </th>
+              <th scope="col" jhiSortBy="priority">
+                <div class="d-flex">
+                  <span jhiTranslate="gestionTachesApp.task.priority">Priority</span><fa-icon class="p-1" icon="sort" />
+                </div>
+              </th>
+              <th scope="col" jhiSortBy="sprint.name">
+                <div class="d-flex"><span jhiTranslate="gestionTachesApp.task.sprint">Sprint</span><fa-icon class="p-1" icon="sort" /></div>
+              </th>
+              <th scope="col" jhiSortBy="epic.title">
+                <div class="d-flex"><span jhiTranslate="gestionTachesApp.task.epic">Epic</span><fa-icon class="p-1" icon="sort" /></div>
+              </th>
+              <th scope="col"><span jhiTranslate="gestionTachesApp.task.assignee">Assignee</span></th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (task of filteredTasks(); track trackId(task)) {
+              <tr data-cy="entityTable" class="task-row" (click)="onSelectTask(task)">
+                <td>
+                  <fa-icon
+                    [icon]="typeIcons[task.type ?? 'STORY']"
+                    [style.color]="typeColors[task.type ?? 'STORY']"
+                    [title]="'gestionTachesApp.IssueType.' + (task.type ?? 'null') | translate"
+                  />
+                </td>
+                <td class="task-title-cell">{{ task.title }}</td>
+                <td>
+                  <span class="status-badge" [style.background]="statusBadges[task.status ?? 'BACKLOG']?.color">
+                    {{ 'gestionTachesApp.IssueStatus.' + (task.status ?? 'null') | translate }}
+                  </span>
+                </td>
+                <td>
+                  <fa-icon
+                    [icon]="priorityIcons[task.priority ?? 'MEDIUM']"
+                    [style.color]="priorityColors[task.priority ?? 'MEDIUM']"
+                    class="me-1"
+                  />
+                  <span>{{ 'gestionTachesApp.Priority.' + (task.priority ?? 'null') | translate }}</span>
+                </td>
+                <td>
+                  @if (task.sprint) {
+                    {{ task.sprint.name }}
+                  }
+                </td>
+                <td>
+                  @if (task.epic) {
+                    {{ task.epic.title }}
+                  }
+                </td>
+                <td>
+                  @if (task.assignee) {
+                    <span class="assignee-initials-sm" [title]="task.assignee.login">{{ task.assignee.login }}</span>
+                  }
+                </td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm" (click)="$event.stopPropagation()">
+                    @if (canEditTask(task)) {
+                      <a [routerLink]="['/task', task.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                        <fa-icon icon="pencil-alt" />
+                      </a>
+                    }
+                    @if (canDeleteTask(task)) {
+                      <button type="submit" (click)="delete(task)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                        <fa-icon icon="times" />
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+    @if (tasks().length > 0) {
+      <div>
+        <div class="d-flex justify-content-center">
+          <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+        </div>
+        <div class="d-flex justify-content-center">
+          <ngb-pagination
+            [collectionSize]="totalItems()"
+            [page]="page()"
+            [pageSize]="itemsPerPage()"
+            [maxSize]="5"
+            [rotate]="true"
+            [boundaryLinks]="true"
+            (pageChange)="navigateToPage($event)"
+          />
+        </div>
+      </div>
+    }
+  } @else {
+    <jhi-task-kanban-board [tasks]="filteredTasks()" (selectTask)="onSelectTask($event)" />
+  }
+
+  <jhi-task-detail-panel [task]="selectedTask()" [visible]="drawerVisible()" [close]="onCloseDrawer.bind(this)" />
+</div>

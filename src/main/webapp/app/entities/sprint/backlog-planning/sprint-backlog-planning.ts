@@ -3,7 +3,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { TranslateDirective } from 'app/shared/language';
-import { IIssue } from 'app/entities/issue/issue.model';
+import { ITask } from 'app/entities/task/task.model';
 import { ISprint } from '../sprint.model';
 
 @Component({
@@ -14,38 +14,38 @@ import { ISprint } from '../sprint.model';
 })
 export class SprintBacklogPlanning {
   readonly sprint = input<ISprint | null>(null);
-  readonly allIssues = input<IIssue[]>([]);
+  readonly allTasks = input<ITask[]>([]);
 
-  readonly assignToSprint = output<{ issueId: number; sprintId: number }>();
+  readonly assignToSprint = output<{ taskId: number; sprintId: number }>();
   readonly removeFromSprint = output<number>();
 
-  readonly backlogIssues = computed(() => this.allIssues().filter(issue => !issue.sprint?.id));
+  readonly backlogTasks = computed(() => this.allTasks().filter(task => !task.sprint?.id));
 
-  readonly sprintIssues = computed(() => this.allIssues().filter(issue => issue.sprint?.id === this.sprint()?.id));
+  readonly sprintTasks = computed(() => this.allTasks().filter(task => task.sprint?.id === this.sprint()?.id));
 
-  protected draggedIssue: IIssue | null = null;
+  protected draggedTask: ITask | null = null;
 
   sprintId(): number {
     return this.sprint()?.id ?? 0;
   }
 
-  onDragStart(issue: IIssue): void {
-    this.draggedIssue = issue;
+  onDragStart(task: ITask): void {
+    this.draggedTask = task;
   }
 
   onDropBacklog(event: DragEvent): void {
     event.preventDefault();
-    if (this.draggedIssue) {
-      this.removeFromSprint.emit(this.draggedIssue.id);
-      this.draggedIssue = null;
+    if (this.draggedTask) {
+      this.removeFromSprint.emit(this.draggedTask.id);
+      this.draggedTask = null;
     }
   }
 
   onDropSprint(event: DragEvent): void {
     event.preventDefault();
-    if (this.draggedIssue && this.sprint()?.id) {
-      this.assignToSprint.emit({ issueId: this.draggedIssue.id, sprintId: this.sprint()!.id });
-      this.draggedIssue = null;
+    if (this.draggedTask && this.sprint()?.id) {
+      this.assignToSprint.emit({ taskId: this.draggedTask.id, sprintId: this.sprint()!.id });
+      this.draggedTask = null;
     }
   }
 }

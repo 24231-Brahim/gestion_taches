@@ -1,0 +1,132 @@
+@if (visible() && task(); as tsk) {
+  <div class="task-drawer-overlay" (click)="close()()"></div>
+  <div class="task-drawer">
+    <div class="task-drawer-header">
+      <div class="d-flex align-items-center gap-2">
+        <fa-icon [icon]="typeIcons[tsk.type ?? 'STORY']" [style.color]="typeColors[tsk.type ?? 'STORY']" />
+        <span class="task-type-badge" [style.background]="typeColors[tsk.type ?? 'STORY']">
+          {{ typeIcons[tsk.type ?? 'STORY'] }}
+        </span>
+        <span [jhiTranslate]="'gestionTachesApp.IssueType.' + (tsk.type ?? 'null')" class="fw-bold"></span>
+      </div>
+      <button class="btn btn-sm btn-ghost" (click)="close()()">
+        <fa-icon icon="times" />
+      </button>
+    </div>
+
+    <div class="task-drawer-body">
+      <div class="task-drawer-main">
+        <h4 class="task-drawer-title">{{ tsk.title }}</h4>
+
+        <div class="task-section">
+          <span class="task-section-label" jhiTranslate="gestionTachesApp.task.description"></span>
+          <p class="task-description">{{ tsk.description || ('global.messages.empty' | translate) }}</p>
+        </div>
+
+        <div class="task-section">
+          <span class="task-section-label" jhiTranslate="gestionTachesApp.task.sprint"></span>
+          <p>
+            @if (tsk.sprint) {
+              <a [routerLink]="['/sprint', tsk.sprint.id, 'view']">{{ tsk.sprint.name }}</a>
+            } @else {
+              <span class="text-muted" jhiTranslate="global.messages.notAssigned"></span>
+            }
+          </p>
+        </div>
+
+        <div class="task-section">
+          <span class="task-section-label" jhiTranslate="gestionTachesApp.task.epic"></span>
+          <p>
+            @if (tsk.epic) {
+              <a [routerLink]="['/epic', tsk.epic.id, 'view']">{{ tsk.epic.title }}</a>
+            } @else {
+              <span class="text-muted" jhiTranslate="global.messages.notAssigned"></span>
+            }
+          </p>
+        </div>
+
+        <div class="task-section">
+          <jhi-task-comment-list [taskId]="tsk.id" />
+        </div>
+
+        <div class="task-section">
+          <jhi-task-attachment-list [taskId]="tsk.id" />
+        </div>
+
+        <div class="task-section">
+          <jhi-task-activity-feed [taskId]="tsk.id" />
+        </div>
+      </div>
+
+      <div class="task-drawer-sidebar">
+        <div class="task-field-group">
+          <span class="task-field-label" jhiTranslate="gestionTachesApp.task.status"></span>
+          <select
+            class="form-control form-control-sm"
+            [ngModel]="tsk.status"
+            (ngModelChange)="onStatusChange(tsk, $event)"
+            [disabled]="isSaving()"
+          >
+            @for (st of taskStatusValues; track st) {
+              <option [value]="st">{{ 'gestionTachesApp.IssueStatus.' + st | translate }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="task-field-group">
+          <span class="task-field-label" jhiTranslate="gestionTachesApp.task.assignee"></span>
+          <select
+            class="form-control form-control-sm"
+            [ngModel]="tsk.assignee?.id ?? ''"
+            (ngModelChange)="onAssignChange(tsk, $event)"
+            [disabled]="isSaving()"
+          >
+            <option value="" jhiTranslate="global.messages.unassigned"></option>
+            @for (user of assignableUsers(); track user.id) {
+              <option [value]="user.id">{{ user.login }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="task-field-group">
+          <span class="task-field-label" jhiTranslate="gestionTachesApp.task.priority"></span>
+          <div class="d-flex align-items-center gap-1">
+            <fa-icon [icon]="priorityIcons[tsk.priority ?? 'MEDIUM']" [style.color]="priorityColors[tsk.priority ?? 'MEDIUM']" />
+            <span>{{ 'gestionTachesApp.Priority.' + (tsk.priority ?? 'null') | translate }}</span>
+          </div>
+        </div>
+
+        <div class="task-field-group">
+          <span class="task-field-label" jhiTranslate="gestionTachesApp.task.type"></span>
+          <div class="d-flex align-items-center gap-1">
+            <fa-icon [icon]="typeIcons[tsk.type ?? 'STORY']" [style.color]="typeColors[tsk.type ?? 'STORY']" />
+            <span>{{ 'gestionTachesApp.IssueType.' + (tsk.type ?? 'null') | translate }}</span>
+          </div>
+        </div>
+
+        <div class="task-field-group">
+          <span class="task-field-label" jhiTranslate="gestionTachesApp.task.createdAt"></span>
+          <span>{{ tsk.createdAt | formatMediumDatetime }}</span>
+        </div>
+
+        <div class="task-field-group">
+          <span class="task-field-label" jhiTranslate="gestionTachesApp.task.updatedAt"></span>
+          <span>{{ tsk.updatedAt | formatMediumDatetime }}</span>
+        </div>
+
+        <div class="task-field-group">
+          <span class="task-field-label" jhiTranslate="gestionTachesApp.task.project"></span>
+          @if (tsk.project) {
+            <a [routerLink]="['/project', tsk.project.key, 'view']">{{ tsk.project.name }}</a>
+          }
+        </div>
+
+        <div class="task-drawer-actions">
+          <a [routerLink]="['/task', tsk.id, 'edit']" class="btn btn-primary btn-sm w-100">
+            <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit"></span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+}

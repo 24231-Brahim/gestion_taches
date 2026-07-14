@@ -36,11 +36,9 @@ spring:
     serialization:
       indent-output: true
   datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:h2:file:./target/h2db/db/gestiontaches;DB_CLOSE_DELAY=-1
-    hikari:
-      poolName: Hikari
-      auto-commit: false
+    url: jdbc:postgresql://localhost:5432/gestion_taches
+    username: brahim
+    password: 123456
   h2:
     console:
       # JHipster uses a custom h2-console initializer

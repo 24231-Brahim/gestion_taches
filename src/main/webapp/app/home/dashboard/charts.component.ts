@@ -179,18 +179,18 @@ interface TaskStatusCount {
   ],
 })
 export class DashboardChartsComponent {
-  readonly issues = input.required<any[]>();
+  readonly tasks = input.required<any[]>();
   readonly projects = input.required<any[]>();
 
-  readonly totalTasks = computed(() => this.issues().length);
+  readonly totalTasks = computed(() => this.tasks().length);
 
   readonly taskDistribution = computed<TaskStatusCount[]>(() => {
     const statuses = ['BACKLOG', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE', 'CANCELLED'];
     const colors = ['#6a8fac', '#f59e0b', '#25a7fd', '#a855f7', '#22c55e', '#ef4444'];
     const map = new Map<string, number>();
     for (const s of statuses) map.set(s, 0);
-    for (const issue of this.issues()) {
-      const st = issue.status ?? 'BACKLOG';
+    for (const task of this.tasks()) {
+      const st = task.status ?? 'BACKLOG';
       map.set(st, (map.get(st) ?? 0) + 1);
     }
     return Array.from(map.entries())
@@ -222,17 +222,17 @@ export class DashboardChartsComponent {
   });
 
   readonly projectProgress = computed(() => {
-    const projectIssues = new Map<number, any[]>();
-    for (const issue of this.issues()) {
-      const pid = issue.project?.id;
+    const projectTasks = new Map<number, any[]>();
+    for (const task of this.tasks()) {
+      const pid = task.project?.id;
       if (pid) {
-        if (!projectIssues.has(pid)) projectIssues.set(pid, []);
-        projectIssues.get(pid)!.push(issue);
+        if (!projectTasks.has(pid)) projectTasks.set(pid, []);
+        projectTasks.get(pid)!.push(task);
       }
     }
     const projectMap = new Map(this.projects().map(p => [p.id, p]));
     const colors = ['#22c55e', '#25a7fd', '#f59e0b', '#a855f7', '#52d6fd', '#ef4444', '#ec4899', '#8b5cf6', '#0ea5e9', '#84cc16'];
-    return Array.from(projectIssues.entries())
+    return Array.from(projectTasks.entries())
       .map(([pid, iss], i) => {
         const total = iss.length;
         const done = iss.filter(x => x.status === 'DONE').length;

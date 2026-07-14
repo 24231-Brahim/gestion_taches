@@ -43,16 +43,14 @@ public class CacheConfiguration {
             createCache(cm, com.gestiontaches.domain.Project.class.getName());
             createCache(cm, com.gestiontaches.domain.Project.class.getName() + ".sprintses");
             createCache(cm, com.gestiontaches.domain.Project.class.getName() + ".epicses");
-            createCache(cm, com.gestiontaches.domain.Project.class.getName() + ".issueses");
+            createCache(cm, com.gestiontaches.domain.Project.class.getName() + ".tasks");
             createCache(cm, com.gestiontaches.domain.Sprint.class.getName());
             createCache(cm, com.gestiontaches.domain.Epic.class.getName());
-            createCache(cm, com.gestiontaches.domain.Issue.class.getName());
-            createCache(cm, com.gestiontaches.domain.Issue.class.getName() + ".commentses");
-            createCache(cm, com.gestiontaches.domain.Issue.class.getName() + ".attachmentses");
-            createCache(cm, com.gestiontaches.domain.Issue.class.getName() + ".histories");
+            createCache(cm, com.gestiontaches.domain.Task.class.getName());
+            createCache(cm, com.gestiontaches.domain.Task.class.getName() + ".comments");
+            createCache(cm, com.gestiontaches.domain.Task.class.getName() + ".attachments");
             createCache(cm, com.gestiontaches.domain.Comment.class.getName());
             createCache(cm, com.gestiontaches.domain.Attachment.class.getName());
-            createCache(cm, com.gestiontaches.domain.ActionHistory.class.getName());
             // jhipster-needle-caffeine-add-entry
         };
     }

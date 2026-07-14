@@ -24,7 +24,7 @@
       "createdAt": "Created At",
       "sprints": "Sprints",
       "epics": "Epics",
-      "issues": "Issues",
+      "tasks": "Issues",
       "members": "Membres",
       "member": {
         "add": "Ajouter un membre",

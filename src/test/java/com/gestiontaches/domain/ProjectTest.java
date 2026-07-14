@@ -1,9 +1,9 @@
 package com.gestiontaches.domain;
 
 import static com.gestiontaches.domain.EpicTestSamples.*;
-import static com.gestiontaches.domain.IssueTestSamples.*;
 import static com.gestiontaches.domain.ProjectTestSamples.*;
 import static com.gestiontaches.domain.SprintTestSamples.*;
+import static com.gestiontaches.domain.TaskTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.gestiontaches.web.rest.TestUtil;
@@ -72,24 +72,24 @@ class ProjectTest {
     }
 
     @Test
-    void issuesTest() {
+    void tasksTest() {
         Project project = getProjectRandomSampleGenerator();
-        Issue issueBack = getIssueRandomSampleGenerator();
+        Task taskBack = getTaskRandomSampleGenerator();
 
-        project.addIssues(issueBack);
-        assertThat(project.getIssueses()).containsOnly(issueBack);
-        assertThat(issueBack.getProject()).isEqualTo(project);
+        project.addTask(taskBack);
+        assertThat(project.getTasks()).containsOnly(taskBack);
+        assertThat(taskBack.getProject()).isEqualTo(project);
 
-        project.removeIssues(issueBack);
-        assertThat(project.getIssueses()).doesNotContain(issueBack);
-        assertThat(issueBack.getProject()).isNull();
+        project.removeTask(taskBack);
+        assertThat(project.getTasks()).doesNotContain(taskBack);
+        assertThat(taskBack.getProject()).isNull();
 
-        project.issueses(new HashSet<>(Set.of(issueBack)));
-        assertThat(project.getIssueses()).containsOnly(issueBack);
-        assertThat(issueBack.getProject()).isEqualTo(project);
+        project.tasks(new HashSet<>(Set.of(taskBack)));
+        assertThat(project.getTasks()).containsOnly(taskBack);
+        assertThat(taskBack.getProject()).isEqualTo(project);
 
-        project.setIssueses(new HashSet<>());
-        assertThat(project.getIssueses()).doesNotContain(issueBack);
-        assertThat(issueBack.getProject()).isNull();
+        project.setTasks(new HashSet<>());
+        assertThat(project.getTasks()).doesNotContain(taskBack);
+        assertThat(taskBack.getProject()).isNull();
     }
 }

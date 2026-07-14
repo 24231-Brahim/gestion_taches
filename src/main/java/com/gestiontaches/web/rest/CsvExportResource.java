@@ -1,9 +1,9 @@
 package com.gestiontaches.web.rest;
 
-import com.gestiontaches.domain.Issue;
+import com.gestiontaches.domain.Task;
 import com.gestiontaches.domain.enumeration.ProjectRole;
-import com.gestiontaches.repository.IssueRepository;
 import com.gestiontaches.repository.ProjectRepository;
+import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.service.ProjectPermissionService;
 import java.io.PrintWriter;
@@ -28,18 +28,18 @@ public class CsvExportResource {
     private static final Logger LOG = LoggerFactory.getLogger(CsvExportResource.class);
 
     private final ProjectRepository projectRepository;
-    private final IssueRepository issueRepository;
+    private final TaskRepository taskRepository;
     private final UserRepository userRepository;
     private final ProjectPermissionService projectPermissionService;
 
     public CsvExportResource(
         ProjectRepository projectRepository,
-        IssueRepository issueRepository,
+        TaskRepository taskRepository,
         UserRepository userRepository,
         ProjectPermissionService projectPermissionService
     ) {
         this.projectRepository = projectRepository;
-        this.issueRepository = issueRepository;
+        this.taskRepository = taskRepository;
         this.userRepository = userRepository;
         this.projectPermissionService = projectPermissionService;
     }
@@ -70,14 +70,14 @@ public class CsvExportResource {
         return csvResponse(sw.toString(), "projects.csv");
     }
 
-    @GetMapping("/issues")
+    @GetMapping("/tasks")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<byte[]> exportIssuesCsv() {
-        LOG.debug("REST request to export Issues as CSV");
+    public ResponseEntity<byte[]> exportTasksCsv() {
+        LOG.debug("REST request to export Tasks as CSV");
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        pw.println("ID,Title,Type,Status,Priority,ProjectKey,SprintName,EpicTitle,AssigneeLogin,CreatedAt");
-        issueRepository.findAll().forEach(i -> {
+        pw.println("ID,Title,Status,Priority,ProjectKey,SprintName,EpicTitle,AssigneeLogin,CreatedAt");
+        taskRepository.findAll().forEach(i -> {
             String projectKey = i.getProject() != null ? escapeCsv(i.getProject().getKey()) : "";
             String sprintName = i.getSprint() != null ? escapeCsv(i.getSprint().getName()) : "";
             String epicTitle = i.getEpic() != null ? escapeCsv(i.getEpic().getTitle()) : "";
@@ -86,8 +86,6 @@ public class CsvExportResource {
                 i.getId() +
                     "," +
                     escapeCsv(i.getTitle()) +
-                    "," +
-                    i.getType() +
                     "," +
                     i.getStatus() +
                     "," +
@@ -104,26 +102,24 @@ public class CsvExportResource {
                     i.getCreatedAt()
             );
         });
-        return csvResponse(sw.toString(), "issues.csv");
+        return csvResponse(sw.toString(), "tasks.csv");
     }
 
-    @GetMapping("/projects/{projectId}/issues")
+    @GetMapping("/projects/{projectId}/tasks")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<byte[]> exportProjectIssuesCsv(@PathVariable("projectId") Long projectId) {
-        LOG.debug("REST request to export Issues of Project {} as CSV", projectId);
+    public ResponseEntity<byte[]> exportProjectTasksCsv(@PathVariable("projectId") Long projectId) {
+        LOG.debug("REST request to export Tasks of Project {} as CSV", projectId);
         projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER);
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
-        pw.println("ID,Title,Type,Status,Priority,AssigneeLogin,CreatedAt,UpdatedAt");
-        List<Issue> issues = issueRepository.findAllByProjectIdWithToOneRelationships(projectId);
-        for (Issue i : issues) {
+        pw.println("ID,Title,Status,Priority,AssigneeLogin,CreatedAt,UpdatedAt");
+        List<Task> tasks = taskRepository.findAllByProjectIdWithToOneRelationships(projectId);
+        for (Task i : tasks) {
             String assigneeLogin = i.getAssignee() != null ? escapeCsv(i.getAssignee().getLogin()) : "";
             pw.println(
                 i.getId() +
                     "," +
                     escapeCsv(i.getTitle()) +
-                    "," +
-                    i.getType() +
                     "," +
                     i.getStatus() +
                     "," +
@@ -136,7 +132,7 @@ public class CsvExportResource {
                     i.getUpdatedAt()
             );
         }
-        return csvResponse(sw.toString(), "project-" + projectId + "-issues.csv");
+        return csvResponse(sw.toString(), "project-" + projectId + "-tasks.csv");
     }
 
     @GetMapping("/users")

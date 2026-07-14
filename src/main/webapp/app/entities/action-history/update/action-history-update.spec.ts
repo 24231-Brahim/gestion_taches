@@ -7,8 +7,8 @@ import { ActivatedRoute } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, from, of } from 'rxjs';
 
-import { IIssue } from 'app/entities/issue/issue.model';
-import { IssueService } from 'app/entities/issue/service/issue.service';
+import { ITask } from 'app/entities/task/task.model';
+import { TaskService } from 'app/entities/task/service/task.service';
 import { IActionHistory } from '../action-history.model';
 import { ActionHistoryService } from '../service/action-history.service';
 
@@ -21,7 +21,7 @@ describe('ActionHistory Management Update Component', () => {
   let activatedRoute: ActivatedRoute;
   let actionHistoryFormService: ActionHistoryFormService;
   let actionHistoryService: ActionHistoryService;
-  let issueService: IssueService;
+  let taskService: TaskService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -41,43 +41,43 @@ describe('ActionHistory Management Update Component', () => {
     activatedRoute = TestBed.inject(ActivatedRoute);
     actionHistoryFormService = TestBed.inject(ActionHistoryFormService);
     actionHistoryService = TestBed.inject(ActionHistoryService);
-    issueService = TestBed.inject(IssueService);
+    taskService = TestBed.inject(TaskService);
 
     comp = fixture.componentInstance;
   });
 
   describe('ngOnInit', () => {
-    it('should call Issue query and add missing value', () => {
+    it('should call Task query and add missing value', () => {
       const actionHistory: IActionHistory = { id: 6945 };
-      const issue: IIssue = { id: 6256 };
-      actionHistory.issue = issue;
+      const task: ITask = { id: 6256 };
+      actionHistory.task = task;
 
-      const issueCollection: IIssue[] = [{ id: 6256 }];
-      vitest.spyOn(issueService, 'query').mockReturnValue(of(new HttpResponse({ body: issueCollection })));
-      const additionalIssues = [issue];
-      const expectedCollection: IIssue[] = [...additionalIssues, ...issueCollection];
-      vitest.spyOn(issueService, 'addIssueToCollectionIfMissing').mockReturnValue(expectedCollection);
+      const issueCollection: ITask[] = [{ id: 6256 }];
+      vitest.spyOn(taskService, 'query').mockReturnValue(of(new HttpResponse({ body: issueCollection })));
+      const additionalTasks = [task];
+      const expectedCollection: ITask[] = [...additionalTasks, ...issueCollection];
+      vitest.spyOn(taskService, 'addTaskToCollectionIfMissing').mockReturnValue(expectedCollection);
 
       activatedRoute.data = of({ actionHistory });
       comp.ngOnInit();
 
-      expect(issueService.query).toHaveBeenCalled();
-      expect(issueService.addIssueToCollectionIfMissing).toHaveBeenCalledWith(
+      expect(taskService.query).toHaveBeenCalled();
+      expect(taskService.addTaskToCollectionIfMissing).toHaveBeenCalledWith(
         issueCollection,
-        ...additionalIssues.map(i => expect.objectContaining(i) as typeof i),
+        ...additionalTasks.map(i => expect.objectContaining(i) as typeof i),
       );
-      expect(comp.issuesSharedCollection()).toEqual(expectedCollection);
+      expect(comp.tasksSharedCollection()).toEqual(expectedCollection);
     });
 
     it('should update editForm', () => {
       const actionHistory: IActionHistory = { id: 6945 };
-      const issue: IIssue = { id: 6256 };
-      actionHistory.issue = issue;
+      const task: ITask = { id: 6256 };
+      actionHistory.task = task;
 
       activatedRoute.data = of({ actionHistory });
       comp.ngOnInit();
 
-      expect(comp.issuesSharedCollection()).toContainEqual(issue);
+      expect(comp.tasksSharedCollection()).toContainEqual(task);
       expect(comp.actionHistory).toEqual(actionHistory);
     });
   });
@@ -151,13 +151,13 @@ describe('ActionHistory Management Update Component', () => {
   });
 
   describe('Compare relationships', () => {
-    describe('compareIssue', () => {
-      it('should forward to issueService', () => {
+    describe('compareTask', () => {
+      it('should forward to taskService', () => {
         const entity = { id: 6256 };
         const entity2 = { id: 29374 };
-        vitest.spyOn(issueService, 'compareIssue');
-        comp.compareIssue(entity, entity2);
-        expect(issueService.compareIssue).toHaveBeenCalledWith(entity, entity2);
+        vitest.spyOn(taskService, 'compareTask');
+        comp.compareTask(entity, entity2);
+        expect(taskService.compareTask).toHaveBeenCalledWith(entity, entity2);
       });
     });
   });

@@ -42,9 +42,9 @@
     "quickActions": {
       "title": "QUICK ACTIONS",
       "newProject": "New Project",
-      "newIssue": "New Issue",
       "viewProjects": "View Projects",
-      "viewIssues": "View Issues"
+      "newTask": "New Issue",
+      "viewTasks": "View Issues"
     }
   }
 }

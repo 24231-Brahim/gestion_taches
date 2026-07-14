@@ -26,7 +26,7 @@ public class ProjectMember implements Serializable {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = { "owner", "projectMembers", "sprintses", "epicses", "issueses" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "owner", "projectMembers", "sprintses", "epicses", "tasks" }, allowSetters = true)
     private Project project;
 
     @ManyToOne(fetch = FetchType.LAZY)

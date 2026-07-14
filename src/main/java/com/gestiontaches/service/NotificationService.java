@@ -37,18 +37,18 @@ public class NotificationService {
     @Transactional(readOnly = true)
     public List<NotificationDTO> findByUserId(Long userId) {
         LOG.debug("Request to get Notifications for user : {}", userId);
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId).stream().map(notificationMapper::toDto).toList();
+        return notificationRepository.findByUser_idOrderByCreatedAtDesc(userId).stream().map(notificationMapper::toDto).toList();
     }
 
     @Transactional(readOnly = true)
     public Page<NotificationDTO> findByUserId(Long userId, Pageable pageable) {
         LOG.debug("Request to get paginated Notifications for user : {}", userId);
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable).map(notificationMapper::toDto);
+        return notificationRepository.findByUser_idOrderByCreatedAtDesc(userId, pageable).map(notificationMapper::toDto);
     }
 
     @Transactional(readOnly = true)
     public long countUnreadByUserId(Long userId) {
-        return notificationRepository.countByUserIdAndIsReadFalse(userId);
+        return notificationRepository.countByUser_idAndIsReadFalse(userId);
     }
 
     public Optional<NotificationDTO> partialUpdate(NotificationDTO notificationDTO) {

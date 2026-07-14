@@ -42,10 +42,10 @@ import { DashboardQuickActionsComponent } from './quick-actions.component';
         <jhi-kpi-card label="{{ 'dashboard.kpi.teamMembers' | translate }}" [value]="teamMembers()" icon="users" />
       </div>
       <jhi-dashboard-quick-actions />
-      <jhi-dashboard-charts [issues]="issues()" [projects]="projects()" />
+      <jhi-dashboard-charts [tasks]="tasks()" [projects]="projects()" />
       <jhi-dashboard-lists [recentProjects]="recentProjects()" [recentTasks]="recentTasks()" />
       <div class="bottom-grid">
-        <jhi-dashboard-timeline [issues]="issues()" />
+        <jhi-dashboard-timeline [tasks]="tasks()" />
       </div>
     </div>
   `,
@@ -97,37 +97,36 @@ import { DashboardQuickActionsComponent } from './quick-actions.component';
 })
 export class DashboardComponent {
   readonly projects = computed<any[]>(() => this.projectsResource.value() ?? []);
-  readonly issues = computed<any[]>(() => this.issuesResource.value() ?? []);
+  readonly tasks = computed<any[]>(() => this.tasksResource.value() ?? []);
   readonly totalProjects = computed(() => this.projects().length);
   readonly activeProjects = computed(() => {
     const active = new Set<number>();
-    for (const issue of this.issues()) {
-      if (issue.status === 'IN_PROGRESS' && issue.project?.id) {
-        active.add(issue.project.id);
+    for (const task of this.tasks()) {
+      if (task.status === 'IN_PROGRESS' && task.project?.id) {
+        active.add(task.project.id);
       }
     }
     return active.size;
   });
-  readonly totalTasks = computed(() => this.issues().length);
+  readonly totalTasks = computed(() => this.tasks().length);
   readonly completedTasks = computed(() => this.doneCountResource.value() ?? 0);
-  readonly overdueTasks = computed(() => this.issues().filter(i => i.status !== 'DONE' && i.status !== 'CANCELLED').length);
+  readonly overdueTasks = computed(() => this.tasks().filter(i => i.status !== 'DONE' && i.status !== 'CANCELLED').length);
   readonly teamMembers = computed(() => this.memberCountResource.value() ?? 0);
   readonly loading = computed(
     () =>
       this.projectsResource.isLoading() ||
-      this.issuesResource.isLoading() ||
+      this.tasksResource.isLoading() ||
       this.doneCountResource.isLoading() ||
       this.memberCountResource.isLoading(),
   );
   readonly error = computed(
-    () =>
-      this.projectsResource.error() ?? this.issuesResource.error() ?? this.doneCountResource.error() ?? this.memberCountResource.error(),
+    () => this.projectsResource.error() ?? this.tasksResource.error() ?? this.doneCountResource.error() ?? this.memberCountResource.error(),
   );
   readonly recentProjects = computed(() =>
     [...this.projects()].sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? '')).slice(0, 5),
   );
   readonly recentTasks = computed(() => {
-    const sorted = [...this.issues()].sort((a, b) => {
+    const sorted = [...this.tasks()].sort((a, b) => {
       const da = b.updatedAt ?? b.createdAt ?? '';
       const db = a.updatedAt ?? a.createdAt ?? '';
       return da.localeCompare(db);
@@ -140,12 +139,12 @@ export class DashboardComponent {
     url: this.applicationConfigService.getEndpointFor('api/projects'),
     params: new HttpParams().set('page', '0').set('size', '500'),
   }));
-  private readonly issuesResource = httpResource<any[]>(() => ({
-    url: this.applicationConfigService.getEndpointFor('api/issues'),
+  private readonly tasksResource = httpResource<any[]>(() => ({
+    url: this.applicationConfigService.getEndpointFor('api/tasks'),
     params: new HttpParams().set('page', '0').set('size', '500'),
   }));
   private readonly doneCountResource = httpResource<number>(() => ({
-    url: this.applicationConfigService.getEndpointFor('api/issues/count'),
+    url: this.applicationConfigService.getEndpointFor('api/tasks/count'),
     params: new HttpParams().set('status.equals', 'DONE'),
   }));
   private readonly memberCountResource = httpResource<number>(() => ({

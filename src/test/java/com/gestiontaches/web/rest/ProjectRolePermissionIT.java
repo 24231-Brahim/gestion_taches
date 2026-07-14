@@ -15,10 +15,10 @@ import com.gestiontaches.domain.User;
 import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.repository.UserRepository;
-import com.gestiontaches.service.dto.IssueDTO;
 import com.gestiontaches.service.dto.ProjectDTO;
 import com.gestiontaches.service.dto.ProjectMemberDTO;
 import com.gestiontaches.service.dto.SprintDTO;
+import com.gestiontaches.service.dto.TaskDTO;
 import com.gestiontaches.service.mapper.ProjectMapper;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
@@ -40,7 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 class ProjectRolePermissionIT {
 
     private static final String PROJECT_API = "/api/projects";
-    private static final String ISSUE_API = "/api/issues/projects";
+    private static final String TASK_API = "/api/tasks/projects";
     private static final String SPRINT_API = "/api/sprints";
     private static final String EPIC_API = "/api/epics";
 
@@ -246,22 +246,21 @@ class ProjectRolePermissionIT {
             .andExpect(status().isForbidden());
     }
 
-    // --- Issue creation tests ---
+    // --- Task creation tests ---
 
     @Test
     @WithMockUser(username = "owner-user")
     @Transactional
-    void owner_can_create_issue() throws Exception {
-        IssueDTO dto = new IssueDTO();
-        dto.setTitle("Test Issue");
-        dto.setType(com.gestiontaches.domain.enumeration.IssueType.TASK);
-        dto.setStatus(com.gestiontaches.domain.enumeration.IssueStatus.BACKLOG);
+    void owner_can_create_task() throws Exception {
+        TaskDTO dto = new TaskDTO();
+        dto.setTitle("Test Task");
+        dto.setStatus(com.gestiontaches.domain.enumeration.TaskStatus.NEW);
         dto.setPriority(com.gestiontaches.domain.enumeration.Priority.MEDIUM);
         dto.setCreatedAt(Instant.now());
         dto.setProject(projectMapper.toDto(project));
         mockMvc
             .perform(
-                post(ISSUE_API + "/{projectId}/issues", project.getId())
+                post(TASK_API + "/{projectId}/tasks", project.getId())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(om.writeValueAsString(dto))
             )
@@ -271,17 +270,16 @@ class ProjectRolePermissionIT {
     @Test
     @WithMockUser(username = "member-user")
     @Transactional
-    void member_can_create_issue() throws Exception {
-        IssueDTO dto = new IssueDTO();
-        dto.setTitle("Test Issue");
-        dto.setType(com.gestiontaches.domain.enumeration.IssueType.TASK);
-        dto.setStatus(com.gestiontaches.domain.enumeration.IssueStatus.BACKLOG);
+    void member_can_create_task() throws Exception {
+        TaskDTO dto = new TaskDTO();
+        dto.setTitle("Test Task");
+        dto.setStatus(com.gestiontaches.domain.enumeration.TaskStatus.NEW);
         dto.setPriority(com.gestiontaches.domain.enumeration.Priority.MEDIUM);
         dto.setCreatedAt(Instant.now());
         dto.setProject(projectMapper.toDto(project));
         mockMvc
             .perform(
-                post(ISSUE_API + "/{projectId}/issues", project.getId())
+                post(TASK_API + "/{projectId}/tasks", project.getId())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(om.writeValueAsString(dto))
             )
@@ -291,17 +289,16 @@ class ProjectRolePermissionIT {
     @Test
     @WithMockUser(username = "outsider-user")
     @Transactional
-    void outsider_cannot_create_issue() throws Exception {
-        IssueDTO dto = new IssueDTO();
-        dto.setTitle("Test Issue");
-        dto.setType(com.gestiontaches.domain.enumeration.IssueType.TASK);
-        dto.setStatus(com.gestiontaches.domain.enumeration.IssueStatus.BACKLOG);
+    void outsider_cannot_create_task() throws Exception {
+        TaskDTO dto = new TaskDTO();
+        dto.setTitle("Test Task");
+        dto.setStatus(com.gestiontaches.domain.enumeration.TaskStatus.NEW);
         dto.setPriority(com.gestiontaches.domain.enumeration.Priority.MEDIUM);
         dto.setCreatedAt(Instant.now());
         dto.setProject(projectMapper.toDto(project));
         mockMvc
             .perform(
-                post(ISSUE_API + "/{projectId}/issues", project.getId())
+                post(TASK_API + "/{projectId}/tasks", project.getId())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(om.writeValueAsString(dto))
             )

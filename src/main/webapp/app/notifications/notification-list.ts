@@ -45,8 +45,8 @@ export default class NotificationListComponent implements OnInit {
         this.loadPage();
       });
     }
-    if (notification.issueId) {
-      this.router.navigate(['/issue', notification.issueId]);
+    if (notification.taskId) {
+      this.router.navigate(['/task', notification.taskId]);
     }
   }
 

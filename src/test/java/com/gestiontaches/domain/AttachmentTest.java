@@ -1,7 +1,7 @@
 package com.gestiontaches.domain;
 
 import static com.gestiontaches.domain.AttachmentTestSamples.*;
-import static com.gestiontaches.domain.IssueTestSamples.*;
+import static com.gestiontaches.domain.TaskTestSamples.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.gestiontaches.web.rest.TestUtil;
@@ -24,14 +24,14 @@ class AttachmentTest {
     }
 
     @Test
-    void issueTest() {
+    void taskTest() {
         Attachment attachment = getAttachmentRandomSampleGenerator();
-        Issue issueBack = getIssueRandomSampleGenerator();
+        Task taskBack = getTaskRandomSampleGenerator();
 
-        attachment.setIssue(issueBack);
-        assertThat(attachment.getIssue()).isEqualTo(issueBack);
+        attachment.setTask(taskBack);
+        assertThat(attachment.getTask()).isEqualTo(taskBack);
 
-        attachment.issue(null);
-        assertThat(attachment.getIssue()).isNull();
+        attachment.task(null);
+        assertThat(attachment.getTask()).isNull();
     }
 }

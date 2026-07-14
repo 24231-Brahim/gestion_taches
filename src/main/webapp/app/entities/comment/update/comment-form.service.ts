@@ -34,7 +34,7 @@ type CommentFormGroupContent = {
   id: FormControl<CommentFormRawValue['id'] | NewComment['id']>;
   content: FormControl<CommentFormRawValue['content']>;
   createdAt: FormControl<CommentFormRawValue['createdAt']>;
-  issue: FormControl<CommentFormRawValue['issue']>;
+  task: FormControl<CommentFormRawValue['task']>;
 };
 
 export type CommentFormGroup = FormGroup<CommentFormGroupContent>;
@@ -60,7 +60,7 @@ export class CommentFormService {
       createdAt: new FormControl(commentRawValue.createdAt, {
         validators: [Validators.required],
       }),
-      issue: new FormControl(commentRawValue.issue, {
+      task: new FormControl(commentRawValue.task, {
         validators: [Validators.required],
       }),
     });

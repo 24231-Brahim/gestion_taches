@@ -9,8 +9,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AlertService } from 'app/core/util/alert.service';
 import { FormatMediumDatePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
-import { IssueService } from 'app/entities/issue/service/issue.service';
-import { IIssue } from 'app/entities/issue/issue.model';
+import { TaskService } from 'app/entities/task/service/task.service';
+import { ITask } from 'app/entities/task/task.model';
 import { SprintActiveBoard } from '../active-board/sprint-active-board';
 import { SprintBacklogPlanning } from '../backlog-planning/sprint-backlog-planning';
 import { SprintBurndownChart } from '../burndown/sprint-burndown-chart';
@@ -130,51 +130,51 @@ export class SprintDetail implements OnInit {
   readonly activeTab = signal<Tab>('board');
   readonly isSaving = signal(false);
 
-  protected readonly issueService = inject(IssueService);
+  protected readonly taskService = inject(TaskService);
   protected readonly sprintService = inject(SprintService);
   protected readonly alertService = inject(AlertService);
   protected readonly translateService = inject(TranslateService);
 
-  readonly issues = signal<IIssue[]>([]);
-  readonly projectIssues = signal<IIssue[]>([]);
+  readonly tasks = signal<ITask[]>([]);
+  readonly projectTasks = signal<ITask[]>([]);
 
   constructor() {
-    this.issueService.issuesParams.set(undefined);
+    this.taskService.tasksParams.set(undefined);
   }
 
   ngOnInit(): void {
     const sp = this.sprint();
     if (sp?.project?.id) {
-      this.issueService.issuesParams.set({
+      this.taskService.tasksParams.set({
         'projectId.equals': sp.project.id,
         size: 500,
       });
     } else if (sp) {
-      this.issueService.issuesParams.set({
+      this.taskService.tasksParams.set({
         size: 200,
       });
     }
   }
 
-  onSelectIssue(_issue: IIssue): void {
+  onSelectTask(_issue: ITask): void {
     // no-op for now
   }
 
   private issuesEffect = effect(() => {
-    const raw = this.issueService.issues();
+    const raw = this.taskService.tasks();
     if (raw && raw.length > 0) {
-      this.issues.set(raw.filter(i => i.sprint?.id === this.sprint()?.id));
-      this.projectIssues.set(raw);
-    } else if (raw?.length === 0 && this.issueService.issuesResource.hasValue()) {
-      this.issues.set([]);
-      this.projectIssues.set([]);
+      this.tasks.set(raw.filter(i => i.sprint?.id === this.sprint()?.id));
+      this.projectTasks.set(raw);
+    } else if (raw?.length === 0 && this.taskService.tasksResource.hasValue()) {
+      this.tasks.set([]);
+      this.projectTasks.set([]);
     }
   });
 
   private refreshIssues(): void {
     const sp = this.sprint();
     if (sp?.project?.id) {
-      this.issueService.issuesParams.set({
+      this.taskService.tasksParams.set({
         'projectId.equals': sp.project.id,
         size: 500,
         t: Date.now(),
@@ -182,9 +182,9 @@ export class SprintDetail implements OnInit {
     }
   }
 
-  onStatusChange(event: { issueId: number; status: string }): void {
+  onStatusChange(event: { taskId: number; status: string }): void {
     this.isSaving.set(true);
-    this.issueService.partialUpdate({ id: event.issueId, status: event.status as any }).subscribe({
+    this.taskService.partialUpdate({ id: event.taskId, status: event.status as any }).subscribe({
       next: () => {
         this.isSaving.set(false);
         this.refreshIssues();
@@ -197,9 +197,9 @@ export class SprintDetail implements OnInit {
     });
   }
 
-  onAssignToSprint(event: { issueId: number; sprintId: number }): void {
+  onAssignToSprint(event: { taskId: number; sprintId: number }): void {
     this.isSaving.set(true);
-    this.issueService.partialUpdate({ id: event.issueId, sprint: { id: event.sprintId } }).subscribe({
+    this.taskService.partialUpdate({ id: event.taskId, sprint: { id: event.sprintId } }).subscribe({
       next: () => {
         this.isSaving.set(false);
         this.refreshIssues();
@@ -212,9 +212,9 @@ export class SprintDetail implements OnInit {
     });
   }
 
-  onRemoveFromSprint(issueId: number): void {
+  onRemoveFromSprint(taskId: number): void {
     this.isSaving.set(true);
-    this.issueService.partialUpdate({ id: issueId, sprint: null }).subscribe({
+    this.taskService.partialUpdate({ id: taskId, sprint: null }).subscribe({
       next: () => {
         this.isSaving.set(false);
         this.refreshIssues();
@@ -292,8 +292,8 @@ export class SprintDetail implements OnInit {
     return true;
   }
 
-  readonly sprintIssuesCount = computed(() => this.issues().length);
-  readonly doneIssuesCount = computed(() => this.issues().filter(i => i.status === 'DONE').length);
+  readonly sprintTasksCount = computed(() => this.tasks().length);
+  readonly doneTasksCount = computed(() => this.tasks().filter(i => i.status === 'DONE').length);
   readonly daysLeft = computed(() => {
     const sp = this.sprint();
     if (!sp?.endDate) {

@@ -27,8 +27,8 @@
         <div class="notification-message">{{ notif.message }}</div>
         <div class="notification-meta">
           <span class="notification-date">{{ notif.createdAt | date: 'medium' }}</span>
-          @if (notif.issueTitle) {
-            <span class="notification-issue">— {{ notif.issueTitle }}</span>
+          @if (notif.taskTitle) {
+            <span class="notification-task">— {{ notif.taskTitle }}</span>
           }
         </div>
       </div>

@@ -20,9 +20,9 @@ import { UserService } from 'app/entities/user/service/user.service';
 import { IUser } from 'app/entities/user/user.model';
 import { ISprint } from 'app/entities/sprint/sprint.model';
 import { SprintService } from 'app/entities/sprint/service/sprint.service';
-import { IIssue, NewIssue } from 'app/entities/issue/issue.model';
-import { IssueService } from 'app/entities/issue/service/issue.service';
-import { IssueType } from 'app/entities/enumerations/issue-type.model';
+import { ITask, NewTask } from 'app/entities/task/task.model';
+import { TaskService } from 'app/entities/task/service/task.service';
+import { TaskType } from 'app/entities/enumerations/task-type.model';
 import { Priority } from 'app/entities/enumerations/priority.model';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
 
@@ -54,19 +54,19 @@ export class ProjectDetail {
   readonly editingRole = signal<ProjectRole | ''>('');
 
   readonly sprints = signal<ISprint[]>([]);
-  readonly issues = signal<IIssue[]>([]);
+  readonly tasks = signal<ITask[]>([]);
 
-  // Issue creation form
-  readonly showIssueForm = signal(false);
-  readonly newIssueTitle = signal('');
-  readonly newIssueDescription = signal('');
-  readonly newIssueType = signal<keyof typeof IssueType>('TASK');
-  readonly newIssuePriority = signal<keyof typeof Priority>('MEDIUM');
-  readonly newIssueSprintId = signal<number | null>(null);
-  readonly newIssueAssigneeId = signal<number | null>(null);
-  readonly isCreatingIssue = signal(false);
+  // Task creation form
+  readonly showTaskForm = signal(false);
+  readonly newTaskTitle = signal('');
+  readonly newTaskDescription = signal('');
+  readonly newTaskType = signal<keyof typeof TaskType>('TASK');
+  readonly newTaskPriority = signal<keyof typeof Priority>('MEDIUM');
+  readonly newTaskSprintId = signal<number | null>(null);
+  readonly newTaskAssigneeId = signal<number | null>(null);
+  readonly isCreatingTask = signal(false);
 
-  readonly issueTypeValues = Object.keys(IssueType);
+  readonly taskTypeValues = Object.keys(TaskType);
   readonly priorityValues = Object.keys(Priority);
 
   readonly userProjectRole: Signal<ProjectRole | null> = computed(() => {
@@ -91,7 +91,7 @@ export class ProjectDetail {
     return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
   });
 
-  readonly canCreateIssues = computed(() => {
+  readonly canCreateTasks = computed(() => {
     return this.userProjectRole() !== null;
   });
 
@@ -103,7 +103,7 @@ export class ProjectDetail {
   readonly csvExportUrl = computed(() => {
     const proj = this.project();
     if (!proj?.id) return '';
-    return this.applicationConfigService.getEndpointFor(`api/export/csv/projects/${proj.id}/issues`);
+    return this.applicationConfigService.getEndpointFor(`api/export/csv/projects/${proj.id}/tasks`);
   });
 
   private readonly projectService = inject(ProjectService);
@@ -112,7 +112,7 @@ export class ProjectDetail {
   private readonly applicationConfigService = inject(ApplicationConfigService);
   private readonly userService = inject(UserService);
   private readonly sprintService = inject(SprintService);
-  private readonly issueService = inject(IssueService);
+  private readonly taskService = inject(TaskService);
 
   constructor() {
     effect(() => {
@@ -120,7 +120,7 @@ export class ProjectDetail {
       if (proj?.id) {
         this.loadMembers(proj.id);
         this.loadSprints(proj.id);
-        this.loadIssues(proj.id);
+        this.loadTasks(proj.id);
       }
     });
   }
@@ -131,9 +131,9 @@ export class ProjectDetail {
     });
   }
 
-  loadIssues(projectId: number): void {
-    this.issueService.query({ 'projectId.equals': projectId, size: 100 }).subscribe({
-      next: res => this.issues.set(res.body ?? []),
+  loadTasks(projectId: number): void {
+    this.taskService.query({ 'projectId.equals': projectId, size: 100 }).subscribe({
+      next: res => this.tasks.set(res.body ?? []),
     });
   }
 
@@ -205,56 +205,56 @@ export class ProjectDetail {
     });
   }
 
-  toggleIssueForm(): void {
-    this.showIssueForm.update(v => !v);
-    if (!this.showIssueForm()) {
-      this.resetIssueForm();
+  toggleTaskForm(): void {
+    this.showTaskForm.update(v => !v);
+    if (!this.showTaskForm()) {
+      this.resetTaskForm();
     }
   }
 
-  resetIssueForm(): void {
-    this.newIssueTitle.set('');
-    this.newIssueDescription.set('');
-    this.newIssueType.set('TASK');
-    this.newIssuePriority.set('MEDIUM');
-    this.newIssueSprintId.set(null);
-    this.newIssueAssigneeId.set(null);
+  resetTaskForm(): void {
+    this.newTaskTitle.set('');
+    this.newTaskDescription.set('');
+    this.newTaskType.set('TASK');
+    this.newTaskPriority.set('MEDIUM');
+    this.newTaskSprintId.set(null);
+    this.newTaskAssigneeId.set(null);
   }
 
-  createIssue(projectId: number): void {
-    const title = this.newIssueTitle();
+  createTask(projectId: number): void {
+    const title = this.newTaskTitle();
     if (!title) {
       return;
     }
-    this.isCreatingIssue.set(true);
+    this.isCreatingTask.set(true);
 
-    const newIssue: NewIssue = {
+    const newTask: NewTask = {
       id: null,
       title,
-      description: this.newIssueDescription() || null,
-      type: this.newIssueType(),
+      description: this.newTaskDescription() || null,
+      type: this.newTaskType(),
       status: 'BACKLOG',
-      priority: this.newIssuePriority(),
+      priority: this.newTaskPriority(),
       createdAt: dayjs(),
       updatedAt: dayjs(),
       project: { id: projectId, name: this.project()?.name ?? null, key: this.project()?.key ?? null },
-      sprint: this.newIssueSprintId() ? { id: this.newIssueSprintId()!, name: '' } : null,
-      assignee: this.newIssueAssigneeId()
-        ? { id: this.newIssueAssigneeId()!, login: this.members().find(m => m.userId === this.newIssueAssigneeId())?.userLogin ?? '' }
+      sprint: this.newTaskSprintId() ? { id: this.newTaskSprintId()!, name: '' } : null,
+      assignee: this.newTaskAssigneeId()
+        ? { id: this.newTaskAssigneeId()!, login: this.members().find(m => m.userId === this.newTaskAssigneeId())?.userLogin ?? '' }
         : null,
       createdBy: null,
     };
 
-    this.issueService.createForProject(projectId, newIssue).subscribe({
+    this.taskService.createForProject(projectId, newTask).subscribe({
       next: () => {
-        this.loadIssues(projectId);
-        this.showIssueForm.set(false);
-        this.resetIssueForm();
-        this.isCreatingIssue.set(false);
-        this.alertService.addAlert({ type: 'success', translationKey: 'gestionTachesApp.issue.created' });
+        this.loadTasks(projectId);
+        this.showTaskForm.set(false);
+        this.resetTaskForm();
+        this.isCreatingTask.set(false);
+        this.alertService.addAlert({ type: 'success', translationKey: 'gestionTachesApp.task.created' });
       },
       error: () => {
-        this.isCreatingIssue.set(false);
+        this.isCreatingTask.set(false);
         this.alertService.addAlert({ type: 'danger', translationKey: 'error.general' });
       },
     });

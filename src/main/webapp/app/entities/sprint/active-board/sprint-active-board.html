@@ -44,31 +44,31 @@
       >
         <div class="kanban-column-header" [style.border-top-color]="getColumnColor(col.status)">
           <span class="kanban-column-title">{{ 'gestionTachesApp.IssueStatus.' + col.status | translate }}</span>
-          <span class="kanban-column-count">{{ col.issues.length }}</span>
+          <span class="kanban-column-count">{{ col.tasks.length }}</span>
         </div>
         <div class="kanban-column-body">
-          @for (issue of col.issues; track issue.id) {
+          @for (task of col.tasks; track task.id) {
             <div
               class="kanban-card"
               draggable="true"
-              (dragstart)="onDragStart(issue)"
-              [class.kanban-card-dragging]="dragIssueId === issue.id"
-              (click)="selectIssue.emit(issue)"
+              (dragstart)="onDragStart(task)"
+              [class.kanban-card-dragging]="dragTaskId === task.id"
+              (click)="selectTask.emit(task)"
             >
               <div class="kanban-card-top">
-                <fa-icon [icon]="getTypeIcon(issue.type)" [style.color]="getTypeColor(issue.type)" size="sm" />
-                <span class="kanban-card-id">#{{ issue.id }}</span>
+                <fa-icon [icon]="getTypeIcon(task.type)" [style.color]="getTypeColor(task.type)" size="sm" />
+                <span class="kanban-card-id">#{{ task.id }}</span>
               </div>
-              <div class="kanban-card-title">{{ issue.title }}</div>
+              <div class="kanban-card-title">{{ task.title }}</div>
               <div class="kanban-card-footer">
-                <fa-icon [icon]="getPriorityIcon(issue.priority)" [style.color]="getPriorityColor(issue.priority)" size="sm" />
-                @if (issue.assignee) {
-                  <span class="assignee-initials">{{ getInitials(issue.assignee.login) }}</span>
+                <fa-icon [icon]="getPriorityIcon(task.priority)" [style.color]="getPriorityColor(task.priority)" size="sm" />
+                @if (task.assignee) {
+                  <span class="assignee-initials">{{ getInitials(task.assignee.login) }}</span>
                 }
               </div>
             </div>
           }
-          @if (col.issues.length === 0) {
+          @if (col.tasks.length === 0) {
             <div class="kanban-empty">{{ 'gestionTachesApp.sprint.board.emptyColumn' | translate }}</div>
           }
         </div>

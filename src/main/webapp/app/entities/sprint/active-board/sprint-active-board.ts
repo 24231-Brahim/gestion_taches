@@ -3,17 +3,17 @@ import { ChangeDetectionStrategy, Component, HostListener, input, output } from 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { IssueStatus } from 'app/entities/enumerations/issue-status.model';
+import { TaskStatus } from 'app/entities/enumerations/task-status.model';
 import { SprintStatus } from 'app/entities/enumerations/sprint-status.model';
 import { TranslateDirective } from 'app/shared/language';
 import { FormatMediumDatePipe } from 'app/shared/date';
-import { ISSUE_TYPE_COLORS, ISSUE_TYPE_ICONS, PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES } from 'app/entities/issue/issue-helper';
-import { IIssue } from 'app/entities/issue/issue.model';
+import { ISSUE_TYPE_COLORS, ISSUE_TYPE_ICONS, PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES } from 'app/entities/task/task-helper';
+import { ITask } from 'app/entities/task/task.model';
 import { ISprint } from '../sprint.model';
 
 interface KanbanColumn {
   status: string;
-  issues: IIssue[];
+  tasks: ITask[];
 }
 
 @Component({
@@ -185,11 +185,11 @@ interface KanbanColumn {
 })
 export class SprintActiveBoard {
   readonly sprint = input<ISprint | null>(null);
-  readonly issues = input<IIssue[]>([]);
+  readonly tasks = input<ITask[]>([]);
   readonly canManage = input(false);
 
-  readonly selectIssue = output<IIssue>();
-  readonly statusChange = output<{ issueId: number; status: string }>();
+  readonly selectTask = output<ITask>();
+  readonly statusChange = output<{ taskId: number; status: string }>();
   readonly startSprint = output<void>();
   readonly completeSprint = output<void>();
   readonly reopenSprint = output<void>();
@@ -199,23 +199,23 @@ export class SprintActiveBoard {
   readonly priorityIcons = PRIORITY_ICONS;
   readonly priorityColors = PRIORITY_COLORS;
 
-  dragIssueId: number | null = null;
+  dragTaskId: number | null = null;
   dragOverStatus: string | null = null;
 
-  readonly columns: KanbanColumn[] = Object.keys(IssueStatus).map(status => ({
+  readonly columns: KanbanColumn[] = Object.keys(TaskStatus).map(status => ({
     status,
-    issues: [],
+    tasks: [],
   }));
 
   getColumns(): KanbanColumn[] {
     return this.columns.map(col => ({
       ...col,
-      issues: this.issues().filter(i => i.status === col.status),
+      tasks: this.tasks().filter(i => i.status === col.status),
     }));
   }
 
-  onDragStart(issue: IIssue): void {
-    this.dragIssueId = issue.id;
+  onDragStart(task: ITask): void {
+    this.dragTaskId = task.id;
   }
 
   onDragOver(event: DragEvent, status: string): void {
@@ -230,21 +230,21 @@ export class SprintActiveBoard {
   onDrop(event: DragEvent, targetStatus: string): void {
     event.preventDefault();
     this.dragOverStatus = null;
-    if (this.dragIssueId === null) {
+    if (this.dragTaskId === null) {
       return;
     }
-    const issue = this.issues().find(i => i.id === this.dragIssueId);
-    if (!issue || issue.status === targetStatus) {
-      this.dragIssueId = null;
+    const task = this.tasks().find(i => i.id === this.dragTaskId);
+    if (!task || task.status === targetStatus) {
+      this.dragTaskId = null;
       return;
     }
-    this.statusChange.emit({ issueId: this.dragIssueId, status: targetStatus });
-    this.dragIssueId = null;
+    this.statusChange.emit({ taskId: this.dragTaskId, status: targetStatus });
+    this.dragTaskId = null;
   }
 
   @HostListener('document:dragend')
   onDragEnd(): void {
-    this.dragIssueId = null;
+    this.dragTaskId = null;
     this.dragOverStatus = null;
   }
 

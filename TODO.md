@@ -8,10 +8,9 @@
 - [x] `@PreAuthorize` sur **ProjectResource** — POST/PUT/PATCH/DELETE : ADMIN + PROJET_MANAGER
 - [x] `@PreAuthorize` sur **SprintResource** — POST/PUT/PATCH/DELETE : ADMIN + PROJET_MANAGER
 - [x] `@PreAuthorize` sur **EpicResource** — POST/PUT/PATCH/DELETE : ADMIN + PROJET_MANAGER
-- [x] `@PreAuthorize` sur **IssueResource** — POST/PUT/PATCH/DELETE : ADMIN + PROJET_MANAGER + DEVELOPER
+- [x] `@PreAuthorize` sur **TaskResource** — POST/PUT/PATCH/DELETE : ADMIN + PROJET_MANAGER + DEVELOPER
 - [x] `@PreAuthorize` sur **CommentResource** — POST : ADMIN + PROJET_MANAGER + DEVELOPER + USER ; PUT/PATCH/DELETE : ADMIN + PROJET_MANAGER + DEVELOPER
 - [x] `@PreAuthorize` sur **AttachmentResource** — POST/PUT/PATCH/DELETE : ADMIN + PROJET_MANAGER + DEVELOPER
-- [x] `@PreAuthorize` sur **ActionHistoryResource** — POST/PUT/PATCH/DELETE : ADMIN + PROJET_MANAGER + DEVELOPER
 
 ### Données de seed (Liquibase)
 
@@ -105,14 +104,14 @@
 - [x] Données de seed (Liquibase) : 2 projets, 4 sprints, 4 epics, 10 issues, 5 commentaires, 6 membres, 7 actions
 - [x] Bannières loading/error sur le dashboard
 
-### Issue — Refactoring complet (Jira-like)
+### Task — Refactoring complet (Jira-like)
 
-- [x] Backend : ajout de `assignee` (User many-to-one) dans `Issue.java`, `IssueDTO.java`, `IssueMapper.java`
+- [x] Backend : ajout de `assignee` (User many-to-one) dans `Task.java`, `TaskDTO.java`, `TaskMapper.java`
 - [x] Liquibase : nouveau changelog `20260701000001_added_issue_assignee.xml` (FK `assignee_id` → `jhi_user`)
-- [x] Issue list refactored : onglets Backlog (table paginée) / Board (kanban), recherche textuelle, tri/filtres existants
-- [x] IssueKanbanBoard : drag-and-drop par colonne `IssueStatus`, cartes compactes (type, priorité, assigné), `@HostListener('document:dragend')`
-- [x] IssueDetailPanel : drawer latéral avec statut (select), description éditable, infos (sprint, epic, priority, type, dates, project), sections skeleton (comments, attachments, history)
-- [x] IssueHelper (`issue-helper.ts`) : maps couleur/icône/label pour IssueType, Priority, IssueStatus
+- [x] Task list refactored : onglets Backlog (table paginée) / Board (kanban), recherche textuelle, tri/filtres existants
+- [x] TaskKanbanBoard : drag-and-drop par colonne `TaskStatus`, cartes compactes (priorité, assigné), `@HostListener('document:dragend')`
+- [x] TaskDetailPanel : drawer latéral avec statut (select), description éditable, infos (sprint, epic, priority, dates, project), sections (comments, attachments)
+- [x] TaskHelper (`task-helper.ts`) : maps couleur/icône/label pour Priority, TaskStatus
 
 ### Epic — Roadmap view
 
@@ -124,7 +123,7 @@
 ### Frontend — i18n & icons
 
 - [x] Ajout icônes FontAwesome : `faArrowDown`, `faArrowUp`, `faClipboardList`, `faColumns`, `faExclamationTriangle`, `faGripVertical`, `faLayerGroup`, `faThLarge`, `faTimesCircle`, `faUserCheck`
-- [x] Clés i18n (en/fr) : `issue.home.backlog/board/search`, `issue.assignee`, `epic.home.roadmap/details`, `epic.startDate/endDate`, `global.messages.empty/notAssigned/unassigned`
+- [x] Clés i18n (en/fr) : `task.home.backlog/board/search`, `task.assignee`, `epic.home.roadmap/details`, `epic.startDate/endDate`, `global.messages.empty/notAssigned/unassigned`
 
 ## ✅ Fait (Tâche 1 — Rôles projet fonctionnels)
 
@@ -134,18 +133,18 @@
 - [x] `ProjectMember.java` / `ProjectMemberDTO.java` : passage de `String` → `ProjectRole` avec `@Enumerated(EnumType.STRING)`
 - [x] `ProjectPermissionService.java` : service de vérification des rôles projet par utilisateur connecté (fallback login si JWT userId absent)
 - [x] `ProjectService.java` : remplacement de `checkOwnership()` par vérifications de rôle (OWNER: tout ; MANAGER: update + manage members sauf OWNER ; MEMBER: read only)
-- [x] `IssueService.java` : tout membre peut créer ; OWNER/MANAGER peuvent tout modifier/supprimer ; MEMBER peut seulement modifier/supprimer ses propres issues
+- [x] `TaskService.java` : tout membre peut créer ; OWNER/MANAGER peuvent tout modifier/supprimer ; MEMBER peut seulement modifier/supprimer ses propres tâches
 - [x] `SprintService.java` / `EpicService.java` : OWNER/MANAGER seulement pour CRUD
 - [x] `@PreAuthorize` élargi à `ROLE_USER` sur ProjectResource, SprintResource, EpicResource (le contrôle fin est dans les services)
 - [x] Liquibase changelog `20260705000000_added_project_role_enum.xml` : validation des rôles existants
 - [x] `ProjectMemberRepository.java` : ajout de `countByProjectIdAndRole()`
-- [x] `IssueResource.createIssueForProject()` : suppression du check manuel d'ownership (délégué au service)
+- [x] `TaskResource.createTaskForProject()` : suppression du check manuel d'ownership (délégué au service)
 
 ### Frontend — Rôles projet
 
 - [x] Création de l'enum TypeScript `ProjectRole`
 - [x] `IProjectMember.role` typé `ProjectRole | null`
-- [x] `project-detail.ts` : signaux `userProjectRole`, `canManageMembers`, `canManageSprints`, `canCreateIssues`
+- [x] `project-detail.ts` : signaux `userProjectRole`, `canManageMembers`, `canManageSprints`, `canCreateTasks`
 - [x] `project-detail.html` : remplacement des `*jhiHasAnyAuthority` par conditions basées sur le rôle projet
 - [x] Sélecteur de rôle en dropdown (OWNER/MANAGER/MEMBER) dans le formulaire d'édition
 
@@ -161,6 +160,54 @@
 - [x] Icônes et traductions i18n existantes réutilisées
 - [x] `.sidebar-section-label` style pour l'en-tête de section
 
+## ✅ Fait (Tâche 3 — Renommage Issue → Task)
+
+### Backend
+
+- [x] Création de l'entité `Task.java` (remplace `Issue.java`) avec champs : title, description, status (TaskStatus), priority, createdAt, updatedAt
+- [x] Création de l'enum `TaskStatus` (NEW, IN_PROGRESS, READY_FOR_TEST, DONE, NEEDS_INFO) — remplace `IssueStatus`
+- [x] Suppression de l'enum `IssueType` (absente du schéma cible)
+- [x] Création de `TaskRepository.java`, `TaskService.java`, `TaskQueryService.java`, `TaskCriteria.java`
+- [x] Création de `TaskDTO.java`, `TaskMapper.java`, `TaskResource.java` (`/api/tasks`)
+- [x] Modification de `Comment.java` : relation `issue` → `task`
+- [x] Modification de `Attachment.java` : relation `issue` → `task`
+- [x] Modification de `Project.java` : collection `issueses` → `tasks`
+- [x] Modification de `Notification.java` : conversion des champs bruts `issueId`/`userId` en relations JPA `@ManyToOne` vers Task et User
+- [x] Modification de `NotificationDTO.java` : mappings JPA + setters backward-compatible
+- [x] Modification de `NotificationRepository.java` : requêtes JPA avec `user.id`
+- [x] Modification de `NotificationMapper.java` : mappings pour Task et User
+- [x] Modification de `CommentMapper.java` : `issueId` → `taskId`
+- [x] Modification de `AttachmentMapper.java` : `issueId` → `taskId`
+- [x] Modification de `CommentRepository.java` : `findByIssueIdOrderByCreatedAtDesc` → `findByTaskIdOrderByCreatedAtDesc`
+- [x] Modification de `AttachmentRepository.java` : `findByIssueIdOrderByUploadedAtDesc` → `findByTaskIdOrderByUploadedAtDesc`
+- [x] Modification de `CommentService.java` : `findByIssueId` → `findByTaskId`
+- [x] Modification de `AttachmentService.java` : `findByIssueId` → `findByTaskId`
+- [x] Modification de `CacheConfiguration.java` : `Issue` → `Task`
+- [x] Modification de `CommentResource.java` : endpoint `/by-issue/{issueId}` → `/by-task/{taskId}`
+- [x] Modification de `AttachmentResource.java` : upload `issueId` → `taskId`, endpoint `/by-issue` → `/by-task`
+- [x] Modification de `CsvExportResource.java` : `Issue` → `Task`
+- [x] Modification de `Sprint.java`, `Epic.java`, `ProjectMember.java` : `@JsonIgnoreProperties` `issueses` → `tasks`
+
+### Suppression
+
+- [x] Suppression de `ActionHistory.java` et de tous ses fichiers associés (repository, service, DTO, mapper, resource, tests)
+- [x] Suppression de tous les anciens fichiers `Issue*.java` (domain, repository, service, DTO, mapper, resource, criteria)
+- [x] Suppression de `.jhipster/Issue.json` et `.jhipster/ActionHistory.json`
+
+### Liquibase
+
+- [x] Création de `20260713000000_rename_issue_to_task.xml` : rename table `issue` → `task`, rename colonnes `issue_id` → `task_id`, drop table `action_history`, drop column `type`
+
+### Tests
+
+- [x] Création de `TaskTest.java`, `TaskTestSamples.java`, `TaskAsserts.java`
+- [x] Création de `TaskResourceIT.java` (tests d'intégration CRUD)
+- [x] Création de `TaskCriteriaTest.java`, `TaskMapperTest.java`, `TaskDTOTest.java`
+- [x] Modification de `CommentTest.java`, `AttachmentTest.java`, `ProjectTest.java` : `Issue` → `Task`
+- [x] Modification de `CommentAsserts.java`, `AttachmentAsserts.java` : `getIssue()` → `getTask()`
+- [x] Modification de `CommentResourceIT.java`, `AttachmentResourceIT.java` : `IssueResourceIT` → `TaskResourceIT`
+- [x] Modification de `ProjectRolePermissionIT.java` : `IssueDTO` → `TaskDTO`, `IssueStatus` → `TaskStatus`
+
 ## 📝 À faire (prochaines étapes)
 
 - [ ] Persister l'état collapsed de la sidebar (localStorage)
@@ -173,21 +220,21 @@
 - [x] `CommentResource.checkCommentOwnership()` : seul l'auteur du commentaire (ou ADMIN/PROJET_MANAGER) peut PUT/PATCH/DELETE
 - [x] Lève `BadRequestAlertException("Access denied")` si non autorisé
 
-### Assignation des issues
+### Assignation des tâches
 
-- [x] `PATCH /api/issues/{id}/assign` dans `IssueResource` — validation du rôle DEVELOPER ou PROJET_MANAGER
-- [x] `IssueService.assign()` — set l'assignee JPA et save + crée une notification
+- [x] `PATCH /api/tasks/{id}/assign` dans `TaskResource` — validation du rôle DEVELOPER ou PROJET_MANAGER
+- [x] `TaskService.assign()` — set l'assignee JPA et save + crée une notification
 - [x] `GET /api/users/assignable` dans `PublicUserResource` — liste des DEVELOPER + PROJET_MANAGER
 - [x] `UserRepository.findAllByAuthorityNames()` + `UserService.getAssignableUsers()`
-- [x] Frontend `IssueService.assign()` + `getAssignableUsers()` dans `issue.service.ts`
-- [x] Frontend `IssueDetailPanel` — selecteur d'assignee (dropdown avec lazy load via `effect`)
-- [x] `PATCH /api/issues/{id}/assign` crée une notification avec message "[username] vous a assigné à l'issue #{id} : {title}"
+- [x] Frontend `TaskService.assign()` + `getAssignableUsers()` dans `task.service.ts`
+- [x] Frontend `TaskDetailPanel` — selecteur d'assignee (dropdown avec lazy load via `effect`)
+- [x] `PATCH /api/tasks/{id}/assign` crée une notification avec message "[username] vous a assigné à la tâche #{id} : {title}"
 
 ### Notifications
 
-- [x] Entité `Notification.java` — id, userId, message, issueId, issueTitle, isRead, createdAt
+- [x] Entité `Notification.java` — id, user (ManyToOne), task (ManyToOne), taskTitle, isRead, createdAt
 - [x] DTO `NotificationDTO.java`, Mapper `NotificationMapper.java`
-- [x] Repository `NotificationRepository.java` — findByUserId, countUnreadByUserId
+- [x] Repository `NotificationRepository.java` — findByUser_id, countByUser_idAndIsReadFalse
 - [x] Service `NotificationService.java` — save, partialUpdate, findByUserId, countUnread
 - [x] Resource `NotificationResource.java` — GET /api/notifications, GET /api/notifications/unread-count, PATCH /{id}/read
 - [x] Liquibase changelog `20260702000000_added_entity_Notification.xml` inclus dans `master.xml`

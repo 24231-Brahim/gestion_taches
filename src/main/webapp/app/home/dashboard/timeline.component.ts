@@ -103,22 +103,22 @@ interface TimelineItem {
   ],
 })
 export class DashboardTimelineComponent {
-  readonly issues = input.required<any[]>();
+  readonly tasks = input.required<any[]>();
 
   readonly activities = computed<TimelineItem[]>(() => {
     const colors = ['#22c55e', '#25a7fd', '#f59e0b', '#a855f7', '#52d6fd'];
-    const sorted = [...this.issues()]
+    const sorted = [...this.tasks()]
       .sort((a, b) => {
         const da = a.updatedAt ?? a.createdAt ?? '';
         const db = b.updatedAt ?? b.createdAt ?? '';
         return db.localeCompare(da);
       })
       .slice(0, 10);
-    return sorted.map((issue, i) => ({
-      id: issue.id,
-      title: issue.title ?? 'Untitled',
-      status: issue.status ?? 'N/A',
-      date: issue.updatedAt ?? issue.createdAt ?? '—',
+    return sorted.map((task, i) => ({
+      id: task.id,
+      title: task.title ?? 'Untitled',
+      status: task.status ?? 'N/A',
+      date: task.updatedAt ?? task.createdAt ?? '—',
       color: colors[i % colors.length],
     }));
   });

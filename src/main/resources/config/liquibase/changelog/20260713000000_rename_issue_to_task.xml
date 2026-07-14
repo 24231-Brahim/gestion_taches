@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- Rename table issue to task -->
+    <changeSet id="20260713000000-1" author="jhipster">
+        <renameTable oldTableName="issue" newTableName="task"/>
+    </changeSet>
+
+    <!-- Rename issue_id to task_id in comment table -->
+    <changeSet id="20260713000000-2" author="jhipster">
+        <renameColumn oldTableName="comment" oldColumnName="issue_id" newColumnName="task_id" columnType="bigint"/>
+    </changeSet>
+
+    <!-- Rename issue_id to task_id in attachment table -->
+    <changeSet id="20260713000000-3" author="jhipster">
+        <renameColumn oldTableName="attachment" oldColumnName="issue_id" newColumnName="task_id" columnType="bigint"/>
+    </changeSet>
+
+    <!-- Rename issue_id to task_id in notification table -->
+    <changeSet id="20260713000000-4" author="jhipster">
+        <renameColumn oldTableName="notification" oldColumnName="issue_id" newColumnName="task_id" columnType="bigint"/>
+    </changeSet>
+
+    <!-- Rename issue_title to task_title in notification table -->
+    <changeSet id="20260713000000-5" author="jhipster">
+        <renameColumn oldTableName="notification" oldColumnName="issue_title" newColumnName="task_title" columnType="varchar(200)"/>
+    </changeSet>
+
+    <!-- Drop foreign key constraint on notification.issue_id before modifying -->
+    <changeSet id="20260713000000-6" author="jhipster">
+        <dropForeignKeyConstraint baseTableName="notification" constraintName="fk_notification_issue_id"/>
+    </changeSet>
+
+    <!-- Add foreign key constraint on notification.task_id to task table -->
+    <changeSet id="20260713000000-7" author="jhipster">
+        <addForeignKeyConstraint baseTableName="notification" baseColumnNames="task_id" constraintName="fk_notification_task_id" referencedTableName="task" referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- Drop the user_id column from notification (raw Long) and replace with proper FK -->
+    <changeSet id="20260713000000-8" author="jhipster">
+        <dropForeignKeyConstraint baseTableName="notification" constraintName="fk_notification_user_id"/>
+    </changeSet>
+
+    <changeSet id="20260713000000-9" author="jhipster">
+        <addForeignKeyConstraint baseTableName="notification" baseColumnNames="user_id" constraintName="fk_notification_user_id" referencedTableName="jhi_user" referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- Drop foreign key constraints on comment.issue_id and attachment.issue_id before renaming -->
+    <changeSet id="20260713000000-10" author="jhipster">
+        <dropForeignKeyConstraint baseTableName="comment" constraintName="fk_comment_issue_id"/>
+    </changeSet>
+
+    <changeSet id="20260713000000-11" author="jhipster">
+        <dropForeignKeyConstraint baseTableName="attachment" constraintName="fk_attachment_issue_id"/>
+    </changeSet>
+
+    <!-- Add foreign key constraints on comment.task_id and attachment.task_id to task table -->
+    <changeSet id="20260713000000-12" author="jhipster">
+        <addForeignKeyConstraint baseTableName="comment" baseColumnNames="task_id" constraintName="fk_comment_task_id" referencedTableName="task" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="20260713000000-13" author="jhipster">
+        <addForeignKeyConstraint baseTableName="attachment" baseColumnNames="task_id" constraintName="fk_attachment_task_id" referencedTableName="task" referencedColumnNames="id"/>
+    </changeSet>
+
+    <!-- Drop the action_history table (not in target schema) -->
+    <changeSet id="20260713000000-14" author="jhipster">
+        <dropTable tableName="action_history"/>
+    </changeSet>
+
+    <!-- Remove the type column from task (IssueType enum no longer needed) -->
+    <changeSet id="20260713000000-15" author="jhipster">
+        <dropColumn tableName="task" columnName="type"/>
+    </changeSet>
+
+</databaseChangeLog>

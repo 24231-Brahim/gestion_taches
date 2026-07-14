@@ -96,9 +96,9 @@
                         <fa-icon icon="list" class="me-1" />
                         <span jhiTranslate="gestionTachesApp.project.epics">Epics</span>
                       </button>
-                      <button ngbDropdownItem [routerLink]="['/issue']" [queryParams]="{ 'filter[projectId.in]': project.id }">
+                      <button ngbDropdownItem [routerLink]="['/task']" [queryParams]="{ 'filter[projectId.in]': project.id }">
                         <fa-icon icon="list" class="me-1" />
-                        <span jhiTranslate="gestionTachesApp.project.issues">Issues</span>
+                        <span jhiTranslate="gestionTachesApp.project.tasks">Tasks</span>
                       </button>
                     </div>
                   </div>
