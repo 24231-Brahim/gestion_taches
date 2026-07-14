@@ -40,6 +40,7 @@ public interface TaskMapper extends EntityMapper<TaskDTO, Task> {
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
     @Mapping(target = "name", source = "name")
+    @Mapping(target = "key", source = "key")
     ProjectDTO toDtoProjectName(Project project);
 
     @Named("userLogin")

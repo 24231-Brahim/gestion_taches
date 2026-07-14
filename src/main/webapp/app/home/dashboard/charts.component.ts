@@ -185,12 +185,12 @@ export class DashboardChartsComponent {
   readonly totalTasks = computed(() => this.tasks().length);
 
   readonly taskDistribution = computed<TaskStatusCount[]>(() => {
-    const statuses = ['BACKLOG', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE', 'CANCELLED'];
+    const statuses = ['NEW', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE', 'CANCELLED'];
     const colors = ['#6a8fac', '#f59e0b', '#25a7fd', '#a855f7', '#22c55e', '#ef4444'];
     const map = new Map<string, number>();
     for (const s of statuses) map.set(s, 0);
     for (const task of this.tasks()) {
-      const st = task.status ?? 'BACKLOG';
+      const st = task.status ?? 'NEW';
       map.set(st, (map.get(st) ?? 0) + 1);
     }
     return Array.from(map.entries())

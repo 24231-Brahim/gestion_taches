@@ -38,7 +38,7 @@
   <div class="d-flex justify-content-center">
     <div class="col-12 col-lg-8">
       @if (!success()) {
-        <form name="form" (ngSubmit)="register()" [formGroup]="registerForm">
+        <form name="form" (ngSubmit)="register()" (keydown.enter)="$event.preventDefault()" [formGroup]="registerForm">
           <div class="mb-3">
             <label class="form-label" for="login" jhiTranslate="global.form.username.label">Nom d&apos;utilisateur</label>
             <input

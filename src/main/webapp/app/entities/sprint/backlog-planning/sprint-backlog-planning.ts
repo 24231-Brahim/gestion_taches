@@ -15,6 +15,8 @@ import { ISprint } from '../sprint.model';
 export class SprintBacklogPlanning {
   readonly sprint = input<ISprint | null>(null);
   readonly allTasks = input<ITask[]>([]);
+  readonly canManage = input(false);
+  readonly sprintStatus = input<string>('PLANNED');
 
   readonly assignToSprint = output<{ taskId: number; sprintId: number }>();
   readonly removeFromSprint = output<number>();
@@ -23,6 +25,8 @@ export class SprintBacklogPlanning {
 
   readonly sprintTasks = computed(() => this.allTasks().filter(task => task.sprint?.id === this.sprint()?.id));
 
+  readonly isDragDisabled = computed(() => this.sprintStatus() === 'ACTIVE');
+
   protected draggedTask: ITask | null = null;
 
   sprintId(): number {
@@ -30,12 +34,15 @@ export class SprintBacklogPlanning {
   }
 
   onDragStart(task: ITask): void {
+    if (this.isDragDisabled()) {
+      return;
+    }
     this.draggedTask = task;
   }
 
   onDropBacklog(event: DragEvent): void {
     event.preventDefault();
-    if (this.draggedTask) {
+    if (this.draggedTask && !this.isDragDisabled()) {
       this.removeFromSprint.emit(this.draggedTask.id);
       this.draggedTask = null;
     }
@@ -43,7 +50,7 @@ export class SprintBacklogPlanning {
 
   onDropSprint(event: DragEvent): void {
     event.preventDefault();
-    if (this.draggedTask && this.sprint()?.id) {
+    if (this.draggedTask && this.sprint()?.id && !this.isDragDisabled()) {
       this.assignToSprint.emit({ taskId: this.draggedTask.id, sprintId: this.sprint()!.id });
       this.draggedTask = null;
     }

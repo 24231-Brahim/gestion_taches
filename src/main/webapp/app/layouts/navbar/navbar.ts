@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, effect, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
@@ -64,6 +64,13 @@ export default class Navbar implements OnInit, OnDestroy {
     } else {
       this.version = '';
     }
+    effect(() => {
+      if (this.account() !== null) {
+        this.notificationService.startPolling();
+      } else {
+        this.notificationService.stopPolling();
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -71,7 +78,6 @@ export default class Navbar implements OnInit, OnDestroy {
       this.inProduction.set(profileInfo.inProduction ?? true);
       this.openAPIEnabled.set(profileInfo.openAPIEnabled ?? false);
     });
-    this.notificationService.startPolling();
   }
 
   ngOnDestroy(): void {

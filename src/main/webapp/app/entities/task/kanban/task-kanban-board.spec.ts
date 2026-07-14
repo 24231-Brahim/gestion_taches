@@ -72,7 +72,7 @@ describe('TaskKanbanBoard', () => {
     expect(cols.find(c => c.status === 'TODO')!.tasks.length).toBe(1);
     expect(cols.find(c => c.status === 'IN_PROGRESS')!.tasks.length).toBe(1);
     expect(cols.find(c => c.status === 'DONE')!.tasks.length).toBe(1);
-    expect(cols.find(c => c.status === 'BACKLOG')!.tasks.length).toBe(0);
+    expect(cols.find(c => c.status === 'NEW')!.tasks.length).toBe(0);
     expect(cols.find(c => c.status === 'CANCELLED')!.tasks.length).toBe(0);
   });
 

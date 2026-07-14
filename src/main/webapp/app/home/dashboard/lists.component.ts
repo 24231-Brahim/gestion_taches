@@ -131,7 +131,7 @@ export class DashboardListsComponent {
       IN_PROGRESS: 'var(--color-info)',
       IN_REVIEW: '#a855f7',
       TODO: '#f59e0b',
-      BACKLOG: 'var(--color-muted)',
+      NEW: 'var(--color-muted)',
       CANCELLED: 'var(--color-danger)',
     };
     return map[status] ?? 'var(--color-on-surface)';

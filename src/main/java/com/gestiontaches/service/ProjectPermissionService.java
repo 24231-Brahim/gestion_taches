@@ -37,7 +37,7 @@ public class ProjectPermissionService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not a member of this project"));
     }
 
-    private Long resolveCurrentUserId() {
+    public Long resolveCurrentUserId() {
         return SecurityUtils.getCurrentUserId().orElseGet(() -> {
             String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
                 new ResponseStatusException(HttpStatus.FORBIDDEN, "Current user not found")

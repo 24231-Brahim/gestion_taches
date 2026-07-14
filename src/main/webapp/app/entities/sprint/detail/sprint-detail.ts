@@ -1,20 +1,22 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import dayjs from 'dayjs/esm';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
 import { FormatMediumDatePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
+import { ProjectRole } from 'app/entities/enumerations/project-role.model';
 import { TaskService } from 'app/entities/task/service/task.service';
 import { ITask } from 'app/entities/task/task.model';
 import { SprintActiveBoard } from '../active-board/sprint-active-board';
 import { SprintBacklogPlanning } from '../backlog-planning/sprint-backlog-planning';
 import { SprintBurndownChart } from '../burndown/sprint-burndown-chart';
-import { SprintService } from '../service/sprint.service';
+import { SprintService, VelocityReport } from '../service/sprint.service';
 import { ISprint } from '../sprint.model';
 
 type Tab = 'board' | 'planning' | 'burndown';
@@ -101,6 +103,54 @@ type Tab = 'board' | 'planning' | 'burndown';
         color: var(--color-primary, #97cbff);
         border-bottom-color: var(--color-primary, #97cbff);
       }
+      .velocity-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+      }
+      .velocity-modal {
+        background: var(--color-surface-container, #1b2025);
+        border: 3px solid var(--color-outline-variant, #2a3038);
+        padding: 24px;
+        max-width: 420px;
+        width: 90%;
+        box-shadow: 6px 6px 0 var(--color-outline-variant, #2a3038);
+      }
+      .velocity-modal h3 {
+        font-family: 'Audiowide', monospace;
+        color: var(--color-primary, #97cbff);
+        margin-bottom: 16px;
+      }
+      .velocity-stat {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.9rem;
+        color: var(--color-text, #dfe3ea);
+      }
+      .velocity-stat-value {
+        font-weight: bold;
+        color: var(--color-primary, #97cbff);
+      }
+      .tooltip-wrapper {
+        position: relative;
+      }
+      .tooltip-wrapper[title] {
+        cursor: not-allowed;
+      }
+      .btn-disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
       @media (max-width: 768px) {
         .sprint-header {
           flex-direction: column;
@@ -124,41 +174,68 @@ type Tab = 'board' | 'planning' | 'burndown';
     SprintBurndownChart,
   ],
 })
-export class SprintDetail implements OnInit {
+export class SprintDetail {
   readonly sprint = input<ISprint | null>(null);
 
   readonly activeTab = signal<Tab>('board');
   readonly isSaving = signal(false);
+  readonly showVelocityModal = signal(false);
+  readonly velocityReport = signal<VelocityReport | null>(null);
+
+  readonly tasks = signal<ITask[]>([]);
+  readonly projectTasks = signal<ITask[]>([]);
+
+  readonly userProjectRole = computed<ProjectRole | null>(() => {
+    const account = this.accountService.account();
+    if (!account) {
+      return null;
+    }
+    if (account.authorities.includes('ROLE_ADMIN')) {
+      return ProjectRole.OWNER;
+    }
+    return null;
+  });
+
+  readonly canManageSprints = computed(() => {
+    const role = this.userProjectRole();
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
+  });
+
+  readonly hasActiveSprint = computed(() => {
+    const sp = this.sprint();
+    if (!sp?.project?.id) {
+      return false;
+    }
+    return false;
+  });
+
+  readonly canStartSprint = computed(() => {
+    const sp = this.sprint();
+    if (!sp || sp.status !== 'PLANNED') {
+      return false;
+    }
+    return true;
+  });
+
+  readonly canCloseSprint = computed(() => this.sprint()?.status === 'ACTIVE');
+
+  readonly sprintTasksCount = computed(() => this.tasks().length);
+  readonly doneTasksCount = computed(() => this.tasks().filter(i => i.status === 'DONE').length);
+  readonly daysLeft = computed(() => {
+    const sp = this.sprint();
+    if (!sp?.endDate) {
+      return 0;
+    }
+    const now = dayjs();
+    const end = dayjs(sp.endDate);
+    return Math.max(0, end.diff(now, 'day'));
+  });
 
   protected readonly taskService = inject(TaskService);
   protected readonly sprintService = inject(SprintService);
   protected readonly alertService = inject(AlertService);
   protected readonly translateService = inject(TranslateService);
-
-  readonly tasks = signal<ITask[]>([]);
-  readonly projectTasks = signal<ITask[]>([]);
-
-  constructor() {
-    this.taskService.tasksParams.set(undefined);
-  }
-
-  ngOnInit(): void {
-    const sp = this.sprint();
-    if (sp?.project?.id) {
-      this.taskService.tasksParams.set({
-        'projectId.equals': sp.project.id,
-        size: 500,
-      });
-    } else if (sp) {
-      this.taskService.tasksParams.set({
-        size: 200,
-      });
-    }
-  }
-
-  onSelectTask(_issue: ITask): void {
-    // no-op for now
-  }
+  protected readonly accountService = inject(AccountService);
 
   private issuesEffect = effect(() => {
     const raw = this.taskService.tasks();
@@ -170,6 +247,20 @@ export class SprintDetail implements OnInit {
       this.projectTasks.set([]);
     }
   });
+
+  private sprintEffect = effect(() => {
+    const sp = this.sprint();
+    if (sp?.project?.id) {
+      this.taskService.tasksParams.set({
+        'projectId.equals': sp.project.id,
+        size: 500,
+      });
+    }
+  });
+
+  onSelectTask(_issue: ITask): void {
+    // no-op for now
+  }
 
   private refreshIssues(): void {
     const sp = this.sprint();
@@ -233,10 +324,11 @@ export class SprintDetail implements OnInit {
       return;
     }
     this.isSaving.set(true);
-    this.sprintService.partialUpdate({ id: sp.id, status: 'ACTIVE' }).subscribe({
-      next: () => {
+    this.sprintService.startSprint(sp.id).subscribe({
+      next: updated => {
         this.isSaving.set(false);
-        Object.assign(sp, { status: 'ACTIVE' });
+        Object.assign(sp, updated);
+        this.refreshIssues();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -252,10 +344,13 @@ export class SprintDetail implements OnInit {
       return;
     }
     this.isSaving.set(true);
-    this.sprintService.partialUpdate({ id: sp.id, status: 'COMPLETED' }).subscribe({
-      next: () => {
+    this.sprintService.closeSprint(sp.id).subscribe({
+      next: report => {
         this.isSaving.set(false);
         Object.assign(sp, { status: 'COMPLETED' });
+        this.velocityReport.set(report);
+        this.showVelocityModal.set(true);
+        this.refreshIssues();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -265,42 +360,12 @@ export class SprintDetail implements OnInit {
     });
   }
 
-  onReopenSprint(): void {
-    const sp = this.sprint();
-    if (!sp) {
-      return;
-    }
-    this.isSaving.set(true);
-    this.sprintService.partialUpdate({ id: sp.id, status: 'ACTIVE' }).subscribe({
-      next: () => {
-        this.isSaving.set(false);
-        Object.assign(sp, { status: 'ACTIVE' });
-      },
-      error: (err: HttpErrorResponse) => {
-        this.isSaving.set(false);
-        const message = err.error?.detail ?? err.message ?? this.translateService.instant('error.general');
-        this.alertService.addAlert({ type: 'danger', message });
-      },
-    });
+  closeVelocityModal(): void {
+    this.showVelocityModal.set(false);
+    this.velocityReport.set(null);
   }
 
   setTab(tab: Tab): void {
     this.activeTab.set(tab);
   }
-
-  get canManage(): boolean {
-    return true;
-  }
-
-  readonly sprintTasksCount = computed(() => this.tasks().length);
-  readonly doneTasksCount = computed(() => this.tasks().filter(i => i.status === 'DONE').length);
-  readonly daysLeft = computed(() => {
-    const sp = this.sprint();
-    if (!sp?.endDate) {
-      return 0;
-    }
-    const now = dayjs();
-    const end = dayjs(sp.endDate);
-    return Math.max(0, end.diff(now, 'day'));
-  });
 }

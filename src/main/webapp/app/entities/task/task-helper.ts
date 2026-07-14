@@ -46,7 +46,7 @@ export const PRIORITY_COLORS: Record<string, string> = {
 };
 
 export const STATUS_BADGES: Record<string, StatusBadge> = {
-  BACKLOG: { label: 'gestionTachesApp.TaskStatus.BACKLOG', color: 'var(--color-status-backlog, #9e9e9e)' },
+  NEW: { label: 'gestionTachesApp.TaskStatus.NEW', color: 'var(--color-status-backlog, #9e9e9e)' },
   TODO: { label: 'gestionTachesApp.TaskStatus.TODO', color: 'var(--color-status-todo, #2196f3)' },
   IN_PROGRESS: { label: 'gestionTachesApp.TaskStatus.IN_PROGRESS', color: 'var(--color-status-in-progress, #ff9800)' },
   IN_REVIEW: { label: 'gestionTachesApp.TaskStatus.IN_REVIEW', color: 'var(--color-status-in-review, #9c27b0)' },

@@ -46,4 +46,7 @@
     <include file="config/liquibase/changelog/20260704000000_added_issue_created_by.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260705000000_added_project_role_enum.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260713000000_rename_issue_to_task.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260714000000_update_task_status_enum.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260714000001_added_entity_TaskHistory.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260714000002_added_entity_TaskTransition.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

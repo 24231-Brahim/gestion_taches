@@ -7,15 +7,17 @@ import dayjs from 'dayjs/esm';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
 import { TaskService } from 'app/entities/task/service/task.service';
 import { ITask } from 'app/entities/task/task.model';
+import { ProjectRole } from 'app/entities/enumerations/project-role.model';
 import { FormatMediumDatePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { SprintActiveBoard } from '../active-board/sprint-active-board';
 import { SprintBacklogPlanning } from '../backlog-planning/sprint-backlog-planning';
 import { SprintBurndownChart } from '../burndown/sprint-burndown-chart';
-import { SprintService } from '../service/sprint.service';
+import { SprintService, VelocityReport } from '../service/sprint.service';
 import { ISprint } from '../sprint.model';
 
 type Tab = 'board' | 'planning' | 'burndown';
@@ -120,6 +122,54 @@ type Tab = 'board' | 'planning' | 'burndown';
         color: var(--color-text-muted, #6a8fac);
         font-family: 'JetBrains Mono', monospace;
       }
+      .velocity-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+      }
+      .velocity-modal {
+        background: var(--color-surface-container, #1b2025);
+        border: 3px solid var(--color-outline-variant, #2a3038);
+        padding: 24px;
+        max-width: 420px;
+        width: 90%;
+        box-shadow: 6px 6px 0 var(--color-outline-variant, #2a3038);
+      }
+      .velocity-modal h3 {
+        font-family: 'Audiowide', monospace;
+        color: var(--color-primary, #97cbff);
+        margin-bottom: 16px;
+      }
+      .velocity-stat {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.9rem;
+        color: var(--color-text, #dfe3ea);
+      }
+      .velocity-stat-value {
+        font-weight: bold;
+        color: var(--color-primary, #97cbff);
+      }
+      .tooltip-wrapper {
+        position: relative;
+      }
+      .tooltip-wrapper[title] {
+        cursor: not-allowed;
+      }
+      .btn-disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
       @media (max-width: 768px) {
         .sprint-page {
           padding: 12px;
@@ -154,11 +204,8 @@ export class Sprint implements OnInit {
   readonly activeTab = signal<Tab>('board');
   readonly isSaving = signal(false);
   readonly selectedSprintId = signal<number | null>(null);
-
-  protected readonly sprintService = inject(SprintService);
-  protected readonly taskService = inject(TaskService);
-  protected readonly alertService = inject(AlertService);
-  protected readonly translateService = inject(TranslateService);
+  readonly showVelocityModal = signal(false);
+  readonly velocityReport = signal<VelocityReport | null>(null);
 
   readonly sprints = signal<ISprint[]>([]);
   readonly tasks = signal<ITask[]>([]);
@@ -172,16 +219,49 @@ export class Sprint implements OnInit {
     return this.sprints().find(s => s.id === id) ?? null;
   });
 
-  constructor() {
-    this.taskService.tasksParams.set(undefined);
-  }
+  readonly userProjectRole = computed<ProjectRole | null>(() => {
+    const account = this.accountService.account();
+    if (!account) {
+      return null;
+    }
+    if (account.authorities.includes('ROLE_ADMIN')) {
+      return ProjectRole.OWNER;
+    }
+    return null;
+  });
 
-  ngOnInit(): void {
-    this.sprintService.sprintsParams.set({
-      size: 100,
-      sort: 'startDate,desc',
-    });
-  }
+  readonly canManageSprints = computed(() => {
+    const role = this.userProjectRole();
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
+  });
+
+  readonly hasActiveSprint = computed(() => this.sprints().some(s => s.status === 'ACTIVE'));
+
+  readonly canStartSprint = computed(() => {
+    const sp = this.selectedSprint();
+    if (!sp || sp.status !== 'PLANNED') {
+      return false;
+    }
+    return !this.hasActiveSprint();
+  });
+
+  readonly canCloseSprint = computed(() => this.selectedSprint()?.status === 'ACTIVE');
+
+  readonly daysLeft = computed(() => {
+    const sp = this.selectedSprint();
+    if (!sp?.endDate) {
+      return 0;
+    }
+    const now = dayjs();
+    const end = dayjs(sp.endDate);
+    return Math.max(0, end.diff(now, 'day'));
+  });
+
+  protected readonly sprintService = inject(SprintService);
+  protected readonly taskService = inject(TaskService);
+  protected readonly alertService = inject(AlertService);
+  protected readonly translateService = inject(TranslateService);
+  protected readonly accountService = inject(AccountService);
 
   private sprintsEffect = effect(() => {
     const raw = this.sprintService.sprints();
@@ -191,6 +271,17 @@ export class Sprint implements OnInit {
         const active = raw.find(s => s.status === 'ACTIVE');
         this.selectedSprintId.set(active?.id ?? raw[0].id);
       }
+    }
+  });
+
+  private sprintSelectionEffect = effect(() => {
+    const id = this.selectedSprintId();
+    const sp = this.sprints().find(s => s.id === id);
+    if (sp?.project?.id) {
+      this.taskService.tasksParams.set({
+        'projectId.equals': sp.project.id,
+        size: 500,
+      });
     }
   });
 
@@ -204,6 +295,13 @@ export class Sprint implements OnInit {
       this.projectTasks.set([]);
     }
   });
+
+  ngOnInit(): void {
+    this.sprintService.sprintsParams.set({
+      size: 100,
+      sort: 'startDate,desc',
+    });
+  }
 
   onSprintSelect(): void {
     const sp = this.selectedSprint();
@@ -277,10 +375,12 @@ export class Sprint implements OnInit {
       return;
     }
     this.isSaving.set(true);
-    this.sprintService.partialUpdate({ id: sp.id, status: 'ACTIVE' }).subscribe({
-      next: () => {
+    this.sprintService.startSprint(sp.id).subscribe({
+      next: updated => {
         this.isSaving.set(false);
-        Object.assign(sp, { status: 'ACTIVE' });
+        Object.assign(sp, updated);
+        this.refreshIssues();
+        this.sprintService.sprintsParams.update(p => ({ ...p, t: Date.now() }));
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -296,10 +396,14 @@ export class Sprint implements OnInit {
       return;
     }
     this.isSaving.set(true);
-    this.sprintService.partialUpdate({ id: sp.id, status: 'COMPLETED' }).subscribe({
-      next: () => {
+    this.sprintService.closeSprint(sp.id).subscribe({
+      next: report => {
         this.isSaving.set(false);
         Object.assign(sp, { status: 'COMPLETED' });
+        this.velocityReport.set(report);
+        this.showVelocityModal.set(true);
+        this.refreshIssues();
+        this.sprintService.sprintsParams.update(p => ({ ...p, t: Date.now() }));
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -309,23 +413,9 @@ export class Sprint implements OnInit {
     });
   }
 
-  onReopenSprint(): void {
-    const sp = this.selectedSprint();
-    if (!sp) {
-      return;
-    }
-    this.isSaving.set(true);
-    this.sprintService.partialUpdate({ id: sp.id, status: 'ACTIVE' }).subscribe({
-      next: () => {
-        this.isSaving.set(false);
-        Object.assign(sp, { status: 'ACTIVE' });
-      },
-      error: (err: HttpErrorResponse) => {
-        this.isSaving.set(false);
-        const message = err.error?.detail ?? err.message ?? this.translateService.instant('error.general');
-        this.alertService.addAlert({ type: 'danger', message });
-      },
-    });
+  closeVelocityModal(): void {
+    this.showVelocityModal.set(false);
+    this.velocityReport.set(null);
   }
 
   onSelectTask(_issue: ITask): void {
@@ -335,18 +425,4 @@ export class Sprint implements OnInit {
   setTab(tab: Tab): void {
     this.activeTab.set(tab);
   }
-
-  get canManage(): boolean {
-    return true;
-  }
-
-  readonly daysLeft = computed(() => {
-    const sp = this.selectedSprint();
-    if (!sp?.endDate) {
-      return 0;
-    }
-    const now = dayjs();
-    const end = dayjs(sp.endDate);
-    return Math.max(0, end.diff(now, 'day'));
-  });
 }

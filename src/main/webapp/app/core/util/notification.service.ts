@@ -24,14 +24,19 @@ export class NotificationService {
   private pollingSubscription: any;
 
   startPolling(): void {
-    this.refresh();
-    this.pollingSubscription = interval(30000).subscribe(() => this.refresh());
+    if (!this.pollingSubscription) {
+      this.refresh();
+      this.pollingSubscription = interval(30000).subscribe(() => this.refresh());
+    }
   }
 
   stopPolling(): void {
     if (this.pollingSubscription) {
       this.pollingSubscription.unsubscribe();
+      this.pollingSubscription = null;
     }
+    this.unreadCount.set(0);
+    this.notifications.set([]);
   }
 
   refresh(): void {

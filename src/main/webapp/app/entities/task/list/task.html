@@ -87,7 +87,7 @@
                 </td>
                 <td class="task-title-cell">{{ task.title }}</td>
                 <td>
-                  <span class="status-badge" [style.background]="statusBadges[task.status ?? 'BACKLOG']?.color">
+                  <span class="status-badge" [style.background]="statusBadges[task.status ?? 'NEW']?.color">
                     {{ 'gestionTachesApp.IssueStatus.' + (task.status ?? 'null') | translate }}
                   </span>
                 </td>

@@ -1,6 +1,7 @@
 package com.gestiontaches.repository;
 
 import com.gestiontaches.domain.Task;
+import com.gestiontaches.domain.enumeration.TaskStatus;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -46,4 +47,10 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
         "select task from Task task left join fetch task.sprint left join fetch task.epic left join fetch task.project left join fetch task.assignee left join fetch task.createdBy where task.project.id = :projectId"
     )
     List<Task> findAllByProjectIdWithToOneRelationships(@Param("projectId") Long projectId);
+
+    List<Task> findBySprintId(Long sprintId);
+
+    List<Task> findBySprintIdAndStatus(Long sprintId, TaskStatus status);
+
+    List<Task> findByProjectIdAndSprintIsNull(Long projectId);
 }

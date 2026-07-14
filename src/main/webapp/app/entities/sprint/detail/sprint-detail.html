@@ -19,23 +19,30 @@
         </div>
       </div>
       <div class="sprint-header-actions">
-        <a [routerLink]="['/sprint', sp.id, 'edit']" class="btn btn-outline-primary btn-sm">
-          <fa-icon icon="pencil-alt" /> {{ 'entity.action.edit' | translate }}
-        </a>
+        @if (canManageSprints()) {
+          <a [routerLink]="['/sprint', sp.id, 'edit']" class="btn btn-outline-primary btn-sm">
+            <fa-icon icon="pencil-alt" /> {{ 'entity.action.edit' | translate }}
+          </a>
+        }
         @if (sp.status === 'PLANNED') {
-          <button class="btn btn-primary btn-sm" (click)="onStartSprint()" [disabled]="isSaving()">
-            <fa-icon icon="play" /> {{ 'gestionTachesApp.sprint.action.start' | translate }}
-          </button>
+          @if (canManageSprints() && canStartSprint()) {
+            <button class="btn btn-primary btn-sm" (click)="onStartSprint()" [disabled]="isSaving()">
+              <fa-icon icon="play" /> {{ 'gestionTachesApp.sprint.action.start' | translate }}
+            </button>
+          } @else if (canManageSprints() && hasActiveSprint()) {
+            <span class="tooltip-wrapper" title="{{ 'gestionTachesApp.sprint.tooltip.activeSprintExists' | translate }}">
+              <button class="btn btn-primary btn-sm btn-disabled" disabled>
+                <fa-icon icon="play" /> {{ 'gestionTachesApp.sprint.action.start' | translate }}
+              </button>
+            </span>
+          }
         }
         @if (sp.status === 'ACTIVE') {
-          <button class="btn btn-success btn-sm" (click)="onCompleteSprint()" [disabled]="isSaving()">
-            <fa-icon icon="check" /> {{ 'gestionTachesApp.sprint.action.complete' | translate }}
-          </button>
-        }
-        @if (sp.status === 'COMPLETED') {
-          <button class="btn btn-warning btn-sm" (click)="onReopenSprint()" [disabled]="isSaving()">
-            <fa-icon icon="undo" /> {{ 'gestionTachesApp.sprint.action.reopen' | translate }}
-          </button>
+          @if (canManageSprints() && canCloseSprint()) {
+            <button class="btn btn-success btn-sm" (click)="onCompleteSprint()" [disabled]="isSaving()">
+              <fa-icon icon="check" /> {{ 'gestionTachesApp.sprint.action.complete' | translate }}
+            </button>
+          }
         }
         <a [routerLink]="['/sprint']" class="btn btn-ghost btn-sm">
           <fa-icon icon="arrow-left" />
@@ -60,18 +67,19 @@
         <jhi-sprint-active-board
           [sprint]="sp"
           [tasks]="tasks()"
-          [canManage]="canManage"
+          [canManage]="canManageSprints()"
           (selectTask)="onSelectTask($event)"
           (statusChange)="onStatusChange($event)"
           (startSprint)="onStartSprint()"
           (completeSprint)="onCompleteSprint()"
-          (reopenSprint)="onReopenSprint()"
         />
       }
       @case ('planning') {
         <jhi-sprint-backlog-planning
           [sprint]="sp"
           [allTasks]="projectTasks()"
+          [canManage]="canManageSprints()"
+          [sprintStatus]="sp.status ?? 'PLANNED'"
           (assignToSprint)="onAssignToSprint($event)"
           (removeFromSprint)="onRemoveFromSprint($event)"
         />
@@ -85,5 +93,34 @@
         />
       }
     }
+  }
+
+  @if (showVelocityModal()) {
+    <div class="velocity-modal-overlay" (click)="closeVelocityModal()">
+      <div class="velocity-modal" (click)="$event.stopPropagation()">
+        <h3>{{ 'gestionTachesApp.sprint.velocity.title' | translate }}</h3>
+        @if (velocityReport(); as report) {
+          <div class="velocity-stat">
+            <span>{{ 'gestionTachesApp.sprint.velocity.planned' | translate }}</span>
+            <span class="velocity-stat-value">{{ report.tachesPrevues }}</span>
+          </div>
+          <div class="velocity-stat">
+            <span>{{ 'gestionTachesApp.sprint.velocity.completed' | translate }}</span>
+            <span class="velocity-stat-value">{{ report.tachesTerminees }}</span>
+          </div>
+          <div class="velocity-stat">
+            <span>{{ 'gestionTachesApp.sprint.velocity.carriedOver' | translate }}</span>
+            <span class="velocity-stat-value">{{ report.tachesReportees }}</span>
+          </div>
+          <div class="velocity-stat" style="border-bottom: none">
+            <span>{{ 'gestionTachesApp.sprint.velocity.percentage' | translate }}</span>
+            <span class="velocity-stat-value">{{ report.pourcentage }}%</span>
+          </div>
+        }
+        <button class="btn btn-primary mt-3" (click)="closeVelocityModal()">
+          {{ 'entity.action.close' | translate }}
+        </button>
+      </div>
+    </div>
   }
 </div>

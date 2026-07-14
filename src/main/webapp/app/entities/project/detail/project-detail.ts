@@ -233,7 +233,7 @@ export class ProjectDetail {
       title,
       description: this.newTaskDescription() || null,
       type: this.newTaskType(),
-      status: 'BACKLOG',
+      status: 'NEW',
       priority: this.newTaskPriority(),
       createdAt: dayjs(),
       updatedAt: dayjs(),

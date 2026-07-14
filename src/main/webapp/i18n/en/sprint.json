@@ -26,14 +26,14 @@
       "project": "Project",
       "board": {
         "tab": "Board",
-        "emptyColumn": "No issues"
+        "emptyColumn": "No tasks"
       },
       "planning": {
         "tab": "Planning",
         "backlog": "Backlog",
         "sprint": "Sprint",
-        "noBacklog": "All issues are assigned to a sprint",
-        "noIssues": "No issues in this sprint"
+        "noBacklog": "All tasks are assigned to a sprint",
+        "noIssues": "No tasks in this sprint"
       },
       "burndown": {
         "tab": "Burndown",
@@ -42,12 +42,23 @@
         "remaining": "Remaining",
         "velocity": "Velocity",
         "days": "Days",
-        "issues": "Issues"
+        "issues": "Tasks"
       },
       "action": {
         "start": "Start Sprint",
         "complete": "Complete Sprint",
         "reopen": "Reopen Sprint"
+      },
+      "tooltip": {
+        "activeSprintExists": "A sprint is already active for this project",
+        "notManager": "You must be OWNER or MANAGER for this action"
+      },
+      "velocity": {
+        "title": "Velocity Report",
+        "planned": "Planned tasks",
+        "completed": "Completed tasks",
+        "carriedOver": "Carried over tasks",
+        "percentage": "Percentage"
       }
     }
   }

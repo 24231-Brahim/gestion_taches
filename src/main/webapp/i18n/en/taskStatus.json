@@ -2,7 +2,16 @@
   "gestionTachesApp": {
     "IssueStatus": {
       "null": "",
-      "BACKLOG": "BACKLOG",
+      "NEW": "NEW",
+      "TODO": "TODO",
+      "IN_PROGRESS": "IN_PROGRESS",
+      "IN_REVIEW": "IN_REVIEW",
+      "DONE": "DONE",
+      "CANCELLED": "CANCELLED"
+    },
+    "TaskStatus": {
+      "null": "",
+      "NEW": "NEW",
       "TODO": "TODO",
       "IN_PROGRESS": "IN_PROGRESS",
       "IN_REVIEW": "IN_REVIEW",

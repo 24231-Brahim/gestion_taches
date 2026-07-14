@@ -12,6 +12,13 @@ import { ISprint, NewSprint } from '../sprint.model';
 
 export type PartialUpdateSprint = Partial<ISprint> & Pick<ISprint, 'id'>;
 
+export interface VelocityReport {
+  tachesPrevues: number;
+  tachesTerminees: number;
+  pourcentage: number;
+  tachesReportees: number;
+}
+
 type RestOf<T extends ISprint | NewSprint> = Omit<T, 'startDate' | 'endDate'> & {
   startDate?: string | null;
   endDate?: string | null;
@@ -90,6 +97,16 @@ export class SprintService extends SprintsService {
 
   delete(id: number): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
+  }
+
+  startSprint(id: number): Observable<ISprint> {
+    return this.http
+      .post<RestSprint>(`${this.resourceUrl}/${encodeURIComponent(id)}/start`, {})
+      .pipe(map(res => this.convertResponseFromServer(res)));
+  }
+
+  closeSprint(id: number): Observable<VelocityReport> {
+    return this.http.post<VelocityReport>(`${this.resourceUrl}/${encodeURIComponent(id)}/close`, {});
   }
 
   getSprintIdentifier(sprint: Pick<ISprint, 'id'>): number {
