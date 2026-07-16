@@ -168,7 +168,148 @@ classDiagram
 ```
 
 ---
+## 2. Diagramme Entité-Relation
 
+```mermaid
+erDiagram
+    USER {
+        Long id PK
+        String login
+        String passwordHash
+        String firstName
+        String lastName
+        String email
+        String imageUrl
+        Boolean activated
+        String langKey
+        String activationKey
+        String resetKey
+        Instant resetDate
+        Instant createdDate
+    }
+
+    AUTHORITY {
+        String name PK
+    }
+
+    USER_AUTHORITY {
+        Long user_id FK
+        String authority_name FK
+    }
+
+    PROJECT {
+        Long id PK
+        String name
+        String description
+        String project_key
+        Instant createdAt
+        Long owner_id FK
+    }
+
+    PROJECT_MEMBER {
+        Long id PK
+        String role
+        Instant joinedAt
+        Long project_id FK
+        Long user_id FK
+    }
+
+    SPRINT {
+        Long id PK
+        String name
+        String goal
+        LocalDate startDate
+        LocalDate endDate
+        String status
+        Long project_id FK
+    }
+
+    EPIC {
+        Long id PK
+        String title
+        String description
+        String status
+        String priority
+        Instant createdAt
+        Instant updatedAt
+        LocalDate startDate
+        LocalDate endDate
+        Long project_id FK
+    }
+
+    TASK {
+        Long id PK
+        String title
+        String description
+        String status
+        String priority
+        Integer storyPoints
+        Instant createdAt
+        Instant updatedAt
+        Long project_id FK
+        Long sprint_id FK
+        Long epic_id FK
+        Long assignee_id FK
+        Long createdBy_id FK
+    }
+
+    COMMENT {
+        Long id PK
+        String content
+        Instant createdAt
+        Long task_id FK
+        Long author_id FK
+    }
+
+    ATTACHMENT {
+        Long id PK
+        String fileName
+        String filePath
+        Instant uploadedAt
+        Long task_id FK
+    }
+
+    TASK_HISTORY {
+        Long id PK
+        String action
+        String oldValue
+        String newValue
+        Instant createdAt
+        Long task_id FK
+        Long user_id FK
+    }
+
+    NOTIFICATION {
+        Long id PK
+        String message
+        String taskTitle
+        Boolean isRead
+        Instant createdAt
+        Long task_id FK
+        Long user_id FK
+    }
+
+    USER ||--o{ PROJECT : "possède (owner)"
+    USER ||--o{ PROJECT_MEMBER : "référence"
+    PROJECT ||--o{ PROJECT_MEMBER : "contient"
+    PROJECT ||--o{ SPRINT : "contient"
+    PROJECT ||--o{ EPIC : "contient"
+    PROJECT ||--o{ TASK : "contient"
+    SPRINT ||--o{ TASK : "regroupe"
+    EPIC ||--o{ TASK : "catégorise"
+    TASK ||--o{ COMMENT : "reçoit"
+    TASK ||--o{ ATTACHMENT : "contient"
+    TASK ||--o{ TASK_HISTORY : "trace"
+    TASK ||--o{ NOTIFICATION : "déclenche"
+    USER ||--o{ TASK : "assigné (assignee)"
+    USER ||--o{ TASK : "crée (createdBy)"
+    USER ||--o{ COMMENT : "écrit (author)"
+    USER ||--o{ TASK_HISTORY : "effectue"
+    USER ||--o{ NOTIFICATION : "reçoit"
+    USER ||--o{ USER_AUTHORITY : "possède"
+    AUTHORITY ||--o{ USER_AUTHORITY : "associé à"
+```
+---
 
 ## Rôle de Chaque Table et Structure de la Base de Données
 
