@@ -1,7 +1,28 @@
-<div>
-  <div class="d-flex justify-content-center">
-    <div class="col-12 col-lg-8">
-      <h1 data-cy="registerTitle" jhiTranslate="register.title">Création de compte utilisateur</h1>
+<div class="split-screen-wrapper">
+  <button class="split-screen-theme-toggle" (click)="themeService.toggle()" title="Changer de thème">
+    @if (themeService.theme() === 'dark') {
+      <fa-icon icon="sun" />
+    } @else {
+      <fa-icon icon="moon" />
+    }
+  </button>
+
+  <div class="split-screen-logo">
+    <img src="/content/images/logo.webp" alt="Logo" />
+  </div>
+
+  <div class="split-screen-card">
+    <!-- Left Panel -->
+    <div class="col-md-5 d-none d-md-flex split-screen-left">
+      <div class="split-screen-left-content">
+        <h1>Créer votre compte</h1>
+        <p>Inscrivez-vous pour commencer à organiser, suivre et gérer vos tâches efficacement.</p>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="col-md-7 split-screen-right">
+      <h2 class="split-screen-form-title" data-cy="registerTitle" jhiTranslate="register.title">Création de compte utilisateur</h2>
 
       @if (success()) {
         <div class="alert alert-success" jhiTranslate="register.messages.success">
@@ -32,11 +53,7 @@
           Le nouveau mot de passe et sa confirmation ne sont pas égaux !
         </div>
       }
-    </div>
-  </div>
 
-  <div class="d-flex justify-content-center">
-    <div class="col-12 col-lg-8">
       @if (!success()) {
         <form name="form" (ngSubmit)="register()" (keydown.enter)="$event.preventDefault()" [formGroup]="registerForm">
           <div class="mb-3">
@@ -199,26 +216,16 @@
             }
           </div>
 
-          <button
-            type="submit"
-            [disabled]="registerForm.invalid"
-            class="btn btn-primary"
-            data-cy="submit"
-            jhiTranslate="register.form.button"
-          >
-            Enregistrement
+          <button type="submit" [disabled]="registerForm.invalid" class="split-screen-btn" data-cy="submit">
+            <span jhiTranslate="register.form.button">Enregistrement</span>
+            <span class="split-screen-btn-arrow">&rarr;</span>
           </button>
         </form>
       }
 
-      <div class="mt-3 alert alert-warning">
+      <div class="split-screen-footer">
         <span jhiTranslate="global.messages.info.authenticated.prefix">Si vous voulez vous </span>
-        <a class="alert-link" routerLink="/login" jhiTranslate="global.messages.info.authenticated.link">connecter</a
-        ><span jhiTranslate="global.messages.info.authenticated.suffix"
-          >, vous pouvez utiliser les comptes par défaut : <br />
-          - Administrateur (nom d&apos;utilisateur=&quot;admin&quot; et mot de passe =&quot;admin&quot;) <br />
-          - Utilisateur (nom d&apos;utilisateur=&quot;user&quot; et mot de passe =&quot;user&quot;).</span
-        >
+        <a routerLink="/login" jhiTranslate="global.messages.info.authenticated.link">connecter</a>
       </div>
     </div>
   </div>

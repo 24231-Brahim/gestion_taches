@@ -1,16 +1,22 @@
 <!-- <jhi-page-ribbon /> -->
 
 <div class="app-shell">
-  <router-outlet name="navbar" />
+  @if (account() !== null) {
+    <router-outlet name="navbar" />
+  }
 
-  <div class="app-body">
-    <jhi-sidebar />
+  <div class="app-body" [class.app-body-no-nav]="account() === null">
+    @if (account() !== null) {
+      <jhi-sidebar />
+    }
 
-    <main class="app-content">
+    <main class="app-content" [class.app-content-full]="account() === null">
       <jhi-breadcrumb />
       <router-outlet />
     </main>
   </div>
 
-  <jhi-bottom-nav />
+  @if (account() !== null) {
+    <jhi-bottom-nav />
+  }
 </div>

@@ -3,9 +3,11 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, 
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { EMAIL_ALREADY_USED_TYPE, LOGIN_ALREADY_USED_TYPE } from 'app/shared/jhipster/error.constants';
+import { ThemeService } from 'app/core/util/theme.service';
 import { TranslateDirective } from 'app/shared/language';
 import PasswordStrengthBar from '../password/password-strength-bar/password-strength-bar';
 
@@ -14,8 +16,9 @@ import { RegisterService } from './register.service';
 @Component({
   selector: 'jhi-register',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslateDirective, TranslateModule, RouterLink, ReactiveFormsModule, PasswordStrengthBar],
+  imports: [TranslateDirective, TranslateModule, RouterLink, ReactiveFormsModule, PasswordStrengthBar, FontAwesomeModule],
   templateUrl: './register.html',
+  styleUrl: './register.component.scss',
 })
 export default class Register implements AfterViewInit {
   login = viewChild.required<ElementRef>('login');
@@ -25,6 +28,7 @@ export default class Register implements AfterViewInit {
   readonly errorEmailExists = signal(false);
   readonly errorUserExists = signal(false);
   readonly success = signal(false);
+  readonly themeService = inject(ThemeService);
 
   registerForm = new FormGroup({
     login: new FormControl('', {

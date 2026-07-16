@@ -2,22 +2,26 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnInit, 
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { LoginService } from 'app/login/login.service';
+import { ThemeService } from 'app/core/util/theme.service';
 import { TranslateDirective } from 'app/shared/language';
 
 @Component({
   selector: 'jhi-login',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslateDirective, TranslateModule, ReactiveFormsModule, RouterLink],
+  imports: [TranslateDirective, TranslateModule, ReactiveFormsModule, RouterLink, FontAwesomeModule],
   templateUrl: './login.html',
+  styleUrl: './login.component.scss',
 })
 export default class Login implements OnInit, AfterViewInit {
   username = viewChild.required<ElementRef>('username');
 
   readonly authenticationError = signal(false);
+  readonly themeService = inject(ThemeService);
 
   loginForm = new FormGroup({
     username: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -33,7 +37,7 @@ export default class Login implements OnInit, AfterViewInit {
     // if already authenticated then navigate to home page
     this.accountService.identity().subscribe(() => {
       if (this.accountService.isAuthenticated()) {
-        this.router.navigate(['']);
+        this.router.navigate(['/home']);
       }
     });
   }
@@ -48,7 +52,7 @@ export default class Login implements OnInit, AfterViewInit {
         this.authenticationError.set(false);
         if (!this.router.currentNavigation()) {
           // There were no routing during login (eg from navigationToStoredUrl)
-          this.router.navigate(['']);
+          this.router.navigate(['/home']);
         }
       },
       error: () => this.authenticationError.set(true),

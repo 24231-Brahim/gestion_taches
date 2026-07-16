@@ -22,6 +22,8 @@ export default class Main implements OnInit {
   private readonly renderer: Renderer2;
   private readonly htmlElement: HTMLElement;
 
+  readonly account = inject(AccountService).account;
+
   private readonly router = inject(Router);
   private readonly appPageTitleStrategy = inject(AppPageTitleStrategy);
   private readonly accountService = inject(AccountService);
