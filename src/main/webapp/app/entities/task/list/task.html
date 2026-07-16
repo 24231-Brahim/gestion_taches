@@ -15,10 +15,15 @@
       <button class="btn btn-info btn-sm" (click)="load()" [disabled]="isLoading()">
         <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
       </button>
-      <a class="btn btn-success btn-sm" [href]="csvExportUrl" download="tasks.csv">
+      <a class="btn btn-success btn-sm" [href]="csvExportUrl()" download="tasks.csv">
         <fa-icon icon="download" /><span class="d-none d-md-inline ms-1" jhiTranslate="entity.action.exportCsv">CSV</span>
       </a>
-      <button id="jh-create-entity" data-cy="entityCreateButton" class="btn btn-primary btn-sm" [routerLink]="['/task/new']">
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary btn-sm"
+        [routerLink]="['/project', currentProjectKey(), 'task', 'new']"
+      >
         <fa-icon icon="plus" /><span jhiTranslate="gestionTachesApp.task.home.createLabel"></span>
       </button>
     </div>
@@ -117,7 +122,11 @@
                 <td class="text-end">
                   <div class="btn-group btn-group-sm" (click)="$event.stopPropagation()">
                     @if (canEditTask(task)) {
-                      <a [routerLink]="['/task', task.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                      <a
+                        [routerLink]="['/project', currentProjectKey(), 'task', task.id, 'edit']"
+                        class="btn btn-primary btn-sm"
+                        data-cy="entityEditButton"
+                      >
                         <fa-icon icon="pencil-alt" />
                       </a>
                     }

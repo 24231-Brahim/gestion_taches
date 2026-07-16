@@ -215,6 +215,8 @@ type Tab = 'board' | 'planning' | 'burndown';
 export class SprintDetail {
   readonly sprint = input<ISprint | null>(null);
 
+  readonly projectKey = computed(() => this.sprint()?.project?.key ?? null);
+
   readonly activeTab = signal<Tab>('board');
   readonly isSaving = signal(false);
   readonly showVelocityModal = signal(false);

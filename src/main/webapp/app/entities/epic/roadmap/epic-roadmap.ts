@@ -11,6 +11,8 @@ import { Subscription, combineLatest, tap } from 'rxjs';
 
 import { DEFAULT_SORT_DATA, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
+import { IProject } from 'app/entities/project/project.model';
+import { ProjectService } from 'app/entities/project/service/project.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { Filter, FilterOptions, IFilterOption, IFilterOptions } from 'app/shared/filter';
@@ -283,9 +285,13 @@ export class EpicRoadmap implements OnInit {
     return Array.from(names).sort();
   });
 
+  readonly currentProjectKey = signal<string | null>(null);
+  readonly currentProject = signal<IProject | null>(null);
+
   readonly router = inject(Router);
   readonly epicService = inject(EpicService);
   readonly taskService = inject(TaskService);
+  protected readonly projectService = inject(ProjectService);
   readonly isLoading = this.epicService.epicsResource.isLoading;
   readonly statusColors = STATUS_COLORS;
   protected readonly activatedRoute = inject(ActivatedRoute);
@@ -333,6 +339,7 @@ export class EpicRoadmap implements OnInit {
   trackId = (item: IEpic): number => this.epicService.getEpicIdentifier(item);
 
   ngOnInit(): void {
+    this.resolveProjectContext();
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
       .pipe(
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
@@ -396,7 +403,23 @@ export class EpicRoadmap implements OnInit {
     for (const filterOption of this.filters.filterOptions) {
       queryObject[filterOption.name] = filterOption.values;
     }
+    if (this.currentProject()) {
+      queryObject['projectId.equals'] = this.currentProject()!.id;
+    }
     this.epicService.epicsParams.set(queryObject);
+  }
+
+  private resolveProjectContext(): void {
+    let route: ActivatedRoute | null = this.activatedRoute;
+    while (route) {
+      const key = route.snapshot.paramMap.get('key');
+      if (key) {
+        this.currentProjectKey.set(key);
+        this.projectService.findByKey(key).subscribe(project => this.currentProject.set(project));
+        return;
+      }
+      route = route.parent;
+    }
   }
 
   protected handleNavigation(page: number, sortState: SortState, filterOptions?: IFilterOption[]): void {

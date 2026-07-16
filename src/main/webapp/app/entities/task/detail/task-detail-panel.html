@@ -27,7 +27,7 @@
           <span class="task-section-label" jhiTranslate="gestionTachesApp.task.sprint"></span>
           <p>
             @if (tsk.sprint) {
-              <a [routerLink]="['/sprint', tsk.sprint.id, 'view']">{{ tsk.sprint.name }}</a>
+              <a [routerLink]="['/project', tsk.project?.key, 'sprint', tsk.sprint.id, 'view']">{{ tsk.sprint.name }}</a>
             } @else {
               <span class="text-muted" jhiTranslate="global.messages.notAssigned"></span>
             }
@@ -38,7 +38,7 @@
           <span class="task-section-label" jhiTranslate="gestionTachesApp.task.epic"></span>
           <p>
             @if (tsk.epic) {
-              <a [routerLink]="['/epic', tsk.epic.id, 'view']">{{ tsk.epic.title }}</a>
+              <a [routerLink]="['/project', tsk.project?.key, 'epic', tsk.epic.id, 'view']">{{ tsk.epic.title }}</a>
             } @else {
               <span class="text-muted" jhiTranslate="global.messages.notAssigned"></span>
             }
@@ -122,7 +122,7 @@
         </div>
 
         <div class="task-drawer-actions">
-          <a [routerLink]="['/task', tsk.id, 'edit']" class="btn btn-primary btn-sm w-100">
+          <a [routerLink]="['/project', tsk.project?.key, 'task', tsk.id, 'edit']" class="btn btn-primary btn-sm w-100">
             <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit"></span>
           </a>
         </div>

@@ -12,46 +12,64 @@
     </a>
 
     @if (account() !== null) {
-      <a
-        class="sidebar-item"
-        routerLink="/project"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
-        (click)="closeMobile()"
-      >
-        <fa-icon icon="folder" [fixedWidth]="true" />
-        <span class="sidebar-label" jhiTranslate="global.menu.entities.project">Projects</span>
-      </a>
+      @if (currentProjectKey(); as projectKey) {
+        <a
+          class="sidebar-item"
+          routerLink="/project"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMobile()"
+        >
+          <fa-icon icon="folder" [fixedWidth]="true" />
+          <span class="sidebar-label" jhiTranslate="global.menu.entities.project">Projects</span>
+        </a>
 
-      <a class="sidebar-item" routerLink="/sprint" routerLinkActive="active" (click)="closeMobile()">
-        <fa-icon icon="tasks" [fixedWidth]="true" />
-        <span class="sidebar-label" jhiTranslate="global.menu.entities.sprint">Sprints</span>
-      </a>
+        <hr class="sidebar-divider" />
 
-      <a class="sidebar-item" routerLink="/epic" routerLinkActive="active" (click)="closeMobile()">
-        <fa-icon icon="bookmark" [fixedWidth]="true" />
-        <span class="sidebar-label" jhiTranslate="global.menu.entities.epic">Epics</span>
-      </a>
+        <a
+          class="sidebar-item"
+          [routerLink]="['/project', projectKey, 'sprint']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMobile()"
+        >
+          <fa-icon icon="tasks" [fixedWidth]="true" />
+          <span class="sidebar-label" jhiTranslate="global.menu.entities.sprint">Sprints</span>
+        </a>
 
-      <a class="sidebar-item" routerLink="/task" routerLinkActive="active" (click)="closeMobile()">
-        <fa-icon icon="bug" [fixedWidth]="true" />
-        <span class="sidebar-label" jhiTranslate="global.menu.entities.task">Tasks</span>
-      </a>
+        <a
+          class="sidebar-item"
+          [routerLink]="['/project', projectKey, 'epic']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMobile()"
+        >
+          <fa-icon icon="bookmark" [fixedWidth]="true" />
+          <span class="sidebar-label" jhiTranslate="global.menu.entities.epic">Epics</span>
+        </a>
 
-      <a class="sidebar-item" routerLink="/comment" routerLinkActive="active" (click)="closeMobile()">
-        <fa-icon icon="comment" [fixedWidth]="true" />
-        <span class="sidebar-label" jhiTranslate="global.menu.entities.comment">Comments</span>
-      </a>
-
-      <a class="sidebar-item" routerLink="/attachment" routerLinkActive="active" (click)="closeMobile()">
-        <fa-icon icon="paperclip" [fixedWidth]="true" />
-        <span class="sidebar-label" jhiTranslate="global.menu.entities.attachment">Attachments</span>
-      </a>
-
-      <a class="sidebar-item" routerLink="/action-history" routerLinkActive="active" (click)="closeMobile()">
-        <fa-icon icon="history" [fixedWidth]="true" />
-        <span class="sidebar-label" jhiTranslate="global.menu.entities.actionHistory">History</span>
-      </a>
+        <a
+          class="sidebar-item"
+          [routerLink]="['/project', projectKey, 'task']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMobile()"
+        >
+          <fa-icon icon="bug" [fixedWidth]="true" />
+          <span class="sidebar-label" jhiTranslate="global.menu.entities.task">Tasks</span>
+        </a>
+      } @else {
+        <a
+          class="sidebar-item"
+          routerLink="/project"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMobile()"
+        >
+          <fa-icon icon="folder" [fixedWidth]="true" />
+          <span class="sidebar-label" jhiTranslate="global.menu.entities.project">Projects</span>
+        </a>
+      }
     }
 
     <hr class="sidebar-divider" />

@@ -9,10 +9,15 @@
         <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
         <span jhiTranslate="gestionTachesApp.epic.home.refreshListLabel"></span>
       </button>
-      <a id="jh-create-entity" data-cy="entityCreateButton" class="btn btn-primary btn-sm" [routerLink]="['/epic/new']">
+      <a
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary btn-sm"
+        [routerLink]="['/project', currentProjectKey(), 'epic', 'new']"
+      >
         <fa-icon icon="plus" /><span jhiTranslate="gestionTachesApp.epic.home.createLabel"></span>
       </a>
-      <a class="btn btn-outline-primary btn-sm" [routerLink]="['/epic/table']">
+      <a class="btn btn-outline-primary btn-sm" [routerLink]="['/project', currentProjectKey(), 'epic', 'table']">
         <fa-icon icon="table" /><span class="ms-1" jhiTranslate="gestionTachesApp.epic.home.tableLabel"></span>
       </a>
     </div>
@@ -74,7 +79,7 @@
         @for (epic of epicsWithProgress(); track trackId(epic)) {
           <div class="roadmap-epic-row">
             <div class="roadmap-epic-info">
-              <a [routerLink]="['/epic', epic.id, 'view']" class="roadmap-epic-title">{{ epic.title }}</a>
+              <a [routerLink]="['/project', currentProjectKey(), 'epic', epic.id, 'view']" class="roadmap-epic-title">{{ epic.title }}</a>
               <div class="roadmap-epic-meta">
                 <span class="status-dot" [style.background]="statusColors[epic.status ?? 'TODO']"></span>
                 <span>{{ 'gestionTachesApp.EpicStatus.' + (epic.status ?? 'null') | translate }}</span>

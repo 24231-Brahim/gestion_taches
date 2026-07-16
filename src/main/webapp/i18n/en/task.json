@@ -18,7 +18,13 @@
         "question": "Are you sure you want to delete Issue {{ id }}?"
       },
       "detail": {
-        "title": "Issue"
+        "title": "Issue",
+        "tab": {
+          "details": "Details",
+          "comments": "Comments",
+          "attachments": "Attachments",
+          "history": "History"
+        }
       },
       "id": "ID",
       "title": "Title",

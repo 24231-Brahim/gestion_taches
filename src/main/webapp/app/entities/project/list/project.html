@@ -68,7 +68,6 @@
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
-            <th scope="col"></th>
           </tr>
         </thead>
         <tbody>
@@ -77,45 +76,11 @@
               <td>
                 <span class="badge border-primary">{{ project.key }}</span>
               </td>
-              <td>{{ project.name }}</td>
+              <td>
+                <a [routerLink]="['/project', project.key, 'view']">{{ project.name }}</a>
+              </td>
               <td>{{ project.description }}</td>
               <td>{{ project.createdAt | formatMediumDatetime }}</td>
-              <td class="text-end">
-                <div class="btn-group">
-                  <div class="btn-group" ngbDropdown placement="bottom-right">
-                    <button class="btn btn-info btn-sm" ngbDropdownToggle>
-                      <fa-icon icon="eye" />
-                      <span class="d-none d-md-inline" jhiTranslate="entity.action.related">Liés</span>
-                    </button>
-                    <div ngbDropdownMenu>
-                      <button ngbDropdownItem [routerLink]="['/sprint']" [queryParams]="{ 'filter[projectId.in]': project.id }">
-                        <fa-icon icon="list" class="me-1" />
-                        <span jhiTranslate="gestionTachesApp.project.sprints">Sprints</span>
-                      </button>
-                      <button ngbDropdownItem [routerLink]="['/epic']" [queryParams]="{ 'filter[projectId.in]': project.id }">
-                        <fa-icon icon="list" class="me-1" />
-                        <span jhiTranslate="gestionTachesApp.project.epics">Epics</span>
-                      </button>
-                      <button ngbDropdownItem [routerLink]="['/task']" [queryParams]="{ 'filter[projectId.in]': project.id }">
-                        <fa-icon icon="list" class="me-1" />
-                        <span jhiTranslate="gestionTachesApp.project.tasks">Tasks</span>
-                      </button>
-                    </div>
-                  </div>
-                  <a [routerLink]="['/project', project.key, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
-                    <fa-icon icon="eye" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
-                  </a>
-                  <a [routerLink]="['/project', project.key, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                    <fa-icon icon="pencil-alt" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
-                  </a>
-                  <button type="submit" (click)="delete(project)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                    <fa-icon icon="times" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
-                  </button>
-                </div>
-              </td>
             </tr>
           }
         </tbody>

@@ -15,7 +15,7 @@ import { RouterLink } from '@angular/router';
           <span class="qa-icon">+</span>
           <span jhiTranslate="dashboard.quickActions.newProject">New Project</span>
         </a>
-        <a [routerLink]="['/task/new']" class="qa-btn">
+        <a [routerLink]="['/project']" class="qa-btn">
           <span class="qa-icon">+</span>
           <span jhiTranslate="dashboard.quickActions.newTask">Nouvelle Tâche</span>
         </a>
@@ -23,7 +23,7 @@ import { RouterLink } from '@angular/router';
           <span class="qa-icon">◉</span>
           <span jhiTranslate="dashboard.quickActions.viewProjects">View Projects</span>
         </a>
-        <a [routerLink]="['/task']" class="qa-btn">
+        <a [routerLink]="['/project']" class="qa-btn">
           <span class="qa-icon">◉</span>
           <span jhiTranslate="dashboard.quickActions.viewTasks">Voir Tâches</span>
         </a>

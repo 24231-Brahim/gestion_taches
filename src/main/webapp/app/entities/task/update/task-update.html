@@ -217,6 +217,7 @@
             name="project"
             formControlName="project"
             [compareWith]="compareProject"
+            [attr.disabled]="isProjectContext() ? true : null"
           >
             @if (editForm.get(['project'])!.value === null) {
               <option [ngValue]="null" selected></option>

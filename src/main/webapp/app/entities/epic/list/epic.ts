@@ -12,6 +12,8 @@ import { Subscription, combineLatest, filter, tap } from 'rxjs';
 
 import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
+import { IProject } from 'app/entities/project/project.model';
+import { ProjectService } from 'app/entities/project/service/project.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
@@ -68,8 +70,12 @@ export class Epic implements OnInit {
   readonly totalItems = signal(0);
   readonly page = signal(1);
 
+  readonly currentProjectKey = signal<string | null>(null);
+  readonly currentProject = signal<IProject | null>(null);
+
   readonly router = inject(Router);
   protected readonly epicService = inject(EpicService);
+  protected readonly projectService = inject(ProjectService);
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly isLoading = this.epicService.epicsResource.isLoading;
   protected readonly activatedRoute = inject(ActivatedRoute);
@@ -102,6 +108,7 @@ export class Epic implements OnInit {
   trackId = (item: IEpic): number => this.epicService.getEpicIdentifier(item);
 
   ngOnInit(): void {
+    this.resolveProjectContext();
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
       .pipe(
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
@@ -160,7 +167,23 @@ export class Epic implements OnInit {
     for (const filterOption of this.filters.filterOptions) {
       queryObject[filterOption.name] = filterOption.values;
     }
+    if (this.currentProject()) {
+      queryObject['projectId.equals'] = this.currentProject()!.id;
+    }
     this.epicService.epicsParams.set(queryObject);
+  }
+
+  private resolveProjectContext(): void {
+    let route: ActivatedRoute | null = this.activatedRoute;
+    while (route) {
+      const key = route.snapshot.paramMap.get('key');
+      if (key) {
+        this.currentProjectKey.set(key);
+        this.projectService.findByKey(key).subscribe(project => this.currentProject.set(project));
+        return;
+      }
+      route = route.parent;
+    }
   }
 
   getStatusColor(status: string | null | undefined): string {

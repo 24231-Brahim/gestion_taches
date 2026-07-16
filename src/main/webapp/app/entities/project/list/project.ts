@@ -4,14 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subscription, combineLatest, filter, tap } from 'rxjs';
+import { Subscription, combineLatest, tap } from 'rxjs';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
-import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
+import { DEFAULT_SORT_DATA, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
@@ -19,7 +17,6 @@ import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
-import { ProjectDeleteDialog } from '../delete/project-delete-dialog';
 import { IProject } from '../project.model';
 import { ProjectService } from '../service/project.service';
 
@@ -38,9 +35,6 @@ import { ProjectService } from '../service/project.service';
     TranslateDirective,
     TranslateModule,
     FormatMediumDatetimePipe,
-    NgbDropdown,
-    NgbDropdownMenu,
-    NgbDropdownToggle,
     NgbPagination,
     ItemCount,
   ],
@@ -62,7 +56,6 @@ export class Project implements OnInit {
   readonly isLoading = this.projectService.projectsResource.isLoading;
   readonly activatedRoute = inject(ActivatedRoute);
   readonly sortService = inject(SortService);
-  readonly modalService = inject(NgbModal);
 
   constructor() {
     const appConfig = inject(ApplicationConfigService);
@@ -88,18 +81,6 @@ export class Project implements OnInit {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
       .pipe(
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
-        tap(() => this.load()),
-      )
-      .subscribe();
-  }
-
-  delete(project: IProject): void {
-    const modalRef = this.modalService.open(ProjectDeleteDialog, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.project = project;
-    // unsubscribe not needed because closed completes on modal close
-    modalRef.closed
-      .pipe(
-        filter(reason => reason === ITEM_DELETED_EVENT),
         tap(() => this.load()),
       )
       .subscribe();

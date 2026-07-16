@@ -15,16 +15,16 @@ const projectRoute: Routes = [
     canActivate: [UserRouteAccessService],
   },
   {
-    path: ':key/view',
-    loadComponent: () => import('./detail/project-detail').then(m => m.ProjectDetail),
+    path: 'new',
+    loadComponent: () => import('./update/project-update').then(m => m.ProjectUpdate),
     resolve: {
       project: ProjectResolve,
     },
     canActivate: [UserRouteAccessService],
   },
   {
-    path: 'new',
-    loadComponent: () => import('./update/project-update').then(m => m.ProjectUpdate),
+    path: ':key/view',
+    loadComponent: () => import('./detail/project-detail').then(m => m.ProjectDetail),
     resolve: {
       project: ProjectResolve,
     },
@@ -37,6 +37,30 @@ const projectRoute: Routes = [
       project: ProjectResolve,
     },
     canActivate: [UserRouteAccessService],
+  },
+  {
+    path: ':key/sprint',
+    resolve: {
+      project: ProjectResolve,
+    },
+    canActivate: [UserRouteAccessService],
+    loadChildren: () => import('../sprint/sprint.routes'),
+  },
+  {
+    path: ':key/epic',
+    resolve: {
+      project: ProjectResolve,
+    },
+    canActivate: [UserRouteAccessService],
+    loadChildren: () => import('../epic/epic.routes'),
+  },
+  {
+    path: ':key/task',
+    resolve: {
+      project: ProjectResolve,
+    },
+    canActivate: [UserRouteAccessService],
+    loadChildren: () => import('../task/task.routes'),
   },
 ];
 

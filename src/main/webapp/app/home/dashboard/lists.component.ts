@@ -33,7 +33,7 @@ import { RouterLink } from '@angular/router';
           @if (recentTasks().length > 0) {
             <div class="list-items">
               @for (t of recentTasks(); track t.id) {
-                <a [routerLink]="['/task', t.id, 'view']" class="list-item">
+                <a [routerLink]="['/project', t.project?.key, 'task', t.id, 'view']" class="list-item">
                   <span class="item-name">{{ t.title }}</span>
                   <span class="item-meta" [style.color]="statusColor(t.status!)">{{ t.status }}</span>
                 </a>

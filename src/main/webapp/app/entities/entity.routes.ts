@@ -16,36 +16,6 @@ const routes: Routes = [
     data: { pageTitle: 'gestionTachesApp.project.home.title' },
     loadChildren: () => import('./project/project.routes'),
   },
-  {
-    path: 'sprint',
-    data: { pageTitle: 'gestionTachesApp.sprint.home.title' },
-    loadChildren: () => import('./sprint/sprint.routes'),
-  },
-  {
-    path: 'epic',
-    data: { pageTitle: 'gestionTachesApp.epic.home.title' },
-    loadChildren: () => import('./epic/epic.routes'),
-  },
-  {
-    path: 'task',
-    data: { pageTitle: 'gestionTachesApp.task.home.title' },
-    loadChildren: () => import('./task/task.routes'),
-  },
-  {
-    path: 'comment',
-    data: { pageTitle: 'gestionTachesApp.comment.home.title' },
-    loadChildren: () => import('./comment/comment.routes'),
-  },
-  {
-    path: 'attachment',
-    data: { pageTitle: 'gestionTachesApp.attachment.home.title' },
-    loadChildren: () => import('./attachment/attachment.routes'),
-  },
-  {
-    path: 'action-history',
-    data: { pageTitle: 'gestionTachesApp.actionHistory.home.title' },
-    loadChildren: () => import('./action-history/action-history.routes'),
-  },
   /* jhipster-needle-add-entity-route - JHipster will add entity modules routes here */
 ];
 

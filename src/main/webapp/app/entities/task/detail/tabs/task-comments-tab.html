@@ -1,0 +1,34 @@
+<div class="tab-section">
+  <h4 class="tab-section-title">
+    <fa-icon icon="comment" class="me-2" />
+    <span jhiTranslate="gestionTachesApp.task.detail.comments">Comments</span>
+    <span class="badge bg-secondary ms-2">{{ comments().length }}</span>
+  </h4>
+
+  @if (isLoading()) {
+    <div class="text-center p-3">
+      <fa-icon icon="sync" animation="spin" />
+    </div>
+  } @else {
+    @if (comments().length === 0) {
+      <p class="text-muted" jhiTranslate="gestionTachesApp.task.detail.noComments">No comments yet.</p>
+    } @else {
+      <div class="comments-list">
+        @for (comment of comments(); track comment.id) {
+          <div class="comment-item">
+            <div class="comment-header">
+              <span class="comment-author">
+                <fa-icon icon="user" class="me-1" />
+                {{ comment.author?.login ?? 'Unknown' }}
+              </span>
+              <span class="comment-date">{{ comment.createdAt | formatMediumDatetime }}</span>
+            </div>
+            <div class="comment-body">
+              {{ comment.content }}
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

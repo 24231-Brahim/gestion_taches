@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import dayjs from 'dayjs/esm';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -14,6 +14,8 @@ import { ITask } from 'app/entities/task/task.model';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
 import { FormatMediumDatePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
+import { IProject } from 'app/entities/project/project.model';
+import { ProjectService } from 'app/entities/project/service/project.service';
 import { SprintActiveBoard } from '../active-board/sprint-active-board';
 import { SprintBacklogPlanning } from '../backlog-planning/sprint-backlog-planning';
 import { SprintBurndownChart } from '../burndown/sprint-burndown-chart';
@@ -238,6 +240,10 @@ type Tab = 'board' | 'planning' | 'burndown';
   ],
 })
 export class Sprint implements OnInit {
+  readonly currentProjectKey = signal<string | null>(null);
+  readonly currentProject = signal<IProject | null>(null);
+  readonly projectKey = computed(() => this.currentProjectKey());
+
   readonly activeTab = signal<Tab>('board');
   readonly isSaving = signal(false);
   readonly selectedSprintId = signal<number | null>(null);
@@ -314,6 +320,8 @@ export class Sprint implements OnInit {
       .reduce((sum, t) => sum + (t.storyPoints ?? 0), 0),
   );
 
+  protected readonly activatedRoute = inject(ActivatedRoute);
+  protected readonly projectService = inject(ProjectService);
   protected readonly sprintService = inject(SprintService);
   protected readonly taskService = inject(TaskService);
   protected readonly alertService = inject(AlertService);
@@ -354,10 +362,23 @@ export class Sprint implements OnInit {
   });
 
   ngOnInit(): void {
-    this.sprintService.sprintsParams.set({
-      size: 100,
-      sort: 'startDate,desc',
-    });
+    const key = this.activatedRoute.parent?.snapshot.paramMap.get('key');
+    if (key) {
+      this.currentProjectKey.set(key);
+      this.projectService.findByKey(key).subscribe(project => {
+        this.currentProject.set(project);
+        this.sprintService.sprintsParams.set({
+          size: 100,
+          sort: 'startDate,desc',
+          'projectId.equals': project.id,
+        });
+      });
+    } else {
+      this.sprintService.sprintsParams.set({
+        size: 100,
+        sort: 'startDate,desc',
+      });
+    }
   }
 
   onSprintChange(value: string | number): void {

@@ -8,6 +8,7 @@ export interface INotification {
   message: string;
   taskId?: number;
   taskTitle?: string;
+  projectKey?: string;
   userId: number;
   isRead: boolean;
   createdAt: string;

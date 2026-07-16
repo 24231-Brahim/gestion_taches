@@ -8,7 +8,7 @@
         <span jhiTranslate="gestionTachesApp.epic.home.refreshListLabel">Actualiser la liste</span>
       </button>
 
-      <a class="btn btn-outline-primary me-2" [routerLink]="['/epic']">
+      <a class="btn btn-outline-primary me-2" [routerLink]="['/project', currentProjectKey(), 'epic']">
         <fa-icon icon="layer-group" />
         <span class="ms-1" jhiTranslate="gestionTachesApp.epic.home.roadmap">Roadmap</span>
       </a>
@@ -17,7 +17,7 @@
         id="jh-create-entity"
         data-cy="entityCreateButton"
         class="btn btn-primary jh-create-entity create-epic"
-        [routerLink]="['/epic/new']"
+        [routerLink]="['/project', currentProjectKey(), 'epic', 'new']"
       >
         <fa-icon icon="plus" />
         <span jhiTranslate="gestionTachesApp.epic.home.createLabel">Créer un nouveau Epic</span>
@@ -124,12 +124,20 @@
               </td>
               <td class="text-end">
                 <div class="btn-group">
-                  <a [routerLink]="['/epic', epic.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                  <a
+                    [routerLink]="['/project', currentProjectKey(), 'epic', epic.id, 'view']"
+                    class="btn btn-info btn-sm"
+                    data-cy="entityDetailsButton"
+                  >
                     <fa-icon icon="eye" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
                   </a>
 
-                  <a [routerLink]="['/epic', epic.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                  <a
+                    [routerLink]="['/project', currentProjectKey(), 'epic', epic.id, 'edit']"
+                    class="btn btn-primary btn-sm"
+                    data-cy="entityEditButton"
+                  >
                     <fa-icon icon="pencil-alt" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
                   </a>

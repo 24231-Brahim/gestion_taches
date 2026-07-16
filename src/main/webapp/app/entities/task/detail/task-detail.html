@@ -10,96 +10,130 @@
 
         <jhi-alert />
 
-        <dl class="row-md jh-entity-details">
-          <dt><span jhiTranslate="gestionTachesApp.task.title">Title</span></dt>
-          <dd>
-            <span>{{ taskRef.title }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.task.description">Description</span></dt>
-          <dd>
-            <span>{{ taskRef.description }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.task.type">Type</span></dt>
-          <dd>
-            <span [jhiTranslate]="'gestionTachesApp.IssueType.' + (taskRef.type ?? 'null')">{{
-              { null: '', STORY: 'STORY', BUG: 'BUG', TASK: 'TASK', SUBTASK: 'SUBTASK', IMPROVEMENT: 'IMPROVEMENT' }[taskRef.type ?? 'null']
-            }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.task.status">Status</span></dt>
-          <dd>
-            <span [jhiTranslate]="'gestionTachesApp.IssueStatus.' + (taskRef.status ?? 'null')">{{
-              {
-                null: '',
-                NEW: 'NEW',
-                TODO: 'TODO',
-                IN_PROGRESS: 'IN_PROGRESS',
-                IN_REVIEW: 'IN_REVIEW',
-                DONE: 'DONE',
-                CANCELLED: 'CANCELLED',
-              }[taskRef.status ?? 'null']
-            }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.task.priority">Priority</span></dt>
-          <dd>
-            <span [jhiTranslate]="'gestionTachesApp.Priority.' + (taskRef.priority ?? 'null')">{{
-              { null: '', LOWEST: 'LOWEST', LOW: 'LOW', MEDIUM: 'MEDIUM', HIGH: 'HIGH', HIGHEST: 'HIGHEST' }[taskRef.priority ?? 'null']
-            }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.task.createdAt">Created At</span></dt>
-          <dd>
-            <span>{{ taskRef.createdAt | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.task.updatedAt">Updated At</span></dt>
-          <dd>
-            <span>{{ taskRef.updatedAt | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.task.sprint">Sprint</span></dt>
-          <dd>
-            @if (task()!.sprint) {
-              <div>
-                <a [routerLink]="['/sprint', task()!.sprint?.id, 'view']">{{ taskRef.sprint?.name }}</a>
-              </div>
-            }
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.task.epic">Epic</span></dt>
-          <dd>
-            @if (task()!.epic) {
-              <div>
-                <a [routerLink]="['/epic', task()!.epic?.id, 'view']">{{ taskRef.epic?.title }}</a>
-              </div>
-            }
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.task.createdBy">Created By</span></dt>
-          <dd>
-            @if (taskRef.createdBy) {
-              <span>{{ taskRef.createdBy.login }}</span>
-            } @else {
-              <span class="text-muted" jhiTranslate="global.messages.notAssigned"></span>
-            }
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.task.assignee">Assignee</span></dt>
-          <dd>
-            @if (taskRef.assignee) {
-              <span>{{ taskRef.assignee.login }}</span>
-            } @else {
-              <span class="text-muted" jhiTranslate="global.messages.unassigned"></span>
-            }
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.task.project">Project</span></dt>
-          <dd>
-            @if (task()!.project) {
-              <div>
-                <a [routerLink]="['/project', task()!.project?.key, 'view']">{{ taskRef.project?.name }}</a>
-              </div>
-            }
-          </dd>
-        </dl>
+        <div class="tab-bar">
+          <button class="tab-item" [class.active]="activeTab() === 'details'" (click)="setTab('details')">
+            <fa-icon icon="info-circle" class="me-1" />
+            <span jhiTranslate="gestionTachesApp.task.detail.tab.details">Details</span>
+          </button>
+          <button class="tab-item" [class.active]="activeTab() === 'comments'" (click)="setTab('comments')">
+            <fa-icon icon="comment" class="me-1" />
+            <span jhiTranslate="gestionTachesApp.task.detail.tab.comments">Comments</span>
+          </button>
+          <button class="tab-item" [class.active]="activeTab() === 'attachments'" (click)="setTab('attachments')">
+            <fa-icon icon="paperclip" class="me-1" />
+            <span jhiTranslate="gestionTachesApp.task.detail.tab.attachments">Attachments</span>
+          </button>
+          <button class="tab-item" [class.active]="activeTab() === 'history'" (click)="setTab('history')">
+            <fa-icon icon="history" class="me-1" />
+            <span jhiTranslate="gestionTachesApp.task.detail.tab.history">History</span>
+          </button>
+        </div>
+
+        @switch (activeTab()) {
+          @case ('details') {
+            <dl class="row-md jh-entity-details mt-3">
+              <dt><span jhiTranslate="gestionTachesApp.task.title">Title</span></dt>
+              <dd>
+                <span>{{ taskRef.title }}</span>
+              </dd>
+              <dt><span jhiTranslate="gestionTachesApp.task.description">Description</span></dt>
+              <dd>
+                <span>{{ taskRef.description }}</span>
+              </dd>
+              <dt><span jhiTranslate="gestionTachesApp.task.type">Type</span></dt>
+              <dd>
+                <span [jhiTranslate]="'gestionTachesApp.IssueType.' + (taskRef.type ?? 'null')">{{
+                  { null: '', STORY: 'STORY', BUG: 'BUG', TASK: 'TASK', SUBTASK: 'SUBTASK', IMPROVEMENT: 'IMPROVEMENT' }[
+                    taskRef.type ?? 'null'
+                  ]
+                }}</span>
+              </dd>
+              <dt><span jhiTranslate="gestionTachesApp.task.status">Status</span></dt>
+              <dd>
+                <span [jhiTranslate]="'gestionTachesApp.IssueStatus.' + (taskRef.status ?? 'null')">{{
+                  {
+                    null: '',
+                    NEW: 'NEW',
+                    TODO: 'TODO',
+                    IN_PROGRESS: 'IN_PROGRESS',
+                    IN_REVIEW: 'IN_REVIEW',
+                    DONE: 'DONE',
+                    CANCELLED: 'CANCELLED',
+                  }[taskRef.status ?? 'null']
+                }}</span>
+              </dd>
+              <dt><span jhiTranslate="gestionTachesApp.task.priority">Priority</span></dt>
+              <dd>
+                <span [jhiTranslate]="'gestionTachesApp.Priority.' + (taskRef.priority ?? 'null')">{{
+                  { null: '', LOWEST: 'LOWEST', LOW: 'LOW', MEDIUM: 'MEDIUM', HIGH: 'HIGH', HIGHEST: 'HIGHEST' }[taskRef.priority ?? 'null']
+                }}</span>
+              </dd>
+              <dt><span jhiTranslate="gestionTachesApp.task.createdAt">Created At</span></dt>
+              <dd>
+                <span>{{ taskRef.createdAt | formatMediumDatetime }}</span>
+              </dd>
+              <dt><span jhiTranslate="gestionTachesApp.task.updatedAt">Updated At</span></dt>
+              <dd>
+                <span>{{ taskRef.updatedAt | formatMediumDatetime }}</span>
+              </dd>
+              <dt><span jhiTranslate="gestionTachesApp.task.sprint">Sprint</span></dt>
+              <dd>
+                @if (task()!.sprint) {
+                  <div>
+                    <a [routerLink]="['/project', currentProjectKey(), 'sprint', task()!.sprint?.id, 'view']">{{ taskRef.sprint?.name }}</a>
+                  </div>
+                }
+              </dd>
+              <dt><span jhiTranslate="gestionTachesApp.task.epic">Epic</span></dt>
+              <dd>
+                @if (task()!.epic) {
+                  <div>
+                    <a [routerLink]="['/project', currentProjectKey(), 'epic', task()!.epic?.id, 'view']">{{ taskRef.epic?.title }}</a>
+                  </div>
+                }
+              </dd>
+              <dt><span jhiTranslate="gestionTachesApp.task.createdBy">Created By</span></dt>
+              <dd>
+                @if (taskRef.createdBy) {
+                  <span>{{ taskRef.createdBy.login }}</span>
+                } @else {
+                  <span class="text-muted" jhiTranslate="global.messages.notAssigned"></span>
+                }
+              </dd>
+              <dt><span jhiTranslate="gestionTachesApp.task.assignee">Assignee</span></dt>
+              <dd>
+                @if (taskRef.assignee) {
+                  <span>{{ taskRef.assignee.login }}</span>
+                } @else {
+                  <span class="text-muted" jhiTranslate="global.messages.unassigned"></span>
+                }
+              </dd>
+              <dt><span jhiTranslate="gestionTachesApp.task.project">Project</span></dt>
+              <dd>
+                @if (task()!.project) {
+                  <div>
+                    <a [routerLink]="['/project', task()!.project?.key, 'view']">{{ taskRef.project?.name }}</a>
+                  </div>
+                }
+              </dd>
+            </dl>
+          }
+          @case ('comments') {
+            <jhi-task-comments-tab [taskId]="taskRef.id" />
+          }
+          @case ('attachments') {
+            <jhi-task-attachments-tab [taskId]="taskRef.id" />
+          }
+          @case ('history') {
+            <jhi-task-history-tab [taskId]="taskRef.id" />
+          }
+        }
 
         <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
           <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
         </button>
 
-        <button type="button" [routerLink]="['/task', taskRef.id, 'edit']" class="btn btn-primary">
+        <button type="button" [routerLink]="['/project', currentProjectKey(), 'task', taskRef.id, 'edit']" class="btn btn-primary">
           <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
         </button>
       </div>

@@ -1,46 +1,31 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, Signal, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-
-import dayjs from 'dayjs/esm';
+import { Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { TranslateModule } from '@ngx-translate/core';
+import { filter, tap } from 'rxjs';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
-import { ApplicationConfigService } from 'app/core/config/application-config.service';
+import { ITEM_DELETED_EVENT } from 'app/config/navigation.constants';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
-import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
+import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { IProject, IProjectMember } from '../project.model';
 import { ProjectService } from '../service/project.service';
 import { UserService } from 'app/entities/user/service/user.service';
 import { IUser } from 'app/entities/user/user.model';
-import { ISprint } from 'app/entities/sprint/sprint.model';
-import { SprintService } from 'app/entities/sprint/service/sprint.service';
-import { ITask, NewTask } from 'app/entities/task/task.model';
-import { TaskService } from 'app/entities/task/service/task.service';
-import { TaskType } from 'app/entities/enumerations/task-type.model';
-import { Priority } from 'app/entities/enumerations/priority.model';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
+import { ProjectDeleteDialog } from '../delete/project-delete-dialog';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-project-detail',
   templateUrl: './project-detail.html',
-  imports: [
-    FontAwesomeModule,
-    Alert,
-    AlertError,
-    TranslateDirective,
-    TranslateModule,
-    RouterLink,
-    FormatMediumDatetimePipe,
-    FormatMediumDatePipe,
-    FormsModule,
-  ],
+  imports: [FontAwesomeModule, Alert, AlertError, TranslateDirective, TranslateModule, RouterLink, FormatMediumDatetimePipe, FormsModule],
 })
 export class ProjectDetail {
   readonly project = input<IProject | null>(null);
@@ -52,22 +37,6 @@ export class ProjectDetail {
   readonly newMemberRole = signal<ProjectRole>(ProjectRole.MEMBER);
   readonly editingMemberId = signal<number | null>(null);
   readonly editingRole = signal<ProjectRole | ''>('');
-
-  readonly sprints = signal<ISprint[]>([]);
-  readonly tasks = signal<ITask[]>([]);
-
-  // Task creation form
-  readonly showTaskForm = signal(false);
-  readonly newTaskTitle = signal('');
-  readonly newTaskDescription = signal('');
-  readonly newTaskType = signal<keyof typeof TaskType>('TASK');
-  readonly newTaskPriority = signal<keyof typeof Priority>('MEDIUM');
-  readonly newTaskSprintId = signal<number | null>(null);
-  readonly newTaskAssigneeId = signal<number | null>(null);
-  readonly isCreatingTask = signal(false);
-
-  readonly taskTypeValues = Object.keys(TaskType);
-  readonly priorityValues = Object.keys(Priority);
 
   readonly userProjectRole: Signal<ProjectRole | null> = computed(() => {
     const account = this.accountService.account();
@@ -86,54 +55,19 @@ export class ProjectDetail {
     return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
   });
 
-  readonly canManageSprints = computed(() => {
-    const role = this.userProjectRole();
-    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
-  });
-
-  readonly canCreateTasks = computed(() => {
-    return this.userProjectRole() !== null;
-  });
-
-  readonly canExportCsv = computed(() => {
-    const role = this.userProjectRole();
-    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
-  });
-
-  readonly csvExportUrl = computed(() => {
-    const proj = this.project();
-    if (!proj?.id) return '';
-    return this.applicationConfigService.getEndpointFor(`api/export/csv/projects/${proj.id}/tasks`);
-  });
-
   private readonly projectService = inject(ProjectService);
   private readonly accountService = inject(AccountService);
   private readonly alertService = inject(AlertService);
-  private readonly applicationConfigService = inject(ApplicationConfigService);
   private readonly userService = inject(UserService);
-  private readonly sprintService = inject(SprintService);
-  private readonly taskService = inject(TaskService);
+  private readonly modalService = inject(NgbModal);
+  private readonly router = inject(Router);
 
   constructor() {
     effect(() => {
       const proj = this.project();
       if (proj?.id) {
         this.loadMembers(proj.id);
-        this.loadSprints(proj.id);
-        this.loadTasks(proj.id);
       }
-    });
-  }
-
-  loadSprints(projectId: number): void {
-    this.sprintService.query({ 'projectId.equals': projectId }).subscribe({
-      next: res => this.sprints.set(res.body ?? []),
-    });
-  }
-
-  loadTasks(projectId: number): void {
-    this.taskService.query({ 'projectId.equals': projectId, size: 100 }).subscribe({
-      next: res => this.tasks.set(res.body ?? []),
     });
   }
 
@@ -205,62 +139,16 @@ export class ProjectDetail {
     });
   }
 
-  toggleTaskForm(): void {
-    this.showTaskForm.update(v => !v);
-    if (!this.showTaskForm()) {
-      this.resetTaskForm();
-    }
-  }
-
-  resetTaskForm(): void {
-    this.newTaskTitle.set('');
-    this.newTaskDescription.set('');
-    this.newTaskType.set('TASK');
-    this.newTaskPriority.set('MEDIUM');
-    this.newTaskSprintId.set(null);
-    this.newTaskAssigneeId.set(null);
-  }
-
-  createTask(projectId: number): void {
-    const title = this.newTaskTitle();
-    if (!title) {
-      return;
-    }
-    this.isCreatingTask.set(true);
-
-    const newTask: NewTask = {
-      id: null,
-      title,
-      description: this.newTaskDescription() || null,
-      type: this.newTaskType(),
-      status: 'NEW',
-      priority: this.newTaskPriority(),
-      createdAt: dayjs(),
-      updatedAt: dayjs(),
-      project: { id: projectId, name: this.project()?.name ?? null, key: this.project()?.key ?? null },
-      sprint: this.newTaskSprintId() ? { id: this.newTaskSprintId()!, name: '' } : null,
-      assignee: this.newTaskAssigneeId()
-        ? { id: this.newTaskAssigneeId()!, login: this.members().find(m => m.userId === this.newTaskAssigneeId())?.userLogin ?? '' }
-        : null,
-      createdBy: null,
-    };
-
-    this.taskService.createForProject(projectId, newTask).subscribe({
-      next: () => {
-        this.loadTasks(projectId);
-        this.showTaskForm.set(false);
-        this.resetTaskForm();
-        this.isCreatingTask.set(false);
-        this.alertService.addAlert({ type: 'success', translationKey: 'gestionTachesApp.task.created' });
-      },
-      error: () => {
-        this.isCreatingTask.set(false);
-        this.alertService.addAlert({ type: 'danger', translationKey: 'error.general' });
-      },
-    });
-  }
-
-  previousState(): void {
-    globalThis.history.back();
+  delete(project: IProject): void {
+    const modalRef = this.modalService.open(ProjectDeleteDialog, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.project = project;
+    modalRef.closed
+      .pipe(
+        filter(reason => reason === ITEM_DELETED_EVENT),
+        tap(() => {
+          void this.router.navigate(['/project']);
+        }),
+      )
+      .subscribe();
   }
 }

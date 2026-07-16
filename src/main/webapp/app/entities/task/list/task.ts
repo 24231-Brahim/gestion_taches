@@ -22,6 +22,7 @@ import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
+import { IProject } from 'app/entities/project/project.model';
 import { ProjectService } from 'app/entities/project/service/project.service';
 import { TaskDeleteDialog } from '../delete/task-delete-dialog';
 import { TaskDetailPanel } from '../detail/task-detail-panel';
@@ -151,6 +152,9 @@ export class Task implements OnInit {
   readonly page = signal(1);
   readonly searchQuery = signal('');
 
+  readonly currentProjectKey = signal<string | null>(null);
+  readonly currentProject = signal<IProject | null>(null);
+
   readonly viewMode = signal<ViewMode>('list');
   readonly selectedTask = signal<ITask | null>(null);
   readonly drawerVisible = signal(false);
@@ -163,7 +167,14 @@ export class Task implements OnInit {
     return this.tasks().filter(i => i.title?.toLowerCase().includes(q));
   });
 
-  readonly csvExportUrl: string;
+  readonly csvExportUrl = computed(() => {
+    const project = this.currentProject();
+    if (project) {
+      return this.appConfig.getEndpointFor(`api/projects/${encodeURIComponent(project.id)}/export/csv/tasks`);
+    }
+    return this.appConfig.getEndpointFor('api/export/csv/tasks');
+  });
+  protected readonly appConfig = inject(ApplicationConfigService);
   readonly router = inject(Router);
   readonly taskService = inject(TaskService);
   readonly isLoading = this.taskService.tasksResource.isLoading;
@@ -182,8 +193,6 @@ export class Task implements OnInit {
   protected readonly projectService = inject(ProjectService);
 
   constructor() {
-    const appConfig = inject(ApplicationConfigService);
-    this.csvExportUrl = appConfig.getEndpointFor('api/export/csv/tasks');
     effect(() => {
       const headers = this.taskService.tasksResource.headers();
       if (headers) {
@@ -216,6 +225,16 @@ export class Task implements OnInit {
   trackId = (item: ITask): number => this.taskService.getTaskIdentifier(item);
 
   ngOnInit(): void {
+    this.activatedRoute.parent?.paramMap.subscribe(params => {
+      const key = params.get('key');
+      if (key) {
+        this.currentProjectKey.set(key);
+        this.projectService.findByKey(key).subscribe(project => {
+          this.currentProject.set(project);
+          this.load();
+        });
+      }
+    });
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
       .pipe(
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
@@ -292,6 +311,10 @@ export class Task implements OnInit {
       eagerload: true,
       sort: this.sortService.buildSortParam(this.sortState()),
     };
+    const project = this.currentProject();
+    if (project) {
+      queryObject['projectId.equals'] = project.id;
+    }
     for (const filterOption of this.filters.filterOptions) {
       queryObject[filterOption.name] = filterOption.values;
     }

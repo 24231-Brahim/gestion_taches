@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import dayjs from 'dayjs/esm';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -306,9 +306,12 @@ export class EpicDetail {
   readonly activeTab = signal<Tab>('tasks');
   readonly tasks = signal<ITask[]>([]);
 
+  readonly currentProjectKey = signal<string | null>(null);
+
   protected readonly taskService = inject(TaskService);
   protected readonly alertService = inject(AlertService);
   protected readonly translateService = inject(TranslateService);
+  protected readonly activatedRoute = inject(ActivatedRoute);
 
   readonly epicStats = computed<EpicStats>(() => {
     const t = this.tasks();
@@ -372,6 +375,18 @@ export class EpicDetail {
         'epicId.equals': ep.id,
         size: 500,
       });
+    }
+  });
+
+  private projectKeyEffect = effect(() => {
+    let route: ActivatedRoute | null = this.activatedRoute;
+    while (route) {
+      const key = route.snapshot.paramMap.get('key');
+      if (key) {
+        this.currentProjectKey.set(key);
+        return;
+      }
+      route = route.parent;
     }
   });
 

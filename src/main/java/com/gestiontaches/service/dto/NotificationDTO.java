@@ -18,6 +18,8 @@ public class NotificationDTO implements Serializable {
 
     private UserDTO user;
 
+    private String projectKey;
+
     @NotNull
     private Boolean isRead;
 
@@ -54,6 +56,14 @@ public class NotificationDTO implements Serializable {
 
     public void setTaskTitle(String taskTitle) {
         this.taskTitle = taskTitle;
+    }
+
+    public String getProjectKey() {
+        return projectKey;
+    }
+
+    public void setProjectKey(String projectKey) {
+        this.projectKey = projectKey;
     }
 
     public UserDTO getUser() {
@@ -131,6 +141,9 @@ public class NotificationDTO implements Serializable {
             "'" +
             ", taskTitle='" +
             getTaskTitle() +
+            "'" +
+            ", projectKey='" +
+            getProjectKey() +
             "'" +
             ", isRead=" +
             getIsRead() +

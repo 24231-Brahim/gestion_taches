@@ -1,311 +1,128 @@
-<div class="d-flex justify-content-center">
-  <div class="col-12 col-lg-8">
-    @if (project(); as projectRef) {
-      <div>
-        <h2 class="page-heading" data-cy="projectDetailsHeading">
-          <span jhiTranslate="gestionTachesApp.project.detail.title">Project</span>
-        </h2>
+<div>
+  @if (project(); as projectRef) {
+    <h2 class="page-heading" data-cy="projectDetailsHeading">
+      <span>{{ projectRef.name }}</span>
+      <span class="badge border-primary ms-2">{{ projectRef.key }}</span>
 
-        <hr />
-
-        <jhi-alert-error />
-
-        <jhi-alert />
-
-        <dl class="row-md jh-entity-details">
-          <dt><span jhiTranslate="gestionTachesApp.project.name">Name</span></dt>
-          <dd>
-            <span>{{ projectRef.name }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.project.description">Description</span></dt>
-          <dd>
-            <span>{{ projectRef.description }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.project.key">Key</span></dt>
-          <dd>
-            <span class="badge border-primary">{{ projectRef.key }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.project.createdAt">Created At</span></dt>
-          <dd>
-            <span>{{ projectRef.createdAt | formatMediumDatetime }}</span>
-          </dd>
-        </dl>
-
-        <hr />
-
-        <div class="d-flex align-items-center mb-3">
-          <h3 class="mb-0" jhiTranslate="gestionTachesApp.project.members">Members</h3>
-          @if (canManageMembers()) {
-            <button class="btn btn-primary btn-sm ms-2" (click)="toggleAddForm()">
-              <fa-icon icon="user-plus" />&nbsp;<span jhiTranslate="gestionTachesApp.project.member.add">Add member</span>
-            </button>
-          }
-        </div>
-
-        @if (showAddForm()) {
-          <div class="card mb-3 border">
-            <div class="card-body">
-              <div class="row g-2 align-items-end">
-                <div class="col-auto">
-                  <select class="form-select" [(ngModel)]="selectedUserId" aria-label="User">
-                    <option [ngValue]="null" disabled jhiTranslate="gestionTachesApp.project.member.selectUser">Select a user</option>
-                    @for (user of users(); track user.id) {
-                      @if (!members().find(m => m.userId === user.id)) {
-                        <option [ngValue]="user.id">{{ user.login }}</option>
-                      }
-                    }
-                  </select>
-                </div>
-                <div class="col-auto">
-                  <button class="btn btn-primary" (click)="addMember(projectRef.id)" [disabled]="!selectedUserId()">
-                    <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Save</span>
-                  </button>
-                  <button class="btn btn-secondary ms-1" (click)="toggleAddForm()">
-                    <fa-icon icon="times" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-
-        <div class="table-responsive">
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th jhiTranslate="gestionTachesApp.project.member.userLogin">User</th>
-                <th jhiTranslate="gestionTachesApp.project.member.role">Role</th>
-                <th jhiTranslate="gestionTachesApp.project.member.joinedAt">Joined At</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (member of members(); track member.id) {
-                <tr>
-                  <td><fa-icon icon="user" class="me-1" />{{ member.userLogin }}</td>
-                  <td>
-                    @if (editingMemberId() === member.id) {
-                      <div class="d-flex gap-1 align-items-center">
-                        <select class="form-select form-select-sm" style="width: 140px" [(ngModel)]="editingRole">
-                          <option [ngValue]="'OWNER'">OWNER</option>
-                          <option [ngValue]="'MANAGER'">MANAGER</option>
-                          <option [ngValue]="'MEMBER'">MEMBER</option>
-                        </select>
-                        <button class="btn btn-sm btn-primary" (click)="saveRole(projectRef.id, member)">
-                          <fa-icon icon="save" />
-                        </button>
-                        <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">
-                          <fa-icon icon="times" />
-                        </button>
-                      </div>
-                    } @else {
-                      <span class="badge border-primary">{{ member.role }}</span>
-                    }
-                  </td>
-                  <td>{{ member.joinedAt | formatMediumDatetime }}</td>
-                  <td>
-                    @if (canManageMembers()) {
-                      <div class="d-flex gap-1">
-                        @if (editingMemberId() !== member.id) {
-                          <button class="btn btn-sm btn-warning" (click)="startEdit(member)">
-                            <fa-icon icon="pencil-alt" />
-                          </button>
-                        }
-                        <button class="btn btn-sm btn-danger" (click)="removeMember(projectRef.id, member.userId!)">
-                          <fa-icon icon="trash-alt" />
-                        </button>
-                      </div>
-                    }
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="4" class="text-center text-muted" jhiTranslate="gestionTachesApp.project.member.empty">No members yet</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-
-        <hr />
-
-        <div class="d-flex align-items-center mb-3">
-          <h3 class="mb-0" jhiTranslate="gestionTachesApp.project.sprints">Sprints</h3>
-          @if (canManageSprints()) {
-            <a class="btn btn-primary btn-sm ms-2" [routerLink]="['/sprint/new']" [queryParams]="{ projectId: projectRef.id }">
-              <fa-icon icon="plus" />&nbsp;<span jhiTranslate="gestionTachesApp.sprint.home.createLabel">Create a new Sprint</span>
-            </a>
-          }
-        </div>
-
-        <div class="table-responsive">
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th jhiTranslate="gestionTachesApp.sprint.name">Name</th>
-                <th jhiTranslate="gestionTachesApp.sprint.goal">Goal</th>
-                <th jhiTranslate="gestionTachesApp.sprint.status">Status</th>
-                <th jhiTranslate="gestionTachesApp.sprint.startDate">Start Date</th>
-                <th jhiTranslate="gestionTachesApp.sprint.endDate">End Date</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (sprint of sprints(); track sprint.id) {
-                <tr>
-                  <td>
-                    <a [routerLink]="['/sprint', sprint.id, 'view']">{{ sprint.name }}</a>
-                  </td>
-                  <td>{{ sprint.goal }}</td>
-                  <td>{{ 'gestionTachesApp.SprintStatus.' + (sprint.status ?? 'null') | translate }}</td>
-                  <td>{{ sprint.startDate | formatMediumDate }}</td>
-                  <td>{{ sprint.endDate | formatMediumDate }}</td>
-                  <td>
-                    <a [routerLink]="['/sprint', sprint.id, 'edit']" class="btn btn-sm btn-warning">
-                      <fa-icon icon="pencil-alt" />
-                    </a>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="6" class="text-center text-muted" jhiTranslate="gestionTachesApp.sprint.home.notFound">No Sprints found</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-
-        <hr />
-
-        <div class="d-flex align-items-center mb-3">
-          <h3 class="mb-0" jhiTranslate="gestionTachesApp.project.tasks">Tâches</h3>
-          @if (canCreateTasks()) {
-            <button class="btn btn-primary btn-sm ms-2" (click)="toggleTaskForm()">
-              <fa-icon icon="plus" />&nbsp;<span jhiTranslate="gestionTachesApp.task.home.createLabel">Create a new Task</span>
-            </button>
-          }
-          @if (canExportCsv()) {
-            <a class="btn btn-success btn-sm ms-2" [href]="csvExportUrl()" download>
-              <fa-icon icon="download" />&nbsp;<span jhiTranslate="entity.action.exportCsv">CSV</span>
-            </a>
-          }
-        </div>
-
-        @if (showTaskForm()) {
-          <div class="card mb-3 border">
-            <div class="card-body">
-              <h5 class="card-title" jhiTranslate="gestionTachesApp.task.home.createLabel">Create a new Task</h5>
-              <div class="row g-2">
-                <div class="col-12">
-                  <label class="form-label" for="task-title" jhiTranslate="gestionTachesApp.task.title">Title</label>
-                  <input type="text" class="form-control" id="task-title" [(ngModel)]="newTaskTitle" placeholder="Title" required />
-                </div>
-                <div class="col-12">
-                  <label class="form-label" for="task-desc" jhiTranslate="gestionTachesApp.task.description">Description</label>
-                  <textarea
-                    class="form-control"
-                    id="task-desc"
-                    [(ngModel)]="newTaskDescription"
-                    placeholder="Description"
-                    rows="2"
-                  ></textarea>
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label" for="task-type" jhiTranslate="gestionTachesApp.task.type">Type</label>
-                  <select class="form-control" id="task-type" [(ngModel)]="newTaskType">
-                    @for (type of taskTypeValues; track $index) {
-                      <option [value]="type">{{ 'gestionTachesApp.IssueType.' + type | translate }}</option>
-                    }
-                  </select>
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label" for="task-priority" jhiTranslate="gestionTachesApp.task.priority">Priority</label>
-                  <select class="form-control" id="task-priority" [(ngModel)]="newTaskPriority">
-                    @for (prio of priorityValues; track $index) {
-                      <option [value]="prio">{{ 'gestionTachesApp.Priority.' + prio | translate }}</option>
-                    }
-                  </select>
-                </div>
-                <div class="col-md-4">
-                  <label class="form-label" for="task-sprint" jhiTranslate="gestionTachesApp.task.sprint">Sprint</label>
-                  <select class="form-control" id="task-sprint" [(ngModel)]="newTaskSprintId">
-                    <option [ngValue]="null" jhiTranslate="global.messages.notSet">Not set</option>
-                    @for (sprint of sprints(); track sprint.id) {
-                      <option [ngValue]="sprint.id">{{ sprint.name }}</option>
-                    }
-                  </select>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label" for="task-assignee" jhiTranslate="gestionTachesApp.task.assignee">Assignee</label>
-                  <select class="form-control" id="task-assignee" [(ngModel)]="newTaskAssigneeId">
-                    <option [ngValue]="null" jhiTranslate="global.messages.unassigned">Unassigned</option>
-                    @for (member of members(); track member.userId!) {
-                      <option [ngValue]="member.userId">{{ member.userLogin }}</option>
-                    }
-                  </select>
-                </div>
-              </div>
-              <div class="mt-3 d-flex gap-1">
-                <button class="btn btn-primary" (click)="createTask(projectRef.id)" [disabled]="!newTaskTitle() || isCreatingTask()">
-                  <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Save</span>
-                </button>
-                <button class="btn btn-secondary" (click)="toggleTaskForm()">
-                  <fa-icon icon="times" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        }
-
-        <div class="table-responsive">
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th jhiTranslate="gestionTachesApp.task.title">Title</th>
-                <th jhiTranslate="gestionTachesApp.task.type">Type</th>
-                <th jhiTranslate="gestionTachesApp.task.status">Status</th>
-                <th jhiTranslate="gestionTachesApp.task.priority">Priority</th>
-                <th jhiTranslate="gestionTachesApp.task.assignee">Assignee</th>
-                <th jhiTranslate="gestionTachesApp.task.createdBy">Created By</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (task of tasks(); track task.id) {
-                <tr>
-                  <td>
-                    <a [routerLink]="['/task', task.id, 'view']">{{ task.title }}</a>
-                  </td>
-                  <td>{{ 'gestionTachesApp.IssueType.' + (task.type ?? 'null') | translate }}</td>
-                  <td>{{ 'gestionTachesApp.IssueStatus.' + (task.status ?? 'null') | translate }}</td>
-                  <td>{{ 'gestionTachesApp.Priority.' + (task.priority ?? 'null') | translate }}</td>
-                  <td>{{ task.assignee?.login ?? ('global.messages.unassigned' | translate) }}</td>
-                  <td>{{ task.createdBy?.login ?? ('global.messages.notAssigned' | translate) }}</td>
-                  <td>
-                    <a [routerLink]="['/task', task.id, 'edit']" class="btn btn-sm btn-warning">
-                      <fa-icon icon="pencil-alt" />
-                    </a>
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="7" class="text-center text-muted" jhiTranslate="gestionTachesApp.task.home.notFound">No Tasks found</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-
-        <hr />
-
-        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
-        </button>
-
-        <button type="button" [routerLink]="['/project', projectRef.key, 'edit']" class="btn btn-primary">
+      <div class="d-flex">
+        <a [routerLink]="['/project', projectRef.key, 'edit']" class="btn btn-primary btn-sm me-2">
           <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+        </a>
+        <button type="button" class="btn btn-danger btn-sm" (click)="delete(projectRef)">
+          <fa-icon icon="times" />&nbsp;<span jhiTranslate="entity.action.delete">Supprimer</span>
         </button>
       </div>
+    </h2>
+
+    <jhi-alert-error />
+
+    <jhi-alert />
+
+    <dl class="row-md jh-entity-details">
+      <dt><span jhiTranslate="gestionTachesApp.project.description">Description</span></dt>
+      <dd>
+        <span>{{ projectRef.description }}</span>
+      </dd>
+      <dt><span jhiTranslate="gestionTachesApp.project.createdAt">Created At</span></dt>
+      <dd>
+        <span>{{ projectRef.createdAt | formatMediumDatetime }}</span>
+      </dd>
+    </dl>
+
+    <hr />
+
+    <div class="d-flex align-items-center mb-3">
+      <h3 class="mb-0" jhiTranslate="gestionTachesApp.project.members">Members</h3>
+      @if (canManageMembers()) {
+        <button class="btn btn-primary btn-sm ms-2" (click)="toggleAddForm()">
+          <fa-icon icon="user-plus" />&nbsp;<span jhiTranslate="gestionTachesApp.project.member.add">Add member</span>
+        </button>
+      }
+    </div>
+
+    @if (showAddForm()) {
+      <div class="card mb-3 border">
+        <div class="card-body">
+          <div class="row g-2 align-items-end">
+            <div class="col-auto">
+              <select class="form-select" [(ngModel)]="selectedUserId" aria-label="User">
+                <option [ngValue]="null" disabled jhiTranslate="gestionTachesApp.project.member.selectUser">Select a user</option>
+                @for (user of users(); track user.id) {
+                  @if (!members().find(m => m.userId === user.id)) {
+                    <option [ngValue]="user.id">{{ user.login }}</option>
+                  }
+                }
+              </select>
+            </div>
+            <div class="col-auto">
+              <button class="btn btn-primary" (click)="addMember(projectRef.id)" [disabled]="!selectedUserId()">
+                <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+              </button>
+              <button class="btn btn-secondary ms-1" (click)="toggleAddForm()">
+                <fa-icon icon="times" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     }
-  </div>
+
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th jhiTranslate="gestionTachesApp.project.member.userLogin">User</th>
+            <th jhiTranslate="gestionTachesApp.project.member.role">Role</th>
+            <th jhiTranslate="gestionTachesApp.project.member.joinedAt">Joined At</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (member of members(); track member.id) {
+            <tr>
+              <td><fa-icon icon="user" class="me-1" />{{ member.userLogin }}</td>
+              <td>
+                @if (editingMemberId() === member.id) {
+                  <div class="d-flex gap-1 align-items-center">
+                    <select class="form-select form-select-sm" style="width: 140px" [(ngModel)]="editingRole">
+                      <option [ngValue]="'OWNER'">OWNER</option>
+                      <option [ngValue]="'MANAGER'">MANAGER</option>
+                      <option [ngValue]="'MEMBER'">MEMBER</option>
+                    </select>
+                    <button class="btn btn-sm btn-primary" (click)="saveRole(projectRef.id, member)">
+                      <fa-icon icon="save" />
+                    </button>
+                    <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">
+                      <fa-icon icon="times" />
+                    </button>
+                  </div>
+                } @else {
+                  <span class="badge border-primary">{{ member.role }}</span>
+                }
+              </td>
+              <td>{{ member.joinedAt | formatMediumDatetime }}</td>
+              <td>
+                @if (canManageMembers()) {
+                  <div class="d-flex gap-1">
+                    @if (editingMemberId() !== member.id) {
+                      <button class="btn btn-sm btn-warning" (click)="startEdit(member)">
+                        <fa-icon icon="pencil-alt" />
+                      </button>
+                    }
+                    <button class="btn btn-sm btn-danger" (click)="removeMember(projectRef.id, member.userId!)">
+                      <fa-icon icon="trash-alt" />
+                    </button>
+                  </div>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="text-center text-muted" jhiTranslate="gestionTachesApp.project.member.empty">No members yet</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
 </div>

@@ -27,6 +27,7 @@ import { SprintFormGroup, SprintFormService } from './sprint-form.service';
 })
 export class SprintUpdate implements OnInit {
   readonly isSaving = signal(false);
+  readonly isProjectContext = signal(false);
   sprint: ISprint | null = null;
   sprintStatusValues = Object.keys(SprintStatus);
 
@@ -54,12 +55,15 @@ export class SprintUpdate implements OnInit {
       this.loadRelationshipsOptions();
     });
 
-    // Pre-select project from query params (e.g. when coming from project-detail)
-    this.activatedRoute.queryParams.subscribe(params => {
-      const projectId = params['projectId'];
-      if (projectId && !this.sprint) {
-        this.projectService.find(Number(projectId)).subscribe(project => {
-          this.editForm.patchValue({ project });
+    // Pre-select project from parent route :key param (e.g. when coming from project-detail)
+    const key = this.activatedRoute.parent?.paramMap.subscribe(params => {
+      const projectKey = params.get('key');
+      if (projectKey && !this.sprint) {
+        this.projectService.findByKey(projectKey).subscribe(project => {
+          if (project) {
+            this.editForm.patchValue({ project });
+            this.isProjectContext.set(true);
+          }
         });
       }
     });

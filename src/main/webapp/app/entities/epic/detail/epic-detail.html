@@ -23,10 +23,10 @@
         </div>
       </div>
       <div class="d-flex gap-2">
-        <a [routerLink]="['/epic', ep.id, 'edit']" class="btn btn-outline-primary btn-sm">
+        <a [routerLink]="['/project', currentProjectKey(), 'epic', ep.id, 'edit']" class="btn btn-outline-primary btn-sm">
           <fa-icon icon="pencil-alt" /> {{ 'entity.action.edit' | translate }}
         </a>
-        <a [routerLink]="['/epic']" class="btn btn-ghost btn-sm">
+        <a [routerLink]="['/project', currentProjectKey(), 'epic']" class="btn btn-ghost btn-sm">
           <fa-icon icon="arrow-left" />
         </a>
       </div>
@@ -72,7 +72,7 @@
         <span class="progress-label">{{ 'gestionTachesApp.epic.detail.sprints' | translate }}</span>
         <div class="sprint-list mt-1">
           @for (s of uniqueSprints(); track s.id) {
-            <a [routerLink]="['/sprint', s.id, 'view']" class="sprint-chip">{{ s.name }}</a>
+            <a [routerLink]="['/project', currentProjectKey(), 'sprint', s.id, 'view']" class="sprint-chip">{{ s.name }}</a>
           }
         </div>
       </div>
@@ -157,9 +157,12 @@
                   </td>
                   <td>
                     @if (task.sprint) {
-                      <a [routerLink]="['/sprint', task.sprint.id, 'view']" class="sprint-chip" style="font-size: 0.65rem">{{
-                        task.sprint.name
-                      }}</a>
+                      <a
+                        [routerLink]="['/project', currentProjectKey(), 'sprint', task.sprint.id, 'view']"
+                        class="sprint-chip"
+                        style="font-size: 0.65rem"
+                        >{{ task.sprint.name }}</a
+                      >
                     }
                   </td>
                 </tr>

@@ -6,6 +6,7 @@ import dayjs from 'dayjs/esm';
 
 import { AppPageTitleStrategy } from 'app/app-page-title-strategy';
 import { AccountService } from 'app/core/auth/account.service';
+import Breadcrumb from '../breadcrumb/breadcrumb';
 import BottomNav from '../bottom-nav/bottom-nav';
 import PageRibbon from '../profiles/page-ribbon';
 import Sidebar from '../sidebar/sidebar';
@@ -15,7 +16,7 @@ import Sidebar from '../sidebar/sidebar';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './main.html',
   providers: [AppPageTitleStrategy],
-  imports: [RouterOutlet, BottomNav, PageRibbon, Sidebar],
+  imports: [RouterOutlet, BottomNav, PageRibbon, Sidebar, Breadcrumb],
 })
 export default class Main implements OnInit {
   private readonly renderer: Renderer2;

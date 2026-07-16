@@ -99,8 +99,8 @@ export default class Navbar implements OnInit, OnDestroy {
         this.notificationService.refresh();
       });
     }
-    if (notification.taskId) {
-      this.router.navigate(['/task', notification.taskId]);
+    if (notification.taskId && notification.projectKey) {
+      this.router.navigate(['/project', notification.projectKey, 'task', notification.taskId]);
     }
   }
 

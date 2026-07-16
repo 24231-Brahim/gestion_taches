@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, HostListener, OnDestroy, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { filter } from 'rxjs';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
@@ -26,7 +27,11 @@ export default class Sidebar implements OnDestroy {
   readonly inProduction = signal(true);
   readonly openAPIEnabled = signal(false);
 
+  readonly currentProjectKey = signal<string | null>(null);
+
   private readonly profileService = inject(ProfileService);
+  private readonly router = inject(Router);
+  private readonly activatedRoute = inject(ActivatedRoute);
   private readonly bodyObserver = new MutationObserver(() => {
     this.mobileOpen.set(document.body.classList.contains('sidebar-mobile-open'));
   });
@@ -37,6 +42,11 @@ export default class Sidebar implements OnDestroy {
       this.openAPIEnabled.set(profileInfo.openAPIEnabled ?? false);
     });
     this.bodyObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
+    this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
+      this.detectProjectContext();
+    });
+    this.detectProjectContext();
   }
 
   ngOnDestroy(): void {
@@ -63,5 +73,24 @@ export default class Sidebar implements OnDestroy {
   closeMobile(): void {
     this.mobileOpen.set(false);
     document.body.classList.remove('sidebar-mobile-open');
+  }
+
+  private detectProjectContext(): void {
+    let route = this.activatedRoute;
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+    const key = route.snapshot.params['key'] ?? this.findKeyInAncestors(this.activatedRoute);
+    this.currentProjectKey.set(key ?? null);
+  }
+
+  private findKeyInAncestors(route: ActivatedRoute): string | null {
+    if (route.snapshot.params['key']) {
+      return route.snapshot.params['key'] as string;
+    }
+    if (route.parent) {
+      return this.findKeyInAncestors(route.parent);
+    }
+    return null;
   }
 }

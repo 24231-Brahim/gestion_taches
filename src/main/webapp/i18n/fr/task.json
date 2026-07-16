@@ -18,7 +18,13 @@
         "question": "Êtes-vous certain de vouloir supprimer le Issue {{ id }} ?"
       },
       "detail": {
-        "title": "Issue"
+        "title": "Issue",
+        "tab": {
+          "details": "Détails",
+          "comments": "Commentaires",
+          "attachments": "Pièces jointes",
+          "history": "Historique"
+        }
       },
       "id": "ID",
       "title": "Title",

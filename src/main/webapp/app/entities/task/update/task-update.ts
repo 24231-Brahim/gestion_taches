@@ -33,6 +33,7 @@ import { ProjectService } from 'app/entities/project/service/project.service';
 })
 export class TaskUpdate implements OnInit {
   readonly isSaving = signal(false);
+  readonly isProjectContext = signal(false);
   task: ITask | null = null;
   taskTypeValues = Object.keys(TaskType);
   taskStatusValues = Object.keys(TaskStatus);
@@ -79,13 +80,16 @@ export class TaskUpdate implements OnInit {
       this.loadRelationshipsOptions();
     });
 
-    // Pre-select project from query params (e.g. when coming from project-detail)
-    this.activatedRoute.queryParams.subscribe(params => {
-      const projectId: string | undefined = params['projectId'];
-      if (projectId && !this.task) {
-        this.projectService.find(Number(projectId)).subscribe(project => {
-          this.editForm.patchValue({ project });
-          this.loadProjectMembers(project.id);
+    // Pre-select project from parent route :key param (e.g. when coming from project-detail)
+    this.activatedRoute.parent?.paramMap.subscribe(params => {
+      const projectKey = params.get('key');
+      if (projectKey && !this.task) {
+        this.projectService.findByKey(projectKey).subscribe(project => {
+          if (project) {
+            this.editForm.patchValue({ project });
+            this.loadProjectMembers(project.id!);
+            this.isProjectContext.set(true);
+          }
         });
       }
     });
