@@ -9,9 +9,25 @@ classDiagram
     class User {
         +Long id
         +String login
+        +String passwordHash
         +String firstName
         +String lastName
         +String email
+        +String imageUrl
+        +Boolean activated
+        +String langKey
+        +String activationKey
+        +String resetKey
+        +Instant resetDate
+        +Instant createdDate
+    }
+
+    class Authority {
+        +String name
+    }
+
+    class UserAuthority {
+        <<join table>>
     }
 
     class Project {
@@ -50,6 +66,7 @@ classDiagram
         +String description
         +TaskStatus status
         +Priority priority
+        +Integer storyPoints
         +Instant createdAt
         +Instant updatedAt
     }
@@ -57,7 +74,6 @@ classDiagram
     class Comment {
         +String content
         +Instant createdAt
-        +User author
     }
 
     class Attachment {
@@ -68,7 +84,6 @@ classDiagram
 
     class TaskHistory {
         +String action
-        +String fieldChanged
         +String oldValue
         +String newValue
         +Instant createdAt
@@ -76,6 +91,7 @@ classDiagram
 
     class Notification {
         +String message
+        +String taskTitle
         +Boolean isRead
         +Instant createdAt
     }
@@ -131,13 +147,19 @@ classDiagram
     Project "1" --> "*" Task : contient
     Sprint "1" --> "*" Task : regroupe
     Epic "1" --> "*" Task : catégorise
-    User "1" --> "*" Comment : écrit (author)
-    User "1" --> "*" Task : assigné (assignee)
     Task "1" --> "*" Comment : reçoit
     Task "1" --> "*" Attachment : contient
     Task "1" --> "*" TaskHistory : trace
     Task "1" --> "*" Notification : déclenche
+    User "1" --> "*" Task : assigné (assignee)
+    User "1" --> "*" Task : crée (createdBy)
+    User "1" --> "*" Comment : écrit (author)
+    User "1" --> "*" TaskHistory : effectue
     User "1" --> "*" Notification : reçoit
+    User "1" --> "*" UserAuthority : possède
+    Authority "1" --> "*" UserAuthority : associé à
+    UserAuthority --> User
+    UserAuthority --> Authority
     Sprint --> SprintStatus
     Epic --> EpicStatus
     Task --> TaskStatus
