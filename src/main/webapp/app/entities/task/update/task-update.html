@@ -114,6 +114,29 @@
           }
         </div>
 
+        @let storyPointsRef = editForm.get('storyPoints')!;
+        <div class="mb-3">
+          <label class="form-label" for="field_storyPoints" jhiTranslate="gestionTachesApp.task.storyPoints">Story Points</label>
+          <input
+            type="number"
+            class="form-control"
+            name="storyPoints"
+            id="field_storyPoints"
+            data-cy="storyPoints"
+            formControlName="storyPoints"
+            min="0"
+          />
+          @if (storyPointsRef.invalid && (storyPointsRef.dirty || storyPointsRef.touched)) {
+            <div>
+              @if (editForm.get('storyPoints')?.errors?.min) {
+                <small class="form-text text-danger" jhiTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
+                  >La valeur minimale est 0.</small
+                >
+              }
+            </div>
+          }
+        </div>
+
         @let createdAtRef = editForm.get('createdAt')!;
         <div class="mb-3">
           <label class="form-label" for="field_createdAt" jhiTranslate="gestionTachesApp.task.createdAt">Created At</label>

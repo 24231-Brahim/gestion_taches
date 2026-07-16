@@ -1,24 +1,20 @@
 <div class="burndown-container">
   <div class="burndown-stats">
     <div class="stat-card">
-      <span class="stat-label">{{ 'gestionTachesApp.sprint.burndown.total' | translate }}</span>
+      <span class="stat-label">{{ 'gestionTachesApp.epic.burndown.total' | translate }}</span>
       <span class="stat-value">{{ totalTasks() }}</span>
     </div>
     <div class="stat-card">
-      <span class="stat-label">{{ 'gestionTachesApp.sprint.burndown.done' | translate }}</span>
+      <span class="stat-label">{{ 'gestionTachesApp.epic.burndown.done' | translate }}</span>
       <span class="stat-value done">{{ doneTasks() }}</span>
     </div>
     <div class="stat-card">
-      <span class="stat-label">{{ 'gestionTachesApp.sprint.burndown.remaining' | translate }}</span>
+      <span class="stat-label">{{ 'gestionTachesApp.epic.burndown.remaining' | translate }}</span>
       <span class="stat-value remaining">{{ totalTasks() - doneTasks() }}</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-label">{{ 'gestionTachesApp.sprint.burndown.velocity' | translate }}</span>
-      <span class="stat-value velocity">{{ doneTasks() }}</span>
     </div>
     @if (totalStoryPoints() > 0) {
       <div class="stat-card">
-        <span class="stat-label">{{ 'gestionTachesApp.sprint.burndown.storyPointsVelocity' | translate }}</span>
+        <span class="stat-label">{{ 'gestionTachesApp.epic.burndown.storyPoints' | translate }}</span>
         <span class="stat-value velocity">{{ doneStoryPoints() }} / {{ totalStoryPoints() }}</span>
       </div>
     }
@@ -37,10 +33,10 @@
         }
       }
       <text x="165" y="190" text-anchor="middle" fill="var(--color-text-muted, #6a8fac)" font-size="10">
-        {{ 'gestionTachesApp.sprint.burndown.days' | translate }}
+        {{ 'gestionTachesApp.epic.burndown.time' | translate }}
       </text>
       <text x="10" y="100" text-anchor="middle" fill="var(--color-text-muted, #6a8fac)" font-size="10" transform="rotate(-90, 10, 100)">
-        {{ 'gestionTachesApp.sprint.burndown.tasks' | translate }}
+        {{ 'gestionTachesApp.epic.burndown.tasks' | translate }}
       </text>
     </svg>
   </div>

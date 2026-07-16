@@ -38,6 +38,7 @@ type TaskFormGroupContent = {
   type: FormControl<TaskFormRawValue['type']>;
   status: FormControl<TaskFormRawValue['status']>;
   priority: FormControl<TaskFormRawValue['priority']>;
+  storyPoints: FormControl<TaskFormRawValue['storyPoints']>;
   createdAt: FormControl<TaskFormRawValue['createdAt']>;
   updatedAt: FormControl<TaskFormRawValue['updatedAt']>;
   sprint: FormControl<TaskFormRawValue['sprint']>;
@@ -77,6 +78,9 @@ export class TaskFormService {
       }),
       priority: new FormControl(taskRawValue.priority, {
         validators: [Validators.required],
+      }),
+      storyPoints: new FormControl(taskRawValue.storyPoints, {
+        validators: [Validators.min(0)],
       }),
       createdAt: new FormControl(taskRawValue.createdAt, {
         validators: [Validators.required],

@@ -2,6 +2,15 @@
   <div class="planning-columns">
     <div class="planning-column backlog-column">
       <h4 class="planning-column-title">{{ 'gestionTachesApp.sprint.planning.backlog' | translate }}</h4>
+      <div class="backlog-search">
+        <input
+          type="text"
+          class="backlog-search-input"
+          [placeholder]="'gestionTachesApp.sprint.planning.searchPlaceholder' | translate"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+        />
+      </div>
       <div class="planning-column-body" (dragover)="$event.preventDefault()" (drop)="onDropBacklog($event)">
         @for (task of backlogTasks(); track task.id) {
           <div
@@ -11,7 +20,12 @@
             (dblclick)="assignToSprint.emit({ taskId: task.id, sprintId: sprintId() })"
           >
             <span class="planning-card-title">{{ task.title }}</span>
-            <span class="planning-card-id">#{{ task.id }}</span>
+            <span class="planning-card-meta">
+              <span class="planning-card-id">#{{ task.id }}</span>
+              @if (task.storyPoints != null) {
+                <span class="planning-card-sp">{{ task.storyPoints }} SP</span>
+              }
+            </span>
           </div>
         }
         @if (backlogTasks().length === 0) {
@@ -25,7 +39,12 @@
         @for (task of sprintTasks(); track task.id) {
           <div class="planning-card" draggable="true" (dragstart)="onDragStart(task)" (dblclick)="removeFromSprint.emit(task.id)">
             <span class="planning-card-title">{{ task.title }}</span>
-            <span class="planning-card-id">#{{ task.id }}</span>
+            <span class="planning-card-meta">
+              <span class="planning-card-id">#{{ task.id }}</span>
+              @if (task.storyPoints != null) {
+                <span class="planning-card-sp">{{ task.storyPoints }} SP</span>
+              }
+            </span>
           </div>
         }
         @if (sprintTasks().length === 0) {

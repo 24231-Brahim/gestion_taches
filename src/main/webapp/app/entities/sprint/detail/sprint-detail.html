@@ -50,6 +50,16 @@
       </div>
     </div>
 
+    <div class="sprint-progress-wrapper">
+      <div class="sprint-progress-header">
+        <span class="sprint-progress-label">{{ 'gestionTachesApp.sprint.progress.label' | translate }}</span>
+        <span class="sprint-progress-value">{{ doneTasksCount() }} / {{ sprintTasksCount() }} — {{ sprintProgress() }}%</span>
+      </div>
+      <div class="sprint-progress-bar">
+        <div class="sprint-progress-fill" [style.width.%]="sprintProgress()"></div>
+      </div>
+    </div>
+
     <div class="tab-bar">
       <button class="tab-item" [class.active]="activeTab() === 'board'" (click)="setTab('board')">
         <fa-icon icon="columns" class="me-1" /> {{ 'gestionTachesApp.sprint.board.tab' | translate }}
@@ -90,6 +100,8 @@
           [totalTasks]="tasks().length"
           [doneTasks]="tasks().filter(i => i.status === 'DONE').length"
           [daysLeft]="sp.endDate ? daysLeft() : 0"
+          [totalStoryPoints]="totalStoryPoints()"
+          [doneStoryPoints]="doneStoryPoints()"
         />
       }
     }

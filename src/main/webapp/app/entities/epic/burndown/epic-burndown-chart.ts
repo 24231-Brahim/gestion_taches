@@ -3,49 +3,45 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { TranslateDirective } from 'app/shared/language';
-import { ISprint } from '../sprint.model';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'jhi-sprint-burndown-chart',
-  templateUrl: './sprint-burndown-chart.html',
+  selector: 'jhi-epic-burndown-chart',
+  templateUrl: './epic-burndown-chart.html',
   imports: [FontAwesomeModule, TranslateDirective, TranslateModule],
   styles: [
     `
       .burndown-container {
         display: flex;
         flex-direction: column;
+        gap: 16px;
       }
-
       .burndown-stats {
         display: flex;
         flex-direction: row;
         gap: 16px;
+        flex-wrap: wrap;
       }
-
       .stat-card {
         border: 3px solid var(--color-outline-variant);
         padding: 16px;
         background: var(--color-surface-container);
+        flex: 1;
+        min-width: 120px;
       }
-
       .stat-value {
         font-size: 1.5rem;
         font-family: 'JetBrains Mono', monospace;
       }
-
       .stat-value.done {
         color: var(--color-status-done);
       }
-
       .stat-value.remaining {
         color: var(--color-status-todo);
       }
-
       .stat-value.velocity {
         color: var(--color-primary);
       }
-
       .burndown-svg {
         width: 100%;
         height: auto;
@@ -54,11 +50,11 @@ import { ISprint } from '../sprint.model';
     `,
   ],
 })
-export class SprintBurndownChart {
-  readonly sprint = input<ISprint | null>(null);
+export class EpicBurndownChart {
   readonly totalTasks = input<number>(0);
   readonly doneTasks = input<number>(0);
-  readonly daysLeft = input<number>(0);
+  readonly daysInEpic = input<number>(0);
+  readonly daysElapsed = input<number>(0);
   readonly totalStoryPoints = input<number>(0);
   readonly doneStoryPoints = input<number>(0);
 

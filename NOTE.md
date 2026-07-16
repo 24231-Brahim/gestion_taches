@@ -384,7 +384,6 @@ Toutes les opérations de modification sur un projet (`delete`, `getMembers`, `a
 
 - **Persistance sidebar** : l'état collapsed n'est pas sauvegardé dans `localStorage`
 - **Page notifications** : aucune page dédiée (seulement le dropdown dans la topbar)
-- **Frontend Issue→Task** : les fichiers Angular (`src/main/webapp/app/entities/issue/`) ne sont pas encore renommés en `task/`
 
 ### ✅ Réalisé (après la rédaction initiale)
 

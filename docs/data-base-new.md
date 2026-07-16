@@ -95,15 +95,14 @@
 | `end_date` | `date` | |
 | `project_id` | `bigint` | FK → `project(id)`, NOT NULL |
 
-### 8. `issue`
+### 8. `task`
 
 | Colonne | Type | Contraintes |
 |---------|------|-------------|
 | `id` | `bigint` | PRIMARY KEY |
 | `title` | `varchar(200)` | NOT NULL |
 | `description` | `varchar(5000)` | |
-| `type` | `varchar(255)` | NOT NULL (`STORY`/`BUG`/`TASK`/`SUBTASK`/`IMPROVEMENT`) |
-| `status` | `varchar(255)` | NOT NULL (`BACKLOG`/`TODO`/`IN_PROGRESS`/`IN_REVIEW`/`DONE`/`CANCELLED`) |
+| `status` | `varchar(255)` | NOT NULL (`NEW`/`TODO`/`IN_PROGRESS`/`IN_REVIEW`/`DONE`/`CANCELLED`) |
 | `priority` | `varchar(255)` | NOT NULL (`LOWEST`/`LOW`/`MEDIUM`/`HIGH`/`HIGHEST`) |
 | `created_at` | `datetime` | NOT NULL |
 | `updated_at` | `datetime` | |
@@ -120,7 +119,7 @@
 | `id` | `bigint` | PRIMARY KEY |
 | `content` | `varchar(2000)` | NOT NULL |
 | `created_at` | `datetime` | NOT NULL |
-| `issue_id` | `bigint` | FK → `issue(id)`, NOT NULL |
+| `task_id` | `bigint` | FK → `task(id)`, NOT NULL |
 | `author_id` | `bigint` | FK → `jhi_user(id)` |
 
 ### 10. `attachment`
@@ -131,20 +130,19 @@
 | `file_name` | `varchar(255)` | NOT NULL |
 | `file_path` | `varchar(1000)` | NOT NULL |
 | `uploaded_at` | `datetime` | NOT NULL |
-| `issue_id` | `bigint` | FK → `issue(id)`, NOT NULL |
+| `task_id` | `bigint` | FK → `task(id)`, NOT NULL |
 
-### 11. `action_history`
+### 11. `task_history`
 
 | Colonne | Type | Contraintes |
 |---------|------|-------------|
 | `id` | `bigint` | PRIMARY KEY |
 | `action` | `varchar(100)` | NOT NULL |
-| `field_changed` | `varchar(100)` | |
 | `old_value` | `varchar(500)` | |
 | `new_value` | `varchar(500)` | |
 | `created_at` | `datetime` | NOT NULL |
-| `issue_id` | `bigint` | FK → `issue(id)`, NOT NULL |
-| `user_id` | `bigint` | FK → `jhi_user(id)` |
+| `task_id` | `bigint` | FK → `task(id)`, NOT NULL |
+| `user_id` | `bigint` | FK → `jhi_user(id)`, NOT NULL |
 
 ### 12. `notification`
 
@@ -152,9 +150,9 @@
 |---------|------|-------------|
 | `id` | `bigint` | PRIMARY KEY, auto-increment |
 | `message` | `varchar(500)` | NOT NULL |
-| `issue_id` | `bigint` | |
-| `issue_title` | `varchar(200)` | |
-| `user_id` | `bigint` | NOT NULL |
+| `task_id` | `bigint` | FK → `task(id)` |
+| `task_title` | `varchar(200)` | |
+| `user_id` | `bigint` | FK → `jhi_user(id)`, NOT NULL |
 | `is_read` | `boolean` | NOT NULL, default `false` |
 | `created_at` | `datetime(6)` | NOT NULL |
 
@@ -166,8 +164,7 @@
 |------|---------|
 | `SprintStatus` | `PLANNED`, `ACTIVE`, `COMPLETED`, `CANCELLED` |
 | `EpicStatus` | `TODO`, `IN_PROGRESS`, `DONE`, `CANCELLED` |
-| `IssueStatus` | `BACKLOG`, `TODO`, `IN_PROGRESS`, `IN_REVIEW`, `DONE`, `CANCELLED` |
-| `IssueType` | `STORY`, `BUG`, `TASK`, `SUBTASK`, `IMPROVEMENT` |
+| `TaskStatus` | `NEW`, `TODO`, `IN_PROGRESS`, `IN_REVIEW`, `DONE`, `CANCELLED` |
 | `Priority` | `LOWEST`, `LOW`, `MEDIUM`, `HIGH`, `HIGHEST` |
 | `ProjectRole` | `OWNER`, `MANAGER`, `MEMBER` |
 
@@ -235,12 +232,11 @@ classDiagram
         +LocalDate endDate
     }
 
-    class Issue {
+    class Task {
         +Long id
         +String title
         +String description
-        +IssueType type
-        +IssueStatus status
+        +TaskStatus status
         +Priority priority
         +LocalDateTime createdAt
         +LocalDateTime updatedAt
@@ -259,10 +255,9 @@ classDiagram
         +LocalDateTime uploadedAt
     }
 
-    class ActionHistory {
+    class TaskHistory {
         +Long id
         +String action
-        +String fieldChanged
         +String oldValue
         +String newValue
         +LocalDateTime createdAt
@@ -271,31 +266,33 @@ classDiagram
     class Notification {
         +Long id
         +String message
-        +Long issueId
-        +String issueTitle
+        +Long taskId
+        +String taskTitle
         +Boolean isRead
         +LocalDateTime createdAt
     }
 
     User "1" --> "*" Project : owner
     User "1" --> "*" ProjectMember : member
-    User "1" --> "*" Issue : assignee
-    User "1" --> "*" Issue : created_by
+    User "1" --> "*" Task : assignee
+    User "1" --> "*" Task : created_by
     User "1" --> "*" Comment : author
-    User "1" --> "*" ActionHistory : user
+    User "1" --> "*" TaskHistory : user
+    User "1" --> "*" Notification : user
     User "*" --> "*" Authority : authorities
 
     Project "1" --> "*" Sprint : contains
     Project "1" --> "*" Epic : contains
-    Project "1" --> "*" Issue : contains
+    Project "1" --> "*" Task : contains
     Project "1" --> "*" ProjectMember : has
 
-    Sprint "1" --> "*" Issue : groups
-    Epic "1" --> "*" Issue : categorizes
+    Sprint "1" --> "*" Task : groups
+    Epic "1" --> "*" Task : categorizes
 
-    Issue "1" --> "*" Comment : receives
-    Issue "1" --> "*" Attachment : has
-    Issue "1" --> "*" ActionHistory : traced_by
+    Task "1" --> "*" Comment : receives
+    Task "1" --> "*" Attachment : has
+    Task "1" --> "*" TaskHistory : traced_by
+    Task "1" --> "*" Notification : notifies
 ```
 
 ---
@@ -306,23 +303,25 @@ classDiagram
 erDiagram
     jhi_user ||--o{ project : "owns"
     jhi_user ||--o{ project_member : "member"
-    jhi_user ||--o{ issue : "assignee"
-    jhi_user ||--o{ issue : "created_by"
+    jhi_user ||--o{ task : "assignee"
+    jhi_user ||--o{ task : "created_by"
     jhi_user ||--o{ comment : "author"
-    jhi_user ||--o{ action_history : "performs"
+    jhi_user ||--o{ task_history : "performs"
+    jhi_user ||--o{ notification : "receives"
     jhi_user }|--|{ jhi_authority : "authorities"
 
     project ||--o{ sprint : "contains"
     project ||--o{ epic : "contains"
-    project ||--o{ issue : "contains"
+    project ||--o{ task : "contains"
     project ||--o{ project_member : "has"
 
-    sprint ||--o{ issue : "groups"
-    epic ||--o{ issue : "categorizes"
+    sprint ||--o{ task : "groups"
+    epic ||--o{ task : "categorizes"
 
-    issue ||--o{ comment : "receives"
-    issue ||--o{ attachment : "has"
-    issue ||--o{ action_history : "traced_by"
+    task ||--o{ comment : "receives"
+    task ||--o{ attachment : "has"
+    task ||--o{ task_history : "traced_by"
+    task ||--o{ notification : "notifies"
 
     jhi_user {
         bigint id PK
@@ -378,11 +377,10 @@ erDiagram
         bigint project_id FK
     }
 
-    issue {
+    task {
         bigint id PK
         varchar title
         varchar description
-        varchar type
         varchar status
         varchar priority
         datetime created_at
@@ -398,7 +396,7 @@ erDiagram
         bigint id PK
         varchar content
         datetime created_at
-        bigint issue_id FK
+        bigint task_id FK
         bigint author_id FK
     }
 
@@ -407,26 +405,25 @@ erDiagram
         varchar file_name
         varchar file_path
         datetime uploaded_at
-        bigint issue_id FK
+        bigint task_id FK
     }
 
-    action_history {
+    task_history {
         bigint id PK
         varchar action
-        varchar field_changed
         varchar old_value
         varchar new_value
         datetime created_at
-        bigint issue_id FK
+        bigint task_id FK
         bigint user_id FK
     }
 
     notification {
         bigint id PK
         varchar message
-        bigint issue_id
-        varchar issue_title
-        bigint user_id
+        bigint task_id FK
+        varchar task_title
+        bigint user_id FK
         boolean is_read
         datetime created_at
     }
@@ -451,15 +448,15 @@ sprint (id, name, goal, start_date, end_date, status, project_id)
 
 epic (id, title, description, status, priority, created_at, updated_at, start_date, end_date, project_id)
 
-issue (id, title, description, type, status, priority, created_at, updated_at, sprint_id, epic_id, project_id, assignee_id, created_by_id)
+task (id, title, description, status, priority, created_at, updated_at, sprint_id, epic_id, project_id, assignee_id, created_by_id)
 
-comment (id, content, created_at, issue_id, author_id)
+comment (id, content, created_at, task_id, author_id)
 
-attachment (id, file_name, file_path, uploaded_at, issue_id)
+attachment (id, file_name, file_path, uploaded_at, task_id)
 
-action_history (id, action, field_changed, old_value, new_value, created_at, issue_id, user_id)
+task_history (id, action, old_value, new_value, created_at, task_id, user_id)
 
-notification (id, message, issue_id, issue_title, user_id, is_read, created_at)
+notification (id, message, task_id, task_title, user_id, is_read, created_at)
 ```
 
 ---
@@ -475,8 +472,8 @@ notification (id, message, issue_id, issue_title, user_id, is_read, created_at)
 | `project_member` | `project`, `jhi_user` |
 | `sprint` | `project` |
 | `epic` | `project` |
-| `issue` | `project`, `sprint`, `epic`, `jhi_user` (assignee, created_by) |
-| `comment` | `issue`, `jhi_user` (author) |
-| `attachment` | `issue` |
-| `action_history` | `issue`, `jhi_user` |
-| `notification` | `jhi_user` |
+| `task` | `project`, `sprint`, `epic`, `jhi_user` (assignee, created_by) |
+| `comment` | `task`, `jhi_user` (author) |
+| `attachment` | `task` |
+| `task_history` | `task`, `jhi_user` |
+| `notification` | `task`, `jhi_user` |

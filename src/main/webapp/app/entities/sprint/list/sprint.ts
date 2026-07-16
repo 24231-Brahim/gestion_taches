@@ -46,10 +46,8 @@ type Tab = 'board' | 'planning' | 'burndown';
         align-items: center;
         gap: 16px;
       }
-      .sprint-selector {
+      select.sprint-selector {
         min-width: 280px;
-      }
-      .sprint-selector select {
         background: var(--color-surface-container, #1b2025);
         border: 2px solid var(--color-outline-variant, #2a3038);
         color: var(--color-text, #dfe3ea);
@@ -170,6 +168,44 @@ type Tab = 'board' | 'planning' | 'burndown';
         opacity: 0.5;
         pointer-events: none;
       }
+      .sprint-progress-wrapper {
+        margin-bottom: 20px;
+        padding: 12px 16px;
+        border: 3px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container, #1b2025);
+        box-shadow: 4px 4px 0 var(--color-outline-variant, #2a3038);
+      }
+      .sprint-progress-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+      .sprint-progress-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.8rem;
+        color: var(--color-text-muted, #6a8fac);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .sprint-progress-value {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.85rem;
+        color: var(--color-primary, #97cbff);
+        font-weight: 700;
+      }
+      .sprint-progress-bar {
+        width: 100%;
+        height: 12px;
+        background: var(--color-surface-container-high, #262d36);
+        border: 2px solid var(--color-outline-variant, #2a3038);
+        overflow: hidden;
+      }
+      .sprint-progress-fill {
+        height: 100%;
+        background: var(--color-status-done, #4caf50);
+        transition: width 0.3s ease;
+      }
       @media (max-width: 768px) {
         .sprint-page {
           padding: 12px;
@@ -178,8 +214,9 @@ type Tab = 'board' | 'planning' | 'burndown';
           flex-direction: column;
           align-items: stretch;
         }
-        .sprint-selector {
+        select.sprint-selector {
           min-width: 0;
+          width: 100%;
         }
         .tab-item {
           padding: 8px 12px;
@@ -257,6 +294,26 @@ export class Sprint implements OnInit {
     return Math.max(0, end.diff(now, 'day'));
   });
 
+  readonly totalTasksCount = computed(() => this.tasks().length);
+
+  readonly doneTasksCount = computed(() => this.tasks().filter(t => t.status === 'DONE').length);
+
+  readonly sprintProgress = computed(() => {
+    const total = this.totalTasksCount();
+    if (total === 0) {
+      return 0;
+    }
+    return Math.round((this.doneTasksCount() / total) * 100);
+  });
+
+  readonly totalStoryPoints = computed(() => this.tasks().reduce((sum, t) => sum + (t.storyPoints ?? 0), 0));
+
+  readonly doneStoryPoints = computed(() =>
+    this.tasks()
+      .filter(t => t.status === 'DONE')
+      .reduce((sum, t) => sum + (t.storyPoints ?? 0), 0),
+  );
+
   protected readonly sprintService = inject(SprintService);
   protected readonly taskService = inject(TaskService);
   protected readonly alertService = inject(AlertService);
@@ -303,8 +360,10 @@ export class Sprint implements OnInit {
     });
   }
 
-  onSprintSelect(): void {
-    const sp = this.selectedSprint();
+  onSprintChange(value: string | number): void {
+    const id = typeof value === 'string' ? Number(value) : value;
+    this.selectedSprintId.set(id);
+    const sp = this.sprints().find(s => s.id === id);
     if (sp?.project?.id) {
       this.taskService.tasksParams.set({
         'projectId.equals': sp.project.id,

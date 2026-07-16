@@ -14,7 +14,7 @@ import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigati
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
-import { FormatMediumDatetimePipe } from 'app/shared/date';
+import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
 import { Filter, FilterOptions, IFilterOption, IFilterOptions } from 'app/shared/filter';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
@@ -27,6 +27,19 @@ import { EpicService } from '../service/epic.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-epic',
   templateUrl: './epic.html',
+  styles: [
+    `
+      .status-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border: 2px solid var(--color-outline-variant, #2a3038);
+        font-size: 0.75rem;
+        font-family: 'JetBrains Mono', monospace;
+        text-transform: uppercase;
+        background: var(--color-surface-container, #1b2025);
+      }
+    `,
+  ],
   imports: [
     RouterLink,
     FormsModule,
@@ -38,6 +51,7 @@ import { EpicService } from '../service/epic.service';
     TranslateDirective,
     TranslateModule,
     FormatMediumDatetimePipe,
+    FormatMediumDatePipe,
     Filter,
     NgbPagination,
     ItemCount,
@@ -147,6 +161,27 @@ export class Epic implements OnInit {
       queryObject[filterOption.name] = filterOption.values;
     }
     this.epicService.epicsParams.set(queryObject);
+  }
+
+  getStatusColor(status: string | null | undefined): string {
+    const colors: Record<string, string> = {
+      TODO: 'var(--color-status-todo, #2196f3)',
+      IN_PROGRESS: 'var(--color-status-in-progress, #ff9800)',
+      DONE: 'var(--color-status-done, #4caf50)',
+      CANCELLED: 'var(--color-status-cancelled, #f44336)',
+    };
+    return colors[status ?? ''] ?? 'var(--color-outline-variant)';
+  }
+
+  getPriorityColor(priority: string | null | undefined): string {
+    const colors: Record<string, string> = {
+      LOWEST: 'var(--color-priority-lowest, #9e9e9e)',
+      LOW: 'var(--color-priority-low, #607d8b)',
+      MEDIUM: 'var(--color-priority-medium, #2196f3)',
+      HIGH: 'var(--color-priority-high, #ff9800)',
+      HIGHEST: 'var(--color-priority-highest, #f44336)',
+    };
+    return colors[priority ?? ''] ?? 'var(--color-outline-variant)';
   }
 
   protected handleNavigation(page: number, sortState: SortState, filterOptions?: IFilterOption[]): void {

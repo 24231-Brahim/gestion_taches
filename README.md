@@ -12,15 +12,15 @@ Système de gestion de projet (type Jira) généré avec **JHipster 9.1.0**.
 
 ### Entités
 
-| Entité            | Description                                               |
-| ----------------- | --------------------------------------------------------- |
-| **Project**       | Projet racine contenant sprints, epics et issues          |
-| **Sprint**        | Itération de développement                                |
-| **Epic**          | Fonctionnalité transverse                                 |
-| **Issue**         | Unité de travail (Story, Bug, Task, Subtask, Improvement) |
-| **Comment**       | Commentaire sur une issue                                 |
-| **Attachment**    | Fichier joint à une issue                                 |
-| **ActionHistory** | Audit des modifications d'une issue                       |
+| Entité          | Description                                               |
+| --------------- | --------------------------------------------------------- |
+| **Project**     | Projet racine contenant sprints, epics et tasks           |
+| **Sprint**      | Itération de développement                                |
+| **Epic**        | Fonctionnalité transverse                                 |
+| **Task**        | Unité de travail (Story, Bug, Task, Subtask, Improvement) |
+| **Comment**     | Commentaire sur une tâche                                 |
+| **Attachment**  | Fichier joint à une tâche                                 |
+| **TaskHistory** | Audit des modifications d'une tâche                       |
 
 Documentation et aide : [https://www.jhipster.tech/documentation-archive/v9.1.0](https://www.jhipster.tech/documentation-archive/v9.1.0).
 
@@ -29,11 +29,9 @@ Documentation et aide : [https://www.jhipster.tech/documentation-archive/v9.1.0]
 ```
 gestion_taches/
 ├── .jhipster/                  # Configuration JHipster des entités
-│   ├── ActionHistory.json
 │   ├── Attachment.json
 │   ├── Comment.json
 │   ├── Epic.json
-│   ├── Issue.json
 │   ├── Project.json
 │   └── Sprint.json
 ├── src/

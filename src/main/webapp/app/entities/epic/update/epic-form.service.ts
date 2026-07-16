@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, Validators } from '@angular/forms';
 
 import dayjs from 'dayjs/esm';
 
@@ -20,9 +20,11 @@ type EpicFormGroupInput = IEpic | PartialWithRequiredKeyOf<NewEpic>;
 /**
  * Type that converts some properties for forms.
  */
-type FormValueOf<T extends IEpic | NewEpic> = Omit<T, 'createdAt' | 'updatedAt'> & {
+type FormValueOf<T extends IEpic | NewEpic> = Omit<T, 'createdAt' | 'updatedAt' | 'startDate' | 'endDate'> & {
   createdAt?: string | null;
   updatedAt?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
 };
 
 type EpicFormRawValue = FormValueOf<IEpic>;
@@ -39,10 +41,21 @@ type EpicFormGroupContent = {
   priority: FormControl<EpicFormRawValue['priority']>;
   createdAt: FormControl<EpicFormRawValue['createdAt']>;
   updatedAt: FormControl<EpicFormRawValue['updatedAt']>;
+  startDate: FormControl<EpicFormRawValue['startDate']>;
+  endDate: FormControl<EpicFormRawValue['endDate']>;
   project: FormControl<EpicFormRawValue['project']>;
 };
 
 export type EpicFormGroup = FormGroup<EpicFormGroupContent>;
+
+function dateRangeValidator(group: AbstractControl): Record<string, boolean> | null {
+  const start = group.get('startDate')?.value;
+  const end = group.get('endDate')?.value;
+  if (start && end && start > end) {
+    return { dateRange: true };
+  }
+  return null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class EpicFormService {
@@ -51,7 +64,7 @@ export class EpicFormService {
       ...this.getFormDefaults(),
       ...(epic ?? { id: null }),
     });
-    return new FormGroup<EpicFormGroupContent>({
+    const form = new FormGroup<EpicFormGroupContent>({
       id: new FormControl(
         { value: epicRawValue.id, disabled: true },
         {
@@ -75,10 +88,14 @@ export class EpicFormService {
         validators: [Validators.required],
       }),
       updatedAt: new FormControl(epicRawValue.updatedAt),
+      startDate: new FormControl(epicRawValue.startDate),
+      endDate: new FormControl(epicRawValue.endDate),
       project: new FormControl(epicRawValue.project, {
         validators: [Validators.required],
       }),
     });
+    form.addValidators(dateRangeValidator);
+    return form;
   }
 
   getEpic(form: EpicFormGroup): IEpic | NewEpic {
@@ -108,6 +125,8 @@ export class EpicFormService {
       ...rawEpic,
       createdAt: dayjs(rawEpic.createdAt, DATE_TIME_FORMAT),
       updatedAt: dayjs(rawEpic.updatedAt, DATE_TIME_FORMAT),
+      startDate: rawEpic.startDate ? dayjs(rawEpic.startDate) : undefined,
+      endDate: rawEpic.endDate ? dayjs(rawEpic.endDate) : undefined,
     };
   }
 
@@ -118,6 +137,8 @@ export class EpicFormService {
       ...epic,
       createdAt: epic.createdAt ? epic.createdAt.format(DATE_TIME_FORMAT) : undefined,
       updatedAt: epic.updatedAt ? epic.updatedAt.format(DATE_TIME_FORMAT) : undefined,
+      startDate: epic.startDate ? epic.startDate.format('YYYY-MM-DD') : undefined,
+      endDate: epic.endDate ? epic.endDate.format('YYYY-MM-DD') : undefined,
     };
   }
 }

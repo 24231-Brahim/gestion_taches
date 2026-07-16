@@ -1,62 +1,215 @@
-<div class="d-flex justify-content-center">
-  <div class="col-12 col-lg-8">
-    @if (epic(); as epicRef) {
-      <div>
-        <h2 data-cy="epicDetailsHeading"><span jhiTranslate="gestionTachesApp.epic.detail.title">Epic</span></h2>
-
-        <hr />
-
-        <jhi-alert-error />
-
-        <jhi-alert />
-
-        <dl class="row-md jh-entity-details">
-          <dt><span jhiTranslate="gestionTachesApp.epic.title">Title</span></dt>
-          <dd>
-            <span>{{ epicRef.title }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.epic.description">Description</span></dt>
-          <dd>
-            <span>{{ epicRef.description }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.epic.status">Status</span></dt>
-          <dd>
-            <span [jhiTranslate]="'gestionTachesApp.EpicStatus.' + (epicRef.status ?? 'null')">{{
-              { null: '', TODO: 'TODO', IN_PROGRESS: 'IN_PROGRESS', DONE: 'DONE', CANCELLED: 'CANCELLED' }[epicRef.status ?? 'null']
+<div class="epic-detail-container">
+  @if (epic(); as ep) {
+    <div class="epic-header">
+      <div class="epic-header-info">
+        <div>
+          <h3 class="epic-title">{{ ep.title }}</h3>
+          @if (ep.description) {
+            <p class="epic-description">{{ ep.description }}</p>
+          }
+          <div class="epic-meta">
+            <span class="status-badge" [style.border-color]="getEpicStatusColor(ep.status)">{{
+              'gestionTachesApp.EpicStatus.' + (ep.status ?? 'TODO') | translate
             }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.epic.priority">Priority</span></dt>
-          <dd>
-            <span [jhiTranslate]="'gestionTachesApp.Priority.' + (epicRef.priority ?? 'null')">{{
-              { null: '', LOWEST: 'LOWEST', LOW: 'LOW', MEDIUM: 'MEDIUM', HIGH: 'HIGH', HIGHEST: 'HIGHEST' }[epicRef.priority ?? 'null']
-            }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.epic.createdAt">Created At</span></dt>
-          <dd>
-            <span>{{ epicRef.createdAt | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.epic.updatedAt">Updated At</span></dt>
-          <dd>
-            <span>{{ epicRef.updatedAt | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span jhiTranslate="gestionTachesApp.epic.project">Project</span></dt>
-          <dd>
-            @if (epic()!.project) {
-              <div>
-                <a [routerLink]="['/project', epic()!.project?.key, 'view']">{{ epicRef.project?.name }}</a>
-              </div>
+            @if (ep.startDate || ep.endDate) {
+              <span class="ms-2">{{ ep.startDate | formatMediumDate }} — {{ ep.endDate | formatMediumDate }}</span>
             }
-          </dd>
-        </dl>
+          </div>
+          @if (ep.project) {
+            <div class="epic-meta mt-1">
+              <a [routerLink]="['/project', ep.project.key, 'view']">{{ ep.project.name }}</a>
+            </div>
+          }
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <a [routerLink]="['/epic', ep.id, 'edit']" class="btn btn-outline-primary btn-sm">
+          <fa-icon icon="pencil-alt" /> {{ 'entity.action.edit' | translate }}
+        </a>
+        <a [routerLink]="['/epic']" class="btn btn-ghost btn-sm">
+          <fa-icon icon="arrow-left" />
+        </a>
+      </div>
+    </div>
 
-        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Retour</span>
-        </button>
+    <div class="progress-wrapper">
+      <div class="progress-header">
+        <span class="progress-label">{{ 'gestionTachesApp.epic.detail.progress' | translate }}</span>
+        <span class="progress-value">{{ epicStats().doneTasks }} / {{ epicStats().totalTasks }} — {{ epicStats().progress }}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="epicStats().progress"></div>
+      </div>
+    </div>
 
-        <button type="button" [routerLink]="['/epic', epicRef.id, 'edit']" class="btn btn-primary">
-          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
-        </button>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">{{ 'gestionTachesApp.epic.detail.totalTasks' | translate }}</span>
+        <span class="stat-value">{{ epicStats().totalTasks }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">{{ 'gestionTachesApp.epic.detail.doneTasks' | translate }}</span>
+        <span class="stat-value done">{{ epicStats().doneTasks }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">{{ 'gestionTachesApp.epic.detail.inProgressTasks' | translate }}</span>
+        <span class="stat-value in-progress">{{ epicStats().inProgressTasks }}</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">{{ 'gestionTachesApp.epic.detail.todoTasks' | translate }}</span>
+        <span class="stat-value todo">{{ epicStats().todoTasks }}</span>
+      </div>
+      @if (epicStats().totalStoryPoints > 0) {
+        <div class="stat-card">
+          <span class="stat-label">{{ 'gestionTachesApp.epic.detail.storyPoints' | translate }}</span>
+          <span class="stat-value points">{{ epicStats().doneStoryPoints }} / {{ epicStats().totalStoryPoints }}</span>
+        </div>
+      }
+    </div>
+
+    @if (uniqueSprints().length > 0) {
+      <div class="mb-3">
+        <span class="progress-label">{{ 'gestionTachesApp.epic.detail.sprints' | translate }}</span>
+        <div class="sprint-list mt-1">
+          @for (s of uniqueSprints(); track s.id) {
+            <a [routerLink]="['/sprint', s.id, 'view']" class="sprint-chip">{{ s.name }}</a>
+          }
+        </div>
       </div>
     }
-  </div>
+
+    @if (uniqueAssignees().length > 0) {
+      <div class="mb-3">
+        <span class="progress-label">{{ 'gestionTachesApp.epic.detail.team' | translate }}</span>
+        <div class="d-flex gap-2 mt-1 flex-wrap">
+          @for (a of uniqueAssignees(); track a) {
+            <span class="assignee-initials me-1">{{ getInitials(a) }}</span>
+            <span style="font-size: 0.85rem; color: var(--color-text, #dfe3ea); margin-right: 12px">{{ a }}</span>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="tab-bar">
+      <button class="tab-item" [class.active]="activeTab() === 'tasks'" (click)="setTab('tasks')">
+        <fa-icon icon="list" class="me-1" /> {{ 'gestionTachesApp.epic.tab.tasks' | translate }}
+      </button>
+      <button class="tab-item" [class.active]="activeTab() === 'kanban'" (click)="setTab('kanban')">
+        <fa-icon icon="columns" class="me-1" /> {{ 'gestionTachesApp.epic.tab.kanban' | translate }}
+      </button>
+      <button class="tab-item" [class.active]="activeTab() === 'burndown'" (click)="setTab('burndown')">
+        <fa-icon icon="chart-line" class="me-1" /> {{ 'gestionTachesApp.epic.tab.burndown' | translate }}
+      </button>
+      <button class="tab-item" [class.active]="activeTab() === 'timeline'" (click)="setTab('timeline')">
+        <fa-icon icon="clock" class="me-1" /> {{ 'gestionTachesApp.epic.tab.timeline' | translate }}
+      </button>
+    </div>
+
+    @switch (activeTab()) {
+      @case ('tasks') {
+        @if (tasks().length === 0) {
+          <div class="alert alert-warning">
+            <span jhiTranslate="gestionTachesApp.epic.detail.noTasks">No tasks for this epic</span>
+          </div>
+        } @else {
+          <table class="task-table">
+            <thead>
+              <tr>
+                <th>{{ 'gestionTachesApp.epic.detail.taskTable.title' | translate }}</th>
+                <th>{{ 'gestionTachesApp.epic.detail.taskTable.status' | translate }}</th>
+                <th>{{ 'gestionTachesApp.epic.detail.taskTable.priority' | translate }}</th>
+                <th>{{ 'gestionTachesApp.epic.detail.taskTable.assignee' | translate }}</th>
+                <th>{{ 'gestionTachesApp.epic.detail.taskTable.storyPoints' | translate }}</th>
+                <th>{{ 'gestionTachesApp.epic.detail.taskTable.sprint' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (task of tasks(); track task.id) {
+                <tr>
+                  <td>
+                    <fa-icon
+                      [icon]="typeIcons[task.type ?? 'STORY']"
+                      [style.color]="typeColors[task.type ?? 'STORY']"
+                      class="task-type-icon"
+                    />
+                    {{ task.title }}
+                  </td>
+                  <td>
+                    <span class="status-badge" [style.border-color]="getStatusColor(task.status)" style="font-size: 0.65rem">{{
+                      'gestionTachesApp.TaskStatus.' + (task.status ?? 'NEW') | translate
+                    }}</span>
+                  </td>
+                  <td>
+                    <span [style.color]="getPriorityColor(task.priority)">{{
+                      'gestionTachesApp.Priority.' + (task.priority ?? 'MEDIUM') | translate
+                    }}</span>
+                  </td>
+                  <td>
+                    @if (task.assignee?.login) {
+                      <span class="assignee-initials me-1">{{ getInitials(task.assignee?.login) }}</span>
+                      {{ task.assignee?.login }}
+                    }
+                  </td>
+                  <td>
+                    @if (task.storyPoints) {
+                      <span class="sp-badge">{{ task.storyPoints }}</span>
+                    }
+                  </td>
+                  <td>
+                    @if (task.sprint) {
+                      <a [routerLink]="['/sprint', task.sprint.id, 'view']" class="sprint-chip" style="font-size: 0.65rem">{{
+                        task.sprint.name
+                      }}</a>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      }
+      @case ('kanban') {
+        <jhi-task-kanban-board [tasks]="tasks()" />
+      }
+      @case ('burndown') {
+        <jhi-epic-burndown-chart
+          [totalTasks]="epicStats().totalTasks"
+          [doneTasks]="epicStats().doneTasks"
+          [totalStoryPoints]="epicStats().totalStoryPoints"
+          [doneStoryPoints]="epicStats().doneStoryPoints"
+        />
+      }
+      @case ('timeline') {
+        <div class="timeline-container">
+          <div class="timeline-bar">
+            <div class="timeline-fill" [style.width.%]="epicStats().progress"></div>
+            @if (ep.startDate) {
+              <span class="timeline-marker" style="left: 0%">{{ ep.startDate.format('MMM D') }}</span>
+            }
+            @if (ep.endDate) {
+              <span class="timeline-marker" style="right: 0; left: auto; transform: translateX(50%)">{{ ep.endDate.format('MMM D') }}</span>
+            }
+          </div>
+          <div class="d-flex flex-column gap-2">
+            @for (task of tasks(); track task.id) {
+              <div
+                class="d-flex align-items-center gap-2 p-2"
+                style="border: 2px solid var(--color-outline-variant); background: var(--color-surface-container)"
+              >
+                <fa-icon [icon]="typeIcons[task.type ?? 'STORY']" [style.color]="typeColors[task.type ?? 'STORY']" />
+                <span style="flex: 1; font-size: 0.85rem">{{ task.title }}</span>
+                <span class="status-badge" [style.border-color]="getStatusColor(task.status)" style="font-size: 0.65rem">{{
+                  'gestionTachesApp.TaskStatus.' + (task.status ?? 'NEW') | translate
+                }}</span>
+                @if (task.storyPoints) {
+                  <span class="sp-badge">{{ task.storyPoints }}</span>
+                }
+                <span class="assignee-initials">{{ getInitials(task.assignee?.login) }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+  }
 </div>

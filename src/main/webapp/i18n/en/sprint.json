@@ -26,14 +26,22 @@
       "project": "Project",
       "board": {
         "tab": "Board",
-        "emptyColumn": "No tasks"
+        "emptyColumn": "No tasks",
+        "filter": {
+          "assignee": "Assignee",
+          "type": "Type",
+          "priority": "Priority",
+          "all": "All",
+          "reset": "Reset filters"
+        }
       },
       "planning": {
         "tab": "Planning",
         "backlog": "Backlog",
         "sprint": "Sprint",
         "noBacklog": "All tasks are assigned to a sprint",
-        "noIssues": "No tasks in this sprint"
+        "noIssues": "No tasks in this sprint",
+        "searchPlaceholder": "Search tasks..."
       },
       "burndown": {
         "tab": "Burndown",
@@ -41,6 +49,7 @@
         "done": "Done",
         "remaining": "Remaining",
         "velocity": "Velocity",
+        "storyPointsVelocity": "SP Velocity",
         "days": "Days",
         "issues": "Tasks"
       },
@@ -59,6 +68,9 @@
         "completed": "Completed tasks",
         "carriedOver": "Carried over tasks",
         "percentage": "Percentage"
+      },
+      "progress": {
+        "label": "Sprint Progress"
       }
     }
   }

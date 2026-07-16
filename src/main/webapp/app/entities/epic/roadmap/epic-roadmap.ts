@@ -17,6 +17,8 @@ import { Filter, FilterOptions, IFilterOption, IFilterOptions } from 'app/shared
 import FilterComponent from 'app/shared/filter/filter';
 import { TranslateDirective } from 'app/shared/language';
 import { SortService, type SortState, sortStateSignal } from 'app/shared/sort';
+import { TaskService } from 'app/entities/task/service/task.service';
+import { ITask } from 'app/entities/task/task.model';
 import { IEpic } from '../epic.model';
 import { EpicService } from '../service/epic.service';
 
@@ -215,26 +217,53 @@ const STATUS_COLORS: Record<string, string> = {
 export class EpicRoadmap implements OnInit {
   subscription: Subscription | null = null;
   readonly epics = signal<IEpic[]>([]);
+  readonly allTasks = signal<ITask[]>([]);
   readonly filterStatus = signal<string>('');
   readonly filterProject = signal<string>('');
+  readonly filterPriority = signal<string>('');
+  readonly sortBy = signal<string>('');
 
   filteredEpics = computed(() => {
     let list = this.epics();
     const statusFilter = this.filterStatus();
+    const projectFilter = this.filterProject();
+    const priorityFilter = this.filterPriority();
+    const sortField = this.sortBy();
     if (statusFilter) {
       list = list.filter(e => e.status === statusFilter);
+    }
+    if (projectFilter) {
+      list = list.filter(e => e.project?.name === projectFilter || e.project?.id?.toString() === projectFilter);
+    }
+    if (priorityFilter) {
+      list = list.filter(e => e.priority === priorityFilter);
+    }
+    if (sortField) {
+      const [field, dir] = sortField.split(':') as [string, string];
+      list = [...list].sort((a, b) => {
+        const aVal = String((a as any)[field] ?? '');
+        const bVal = String((b as any)[field] ?? '');
+        const cmp = aVal.localeCompare(bVal);
+        return dir === 'desc' ? -cmp : cmp;
+      });
     }
     return list;
   });
 
-  readonly epicsWithProgress = computed<EpicWithProgress[]>(() =>
-    this.filteredEpics().map(e => ({
-      ...e,
-      progress: 0,
-      totalIssues: 0,
-      doneIssues: 0,
-    })),
-  );
+  readonly epicsWithProgress = computed<EpicWithProgress[]>(() => {
+    const tasks = this.allTasks();
+    return this.filteredEpics().map(e => {
+      const epicTasks = tasks.filter(t => t.epic?.id === e.id);
+      const total = epicTasks.length;
+      const done = epicTasks.filter(t => t.status === 'DONE').length;
+      return {
+        ...e,
+        progress: total > 0 ? Math.round((done / total) * 100) : 0,
+        totalIssues: total,
+        doneIssues: done,
+      };
+    });
+  });
 
   readonly hasDateRange = computed(() => this.epics().some(e => e.startDate && e.endDate));
 
@@ -244,8 +273,19 @@ export class EpicRoadmap implements OnInit {
   readonly totalItems = signal(0);
   readonly page = signal(1);
 
+  protected readonly uniqueProjects = computed(() => {
+    const names = new Set<string>();
+    for (const e of this.epics()) {
+      if (e.project?.name) {
+        names.add(e.project.name);
+      }
+    }
+    return Array.from(names).sort();
+  });
+
   readonly router = inject(Router);
   readonly epicService = inject(EpicService);
+  readonly taskService = inject(TaskService);
   readonly isLoading = this.epicService.epicsResource.isLoading;
   readonly statusColors = STATUS_COLORS;
   protected readonly activatedRoute = inject(ActivatedRoute);
@@ -261,6 +301,24 @@ export class EpicRoadmap implements OnInit {
     });
     effect(() => {
       this.epics.set(this.fillComponentAttributesFromResponseBody([...this.epicService.epics()]));
+    });
+    effect(() => {
+      const tasks = this.taskService.tasks();
+      if (tasks) {
+        this.allTasks.set(tasks);
+      }
+    });
+    effect(() => {
+      const epics = this.epics();
+      if (epics.length > 0) {
+        const projectId = epics[0]?.project?.id;
+        if (projectId) {
+          this.taskService.tasksParams.set({
+            'projectId.equals': projectId,
+            size: 500,
+          });
+        }
+      }
     });
     effect(() => {
       const filterOptions = this.filterOptions();

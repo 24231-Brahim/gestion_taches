@@ -8,6 +8,11 @@
         <span jhiTranslate="gestionTachesApp.epic.home.refreshListLabel">Actualiser la liste</span>
       </button>
 
+      <a class="btn btn-outline-primary me-2" [routerLink]="['/epic']">
+        <fa-icon icon="layer-group" />
+        <span class="ms-1" jhiTranslate="gestionTachesApp.epic.home.roadmap">Roadmap</span>
+      </a>
+
       <button
         id="jh-create-entity"
         data-cy="entityCreateButton"
@@ -77,6 +82,12 @@
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
+            <th scope="col" jhiSortBy="startDate">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.epic.startDate">Start Date</span>
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
             <th scope="col" jhiSortBy="project.name">
               <div class="d-flex">
                 <span jhiTranslate="gestionTachesApp.epic.project">Project</span>
@@ -91,16 +102,19 @@
             <tr data-cy="entityTable">
               <td>{{ epic.title }}</td>
               <td>{{ epic.description }}</td>
-              <td [jhiTranslate]="'gestionTachesApp.EpicStatus.' + (epic.status ?? 'null')">
-                {{ { null: '', TODO: 'TODO', IN_PROGRESS: 'IN_PROGRESS', DONE: 'DONE', CANCELLED: 'CANCELLED' }[epic.status ?? 'null'] }}
+              <td>
+                <span class="status-badge" [style.border-color]="getStatusColor(epic.status)">{{
+                  'gestionTachesApp.EpicStatus.' + (epic.status ?? 'null') | translate
+                }}</span>
               </td>
-              <td [jhiTranslate]="'gestionTachesApp.Priority.' + (epic.priority ?? 'null')">
-                {{
-                  { null: '', LOWEST: 'LOWEST', LOW: 'LOW', MEDIUM: 'MEDIUM', HIGH: 'HIGH', HIGHEST: 'HIGHEST' }[epic.priority ?? 'null']
-                }}
+              <td>
+                <span [style.color]="getPriorityColor(epic.priority)" style="font-weight: 600">
+                  {{ 'gestionTachesApp.Priority.' + (epic.priority ?? 'null') | translate }}
+                </span>
               </td>
               <td>{{ epic.createdAt | formatMediumDatetime }}</td>
               <td>{{ epic.updatedAt | formatMediumDatetime }}</td>
+              <td>{{ epic.startDate | formatMediumDate }}</td>
               <td>
                 @if (epic.project) {
                   <div>

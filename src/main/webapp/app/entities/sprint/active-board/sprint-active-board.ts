@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, HostListener, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, computed, input, output, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
@@ -149,6 +150,15 @@ interface KanbanColumn {
         font-size: 0.7rem;
         margin-left: auto;
       }
+      .kanban-card-sp {
+        background: var(--color-primary-container, #25a7fd);
+        color: #000;
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 1px 6px;
+        font-family: 'JetBrains Mono', monospace;
+        margin-left: 4px;
+      }
       .kanban-card-title {
         font-size: 0.85rem;
         color: var(--color-text, #dfe3ea);
@@ -179,9 +189,57 @@ interface KanbanColumn {
         color: var(--color-text-muted, #6a8fac);
         font-size: 0.8rem;
       }
+      .filter-bar {
+        display: flex;
+        align-items: flex-end;
+        gap: 16px;
+        padding: 12px 16px;
+        background: var(--color-surface-container, #1b2025);
+        border: 3px solid var(--color-outline-variant, #2a3038);
+        box-shadow: 4px 4px 0 var(--color-outline-variant, #2a3038);
+        flex-wrap: wrap;
+      }
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .filter-label {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--color-text-muted, #6a8fac);
+      }
+      .filter-select {
+        background: var(--color-surface, #0f1419);
+        border: 2px solid var(--color-outline-variant, #2a3038);
+        color: var(--color-text, #dfe3ea);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.8rem;
+        padding: 6px 10px;
+        min-width: 150px;
+      }
+      .filter-reset-btn {
+        background: transparent;
+        border: 2px solid var(--color-outline-variant, #2a3038);
+        color: var(--color-text-muted, #6a8fac);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        padding: 6px 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.15s;
+      }
+      .filter-reset-btn:hover {
+        color: var(--color-text, #dfe3ea);
+        border-color: var(--color-primary, #97cbff);
+      }
     `,
   ],
-  imports: [FontAwesomeModule, TranslateDirective, TranslateModule, FormatMediumDatePipe],
+  imports: [FormsModule, FontAwesomeModule, TranslateDirective, TranslateModule, FormatMediumDatePipe],
 })
 export class SprintActiveBoard {
   readonly sprint = input<ISprint | null>(null);
@@ -199,6 +257,50 @@ export class SprintActiveBoard {
   readonly priorityIcons = PRIORITY_ICONS;
   readonly priorityColors = PRIORITY_COLORS;
 
+  readonly filterAssignee = signal<string>('');
+  readonly filterType = signal<string>('');
+  readonly filterPriority = signal<string>('');
+
+  readonly typeValues = Object.keys(ISSUE_TYPE_ICONS);
+  readonly priorityValues = Object.keys(PRIORITY_ICONS);
+
+  readonly uniqueAssignees = computed(() => {
+    const logins = new Set<string>();
+    for (const task of this.tasks()) {
+      if (task.assignee?.login) {
+        logins.add(task.assignee.login);
+      }
+    }
+    return Array.from(logins).sort();
+  });
+
+  readonly filteredTasks = computed(() => {
+    let result = this.tasks();
+    const assignee = this.filterAssignee();
+    const type = this.filterType();
+    const priority = this.filterPriority();
+    if (assignee) {
+      result = result.filter(t => t.assignee?.login === assignee);
+    }
+    if (type) {
+      result = result.filter(t => t.type === type);
+    }
+    if (priority) {
+      result = result.filter(t => t.priority === priority);
+    }
+    return result;
+  });
+
+  readonly hasActiveFilters = computed(() => {
+    return !!(this.filterAssignee() || this.filterType() || this.filterPriority());
+  });
+
+  resetFilters(): void {
+    this.filterAssignee.set('');
+    this.filterType.set('');
+    this.filterPriority.set('');
+  }
+
   dragTaskId: number | null = null;
   dragOverStatus: string | null = null;
 
@@ -208,9 +310,10 @@ export class SprintActiveBoard {
   }));
 
   getColumns(): KanbanColumn[] {
+    const filtered = this.filteredTasks();
     return this.columns.map(col => ({
       ...col,
-      tasks: this.tasks().filter(i => i.status === col.status),
+      tasks: filtered.filter(i => i.status === col.status),
     }));
   }
 

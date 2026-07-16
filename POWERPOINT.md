@@ -71,7 +71,7 @@
 **Objectifs initiaux (cahier des charges) :**
 
 - Gestion complète des projets avec système de rôles (RBAC)
-- Création et suivi d'issues (tâches, bugs, stories)
+- Création et suivi de tâches (stories, bugs, tasks)
 - Organisation par sprints et epics
 - Traçabilité via historique d'actions
 - Interface moderne, responsive, dark/light
@@ -131,10 +131,10 @@ Angular SPA  ←→  REST API (JSON + JWT)  ←→  Spring Boot  ←→  Postgre
 - ✅ CRUD Projets + gestion d'équipe + ownership
 - ✅ CRUD Sprints (Board Kanban, Planning, Burndown) + validation sprint actif unique
 - ✅ CRUD Epics (Roadmap timeline avec barres de progression)
-- ✅ CRUD Issues (Backlog/Board, drag-drop Kanban, Detail Drawer)
+- ✅ CRUD Tasks (Backlog/Board, drag-drop Kanban, Detail Drawer)
 - ✅ Commentaires (avec auteur, CRUD, ownership)
 - ✅ Attachements (upload/download fichiers réels)
-- ✅ ActionHistory (audit trail complet)
+- ✅ TaskHistory (audit trail complet)
 
 **Sécurité :**
 
@@ -149,7 +149,7 @@ Angular SPA  ←→  REST API (JSON + JWT)  ←→  Spring Boot  ←→  Postgre
 - ✅ i18n (français/anglais)
 - ✅ Gestion erreurs unifiée (AlertService)
 
-**+ :** Assignation d'issues + Système de notifications avec polling
+**+ :** Assignation de tâches + Système de notifications avec polling
 
 ---
 
@@ -159,7 +159,7 @@ Angular SPA  ←→  REST API (JSON + JWT)  ←→  Spring Boot  ←→  Postgre
 
 1. **Dashboard** — KPIs, graphiques, timeline
 2. **Liste projets** — Pagination, filtrage, gestion membres
-3. **Issue Detail Drawer** — Commentaires, pièces jointes, historique
+3. **Task Detail Drawer** — Commentaires, pièces jointes, historique
 4. **Sprint Board** — Kanban drag-drop, burndown chart
 5. **Epic Roadmap** — Timeline progression
 6. **Vue mobile** — BottomNav, responsive

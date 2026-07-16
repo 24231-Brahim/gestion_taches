@@ -26,14 +26,22 @@
       "project": "Projet",
       "board": {
         "tab": "Tableau",
-        "emptyColumn": "Aucune tâche"
+        "emptyColumn": "Aucune tâche",
+        "filter": {
+          "assignee": "Assigné à",
+          "type": "Type",
+          "priority": "Priorité",
+          "all": "Tous",
+          "reset": "Réinitialiser"
+        }
       },
       "planning": {
         "tab": "Planification",
         "backlog": "Backlog",
         "sprint": "Sprint",
         "noBacklog": "Toutes les tâches sont affectées à un sprint",
-        "noIssues": "Aucune tâche dans ce sprint"
+        "noIssues": "Aucune tâche dans ce sprint",
+        "searchPlaceholder": "Rechercher des tâches..."
       },
       "burndown": {
         "tab": "Burndown",
@@ -41,6 +49,7 @@
         "done": "Terminé",
         "remaining": "Restant",
         "velocity": "Vélocité",
+        "storyPointsVelocity": "Vélocité SP",
         "days": "Jours",
         "issues": "Tâches"
       },
@@ -59,6 +68,9 @@
         "completed": "Tâches terminées",
         "carriedOver": "Tâches reportées",
         "percentage": "Pourcentage"
+      },
+      "progress": {
+        "label": "Progression du Sprint"
       }
     }
   }

@@ -1,11 +1,7 @@
 <div class="sprint-page">
   <div class="sprint-header">
     <div class="sprint-header-left">
-      <select
-        class="sprint-selector form-control"
-        [ngModel]="selectedSprintId()"
-        (ngModelChange)="selectedSprintId.set($event); onSprintSelect()"
-      >
+      <select class="sprint-selector form-control" [ngModel]="selectedSprintId()" (ngModelChange)="onSprintChange($event)">
         @for (sp of sprints(); track sp.id) {
           <option [value]="sp.id">{{ sp.name }} ({{ 'gestionTachesApp.SprintStatus.' + (sp.status ?? 'PLANNED') | translate }})</option>
         }
@@ -77,6 +73,16 @@
       </div>
     </div>
 
+    <div class="sprint-progress-wrapper">
+      <div class="sprint-progress-header">
+        <span class="sprint-progress-label">{{ 'gestionTachesApp.sprint.progress.label' | translate }}</span>
+        <span class="sprint-progress-value">{{ doneTasksCount() }} / {{ totalTasksCount() }} — {{ sprintProgress() }}%</span>
+      </div>
+      <div class="sprint-progress-bar">
+        <div class="sprint-progress-fill" [style.width.%]="sprintProgress()"></div>
+      </div>
+    </div>
+
     <div class="tab-bar">
       <button class="tab-item" [class.active]="activeTab() === 'board'" (click)="setTab('board')">
         <fa-icon icon="columns" class="me-1" /> {{ 'gestionTachesApp.sprint.board.tab' | translate }}
@@ -117,6 +123,8 @@
           [totalTasks]="tasks().length"
           [doneTasks]="tasks().filter(i => i.status === 'DONE').length"
           [daysLeft]="daysLeft()"
+          [totalStoryPoints]="totalStoryPoints()"
+          [doneStoryPoints]="doneStoryPoints()"
         />
       }
     }

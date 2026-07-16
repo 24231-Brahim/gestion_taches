@@ -2,7 +2,7 @@
 
 ## 1. Diagramme de Classes (Class Diagram)
 
-Ce diagramme modélise la structure statique du système : les entités métier (User, Project, Issue, etc.), leurs attributs, leurs types (enumérations) et les associations qui les relient (propriétaire, membres, sprint, epic, commentaires, etc.).
+Ce diagramme modélise la structure statique du système : les entités métier (User, Project, Task, etc.), leurs attributs, leurs types (enumérations) et les associations qui les relient (propriétaire, membres, sprint, epic, commentaires, etc.).
 
 ```mermaid
 classDiagram
@@ -22,7 +22,7 @@ classDiagram
     }
 
     class ProjectMember {
-        +String role
+        +ProjectRole role
         +Instant joinedAt
     }
 
@@ -45,11 +45,10 @@ classDiagram
         +LocalDate endDate
     }
 
-    class Issue {
+    class Task {
         +String title
         +String description
-        +IssueType type
-        +IssueStatus status
+        +TaskStatus status
         +Priority priority
         +Instant createdAt
         +Instant updatedAt
@@ -67,7 +66,7 @@ classDiagram
         +Instant uploadedAt
     }
 
-    class ActionHistory {
+    class TaskHistory {
         +String action
         +String fieldChanged
         +String oldValue
@@ -77,9 +76,6 @@ classDiagram
 
     class Notification {
         +String message
-        +Long issueId
-        +String issueTitle
-        +Long userId
         +Boolean isRead
         +Instant createdAt
     }
@@ -100,23 +96,21 @@ classDiagram
         CANCELLED
     }
 
-    class IssueType {
+    class TaskStatus {
         <<enumeration>>
-        STORY
-        BUG
-        TASK
-        SUBTASK
-        IMPROVEMENT
-    }
-
-    class IssueStatus {
-        <<enumeration>>
-        BACKLOG
+        NEW
         TODO
         IN_PROGRESS
         IN_REVIEW
         DONE
         CANCELLED
+    }
+
+    class ProjectRole {
+        <<enumeration>>
+        OWNER
+        MANAGER
+        MEMBER
     }
 
     class Priority {
@@ -131,22 +125,24 @@ classDiagram
     User "1" --> "*" Project : possède (owner)
     Project "1" --> "*" ProjectMember : contient (members)
     ProjectMember "*" --> "1" User : référence
+    ProjectMember --> ProjectRole
     Project "1" --> "*" Sprint : contient
     Project "1" --> "*" Epic : contient
-    Project "1" --> "*" Issue : contient
-    Sprint "1" --> "*" Issue : regroupe
-    Epic "1" --> "*" Issue : catégorise
+    Project "1" --> "*" Task : contient
+    Sprint "1" --> "*" Task : regroupe
+    Epic "1" --> "*" Task : catégorise
     User "1" --> "*" Comment : écrit (author)
-    User "1" --> "*" Issue : assigné (assignee)
-    Issue "1" --> "*" Comment : reçoit
-    Issue "1" --> "*" Attachment : contient
-    Issue "1" --> "*" ActionHistory : trace
+    User "1" --> "*" Task : assigné (assignee)
+    Task "1" --> "*" Comment : reçoit
+    Task "1" --> "*" Attachment : contient
+    Task "1" --> "*" TaskHistory : trace
+    Task "1" --> "*" Notification : déclenche
+    User "1" --> "*" Notification : reçoit
     Sprint --> SprintStatus
     Epic --> EpicStatus
-    Issue --> IssueType
-    Issue --> IssueStatus
+    Task --> TaskStatus
     Epic --> Priority
-    Issue --> Priority
+    Task --> Priority
 ```
 
 ---
@@ -165,11 +161,11 @@ graph LR
         UC2("Gérer les membres")
         UC3("Gérer les sprints")
         UC4("Gérer les epics")
-        UC5("Gérer les issues")
+        UC5("Gérer les tâches")
         UC6("Tableau Kanban")
         UC7("Roadmap Epic")
         UC8("Burndown Chart")
-        UC9("Commenter une issue")
+        UC9("Commenter une tâche")
         UC10("Joindre un fichier")
         UC11("Consulter le dashboard")
         UC12("Gérer les notifications")
@@ -216,12 +212,12 @@ graph LR
 | UC2 | Gérer les membres | Admin, PM | Ajouter/retirer un membre, changer son rôle |
 | UC3 | Gérer les sprints | Admin, PM | Créer, démarrer, compléter un sprint |
 | UC4 | Gérer les epics | Admin, PM | Créer, modifier, supprimer un epic |
-| UC5 | Gérer les issues | Admin, PM, DEV | CRUD + assignation + changement de statut |
-| UC6 | Tableau Kanban | PM, DEV | Visualiser et glisser-déposer les issues |
+| UC5 | Gérer les tâches | Admin, PM, DEV | CRUD + assignation + changement de statut |
+| UC6 | Tableau Kanban | PM, DEV | Visualiser et glisser-déposer les tâches |
 | UC7 | Roadmap Epic | PM, DEV | Vue d'ensemble des epics avec progression |
 | UC8 | Burndown Chart | PM, DEV | Graphique d'avancement du sprint |
-| UC9 | Commenter une issue | PM, DEV, U | Ajouter/modifier/supprimer un commentaire |
-| UC10 | Joindre un fichier | PM, DEV | Uploader un fichier sur une issue |
+| UC9 | Commenter une tâche | PM, DEV, U | Ajouter/modifier/supprimer un commentaire |
+| UC10 | Joindre un fichier | PM, DEV | Uploader un fichier sur une tâche |
 | UC11 | Dashboard | U | Voir les KPI, graphiques et activités récentes |
 | UC12 | Notifications | U | Recevoir et consulter les notifications |
 | UC13 | Administration | Admin | Gérer les utilisateurs, rôles, configuration |
@@ -232,30 +228,30 @@ graph LR
 
 ## 3. Diagramme de Séquence (Sequence Diagram)
 
-Ce diagramme montre les interactions temporelles entre les acteurs et les composants du système pour des scénarios clés : assignation d'une issue, création d'un projet et changement de statut via le tableau Kanban.
+Ce diagramme montre les interactions temporelles entre les acteurs et les composants du système pour des scénarios clés : assignation d'une tâche, création d'un projet et changement de statut via le tableau Kanban.
 
-### 3.1 Assignation d'une issue
+### 3.1 Assignation d'une tâche
 
 ```mermaid
 sequenceDiagram
     actor DEV as Développeur
     participant Front as Frontend Angular
-    participant API as IssueResource
-    participant Service as IssueService
+    participant API as TaskResource
+    participant Service as TaskService
     participant Notif as NotificationService
     participant DB as Base de Données
     actor Assignee as Utilisateur assigné
 
     DEV->>Front: Glisser-déposer / Clique "Assigner"
-    Front->>API: PATCH /api/issues/{id}/assign { userId }
+    Front->>API: PATCH /api/tasks/{id}/assign { userId }
     API->>API: Vérifier rôle (DEV ou PM)
-    API->>Service: assign(issueId, user)
-    Service->>DB: findById(issueId)
-    Service->>DB: save(issue avec assignee)
-    Service-->>API: IssueDTO
+    API->>Service: assign(taskId, user)
+    Service->>DB: findById(taskId)
+    Service->>DB: save(task avec assignee)
+    Service-->>API: TaskDTO
     API->>Notif: save(notification)
     Notif->>DB: INSERT notification
-    API-->>Front: 200 OK + IssueDTO
+    API-->>Front: 200 OK + TaskDTO
     Front-->>DEV: Mise à jour de l'interface
     Note over Notif,Assignee: L'utilisateur assigné reçoit la notification
 ```
@@ -284,28 +280,28 @@ sequenceDiagram
     Front-->>PM: Projet créé, redirection
 ```
 
-### 3.3 Changement de statut d'une issue (Drag & Drop Kanban)
+### 3.3 Changement de statut d'une tâche (Drag & Drop Kanban)
 
 ```mermaid
 sequenceDiagram
     actor DEV as Développeur
     participant Front as Kanban Board
-    participant API as IssueResource
-    participant Service as IssueService
+    participant API as TaskResource
+    participant Service as TaskService
     participant DB as Base de Données
 
-    DEV->>Front: Glisser une issue vers "IN_PROGRESS"
-    Front->>Front: dragIssueId = issue.id
+    DEV->>Front: Glisser une tâche vers "IN_PROGRESS"
+    Front->>Front: dragTaskId = task.id
     Front->>Front: onDrop(targetStatus = "IN_PROGRESS")
-    Front->>API: PATCH /api/issues/{id} { status: "IN_PROGRESS" }
+    Front->>API: PATCH /api/tasks/{id} { status: "IN_PROGRESS" }
     API->>API: Vérifier rôle
-    API->>Service: partialUpdate(issueDTO)
+    API->>Service: partialUpdate(taskDTO)
     Service->>DB: findById(id)
-    Service->>DB: save(issue modifié)
-    DB-->>Service: Issue mis à jour
-    Service-->>API: IssueDTO
+    Service->>DB: save(task modifiée)
+    DB-->>Service: Task mise à jour
+    Service-->>API: TaskDTO
     API-->>Front: 200 OK
-    Front->>Front: issue.status = "IN_PROGRESS"
+    Front->>Front: task.status = "IN_PROGRESS"
     Front-->>DEV: Carte déplacée visuellement
 ```
 
@@ -313,39 +309,32 @@ sequenceDiagram
 
 ## 4. Diagramme d'Activité (Activity Diagram)
 
-Ce diagramme modélise les flux de travail du système : le cycle de vie complet d'une issue (de la création à la validation ou l'annulation) et le processus de gestion d'un sprint (démarrage, complétion, annulation).
+Ce diagramme modélise les flux de travail du système : le cycle de vie complet d'une tâche (de la création à la validation ou l'annulation) et le processus de gestion d'un sprint (démarrage, complétion, annulation).
 
-### Cycle de vie d'une Issue
+### Cycle de vie d'une Tâche
 
 ```mermaid
 flowchart TD
-    A[Début: Création d'une issue] --> B{Type?}
-    B -->|STORY| C[Statut: BACKLOG]
-    B -->|BUG| D[Statut: TODO]
-    B -->|TASK| C
-    B -->|SUBTASK| C
-    B -->|IMPROVEMENT| C
+    A[Début: Création d'une tâche] --> B[Statut: NEW]
 
-    C --> E[Ajouter au backlog]
-    D --> E
-    E --> F[Planifier dans un sprint]
+    B --> C[Planifier dans un sprint]
 
-    F --> G[Développement commence]
-    G --> H[Statut: IN_PROGRESS]
+    C --> D[Développement commence]
+    D --> E[Statut: IN_PROGRESS]
 
-    H --> I{Revue nécessaire?}
-    I -->|Oui| J[Statut: IN_REVIEW]
-    I -->|Non| K[Validation]
+    E --> F{Revue nécessaire?}
+    F -->|Oui| G[Statut: IN_REVIEW]
+    F -->|Non| H[Validation]
 
-    J --> K
-    K --> L{Approuvé?}
-    L -->|Oui| M[Statut: DONE]
-    L -->|Non| H
-    L -->|Abandonné| N[Statut: CANCELLED]
+    G --> H
+    H --> I{Approuvé?}
+    I -->|Oui| J[Statut: DONE]
+    I -->|Non| E
+    I -->|Abandonné| K[Statut: CANCELLED]
 
-    H -->|Abandonné| N
-    C -->|Abandonné| N
-    D -->|Abandonné| N
+    E -->|Abandonné| K
+    B -->|Abandonné| K
+    B --> E: Passer à TODO puis IN_PROGRESS
 ```
 
 ### Processus de Sprint
@@ -363,14 +352,14 @@ flowchart LR
 
 ## 5. Diagramme d'États (State Machine Diagram)
 
-Ce diagramme décrit les différents états possibles des entités et les transitions autorisées : cycle de vie d'une issue (BACKLOG → TODO → IN_PROGRESS → IN_REVIEW → DONE), d'un sprint (PLANNED → ACTIVE → COMPLETED) et d'un epic (TODO → IN_PROGRESS → DONE).
+Ce diagramme décrit les différents états possibles des entités et les transitions autorisées : cycle de vie d'une tâche (NEW → TODO → IN_PROGRESS → IN_REVIEW → DONE), d'un sprint (PLANNED → ACTIVE → COMPLETED) et d'un epic (TODO → IN_PROGRESS → DONE).
 
-### Issue States
+### Task States
 
 ```mermaid
 stateDiagram-v2
-    [*] --> BACKLOG
-    BACKLOG --> TODO: Priorisé
+    [*] --> NEW
+    NEW --> TODO: Priorisé
     TODO --> IN_PROGRESS: Démarré
     IN_PROGRESS --> IN_REVIEW: Revue demandée
     IN_PROGRESS --> TODO: Redéfini
@@ -380,7 +369,7 @@ stateDiagram-v2
     TODO --> CANCELLED: Abandonné
     IN_PROGRESS --> CANCELLED: Abandonné
     IN_REVIEW --> CANCELLED: Abandonné
-    BACKLOG --> CANCELLED: Abandonné
+    NEW --> CANCELLED: Abandonné
     DONE --> [*]
     CANCELLED --> [*]
 ```
@@ -474,11 +463,11 @@ flowchart TD
             Kanban
             SprintBoard
             EpicRoadmap
-            IssueDetail
+            TaskDetail
             Admin
         end
         subgraph Services[Services]
-            IssueService
+            TaskService
             SprintService
             ProjectService
             EpicService
@@ -498,7 +487,7 @@ flowchart TD
             ProjectResource
             SprintResource
             EpicResource
-            IssueResource
+            TaskResource
             CommentResource
             AttachmentResource
             NotificationResource
@@ -508,7 +497,7 @@ flowchart TD
             ProjectService
             SprintService
             EpicService
-            IssueService
+            TaskService
             CommentService
             AttachmentService
             NotificationService
@@ -557,10 +546,10 @@ flowchart TD
             Project
             Sprint
             Epic
-            Issue
+            Task
             Comment
             Attachment
-            ActionHistory
+            TaskHistory
             Notification
             ProjectMember
             User
@@ -569,10 +558,10 @@ flowchart TD
             ProjectRepository
             SprintRepository
             EpicRepository
-            IssueRepository
+            TaskRepository
             CommentRepository
             AttachmentRepository
-            ActionHistoryRepository
+            TaskHistoryRepository
             NotificationRepository
             ProjectMemberRepository
             UserRepository
@@ -605,13 +594,13 @@ flowchart TD
 
     subgraph Frontend[src/main/webapp/app]
         subgraph FE_entities[entities/]
-            issue[issue/]
+            task[task/]
             sprint[sprint/]
             epic[epic/]
             project[project/]
             comment[comment/]
             attachment[attachment/]
-            action_history[action-history/]
+            task_history[task-history/]
         end
         subgraph FE_core[core/]
             auth[auth/]
@@ -659,7 +648,7 @@ flowchart TD
 
 ## 9. Diagramme d'Objets (Object Diagram)
 
-Ce diagramme présente un snapshot concret d'instances du système à un moment donné : un projet "Site Web" avec ses sprints, epics, issues, commentaires et utilisateurs, illustrant les relations entre objets réels.
+Ce diagramme présente un snapshot concret d'instances du système à un moment donné : un projet "Site Web" avec ses sprints, epics, tâches, commentaires et utilisateurs, illustrant les relations entre objets réels.
 
 ### Exemple d'instances en cours d'exécution
 
@@ -695,26 +684,23 @@ classDiagram
         priority = HIGH
     }
 
-    class issue1 {
+    class task1 {
         id = 101
         title = "Page de connexion"
-        type = STORY
         status = DONE
         priority = HIGH
     }
 
-    class issue2 {
+    class task2 {
         id = 102
         title = "Bouton "Mot de passe oublié""
-        type = TASK
         status = IN_PROGRESS
         priority = MEDIUM
     }
 
-    class issue3 {
+    class task3 {
         id = 103
         title = "Erreur 500 sur login"
-        type = BUG
         status = TODO
         priority = HIGHEST
     }
@@ -725,27 +711,25 @@ classDiagram
 
     class user1 {
         login = "alice"
-        role = "PROJET_MANAGER"
     }
 
     class user2 {
         login = "bob"
-        role = "DEVELOPER"
     }
 
     projet1 --> sprint1
     projet1 --> sprint2
     projet1 --> epic1
-    projet1 --> issue1
-    projet1 --> issue2
-    projet1 --> issue3
-    sprint1 --> issue1
-    sprint1 --> issue2
-    epic1 --> issue1
-    epic1 --> issue2
+    projet1 --> task1
+    projet1 --> task2
+    projet1 --> task3
+    sprint1 --> task1
+    sprint1 --> task2
+    epic1 --> task1
+    epic1 --> task2
     user1 --> projet1 : owner
-    issue1 --> user2 : assignee
-    issue1 --> comment1
+    task1 --> user2 : assignee
+    task1 --> comment1
     user2 --> comment1 : author
 ```
 
@@ -753,14 +737,14 @@ classDiagram
 
 ## 10. Diagramme de Communication (Communication Diagram)
 
-Ce diagramme montre les interactions entre les objets et acteurs lors de la création d'un commentaire sur une issue, en mettant l'accent sur l'ordre des messages échangés (de l'ouverture de l'issue jusqu'à l'affichage du commentaire).
+Ce diagramme montre les interactions entre les objets et acteurs lors de la création d'un commentaire sur une tâche, en mettant l'accent sur l'ordre des messages échangés (de l'ouverture de la tâche jusqu'à l'affichage du commentaire).
 
-### Création d'un commentaire sur une issue
+### Création d'un commentaire sur une tâche
 
 ```mermaid
 sequenceDiagram
     actor User as Utilisateur
-    participant D as IssueDetail
+    participant D as TaskDetail
     participant F as Formulaire
     participant CS as CommentService
     participant API as CommentResource
@@ -769,7 +753,7 @@ sequenceDiagram
     participant REP as CommentRepository
     participant DB as Database
 
-    User->>D: 1: Ouvre l'issue
+    User->>D: 1: Ouvre la tâche
     User->>F: 2: Saisit le texte
     F->>CS: 3: submit()
     CS->>API: 4: POST /api/comments
@@ -790,7 +774,7 @@ sequenceDiagram
 
 ## 11. Diagramme de Timing (Timing Diagram)
 
-Ce diagramme illustre l'évolution temporelle d'un sprint sur 20 jours, du démarrage (PLANNED → ACTIVE) jusqu'à la complétion, en passant par les jalons clés (développement, revue, validation). Un tableau associé détaille les métriques temporelles d'une issue.
+Ce diagramme illustre l'évolution temporelle d'un sprint sur 20 jours, du démarrage (PLANNED → ACTIVE) jusqu'à la complétion, en passant par les jalons clés (développement, revue, validation). Un tableau associé détaille les métriques temporelles d'une tâche.
 
 ### Cycle de vie d'un Sprint (20 jours)
 
@@ -803,7 +787,7 @@ flowchart LR
         A[ACTIVE<br/>Sprint démarré]
     end
     subgraph J5[J5]
-        IP[IN PROGRESS<br/>50% des issues]
+        IP[IN PROGRESS<br/>50% des tâches]
     end
     subgraph J10[J10 - Mi-parcours]
         REV[IN REVIEW<br/>Premières revues]
@@ -822,11 +806,11 @@ flowchart LR
     D -->|completeSprint| COMP
 ```
 
-### Métriques temporelles d'une Issue
+### Métriques temporelles d'une Tâche
 
 | Jour | Événement | Statut | Commentaire |
 |------|-----------|--------|-------------|
-| J0 | Création | BACKLOG | Issue créée dans le backlog |
+| J0 | Création | NEW | Tâche créée |
 | J3 | Priorisation | TODO | Ajoutée au sprint courant |
 | J5 | Développement | IN_PROGRESS | Travail commencé |
 | J9 | Code review | IN_REVIEW | Pull request soumise |
@@ -837,18 +821,17 @@ flowchart LR
 
 ## 12. Diagramme de Structure Composite (Composite Structure Diagram)
 
-Ce diagramme décompose la structure interne d'une Issue : ses propriétés (titre, type, statut, priorité), ses parties (commentaires, pièces jointes, historique) et ses références externes (projet, sprint, epic, assignee). Un tableau décrit les ports et interfaces associés.
+Ce diagramme décompose la structure interne d'une Task : ses propriétés (titre, statut, priorité), ses parties (commentaires, pièces jointes, historique) et ses références externes (projet, sprint, epic, assignee). Un tableau décrit les ports et interfaces associés.
 
-### Structure interne d'une Issue
+### Structure interne d'une Task
 
 ```mermaid
 flowchart TD
-    subgraph Issue[Issue #id]
+    subgraph Task[Task #id]
         direction LR
         subgraph Props[Propriétés]
             title
             description
-            type
             status
             priority
             createdAt
@@ -857,7 +840,7 @@ flowchart TD
         subgraph Parts[Parties]
             CommentList[comments: Comment[]]
             AttachmentList[attachments: Attachment[]]
-            HistoryList[history: ActionHistory[]]
+            HistoryList[history: TaskHistory[]]
         end
         subgraph Refs[Références Externes]
             Proj[project: Project]
@@ -875,9 +858,9 @@ flowchart TD
 
 | Port | Interface | Connecteur |
 |------|-----------|------------|
-| `IssueResource` | `REST: /api/issues` | HTTP |
-| `IssueService` | `IssueDTO ↔ Issue` | MapStruct |
-| `IssueRepository` | `JPA Repository` | Hibernate |
+| `TaskResource` | `REST: /api/tasks` | HTTP |
+| `TaskService` | `TaskDTO ↔ Task` | MapStruct |
+| `TaskRepository` | `JPA Repository` | Hibernate |
 | `NotificationService` | `assign()` | Événement |
 
 ---
@@ -917,27 +900,27 @@ classDiagram
     Entity <|-- Project
     Entity <|-- Sprint
     Entity <|-- Epic
-    Entity <|-- Issue
+    Entity <|-- Task
     Entity <|-- Comment
     Entity <|-- Attachment
-    Entity <|-- ActionHistory
+    Entity <|-- TaskHistory
 
     Service <|-- ProjectService
     Service <|-- SprintService
-    Service <|-- IssueService
+    Service <|-- TaskService
 
     RestController <|-- ProjectResource
     RestController <|-- SprintResource
-    RestController <|-- IssueResource
+    RestController <|-- TaskResource
 
     DTO <|-- ProjectDTO
-    DTO <|-- IssueDTO
+    DTO <|-- TaskDTO
 
-    Enum <|-- IssueStatus
+    Enum <|-- TaskStatus
     Enum <|-- SprintStatus
     Enum <|-- Priority
-    Enum <|-- IssueType
     Enum <|-- EpicStatus
+    Enum <|-- ProjectRole
 ```
 
 ### Contraintes UML
@@ -954,17 +937,17 @@ classDiagram
 
 ## 14. Diagramme de Vue d'Ensemble des Interactions (Interaction Overview Diagram)
 
-Ce diagramme offre une vue d'ensemble du flux de création d'une issue, combinant sous-diagrammes (création, commentaire, upload de fichier) et une référence vers un diagramme de séquence externe (assignation), permettant de visualiser un processus complet.
+Ce diagramme offre une vue d'ensemble du flux de création d'une tâche, combinant sous-diagrammes (création, commentaire, upload de fichier) et une référence vers un diagramme de séquence externe (assignation), permettant de visualiser un processus complet.
 
-### Création d'une issue avec commentaire et pièce jointe
+### Création d'une tâche avec commentaire et pièce jointe
 
 ```mermaid
 flowchart TD
-    subgraph Création[Créer une Issue]
-        A1[Créer l'issue]
-        A2[Remplir titre, type, priorité]
+    subgraph Création[Créer une Tâche]
+        A1[Créer la tâche]
+        A2[Remplir titre, priorité]
         A3[Valider le formulaire]
-        A4[Issue créée avec succès]
+        A4[Tâche créée avec succès]
     end
 
     subgraph AjoutComment[Ajouter un commentaire]
@@ -1009,45 +992,45 @@ Ce diagramme combine plusieurs diagrammes de séquence et d'activité pour montr
 | 1 | Diagramme de classes | Structure | Mermaid `classDiagram` | `domain/`, `domain/enumeration/` |
 | 2 | Diagramme de cas d'utilisation | Comportement | Mermaid `graph` + `fa:fa-user` | Fonctionnalités du système |
 | 3 | Diagramme de séquence | Comportement | Mermaid `sequenceDiagram` | Assignation, création projet, Kanban |
-| 4 | Diagramme d'activité | Comportement | Mermaid `flowchart` | Cycle de vie issue, processus sprint |
-| 5 | Diagramme d'états | Comportement | Mermaid `stateDiagram-v2` | Issue, Sprint, Epic |
+| 4 | Diagramme d'activité | Comportement | Mermaid `flowchart` | Cycle de vie tâche, processus sprint |
+| 5 | Diagramme d'états | Comportement | Mermaid `stateDiagram-v2` | Task, Sprint, Epic |
 | 6 | Diagramme de déploiement | Structure | Mermaid `flowchart` | Architecture physique |
 | 7 | Diagramme de composants | Structure | Mermaid `flowchart` | Modules Angular + Spring |
 | 8 | Diagramme de paquetages | Structure | Mermaid `flowchart` | Structure des packages |
 | 9 | Diagramme d'objets | Structure | Mermaid `classDiagram` | Instances d'exemple |
 | 10 | Diagramme de communication | Comportement | Mermaid `sequenceDiagram` | Création d'un commentaire |
 | 11 | Diagramme de timing | Comportement | Mermaid `flowchart` | Cycle de sprint + métriques |
-| 12 | Diagramme de structure composite | Structure | Mermaid `flowchart` | Structure interne d'une Issue |
+| 12 | Diagramme de structure composite | Structure | Mermaid `flowchart` | Structure interne d'une Task |
 | 13 | Diagramme de profils | Structure | Mermaid `classDiagram` | Stéréotypes JHipster |
-| 14 | Diagramme de vue d'ensemble des interactions | Comportement | Mermaid `flowchart` | Flux complet création issue |
+| 14 | Diagramme de vue d'ensemble des interactions | Comportement | Mermaid `flowchart` | Flux complet création tâche |
 
 ---
 
 ## Rôle de Chaque Table
 
 ### Project
-Table racine du système. Représente un projet (ex. une application, un produit). Contient les sprints, epics et issues. Un `key` unique sert d'identifiant court (ex. `PROJ`). Chaque projet a un propriétaire (`owner_id` → `jhi_user`) et une équipe via la table `project_member`.
+Table racine du système. Représente un projet (ex. une application, un produit). Contient les sprints, epics et tâches. Un `key` unique sert d'identifiant court (ex. `PROJ`). Chaque projet a un propriétaire (`owner_id` → `jhi_user`) et une équipe via la table `project_member`.
 
 ### ProjectMember
-Table de jointure enrichie entre Project et User. Remplace l'ancienne table de jointure `project_members`. Chaque entrée possède un identifiant unique, un rôle (`MEMBER`, `LEAD`, etc.) et une date d'ajout. Permet une gestion d'équipe plus fine qu'un simple ManyToMany.
+Table de jointure enrichie entre Project et User. Remplace l'ancienne table de jointure `project_members`. Chaque entrée possède un identifiant un rôle (`ProjectRole` : `OWNER`, `MANAGER`, `MEMBER`) et une date d'ajout. Permet une gestion d'équipe plus fine qu'un simple ManyToMany.
 
 ### Sprint
-Itération de développement dans un projet. Regroupe un ensemble d'issues à réaliser sur une période donnée. Peut être PLANIFIÉ, ACTIF, TERMINÉ ou ANNULÉ.
+Itération de développement dans un projet. Regroupe un ensemble de tâches à réaliser sur une période donnée. Peut être PLANNED, ACTIVE, COMPLETED ou CANCELLED.
 
 ### Epic
-Regroupement logique d'issues correspondant à une fonctionnalité transverse de grande envergure. Permet de suivre un objectif métier à travers plusieurs sprints.
+Regroupement logique de tâches correspondant à une fonctionnalité transverse de grande envergure. Permet de suivre un objectif métier à travers plusieurs sprints.
 
-### Issue
-Unité de travail atomique. Peut être un Story, Bug, Task, Subtask ou Improvement. Suit un cycle de vie complet (BACKLOG → DONE). Liée à un sprint et/ou un epic.
+### Task
+Unité de travail atomique. Suit un cycle de vie complet (NEW → DONE). Liée à un sprint et/ou un epic.
 
 ### Comment
-Commentaire texte attaché à une issue. Possède un auteur (`author_id` → `jhi_user`). Permet la discussion et le suivi collaboratif.
+Commentaire texte attaché à une tâche. Possède un auteur (`author_id` → `jhi_user`). Permet la discussion et le suivi collaboratif.
 
 ### Attachment
-Fichier joint à une issue (capture d'écran, document, etc.). Stocke le chemin du fichier et son nom original.
+Fichier joint à une tâche (capture d'écran, document, etc.). Stocke le chemin du fichier et son nom original.
 
-### ActionHistory
-Trace d'audit détaillant chaque modification d'une issue. Enregistre l'action, le champ modifié, l'ancienne et la nouvelle valeur.
+### TaskHistory
+Trace d'audit détaillant chaque modification d'une tâche. Enregistre l'action, le champ modifié, l'ancienne et la nouvelle valeur.
 
 ---
 
@@ -1055,12 +1038,13 @@ Trace d'audit détaillant chaque modification d'une issue. Enregistre l'action, 
 
 | Table | Dépend de | Est utilisé par |
 |-------|-----------|-----------------|
-| User | — | Project (owner), ProjectMember, Issue (assignee), Comment (author) |
-| Project | User (owner) | Sprint, Epic, Issue, ProjectMember |
+| User | — | Project (owner), ProjectMember, Task (assignee), Comment (author), Notification |
+| Project | User (owner) | Sprint, Epic, Task, ProjectMember |
 | ProjectMember | Project, User | — |
-| Sprint | Project | Issue |
-| Epic | Project | Issue |
-| Issue | Project, Sprint, Epic | Comment, Attachment, ActionHistory |
-| Comment | Issue, User (author) | — |
-| Attachment | Issue | — |
-| ActionHistory | Issue | — |
+| Sprint | Project | Task |
+| Epic | Project | Task |
+| Task | Project, Sprint, Epic | Comment, Attachment, TaskHistory, Notification |
+| Comment | Task, User (author) | — |
+| Attachment | Task | — |
+| TaskHistory | Task | — |
+| Notification | Task, User | — |

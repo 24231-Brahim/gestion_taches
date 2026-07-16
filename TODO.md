@@ -77,7 +77,7 @@
 ### Layout — Restructuration complète
 
 - [x] `Sidebar` component : collapsible 256px ↔ 80px, navigation entities + admin, overlay mobile, toggle chevron
-- [x] `BottomNav` component : 4 items (Accueil, Projects, Issues, Settings/Login), visible <768px
+- [x] `BottomNav` component : 4 items (Accueil, Projects, Tasks, Settings/Login), visible <768px
 - [x] `Navbar` transformée en topbar : brand + logo + hamburger mobile + dropdowns (admin, account, langue)
 - [x] `Main` layout shell : topbar + sidebar + content + footer + bottom-nav
 - [x] Communication mobile hamburger ↔ sidebar via `document.body.classList` + MutationObserver

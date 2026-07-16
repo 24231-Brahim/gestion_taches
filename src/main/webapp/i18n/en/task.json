@@ -26,6 +26,7 @@
       "type": "Type",
       "status": "Status",
       "priority": "Priority",
+      "storyPoints": "Story Points",
       "createdAt": "Created At",
       "updatedAt": "Updated At",
       "comments": "Comments",
