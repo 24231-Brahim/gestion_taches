@@ -1,11 +1,22 @@
 <div class="split-screen-wrapper">
-  <button class="split-screen-theme-toggle" (click)="themeService.toggle()" title="Changer de thème">
-    @if (themeService.theme() === 'dark') {
-      <fa-icon icon="sun" />
-    } @else {
-      <fa-icon icon="moon" />
-    }
-  </button>
+  <div class="split-screen-top-actions">
+    <button class="split-screen-theme-toggle" (click)="themeService.toggle()" title="Changer de thème">
+      @if (themeService.theme() === 'dark') {
+        <fa-icon icon="sun" />
+      } @else {
+        <fa-icon icon="moon" />
+      }
+    </button>
+
+    <div class="split-screen-lang-toggle">
+      <button class="split-screen-lang-btn" [class.active]="translateService.getCurrentLang() === 'fr'" (click)="changeLanguage('fr')">
+        FR
+      </button>
+      <button class="split-screen-lang-btn" [class.active]="translateService.getCurrentLang() === 'en'" (click)="changeLanguage('en')">
+        EN
+      </button>
+    </div>
+  </div>
 
   <div class="split-screen-logo">
     <img src="/content/images/logo.webp" alt="Logo" />

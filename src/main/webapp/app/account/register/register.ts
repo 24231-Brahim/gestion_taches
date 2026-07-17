@@ -7,6 +7,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { EMAIL_ALREADY_USED_TYPE, LOGIN_ALREADY_USED_TYPE } from 'app/shared/jhipster/error.constants';
+import { StateStorageService } from 'app/core/auth/state-storage.service';
 import { ThemeService } from 'app/core/util/theme.service';
 import { TranslateDirective } from 'app/shared/language';
 import PasswordStrengthBar from '../password/password-strength-bar/password-strength-bar';
@@ -54,8 +55,14 @@ export default class Register implements AfterViewInit {
     }),
   });
 
-  private readonly translateService = inject(TranslateService);
+  readonly translateService = inject(TranslateService);
   private readonly registerService = inject(RegisterService);
+  private readonly stateStorageService = inject(StateStorageService);
+
+  changeLanguage(lang: string): void {
+    this.stateStorageService.storeLocale(lang);
+    this.translateService.use(lang);
+  }
 
   ngAfterViewInit(): void {
     this.login().nativeElement.focus();
