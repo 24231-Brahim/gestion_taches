@@ -5,6 +5,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { AccountService } from 'app/core/auth/account.service';
+import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { IAttachment } from 'app/entities/attachment/attachment.model';
 import { AttachmentService } from 'app/entities/attachment/service/attachment.service';
 import { FormatMediumDatetimePipe } from 'app/shared/date';
@@ -93,13 +94,14 @@ export class TaskAttachmentList implements OnInit {
   protected readonly http = inject(HttpClient);
   protected readonly attachmentService = inject(AttachmentService);
   protected readonly accountService = inject(AccountService);
+  protected readonly appConfig = inject(ApplicationConfigService);
 
   ngOnInit(): void {
     this.loadAttachments();
   }
 
   loadAttachments(): void {
-    this.http.get<IAttachment[]>(`/api/attachments/by-task/${this.taskId()}`).subscribe({
+    this.http.get<IAttachment[]>(this.appConfig.getEndpointFor(`api/attachments/by-task/${this.taskId()}`)).subscribe({
       next: attachments => this.attachments.set(attachments),
     });
   }
@@ -107,7 +109,7 @@ export class TaskAttachmentList implements OnInit {
   uploadAttachment(file: File): void {
     const formData = new FormData();
     formData.append('file', file);
-    this.http.post(`/api/attachments/upload?issueId=${this.taskId()}`, formData).subscribe({
+    this.http.post(this.appConfig.getEndpointFor(`api/attachments/upload?taskId=${this.taskId()}`), formData).subscribe({
       next: () => this.loadAttachments(),
     });
   }

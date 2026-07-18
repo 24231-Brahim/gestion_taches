@@ -27,6 +27,10 @@ export class AuthoritiesService {
   readonly authorities = computed(() => (this.authoritiesResource.hasValue() ? this.authoritiesResource.value() : []));
   protected readonly applicationConfigService = inject(ApplicationConfigService);
   protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/authorities');
+
+  refresh(): void {
+    this.authoritiesResource.reload();
+  }
 }
 
 @Injectable({ providedIn: 'root' })

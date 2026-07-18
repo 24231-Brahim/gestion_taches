@@ -1,22 +1,30 @@
 <!-- <jhi-page-ribbon /> -->
 
 <div class="app-shell">
-  @if (account() !== null) {
-    <router-outlet name="navbar" />
-  }
-
-  <div class="app-body" [class.app-body-no-nav]="account() === null">
+  @if (!appReady()) {
+    <div class="app-loading d-flex align-items-center justify-content-center" style="height: 100vh">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+  } @else {
     @if (account() !== null) {
-      <jhi-sidebar />
+      <router-outlet name="navbar" />
     }
 
-    <main class="app-content" [class.app-content-full]="account() === null">
-      <jhi-breadcrumb />
-      <router-outlet />
-    </main>
-  </div>
+    <div class="app-body" [class.app-body-no-nav]="account() === null">
+      @if (account() !== null) {
+        <jhi-sidebar />
+      }
 
-  @if (account() !== null) {
-    <jhi-bottom-nav />
+      <main class="app-content" [class.app-content-full]="account() === null">
+        <jhi-breadcrumb />
+        <router-outlet />
+      </main>
+    </div>
+
+    @if (account() !== null) {
+      <jhi-bottom-nav />
+    }
   }
 </div>

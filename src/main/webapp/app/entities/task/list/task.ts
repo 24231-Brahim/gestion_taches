@@ -1,6 +1,6 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
@@ -8,7 +8,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subscription, combineLatest, tap } from 'rxjs';
+import { Subscription, combineLatest, switchMap, tap } from 'rxjs';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
@@ -22,6 +22,7 @@ import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
+import { TaskStatus } from 'app/entities/enumerations/task-status.model';
 import { IProject } from 'app/entities/project/project.model';
 import { ProjectService } from 'app/entities/project/service/project.service';
 import { TaskDeleteDialog } from '../delete/task-delete-dialog';
@@ -192,6 +193,8 @@ export class Task implements OnInit {
   protected readonly accountService = inject(AccountService);
   protected readonly projectService = inject(ProjectService);
 
+  protected readonly destroyRef = inject(DestroyRef);
+
   constructor() {
     effect(() => {
       const headers = this.taskService.tasksResource.headers();
@@ -225,18 +228,18 @@ export class Task implements OnInit {
   trackId = (item: ITask): number => this.taskService.getTaskIdentifier(item);
 
   ngOnInit(): void {
-    this.activatedRoute.parent?.paramMap.subscribe(params => {
-      const key = params.get('key');
-      if (key) {
-        this.currentProjectKey.set(key);
-        this.projectService.findByKey(key).subscribe(project => {
-          this.currentProject.set(project);
-          this.load();
-        });
-      }
-    });
-    this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
+    const parentParamMap = this.activatedRoute.parent?.paramMap ?? this.activatedRoute.paramMap;
+    parentParamMap
       .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        tap(params => {
+          const key = params.get('key');
+          if (key) {
+            this.currentProjectKey.set(key);
+            this.projectService.findByKey(key).subscribe(project => this.currentProject.set(project));
+          }
+        }),
+        switchMap(() => combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])),
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
         tap(() => this.load()),
       )
@@ -259,11 +262,21 @@ export class Task implements OnInit {
   delete(task: ITask): void {
     const modalRef = this.modalService.open(TaskDeleteDialog, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.task = task;
-    modalRef.closed.pipe(tap(reason => (reason === ITEM_DELETED_EVENT ? this.load() : undefined))).subscribe();
+    modalRef.closed
+      .pipe(
+        tap(reason => {
+          if (reason === ITEM_DELETED_EVENT) {
+            this.taskService.refresh();
+            this.load();
+          }
+        }),
+      )
+      .subscribe();
   }
 
   load(): void {
     this.queryBackend();
+    this.taskService.refresh();
   }
 
   onSelectTask(task: ITask): void {
@@ -274,6 +287,15 @@ export class Task implements OnInit {
   onCloseDrawer(): void {
     this.drawerVisible.set(false);
     this.selectedTask.set(null);
+  }
+
+  onTaskChanged(updated: ITask): void {
+    this.tasks.update(list => list.map(t => (t.id === updated.id ? updated : t)));
+    this.selectedTask.set(updated);
+  }
+
+  onKanbanStatusChange(event: { taskId: number; status: string }): void {
+    this.tasks.update(list => list.map(t => (t.id === event.taskId ? { ...t, status: event.status as keyof typeof TaskStatus } : t)));
   }
 
   setViewMode(mode: ViewMode): void {

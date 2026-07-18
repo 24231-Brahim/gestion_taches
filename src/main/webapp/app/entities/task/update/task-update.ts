@@ -1,5 +1,6 @@
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
@@ -52,6 +53,7 @@ export class TaskUpdate implements OnInit {
   protected activatedRoute = inject(ActivatedRoute);
   protected alertService = inject(AlertService);
   protected translateService = inject(TranslateService);
+  protected destroyRef = inject(DestroyRef);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: TaskFormGroup = this.taskFormService.createTaskFormGroup();
@@ -81,7 +83,7 @@ export class TaskUpdate implements OnInit {
     });
 
     // Pre-select project from parent route :key param (e.g. when coming from project-detail)
-    this.activatedRoute.parent?.paramMap.subscribe(params => {
+    this.activatedRoute.parent?.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const projectKey = params.get('key');
       if (projectKey && !this.task) {
         this.projectService.findByKey(projectKey).subscribe(project => {
@@ -95,13 +97,16 @@ export class TaskUpdate implements OnInit {
     });
 
     // Watch for project changes to load members
-    this.editForm.get('project')?.valueChanges.subscribe(project => {
-      const projectVal = project as IProject | null;
-      if (projectVal?.id) {
-        this.loadProjectMembers(projectVal.id);
-        this.editForm.patchValue({ assignee: null }, { emitEvent: false });
-      }
-    });
+    this.editForm
+      .get('project')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(project => {
+        const projectVal = project as IProject | null;
+        if (projectVal?.id) {
+          this.loadProjectMembers(projectVal.id);
+          this.editForm.patchValue({ assignee: null }, { emitEvent: false });
+        }
+      });
   }
 
   previousState(): void {
@@ -126,6 +131,7 @@ export class TaskUpdate implements OnInit {
   }
 
   protected onSaveSuccess(): void {
+    this.taskService.refresh();
     this.previousState();
   }
 

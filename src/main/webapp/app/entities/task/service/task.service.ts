@@ -39,6 +39,10 @@ export class TasksService {
   protected readonly applicationConfigService = inject(ApplicationConfigService);
   protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/tasks');
 
+  refresh(): void {
+    this.tasksResource.reload();
+  }
+
   protected convertValueFromServer(restTask: RestTask): ITask {
     return {
       ...restTask,

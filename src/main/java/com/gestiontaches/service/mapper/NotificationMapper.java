@@ -12,7 +12,10 @@ import org.mapstruct.*;
 public interface NotificationMapper extends EntityMapper<NotificationDTO, Notification> {
     @Mapping(target = "task", source = "task", qualifiedByName = "taskId")
     @Mapping(target = "user", source = "user", qualifiedByName = "userId")
-    @Mapping(target = "projectKey", source = "task.project.key")
+    @Mapping(
+        target = "projectKey",
+        expression = "java(notification.getTask() != null && notification.getTask().getProject() != null ? notification.getTask().getProject().getKey() : null)"
+    )
     NotificationDTO toDto(Notification notification);
 
     @Named("taskId")

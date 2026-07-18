@@ -43,6 +43,10 @@ export class CommentsService {
   protected readonly applicationConfigService = inject(ApplicationConfigService);
   protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/comments');
 
+  refresh(): void {
+    this.commentsResource.reload();
+  }
+
   protected convertValueFromServer(restComment: RestComment): IComment {
     return {
       ...restComment,

@@ -146,6 +146,7 @@ export class ProjectDetail {
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
         tap(() => {
+          this.projectService.refresh();
           void this.router.navigate(['/project']);
         }),
       )

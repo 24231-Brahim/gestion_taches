@@ -1,9 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 
-interface TaskStatusCount {
+interface ChartTaskStatusCount {
   label: string;
   value: number;
+  color: string;
+}
+
+interface ChartProjectProgress {
+  name: string;
+  percent: number;
   color: string;
 }
 
@@ -17,9 +23,9 @@ interface TaskStatusCount {
       <div class="chart-card">
         <h3 class="chart-title" jhiTranslate="dashboard.charts.projectProgress">PROJECT PROGRESS</h3>
         <div class="chart-body">
-          @if (projectProgress().length > 0) {
+          @if (chartProjectProgress().length > 0) {
             <div class="progress-list">
-              @for (p of projectProgress(); track p.name) {
+              @for (p of chartProjectProgress(); track p.name) {
                 <div class="progress-item">
                   <div class="progress-label">
                     <span class="progress-name">{{ p.name }}</span>
@@ -40,7 +46,7 @@ interface TaskStatusCount {
       <div class="chart-card">
         <h3 class="chart-title" jhiTranslate="dashboard.charts.taskDistribution">TASK DISTRIBUTION</h3>
         <div class="chart-body">
-          @if (taskDistribution().length > 0) {
+          @if (chartTaskDistribution().length > 0) {
             <svg [attr.viewBox]="'0 0 200 200'" class="donut-svg">
               @for (slice of donutSlices(); track slice.label) {
                 <circle
@@ -61,7 +67,7 @@ interface TaskStatusCount {
               <text x="100" y="115" text-anchor="middle" class="donut-center-label" fill="var(--color-muted)">TOTAL</text>
             </svg>
             <div class="donut-legend">
-              @for (slice of taskDistribution(); track slice.label) {
+              @for (slice of chartTaskDistribution(); track slice.label) {
                 <div class="legend-item">
                   <span class="legend-dot" [style.background]="slice.color"></span>
                   <span class="legend-label">{{ slice.label }}</span>
@@ -179,33 +185,28 @@ interface TaskStatusCount {
   ],
 })
 export class DashboardChartsComponent {
-  readonly tasks = input.required<any[]>();
-  readonly projects = input.required<any[]>();
+  readonly taskDistribution = input.required<Array<{ status: string; count: number }>>();
+  readonly projectProgress = input.required<Array<{ projectId: number; projectName: string; totalTasks: number; doneTasks: number }>>();
 
-  readonly totalTasks = computed(() => this.tasks().length);
+  readonly totalTasks = computed(() => this.taskDistribution().reduce((sum, d) => sum + d.count, 0));
 
-  readonly taskDistribution = computed<TaskStatusCount[]>(() => {
+  readonly chartTaskDistribution = computed<ChartTaskStatusCount[]>(() => {
     const statuses = ['NEW', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE', 'CANCELLED'];
     const colors = ['#6a8fac', '#f59e0b', '#25a7fd', '#a855f7', '#22c55e', '#ef4444'];
-    const map = new Map<string, number>();
-    for (const s of statuses) map.set(s, 0);
-    for (const task of this.tasks()) {
-      const st = task.status ?? 'NEW';
-      map.set(st, (map.get(st) ?? 0) + 1);
-    }
-    return Array.from(map.entries())
-      .filter(([_, v]) => v > 0)
-      .map(([label, value], i) => ({
-        label,
-        value,
-        color: colors[statuses.indexOf(label)] ?? '#6a8fac',
+    const input = this.taskDistribution();
+    return input
+      .filter(d => d.count > 0)
+      .map(d => ({
+        label: d.status,
+        value: d.count,
+        color: colors[statuses.indexOf(d.status)] ?? '#6a8fac',
       }));
   });
 
   readonly donutSlices = computed(() => {
     const total = this.totalTasks();
     if (total === 0) return [];
-    const slices = this.taskDistribution();
+    const slices = this.chartTaskDistribution();
     const circumference = 2 * Math.PI * 80;
     let offset = 0;
     return slices.map(s => {
@@ -221,29 +222,14 @@ export class DashboardChartsComponent {
     });
   });
 
-  readonly projectProgress = computed(() => {
-    const projectTasks = new Map<number, any[]>();
-    for (const task of this.tasks()) {
-      const pid = task.project?.id;
-      if (pid) {
-        if (!projectTasks.has(pid)) projectTasks.set(pid, []);
-        projectTasks.get(pid)!.push(task);
-      }
-    }
-    const projectMap = new Map(this.projects().map(p => [p.id, p]));
+  readonly chartProjectProgress = computed<ChartProjectProgress[]>(() => {
     const colors = ['#22c55e', '#25a7fd', '#f59e0b', '#a855f7', '#52d6fd', '#ef4444', '#ec4899', '#8b5cf6', '#0ea5e9', '#84cc16'];
-    return Array.from(projectTasks.entries())
-      .map(([pid, iss], i) => {
-        const total = iss.length;
-        const done = iss.filter(x => x.status === 'DONE').length;
-        const project = projectMap.get(pid);
-        return {
-          name: project?.name ?? `Project #${pid}`,
-          percent: total > 0 ? Math.round((done / total) * 100) : 0,
-          color: colors[i % colors.length],
-        };
-      })
-      .sort((a, b) => a.percent - b.percent)
-      .slice(0, 10);
+    return this.projectProgress()
+      .map((p, i) => ({
+        name: p.projectName,
+        percent: p.totalTasks > 0 ? Math.round((p.doneTasks * 100) / p.totalTasks) : 0,
+        color: colors[i % colors.length],
+      }))
+      .sort((a, b) => a.percent - b.percent);
   });
 }

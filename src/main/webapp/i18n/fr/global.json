@@ -19,7 +19,7 @@
       },
       "account": {
         "main": "Compte",
-        "settings": "Profil",
+        "settings": "Paramètres",
         "password": "Mot de passe",
         "sessions": "Sessions",
         "login": "S'authentifier",
@@ -39,6 +39,7 @@
         "jhipster-needle-menu-add-admin-element": "JHipster will add additional menu entries here (do not translate!)"
       },
       "language": "Langue",
+      "theme": "Thème",
       "notifications": "Notifications"
     },
     "form": {

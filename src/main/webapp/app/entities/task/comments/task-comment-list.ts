@@ -7,6 +7,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
+import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { IComment } from 'app/entities/comment/comment.model';
 import { CommentService } from 'app/entities/comment/service/comment.service';
 import { FormatMediumDatetimePipe } from 'app/shared/date';
@@ -87,13 +88,14 @@ export class TaskCommentList implements OnInit {
   protected readonly commentService = inject(CommentService);
   protected readonly alertService = inject(AlertService);
   protected readonly accountService = inject(AccountService);
+  protected readonly appConfig = inject(ApplicationConfigService);
 
   ngOnInit(): void {
     this.loadComments();
   }
 
   loadComments(): void {
-    this.http.get<IComment[]>(`/api/comments/by-task/${this.taskId()}`).subscribe({
+    this.http.get<IComment[]>(this.appConfig.getEndpointFor(`api/comments/by-task/${this.taskId()}`)).subscribe({
       next: comments => this.comments.set(comments),
       error: () => this.alertService.addAlert({ type: 'danger', translationKey: 'error.general' }),
     });

@@ -78,6 +78,7 @@ export class EpicUpdate implements OnInit {
   }
 
   protected onSaveSuccess(): void {
+    this.epicService.refresh();
     this.previousState();
   }
 

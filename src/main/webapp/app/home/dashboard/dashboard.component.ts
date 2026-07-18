@@ -9,6 +9,17 @@ import { DashboardListsComponent } from './lists.component';
 import { DashboardTimelineComponent } from './timeline.component';
 import { DashboardQuickActionsComponent } from './quick-actions.component';
 
+export interface DashboardKpis {
+  totalProjects: number;
+  activeProjects: number;
+  totalTasks: number;
+  completedTasks: number;
+  overdueTasks: number;
+  teamMembers: number;
+  projectProgress: Array<{ projectId: number; projectName: string; totalTasks: number; doneTasks: number }>;
+  taskDistribution: Array<{ status: string; count: number }>;
+}
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-dashboard',
@@ -42,10 +53,10 @@ import { DashboardQuickActionsComponent } from './quick-actions.component';
         <jhi-kpi-card label="{{ 'dashboard.kpi.teamMembers' | translate }}" [value]="teamMembers()" icon="users" />
       </div>
       <jhi-dashboard-quick-actions />
-      <jhi-dashboard-charts [tasks]="tasks()" [projects]="projects()" />
+      <jhi-dashboard-charts [taskDistribution]="taskDistribution()" [projectProgress]="projectProgress()" />
       <jhi-dashboard-lists [recentProjects]="recentProjects()" [recentTasks]="recentTasks()" />
       <div class="bottom-grid">
-        <jhi-dashboard-timeline [tasks]="tasks()" />
+        <jhi-dashboard-timeline [tasks]="recentTasks()" />
       </div>
     </div>
   `,
@@ -96,58 +107,29 @@ import { DashboardQuickActionsComponent } from './quick-actions.component';
   ],
 })
 export class DashboardComponent {
-  readonly projects = computed<any[]>(() => this.projectsResource.value() ?? []);
-  readonly tasks = computed<any[]>(() => this.tasksResource.value() ?? []);
-  readonly totalProjects = computed(() => this.projects().length);
-  readonly activeProjects = computed(() => {
-    const active = new Set<number>();
-    for (const task of this.tasks()) {
-      if (task.status === 'IN_PROGRESS' && task.project?.id) {
-        active.add(task.project.id);
-      }
-    }
-    return active.size;
-  });
-  readonly totalTasks = computed(() => this.tasks().length);
-  readonly completedTasks = computed(() => this.doneCountResource.value() ?? 0);
-  readonly overdueTasks = computed(() => this.tasks().filter(i => i.status !== 'DONE' && i.status !== 'CANCELLED').length);
-  readonly teamMembers = computed(() => this.memberCountResource.value() ?? 0);
-  readonly loading = computed(
-    () =>
-      this.projectsResource.isLoading() ||
-      this.tasksResource.isLoading() ||
-      this.doneCountResource.isLoading() ||
-      this.memberCountResource.isLoading(),
-  );
-  readonly error = computed(
-    () => this.projectsResource.error() ?? this.tasksResource.error() ?? this.doneCountResource.error() ?? this.memberCountResource.error(),
-  );
-  readonly recentProjects = computed(() =>
-    [...this.projects()].sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? '')).slice(0, 5),
-  );
-  readonly recentTasks = computed(() => {
-    const sorted = [...this.tasks()].sort((a, b) => {
-      const da = b.updatedAt ?? b.createdAt ?? '';
-      const db = a.updatedAt ?? a.createdAt ?? '';
-      return da.localeCompare(db);
-    });
-    return sorted.slice(0, 8);
-  });
+  readonly totalProjects = computed(() => this.kpisResource.value()?.totalProjects ?? 0);
+  readonly activeProjects = computed(() => this.kpisResource.value()?.activeProjects ?? 0);
+  readonly totalTasks = computed(() => this.kpisResource.value()?.totalTasks ?? 0);
+  readonly completedTasks = computed(() => this.kpisResource.value()?.completedTasks ?? 0);
+  readonly overdueTasks = computed(() => this.kpisResource.value()?.overdueTasks ?? 0);
+  readonly teamMembers = computed(() => this.kpisResource.value()?.teamMembers ?? 0);
+  readonly taskDistribution = computed(() => this.kpisResource.value()?.taskDistribution ?? []);
+  readonly projectProgress = computed(() => this.kpisResource.value()?.projectProgress ?? []);
+  readonly recentProjects = computed<any[]>(() => this.projectsResource.value() ?? []);
+  readonly recentTasks = computed<any[]>(() => this.tasksResource.value() ?? []);
+  readonly loading = computed(() => this.kpisResource.isLoading() || this.projectsResource.isLoading() || this.tasksResource.isLoading());
+  readonly error = computed(() => this.kpisResource.error() ?? this.projectsResource.error() ?? this.tasksResource.error());
 
   private readonly applicationConfigService = inject(ApplicationConfigService);
+  private readonly kpisResource = httpResource<DashboardKpis>(() => ({
+    url: this.applicationConfigService.getEndpointFor('api/dashboard/kpis'),
+  }));
   private readonly projectsResource = httpResource<any[]>(() => ({
     url: this.applicationConfigService.getEndpointFor('api/projects'),
-    params: new HttpParams().set('page', '0').set('size', '500'),
+    params: new HttpParams().set('page', '0').set('size', '5').set('sort', 'createdAt,desc'),
   }));
   private readonly tasksResource = httpResource<any[]>(() => ({
     url: this.applicationConfigService.getEndpointFor('api/tasks'),
-    params: new HttpParams().set('page', '0').set('size', '500'),
-  }));
-  private readonly doneCountResource = httpResource<number>(() => ({
-    url: this.applicationConfigService.getEndpointFor('api/tasks/count'),
-    params: new HttpParams().set('status.equals', 'DONE'),
-  }));
-  private readonly memberCountResource = httpResource<number>(() => ({
-    url: this.applicationConfigService.getEndpointFor('api/projects/members/count'),
+    params: new HttpParams().set('page', '0').set('size', '10').set('sort', 'updatedAt,desc'),
   }));
 }

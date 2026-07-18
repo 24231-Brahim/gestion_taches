@@ -69,11 +69,13 @@ public class TaskService {
             );
         }
         Task task = taskMapper.toEntity(taskDTO);
-        String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
-        User currentUser = userRepository
-            .findOneByLogin(currentLogin)
-            .orElseThrow(() -> new RuntimeException("User not found: " + currentLogin));
-        task.setCreatedBy(currentUser);
+        if (task.getId() == null) {
+            String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
+            User currentUser = userRepository
+                .findOneByLogin(currentLogin)
+                .orElseThrow(() -> new RuntimeException("User not found: " + currentLogin));
+            task.setCreatedBy(currentUser);
+        }
         task = taskRepository.save(task);
         return taskMapper.toDto(task);
     }
@@ -90,6 +92,7 @@ public class TaskService {
             checkTaskUpdatePermission(taskDTO.getId());
         }
         Task task = taskMapper.toEntity(taskDTO);
+        task.setUpdatedAt(java.time.Instant.now());
         task = taskRepository.save(task);
         return taskMapper.toDto(task);
     }
@@ -110,7 +113,7 @@ public class TaskService {
             .findById(taskDTO.getId())
             .map(existingTask -> {
                 taskMapper.partialUpdate(existingTask, taskDTO);
-
+                existingTask.setUpdatedAt(java.time.Instant.now());
                 return existingTask;
             })
             .map(taskRepository::save)

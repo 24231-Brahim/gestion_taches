@@ -27,7 +27,7 @@ export class NotificationService {
   startPolling(): void {
     if (!this.pollingSubscription) {
       this.refresh();
-      this.pollingSubscription = interval(30000).subscribe(() => this.refresh());
+      this.pollingSubscription = interval(60000).subscribe(() => this.refresh());
     }
   }
 
@@ -42,7 +42,7 @@ export class NotificationService {
 
   refresh(): void {
     this.getUnreadCount().subscribe(count => this.unreadCount.set(count));
-    this.getNotifications().subscribe(notifs => this.notifications.set(notifs));
+    this.getNotificationsPaginated(0, 20).subscribe(resp => this.notifications.set(resp.body ?? []));
   }
 
   getUnreadCount(): Observable<number> {

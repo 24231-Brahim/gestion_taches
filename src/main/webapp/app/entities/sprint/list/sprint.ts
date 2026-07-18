@@ -362,23 +362,37 @@ export class Sprint implements OnInit {
   });
 
   ngOnInit(): void {
-    const key = this.activatedRoute.parent?.snapshot.paramMap.get('key');
-    if (key) {
-      this.currentProjectKey.set(key);
-      this.projectService.findByKey(key).subscribe(project => {
-        this.currentProject.set(project);
+    const parentParamMap = this.activatedRoute.parent?.paramMap ?? this.activatedRoute.paramMap;
+    parentParamMap.subscribe(params => {
+      const key = params.get('key');
+      if (key) {
+        this.currentProjectKey.set(key);
+        this.projectService.findByKey(key).subscribe({
+          next: project => {
+            this.currentProject.set(project);
+            this.sprintService.sprintsParams.set({
+              size: 100,
+              sort: 'startDate,desc',
+              'projectId.equals': project.id,
+            });
+            this.sprintService.refresh();
+          },
+          error: () => {
+            this.sprintService.sprintsParams.set({
+              size: 100,
+              sort: 'startDate,desc',
+            });
+            this.sprintService.refresh();
+          },
+        });
+      } else {
         this.sprintService.sprintsParams.set({
           size: 100,
           sort: 'startDate,desc',
-          'projectId.equals': project.id,
         });
-      });
-    } else {
-      this.sprintService.sprintsParams.set({
-        size: 100,
-        sort: 'startDate,desc',
-      });
-    }
+        this.sprintService.refresh();
+      }
+    });
   }
 
   onSprintChange(value: string | number): void {
@@ -394,14 +408,7 @@ export class Sprint implements OnInit {
   }
 
   private refreshIssues(): void {
-    const sp = this.selectedSprint();
-    if (sp?.project?.id) {
-      this.taskService.tasksParams.set({
-        'projectId.equals': sp.project.id,
-        size: 500,
-        t: Date.now(),
-      });
-    }
+    this.taskService.refresh();
   }
 
   onStatusChange(event: { taskId: number; status: string }): void {
@@ -458,9 +465,9 @@ export class Sprint implements OnInit {
     this.sprintService.startSprint(sp.id).subscribe({
       next: updated => {
         this.isSaving.set(false);
-        Object.assign(sp, updated);
+        this.sprints.update(list => list.map(s => (s.id === updated.id ? { ...s, ...updated } : s)));
         this.refreshIssues();
-        this.sprintService.sprintsParams.update(p => ({ ...p, t: Date.now() }));
+        this.sprintService.refresh();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -479,11 +486,11 @@ export class Sprint implements OnInit {
     this.sprintService.closeSprint(sp.id).subscribe({
       next: report => {
         this.isSaving.set(false);
-        Object.assign(sp, { status: 'COMPLETED' });
+        this.sprints.update(list => list.map(s => (s.id === sp.id ? { ...s, status: 'COMPLETED' } : s)));
         this.velocityReport.set(report);
         this.showVelocityModal.set(true);
         this.refreshIssues();
-        this.sprintService.sprintsParams.update(p => ({ ...p, t: Date.now() }));
+        this.sprintService.refresh();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);

@@ -44,6 +44,10 @@ export class EpicsService {
   protected readonly applicationConfigService = inject(ApplicationConfigService);
   protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/epics');
 
+  refresh(): void {
+    this.epicsResource.reload();
+  }
+
   protected convertValueFromServer(restEpic: RestEpic): IEpic {
     return {
       ...restEpic,

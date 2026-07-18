@@ -1,12 +1,12 @@
 package com.gestiontaches.web.rest;
 
-import com.gestiontaches.domain.Task;
 import com.gestiontaches.repository.SprintRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.SprintQueryService;
 import com.gestiontaches.service.SprintService;
 import com.gestiontaches.service.criteria.SprintCriteria;
 import com.gestiontaches.service.dto.SprintDTO;
+import com.gestiontaches.service.dto.TaskDTO;
 import com.gestiontaches.service.dto.VelocityReportDTO;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -212,9 +212,9 @@ public class SprintResource {
     }
 
     @GetMapping("/projects/{projectId}/backlog")
-    public ResponseEntity<List<Task>> getBacklog(@PathVariable("projectId") Long projectId) {
+    public ResponseEntity<List<TaskDTO>> getBacklog(@PathVariable("projectId") Long projectId) {
         LOG.debug("REST request to get backlog for project : {}", projectId);
-        List<Task> tasks = sprintService.getBacklogTasks(projectId);
+        List<TaskDTO> tasks = sprintService.getBacklogTasks(projectId);
         return ResponseEntity.ok().body(tasks);
     }
 }

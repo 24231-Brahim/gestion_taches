@@ -74,6 +74,7 @@ export class AttachmentUpdate implements OnInit {
   }
 
   protected onSaveSuccess(): void {
+    this.attachmentService.refresh();
     this.previousState();
   }
 

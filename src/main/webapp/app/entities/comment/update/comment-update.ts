@@ -74,6 +74,7 @@ export class CommentUpdate implements OnInit {
   }
 
   protected onSaveSuccess(): void {
+    this.commentService.refresh();
     this.previousState();
   }
 

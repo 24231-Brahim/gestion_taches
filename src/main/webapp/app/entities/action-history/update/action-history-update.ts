@@ -74,6 +74,7 @@ export class ActionHistoryUpdate implements OnInit {
   }
 
   protected onSaveSuccess(): void {
+    this.actionHistoryService.refresh();
     this.previousState();
   }
 

@@ -20,8 +20,10 @@ import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.TaskTransitionRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.service.dto.SprintDTO;
+import com.gestiontaches.service.dto.TaskDTO;
 import com.gestiontaches.service.dto.VelocityReportDTO;
 import com.gestiontaches.service.mapper.SprintMapper;
+import com.gestiontaches.service.mapper.TaskMapper;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,6 +62,9 @@ class SprintServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private TaskMapper taskMapper;
 
     @InjectMocks
     private SprintService sprintService;
@@ -259,9 +264,13 @@ class SprintServiceTest {
         backlogTask.setId(500L);
         backlogTask.setSprint(null);
 
-        when(taskRepository.findByProjectIdAndSprintIsNull(1L)).thenReturn(List.of(backlogTask));
+        TaskDTO backlogDto = new TaskDTO();
+        backlogDto.setId(500L);
 
-        List<Task> result = sprintService.getBacklogTasks(1L);
+        when(taskRepository.findByProjectIdAndSprintIsNullWithToOneRelationships(1L)).thenReturn(List.of(backlogTask));
+        when(taskMapper.toDto(backlogTask)).thenReturn(backlogDto);
+
+        List<TaskDTO> result = sprintService.getBacklogTasks(1L);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getId()).isEqualTo(500L);

@@ -44,6 +44,10 @@ export class ProjectsService {
   protected readonly applicationConfigService = inject(ApplicationConfigService);
   protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/projects');
 
+  refresh(): void {
+    this.projectsResource.reload();
+  }
+
   protected convertValueFromServer(restProject: RestProject): IProject {
     return {
       ...restProject,

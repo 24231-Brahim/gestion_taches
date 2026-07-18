@@ -215,7 +215,7 @@ type Tab = 'board' | 'planning' | 'burndown';
 export class SprintDetail {
   readonly sprint = input<ISprint | null>(null);
 
-  readonly projectKey = computed(() => this.sprint()?.project?.key ?? null);
+  readonly projectKey = computed(() => this._currentSprint()?.project?.key ?? null);
 
   readonly activeTab = signal<Tab>('board');
   readonly isSaving = signal(false);
@@ -242,22 +242,22 @@ export class SprintDetail {
   });
 
   readonly hasActiveSprint = computed(() => {
-    const sp = this.sprint();
+    const sp = this._currentSprint();
     if (!sp?.project?.id) {
       return false;
     }
-    return false;
+    return this.sprintService.sprints().some(s => s.status === 'ACTIVE' && s.id !== sp.id);
   });
 
   readonly canStartSprint = computed(() => {
-    const sp = this.sprint();
+    const sp = this._currentSprint();
     if (!sp || sp.status !== 'PLANNED') {
       return false;
     }
     return true;
   });
 
-  readonly canCloseSprint = computed(() => this.sprint()?.status === 'ACTIVE');
+  readonly canCloseSprint = computed(() => this._currentSprint()?.status === 'ACTIVE');
 
   readonly sprintTasksCount = computed(() => this.tasks().length);
   readonly doneTasksCount = computed(() => this.tasks().filter(i => i.status === 'DONE').length);
@@ -278,7 +278,7 @@ export class SprintDetail {
   );
 
   readonly daysLeft = computed(() => {
-    const sp = this.sprint();
+    const sp = this._currentSprint();
     if (!sp?.endDate) {
       return 0;
     }
@@ -293,10 +293,16 @@ export class SprintDetail {
   protected readonly translateService = inject(TranslateService);
   protected readonly accountService = inject(AccountService);
 
+  private readonly _currentSprint = signal<ISprint | null>(null);
+
+  private sprintSyncEffect = effect(() => {
+    this._currentSprint.set(this.sprint());
+  });
+
   private issuesEffect = effect(() => {
     const raw = this.taskService.tasks();
     if (raw && raw.length > 0) {
-      this.tasks.set(raw.filter(i => i.sprint?.id === this.sprint()?.id));
+      this.tasks.set(raw.filter(i => i.sprint?.id === this._currentSprint()?.id));
       this.projectTasks.set(raw);
     } else if (raw?.length === 0 && this.taskService.tasksResource.hasValue()) {
       this.tasks.set([]);
@@ -305,7 +311,7 @@ export class SprintDetail {
   });
 
   private sprintEffect = effect(() => {
-    const sp = this.sprint();
+    const sp = this._currentSprint();
     if (sp?.project?.id) {
       this.taskService.tasksParams.set({
         'projectId.equals': sp.project.id,
@@ -319,7 +325,7 @@ export class SprintDetail {
   }
 
   private refreshIssues(): void {
-    const sp = this.sprint();
+    const sp = this._currentSprint();
     if (sp?.project?.id) {
       this.taskService.tasksParams.set({
         'projectId.equals': sp.project.id,
@@ -375,7 +381,7 @@ export class SprintDetail {
   }
 
   onStartSprint(): void {
-    const sp = this.sprint();
+    const sp = this._currentSprint();
     if (!sp) {
       return;
     }
@@ -383,7 +389,7 @@ export class SprintDetail {
     this.sprintService.startSprint(sp.id).subscribe({
       next: updated => {
         this.isSaving.set(false);
-        Object.assign(sp, updated);
+        this._currentSprint.set(updated);
         this.refreshIssues();
       },
       error: (err: HttpErrorResponse) => {
@@ -395,7 +401,7 @@ export class SprintDetail {
   }
 
   onCompleteSprint(): void {
-    const sp = this.sprint();
+    const sp = this._currentSprint();
     if (!sp) {
       return;
     }
@@ -403,7 +409,7 @@ export class SprintDetail {
     this.sprintService.closeSprint(sp.id).subscribe({
       next: report => {
         this.isSaving.set(false);
-        Object.assign(sp, { status: 'COMPLETED' });
+        this._currentSprint.set({ ...sp, status: 'COMPLETED' });
         this.velocityReport.set(report);
         this.showVelocityModal.set(true);
         this.refreshIssues();

@@ -88,6 +88,7 @@ export class Project implements OnInit {
 
   load(): void {
     this.queryBackend();
+    this.projectService.refresh();
   }
 
   navigateToWithComponentValues(event: SortState): void {

@@ -130,6 +130,7 @@ interface KanbanColumn {
 export class TaskKanbanBoard {
   readonly tasks = input<ITask[]>([]);
   readonly selectTask = output<ITask>();
+  readonly taskStatusChanged = output<{ taskId: number; status: string }>();
 
   readonly typeColors = ISSUE_TYPE_COLORS;
   readonly typeIcons = ISSUE_TYPE_ICONS;
@@ -182,7 +183,7 @@ export class TaskKanbanBoard {
     }
     this.taskService.partialUpdate({ id: task.id, status: targetStatus as keyof typeof TaskStatus }).subscribe({
       next: () => {
-        task.status = targetStatus as keyof typeof TaskStatus;
+        this.taskStatusChanged.emit({ taskId: task.id!, status: targetStatus });
         this.dragTaskId = null;
       },
       error: (err: HttpErrorResponse) => {

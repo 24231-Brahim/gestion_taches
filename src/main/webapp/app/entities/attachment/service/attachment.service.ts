@@ -43,6 +43,10 @@ export class AttachmentsService {
   protected readonly applicationConfigService = inject(ApplicationConfigService);
   protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/attachments');
 
+  refresh(): void {
+    this.attachmentsResource.reload();
+  }
+
   protected convertValueFromServer(restAttachment: RestAttachment): IAttachment {
     return {
       ...restAttachment,

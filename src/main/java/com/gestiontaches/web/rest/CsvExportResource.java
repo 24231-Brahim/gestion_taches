@@ -8,6 +8,7 @@ import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.service.ProjectPermissionService;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -51,7 +52,7 @@ public class CsvExportResource {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         pw.println("ID,Key,Name,Description,CreatedAt,OwnerLogin");
-        projectRepository.findAll().forEach(p -> {
+        projectRepository.findAllWithOwner().forEach(p -> {
             String ownerLogin = p.getOwner() != null ? escapeCsv(p.getOwner().getLogin()) : "";
             pw.println(
                 p.getId() +
@@ -77,7 +78,7 @@ public class CsvExportResource {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         pw.println("ID,Title,Status,Priority,ProjectKey,SprintName,EpicTitle,AssigneeLogin,CreatedAt");
-        taskRepository.findAll().forEach(i -> {
+        taskRepository.findAllWithToOneRelationships().forEach(i -> {
             String projectKey = i.getProject() != null ? escapeCsv(i.getProject().getKey()) : "";
             String sprintName = i.getSprint() != null ? escapeCsv(i.getSprint().getName()) : "";
             String epicTitle = i.getEpic() != null ? escapeCsv(i.getEpic().getTitle()) : "";
@@ -175,7 +176,7 @@ public class CsvExportResource {
     }
 
     private ResponseEntity<byte[]> csvResponse(String csv, String filename) {
-        byte[] bytes = csv.getBytes();
+        byte[] bytes = csv.getBytes(StandardCharsets.UTF_8);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("text/csv; charset=UTF-8"));
         headers.setContentDispositionFormData("attachment", filename);

@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
@@ -167,6 +167,7 @@ export class TaskDetailPanel {
   readonly task = input.required<ITask | null>();
   readonly visible = input(false);
   readonly close = input.required<() => void>();
+  readonly taskChanged = output<ITask>();
 
   readonly taskTypeLabels = TaskType;
   readonly taskStatusValues = Object.keys(TaskStatus);
@@ -202,7 +203,7 @@ export class TaskDetailPanel {
     this.isSaving.set(true);
     this.taskService.partialUpdate({ id: task.id, status: newStatus as keyof typeof TaskStatus }).subscribe({
       next: updated => {
-        Object.assign(task, updated);
+        this.taskChanged.emit({ ...task, ...updated });
         this.isSaving.set(false);
       },
       error: (err: HttpErrorResponse) => {
@@ -220,7 +221,7 @@ export class TaskDetailPanel {
     this.isSaving.set(true);
     this.taskService.assign(task.id, Number(userId)).subscribe({
       next: updated => {
-        Object.assign(task, updated);
+        this.taskChanged.emit({ ...task, ...updated });
         this.isSaving.set(false);
       },
       error: (err: HttpErrorResponse) => {

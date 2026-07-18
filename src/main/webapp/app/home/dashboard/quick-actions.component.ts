@@ -16,16 +16,8 @@ import { RouterLink } from '@angular/router';
           <span jhiTranslate="dashboard.quickActions.newProject">New Project</span>
         </a>
         <a [routerLink]="['/project']" class="qa-btn">
-          <span class="qa-icon">+</span>
-          <span jhiTranslate="dashboard.quickActions.newTask">Nouvelle Tâche</span>
-        </a>
-        <a [routerLink]="['/project']" class="qa-btn">
           <span class="qa-icon">◉</span>
           <span jhiTranslate="dashboard.quickActions.viewProjects">View Projects</span>
-        </a>
-        <a [routerLink]="['/project']" class="qa-btn">
-          <span class="qa-icon">◉</span>
-          <span jhiTranslate="dashboard.quickActions.viewTasks">Voir Tâches</span>
         </a>
       </div>
     </div>

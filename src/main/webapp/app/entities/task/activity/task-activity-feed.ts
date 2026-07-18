@@ -5,6 +5,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { IActionHistory } from 'app/entities/action-history/action-history.model';
+import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 
@@ -82,13 +83,14 @@ export class TaskActivityFeed implements OnInit {
   readonly histories = signal<IActionHistory[]>([]);
 
   protected readonly http = inject(HttpClient);
+  protected readonly appConfig = inject(ApplicationConfigService);
 
   ngOnInit(): void {
     this.loadHistories();
   }
 
   loadHistories(): void {
-    this.http.get<IActionHistory[]>(`/api/action-histories/by-task/${this.taskId()}`).subscribe({
+    this.http.get<IActionHistory[]>(this.appConfig.getEndpointFor(`api/action-histories/by-task/${this.taskId()}`)).subscribe({
       next: histories => this.histories.set(histories),
     });
   }

@@ -15,8 +15,10 @@ import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.TaskTransitionRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.service.dto.SprintDTO;
+import com.gestiontaches.service.dto.TaskDTO;
 import com.gestiontaches.service.dto.VelocityReportDTO;
 import com.gestiontaches.service.mapper.SprintMapper;
+import com.gestiontaches.service.mapper.TaskMapper;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -42,6 +44,7 @@ public class SprintService {
     private final NotificationService notificationService;
     private final ProjectMemberService projectMemberService;
     private final UserRepository userRepository;
+    private final TaskMapper taskMapper;
 
     public SprintService(
         SprintRepository sprintRepository,
@@ -52,7 +55,8 @@ public class SprintService {
         TaskTransitionRepository taskTransitionRepository,
         NotificationService notificationService,
         ProjectMemberService projectMemberService,
-        UserRepository userRepository
+        UserRepository userRepository,
+        TaskMapper taskMapper
     ) {
         this.sprintRepository = sprintRepository;
         this.sprintMapper = sprintMapper;
@@ -63,6 +67,7 @@ public class SprintService {
         this.notificationService = notificationService;
         this.projectMemberService = projectMemberService;
         this.userRepository = userRepository;
+        this.taskMapper = taskMapper;
     }
 
     public SprintDTO save(SprintDTO sprintDTO) {
@@ -192,8 +197,8 @@ public class SprintService {
         return report;
     }
 
-    public List<Task> getBacklogTasks(Long projectId) {
-        return taskRepository.findByProjectIdAndSprintIsNull(projectId);
+    public List<TaskDTO> getBacklogTasks(Long projectId) {
+        return taskRepository.findByProjectIdAndSprintIsNullWithToOneRelationships(projectId).stream().map(taskMapper::toDto).toList();
     }
 
     private void validateSingleActiveSprint(SprintDTO sprintDTO) {

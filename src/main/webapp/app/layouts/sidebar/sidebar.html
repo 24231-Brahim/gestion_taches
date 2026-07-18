@@ -33,7 +33,7 @@
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobile()"
         >
-          <fa-icon icon="tasks" [fixedWidth]="true" />
+          <fa-icon icon="sync" [fixedWidth]="true" />
           <span class="sidebar-label" jhiTranslate="global.menu.entities.sprint">Sprints</span>
         </a>
 
@@ -55,7 +55,7 @@
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobile()"
         >
-          <fa-icon icon="bug" [fixedWidth]="true" />
+          <fa-icon icon="tasks" [fixedWidth]="true" />
           <span class="sidebar-label" jhiTranslate="global.menu.entities.task">Tasks</span>
         </a>
       } @else {
@@ -71,62 +71,126 @@
         </a>
       }
     }
+  </nav>
 
-    <hr class="sidebar-divider" />
-
+  <div class="sidebar-bottom">
     @if (account() !== null) {
-      <a class="sidebar-item" routerLink="/account/settings" routerLinkActive="active" (click)="closeMobile()">
-        <fa-icon icon="cog" [fixedWidth]="true" />
-        <span class="sidebar-label" jhiTranslate="global.menu.account.settings">Settings</span>
-      </a>
-    }
-
-    @if (account()?.authorities?.includes('ROLE_ADMIN')) {
       <hr class="sidebar-divider" />
 
-      <div class="sidebar-section-label">
-        <fa-icon icon="users-cog" [fixedWidth]="true" />
-        <span class="sidebar-label" jhiTranslate="global.menu.admin.main">Administration</span>
+      <div class="sidebar-accordion">
+        <button class="sidebar-item sidebar-accordion-toggle" (click)="toggleSettings()">
+          <fa-icon icon="cog" [fixedWidth]="true" />
+          <span class="sidebar-label" jhiTranslate="global.menu.account.settings">Paramètres</span>
+          <fa-icon icon="chevron-down" class="sidebar-accordion-chevron" [class.open]="settingsOpen()" />
+        </button>
+
+        @if (settingsOpen()) {
+          <div class="sidebar-accordion-content">
+            <a class="sidebar-item sidebar-item-nested" routerLink="/account/settings" routerLinkActive="active" (click)="closeMobile()">
+              <fa-icon icon="user" [fixedWidth]="true" />
+              <span class="sidebar-label" jhiTranslate="global.menu.account.settings">Profil</span>
+            </a>
+
+            <button class="sidebar-item sidebar-item-nested" (click)="themeService.toggle()">
+              <fa-icon [fixedWidth]="true" [icon]="themeService.theme() === 'dark' ? 'sun' : 'moon'" />
+              <span class="sidebar-label" jhiTranslate="global.menu.theme">Thème</span>
+            </button>
+
+            @if (languages && languages.length > 1) {
+              <div ngbDropdown class="sidebar-lang-dropdown" display="dynamic">
+                <a class="sidebar-item sidebar-item-nested" ngbDropdownToggle href="javascript:void(0);">
+                  <fa-icon icon="flag" [fixedWidth]="true" />
+                  <span class="sidebar-label" jhiTranslate="global.menu.language">Langue</span>
+                </a>
+                <div class="dropdown-menu" ngbDropdownMenu>
+                  @for (language of languages; track $index) {
+                    <a
+                      class="dropdown-item"
+                      [jhiActiveMenu]="language"
+                      href="javascript:void(0);"
+                      (click)="changeLanguage(language); closeMobile()"
+                      >{{ language | findLanguageFromKey }}</a
+                    >
+                  }
+                </div>
+              </div>
+            }
+
+            @if (account()?.authorities?.includes('ROLE_ADMIN')) {
+              <a class="sidebar-item sidebar-item-nested" routerLink="/user-management" routerLinkActive="active" (click)="closeMobile()">
+                <fa-icon icon="users" [fixedWidth]="true" />
+                <span class="sidebar-label" jhiTranslate="userManagement.home.title">Utilisateurs</span>
+              </a>
+
+              <a class="sidebar-item sidebar-item-nested" routerLink="/admin/metrics" routerLinkActive="active" (click)="closeMobile()">
+                <fa-icon icon="tachometer-alt" [fixedWidth]="true" />
+                <span class="sidebar-label" jhiTranslate="global.menu.admin.metrics">Métriques</span>
+              </a>
+
+              <a class="sidebar-item sidebar-item-nested" routerLink="/admin/health" routerLinkActive="active" (click)="closeMobile()">
+                <fa-icon icon="heart" [fixedWidth]="true" />
+                <span class="sidebar-label" jhiTranslate="global.menu.admin.health">Diagnostics</span>
+              </a>
+
+              <a
+                class="sidebar-item sidebar-item-nested"
+                routerLink="/admin/configuration"
+                routerLinkActive="active"
+                (click)="closeMobile()"
+              >
+                <fa-icon icon="cogs" [fixedWidth]="true" />
+                <span class="sidebar-label" jhiTranslate="global.menu.admin.configuration">Configuration</span>
+              </a>
+
+              <a class="sidebar-item sidebar-item-nested" routerLink="/admin/logs" routerLinkActive="active" (click)="closeMobile()">
+                <fa-icon icon="tasks" [fixedWidth]="true" />
+                <span class="sidebar-label" jhiTranslate="global.menu.admin.logs">Logs</span>
+              </a>
+
+              @if (openAPIEnabled()) {
+                <a class="sidebar-item sidebar-item-nested" routerLink="/admin/docs" routerLinkActive="active" (click)="closeMobile()">
+                  <fa-icon icon="book" [fixedWidth]="true" />
+                  <span class="sidebar-label" jhiTranslate="global.menu.admin.apidocs">API</span>
+                </a>
+              }
+
+              @if (!inProduction()) {
+                <a class="sidebar-item sidebar-item-nested" href="./h2-console/" target="_blank" (click)="closeMobile()">
+                  <fa-icon icon="database" [fixedWidth]="true" />
+                  <span class="sidebar-label" jhiTranslate="global.menu.admin.database">Base de données</span>
+                </a>
+              }
+            }
+          </div>
+        }
       </div>
 
-      <a class="sidebar-item" routerLink="/user-management" routerLinkActive="active" (click)="closeMobile()">
-        <fa-icon icon="users" [fixedWidth]="true" />
-        <span class="sidebar-label" jhiTranslate="userManagement.home.title">User Management</span>
-      </a>
+      <hr class="sidebar-divider" />
 
-      <a class="sidebar-item" routerLink="/admin/metrics" routerLinkActive="active" (click)="closeMobile()">
-        <fa-icon icon="tachometer-alt" [fixedWidth]="true" />
-        <span class="sidebar-label" jhiTranslate="global.menu.admin.metrics">Metrics</span>
-      </a>
-
-      <a class="sidebar-item" routerLink="/admin/health" routerLinkActive="active" (click)="closeMobile()">
-        <fa-icon icon="heart" [fixedWidth]="true" />
-        <span class="sidebar-label" jhiTranslate="global.menu.admin.health">Health</span>
-      </a>
-
-      <a class="sidebar-item" routerLink="/admin/configuration" routerLinkActive="active" (click)="closeMobile()">
-        <fa-icon icon="cogs" [fixedWidth]="true" />
-        <span class="sidebar-label" jhiTranslate="global.menu.admin.configuration">Configuration</span>
-      </a>
-
-      <a class="sidebar-item" routerLink="/admin/logs" routerLinkActive="active" (click)="closeMobile()">
-        <fa-icon icon="tasks" [fixedWidth]="true" />
-        <span class="sidebar-label" jhiTranslate="global.menu.admin.logs">Logs</span>
-      </a>
-
-      @if (openAPIEnabled()) {
-        <a class="sidebar-item" routerLink="/admin/docs" routerLinkActive="active" (click)="closeMobile()">
-          <fa-icon icon="book" [fixedWidth]="true" />
-          <span class="sidebar-label" jhiTranslate="global.menu.admin.apidocs">API</span>
+      <div ngbDropdown class="sidebar-user-section" display="dynamic">
+        <a class="sidebar-user" ngbDropdownToggle href="javascript:void(0);">
+          @if (account()?.imageUrl) {
+            <img [src]="account()!.imageUrl" class="sidebar-user-avatar" alt="Avatar" />
+          } @else {
+            <fa-icon icon="user-circle" class="sidebar-user-icon" />
+          }
+          <span class="sidebar-label sidebar-user-name">{{ account()?.login }}</span>
         </a>
-      }
-
-      @if (!inProduction()) {
-        <a class="sidebar-item" href="./h2-console/" target="_blank" (click)="closeMobile()">
-          <fa-icon icon="database" [fixedWidth]="true" />
-          <span class="sidebar-label" jhiTranslate="global.menu.admin.database">Database</span>
-        </a>
-      }
+        <div class="dropdown-menu dropdown-menu-end" ngbDropdownMenu>
+          <a class="dropdown-item" routerLink="/account/settings" routerLinkActive="active" (click)="closeMobile()">
+            <fa-icon icon="wrench" [fixedWidth]="true" />
+            <span jhiTranslate="global.menu.account.settings">Paramètres</span>
+          </a>
+          <a class="dropdown-item" routerLink="/account/password" routerLinkActive="active" (click)="closeMobile()">
+            <fa-icon icon="lock" [fixedWidth]="true" />
+            <span jhiTranslate="global.menu.account.password">Mot de passe</span>
+          </a>
+          <a class="dropdown-item" (click)="logout()">
+            <fa-icon icon="sign-out-alt" [fixedWidth]="true" />
+            <span jhiTranslate="global.menu.account.logout">Déconnexion</span>
+          </a>
+        </div>
+      </div>
     }
-  </nav>
+  </div>
 </aside>

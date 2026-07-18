@@ -47,11 +47,10 @@ public class NotificationResource {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<NotificationDTO>> getNotifications(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         Long userId = getCurrentUserId();
-        if (pageable.isUnpaged()) {
-            List<NotificationDTO> notifications = notificationService.findByUserId(userId);
-            return ResponseEntity.ok(notifications);
-        }
-        Page<NotificationDTO> page = notificationService.findByUserId(userId, pageable);
+        Pageable limited = pageable.isUnpaged()
+            ? org.springframework.data.domain.PageRequest.of(0, 20, org.springframework.data.domain.Sort.by("createdAt").descending())
+            : pageable;
+        Page<NotificationDTO> page = notificationService.findByUserId(userId, limited);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

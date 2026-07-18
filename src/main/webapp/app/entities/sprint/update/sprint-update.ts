@@ -1,5 +1,6 @@
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
@@ -39,6 +40,7 @@ export class SprintUpdate implements OnInit {
   protected activatedRoute = inject(ActivatedRoute);
   protected alertService = inject(AlertService);
   protected translateService = inject(TranslateService);
+  protected destroyRef = inject(DestroyRef);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: SprintFormGroup = this.sprintFormService.createSprintFormGroup();
@@ -56,7 +58,7 @@ export class SprintUpdate implements OnInit {
     });
 
     // Pre-select project from parent route :key param (e.g. when coming from project-detail)
-    const key = this.activatedRoute.parent?.paramMap.subscribe(params => {
+    this.activatedRoute.parent?.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
       const projectKey = params.get('key');
       if (projectKey && !this.sprint) {
         this.projectService.findByKey(projectKey).subscribe(project => {
@@ -91,6 +93,7 @@ export class SprintUpdate implements OnInit {
   }
 
   protected onSaveSuccess(): void {
+    this.sprintService.refresh();
     this.previousState();
   }
 

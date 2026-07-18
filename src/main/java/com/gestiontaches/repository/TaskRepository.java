@@ -53,4 +53,21 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
     List<Task> findBySprintIdAndStatus(Long sprintId, TaskStatus status);
 
     List<Task> findByProjectIdAndSprintIsNull(Long projectId);
+
+    @Query(
+        "SELECT t FROM Task t LEFT JOIN FETCH t.sprint LEFT JOIN FETCH t.epic LEFT JOIN FETCH t.project LEFT JOIN FETCH t.assignee LEFT JOIN FETCH t.createdBy WHERE t.project.id = :projectId AND t.sprint IS NULL"
+    )
+    List<Task> findByProjectIdAndSprintIsNullWithToOneRelationships(@Param("projectId") Long projectId);
+
+    long countByStatus(TaskStatus status);
+
+    long countByStatusNotIn(java.util.Collection<TaskStatus> statuses);
+
+    @Query(
+        "SELECT t.project.id, t.project.name, COUNT(t), SUM(CASE WHEN t.status = com.gestiontaches.domain.enumeration.TaskStatus.DONE THEN 1 ELSE 0 END) FROM Task t WHERE t.project IS NOT NULL GROUP BY t.project.id, t.project.name ORDER BY t.project.name"
+    )
+    List<Object[]> countTasksGroupByProject();
+
+    @Query("SELECT t.status, COUNT(t) FROM Task t GROUP BY t.status")
+    List<Object[]> countTasksGroupByStatus();
 }

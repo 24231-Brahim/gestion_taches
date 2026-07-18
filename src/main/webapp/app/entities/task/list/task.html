@@ -162,8 +162,17 @@
       </div>
     }
   } @else {
-    <jhi-task-kanban-board [tasks]="filteredTasks()" (selectTask)="onSelectTask($event)" />
+    <jhi-task-kanban-board
+      [tasks]="filteredTasks()"
+      (selectTask)="onSelectTask($event)"
+      (taskStatusChanged)="onKanbanStatusChange($event)"
+    />
   }
 
-  <jhi-task-detail-panel [task]="selectedTask()" [visible]="drawerVisible()" [close]="onCloseDrawer.bind(this)" />
+  <jhi-task-detail-panel
+    [task]="selectedTask()"
+    [visible]="drawerVisible()"
+    [close]="onCloseDrawer.bind(this)"
+    (taskChanged)="onTaskChanged($event)"
+  />
 </div>

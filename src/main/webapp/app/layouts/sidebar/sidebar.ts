@@ -3,11 +3,18 @@ import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive } f
 import { filter } from 'rxjs';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { TranslateModule } from '@ngx-translate/core';
+import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AccountService } from 'app/core/auth/account.service';
+import { StateStorageService } from 'app/core/auth/state-storage.service';
 import { ProfileService } from 'app/layouts/profiles/profile.service';
+import { LoginService } from 'app/login/login.service';
+import { ThemeService } from 'app/core/util/theme.service';
+import { LANGUAGES } from 'app/config/language.constants';
 import { TranslateDirective } from 'app/shared/language';
+import FindLanguageFromKeyPipe from 'app/shared/language/find-language-from-key.pipe';
+import ActiveMenuDirective from 'app/layouts/navbar/active-menu.directive';
 
 @Component({
   selector: 'jhi-sidebar',
@@ -17,7 +24,18 @@ import { TranslateDirective } from 'app/shared/language';
   host: {
     '[class.collapsed]': 'collapsed()',
   },
-  imports: [RouterLink, RouterLinkActive, FontAwesomeModule, TranslateDirective, TranslateModule],
+  imports: [
+    RouterLink,
+    RouterLinkActive,
+    FontAwesomeModule,
+    TranslateDirective,
+    TranslateModule,
+    NgbDropdown,
+    NgbDropdownMenu,
+    NgbDropdownToggle,
+    FindLanguageFromKeyPipe,
+    ActiveMenuDirective,
+  ],
 })
 export default class Sidebar implements OnDestroy {
   readonly account = inject(AccountService).account;
@@ -26,12 +44,18 @@ export default class Sidebar implements OnDestroy {
   readonly mobileOpen = signal(false);
   readonly inProduction = signal(true);
   readonly openAPIEnabled = signal(false);
+  readonly themeService = inject(ThemeService);
+  readonly languages = LANGUAGES;
+  readonly settingsOpen = signal(false);
 
   readonly currentProjectKey = signal<string | null>(null);
 
   private readonly profileService = inject(ProfileService);
   private readonly router = inject(Router);
   private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly loginService = inject(LoginService);
+  private readonly translateService = inject(TranslateService);
+  private readonly stateStorageService = inject(StateStorageService);
   private readonly bodyObserver = new MutationObserver(() => {
     this.mobileOpen.set(document.body.classList.contains('sidebar-mobile-open'));
   });
@@ -73,6 +97,20 @@ export default class Sidebar implements OnDestroy {
   closeMobile(): void {
     this.mobileOpen.set(false);
     document.body.classList.remove('sidebar-mobile-open');
+  }
+
+  toggleSettings(): void {
+    this.settingsOpen.update(v => !v);
+  }
+
+  changeLanguage(languageKey: string): void {
+    this.stateStorageService.storeLocale(languageKey);
+    this.translateService.use(languageKey);
+  }
+
+  logout(): void {
+    this.loginService.logout();
+    this.router.navigate(['']);
   }
 
   private detectProjectContext(): void {

@@ -65,6 +65,7 @@ export class ProjectUpdate implements OnInit {
   }
 
   protected onSaveSuccess(): void {
+    this.projectService.refresh();
     this.previousState();
   }
 

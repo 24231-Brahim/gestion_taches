@@ -52,6 +52,10 @@ export class SprintsService {
   protected readonly applicationConfigService = inject(ApplicationConfigService);
   protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/sprints');
 
+  refresh(): void {
+    this.sprintsResource.reload();
+  }
+
   protected convertValueFromServer(restSprint: RestSprint): ISprint {
     return {
       ...restSprint,
