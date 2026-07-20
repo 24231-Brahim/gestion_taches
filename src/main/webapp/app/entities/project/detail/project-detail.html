@@ -40,6 +40,13 @@
       }
     </div>
 
+    @if (isAdminNotExplicitMember()) {
+      <div class="alert alert-info mb-3" role="alert">
+        <fa-icon icon="shield-alt" class="me-1" />
+        <span jhiTranslate="gestionTachesApp.project.member.adminAccess">Vous avez un accès administrateur complet à ce projet.</span>
+      </div>
+    }
+
     @if (showAddForm()) {
       <div class="card mb-3 border">
         <div class="card-body">
@@ -78,9 +85,14 @@
           </tr>
         </thead>
         <tbody>
-          @for (member of members(); track member.id) {
-            <tr>
-              <td><fa-icon icon="user" class="me-1" />{{ member.userLogin }}</td>
+          @for (member of displayMembers(); track member.id) {
+            <tr [class.table-info]="member.isSynthetic">
+              <td>
+                <fa-icon icon="user" class="me-1" />{{ member.userLogin }}
+                @if (member.isSynthetic) {
+                  <span class="badge bg-info ms-1" jhiTranslate="gestionTachesApp.project.member.adminAccess">Accès administrateur</span>
+                }
+              </td>
               <td>
                 @if (editingMemberId() === member.id) {
                   <div class="d-flex gap-1 align-items-center">
@@ -102,7 +114,7 @@
               </td>
               <td>{{ member.joinedAt | formatMediumDatetime }}</td>
               <td>
-                @if (canManageMembers()) {
+                @if (canManageMembers() && !member.isSynthetic) {
                   <div class="d-flex gap-1">
                     @if (editingMemberId() !== member.id) {
                       <button class="btn btn-sm btn-warning" (click)="startEdit(member)">

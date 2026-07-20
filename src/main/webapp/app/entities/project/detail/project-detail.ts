@@ -21,6 +21,10 @@ import { IUser } from 'app/entities/user/user.model';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
 import { ProjectDeleteDialog } from '../delete/project-delete-dialog';
 
+export interface DisplayMember extends IProjectMember {
+  isSynthetic?: boolean;
+}
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-project-detail',
@@ -53,6 +57,35 @@ export class ProjectDetail {
   readonly canManageMembers = computed(() => {
     const role = this.userProjectRole();
     return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
+  });
+
+  readonly isAdminNotExplicitMember = computed(() => {
+    const account = this.accountService.account();
+    if (!account?.authorities?.includes('ROLE_ADMIN')) {
+      return false;
+    }
+    return !this.members().some(m => m.userLogin === account.login);
+  });
+
+  readonly displayMembers = computed<DisplayMember[]>(() => {
+    const realMembers = this.members();
+    if (!this.isAdminNotExplicitMember()) {
+      return realMembers;
+    }
+    const account = this.accountService.account();
+    if (!account) {
+      return realMembers;
+    }
+    const syntheticMember: DisplayMember = {
+      id: -1,
+      userLogin: account.login,
+      userId: null,
+      projectId: null,
+      role: ProjectRole.OWNER,
+      joinedAt: new Date().toISOString() as any,
+      isSynthetic: true,
+    };
+    return [...realMembers, syntheticMember];
   });
 
   private readonly projectService = inject(ProjectService);
