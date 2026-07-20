@@ -1,9 +1,13 @@
 package com.gestiontaches.service;
 
 import com.gestiontaches.domain.Notification;
+import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.NotificationRepository;
+import com.gestiontaches.repository.UserRepository;
+import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.dto.NotificationDTO;
 import com.gestiontaches.service.mapper.NotificationMapper;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -21,17 +25,30 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
+    private final UserRepository userRepository;
+    private final NotificationSseService notificationSseService;
 
-    public NotificationService(NotificationRepository notificationRepository, NotificationMapper notificationMapper) {
+    public NotificationService(
+        NotificationRepository notificationRepository,
+        NotificationMapper notificationMapper,
+        UserRepository userRepository,
+        NotificationSseService notificationSseService
+    ) {
         this.notificationRepository = notificationRepository;
         this.notificationMapper = notificationMapper;
+        this.userRepository = userRepository;
+        this.notificationSseService = notificationSseService;
     }
 
     public NotificationDTO save(NotificationDTO notificationDTO) {
         LOG.debug("Request to save Notification : {}", notificationDTO);
         Notification notification = notificationMapper.toEntity(notificationDTO);
         notification = notificationRepository.save(notification);
-        return notificationMapper.toDto(notification);
+        NotificationDTO saved = notificationMapper.toDto(notification);
+        if (saved.getUserId() != null) {
+            notificationSseService.sendNotification(saved.getUserId(), saved);
+        }
+        return saved;
     }
 
     @Transactional(readOnly = true)
@@ -68,5 +85,19 @@ public class NotificationService {
     public int markAllAsRead(Long userId) {
         LOG.debug("Request to mark all notifications as read for user : {}", userId);
         return notificationRepository.markAllAsReadByUserId(userId);
+    }
+
+    public void notifyAdminsOfNewUser(User newUser) {
+        List<User> admins = userRepository.findAllActivatedByAuthorityNames(List.of(AuthoritiesConstants.ADMIN));
+        String message = "New user registered: " + newUser.getLogin() + " (" + newUser.getEmail() + ")";
+        for (User admin : admins) {
+            Notification notification = new Notification();
+            notification.setMessage(message);
+            notification.setUser(admin);
+            notification.setIsRead(false);
+            notification.setCreatedAt(Instant.now());
+            notificationRepository.save(notification);
+        }
+        LOG.debug("Sent new user registration notification to {} admin(s)", admins.size());
     }
 }

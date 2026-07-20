@@ -2,6 +2,7 @@ package com.gestiontaches.web.rest;
 
 import com.gestiontaches.security.SecurityUtils;
 import com.gestiontaches.service.NotificationService;
+import com.gestiontaches.service.NotificationSseService;
 import com.gestiontaches.service.UserService;
 import com.gestiontaches.service.dto.NotificationDTO;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
@@ -16,9 +17,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -36,10 +39,16 @@ public class NotificationResource {
     private String applicationName;
 
     private final NotificationService notificationService;
+    private final NotificationSseService notificationSseService;
     private final UserService userService;
 
-    public NotificationResource(NotificationService notificationService, UserService userService) {
+    public NotificationResource(
+        NotificationService notificationService,
+        NotificationSseService notificationSseService,
+        UserService userService
+    ) {
         this.notificationService = notificationService;
+        this.notificationSseService = notificationSseService;
         this.userService = userService;
     }
 
@@ -80,6 +89,13 @@ public class NotificationResource {
         Long userId = getCurrentUserId();
         notificationService.markAllAsRead(userId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PreAuthorize("isAuthenticated()")
+    public SseEmitter stream() {
+        Long userId = getCurrentUserId();
+        return notificationSseService.subscribe(userId);
     }
 
     private Long getCurrentUserId() {

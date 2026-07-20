@@ -1,7 +1,8 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
-import { Observable, interval, map, switchMap, tap } from 'rxjs';
+import { StateStorageService } from 'app/core/auth/state-storage.service';
+import { Observable, Subject, interval } from 'rxjs';
 
 export interface INotification {
   id: number;
@@ -18,17 +19,23 @@ export interface INotification {
 export class NotificationService {
   private readonly http = inject(HttpClient);
   private readonly applicationConfigService = inject(ApplicationConfigService);
+  private readonly stateStorageService = inject(StateStorageService);
   private readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/notifications');
 
   readonly unreadCount = signal(0);
   readonly notifications = signal<INotification[]>([]);
   private pollingSubscription: any;
+  private abortController: AbortController | null = null;
+  private readonly notificationReceived = new Subject<INotification>();
+
+  readonly notificationReceived$ = this.notificationReceived.asObservable();
 
   startPolling(): void {
     if (!this.pollingSubscription) {
       this.refresh();
       this.pollingSubscription = interval(60000).subscribe(() => this.refresh());
     }
+    this.connectSSE();
   }
 
   stopPolling(): void {
@@ -36,6 +43,7 @@ export class NotificationService {
       this.pollingSubscription.unsubscribe();
       this.pollingSubscription = null;
     }
+    this.disconnectSSE();
     this.unreadCount.set(0);
     this.notifications.set([]);
   }
@@ -64,5 +72,80 @@ export class NotificationService {
 
   markAllAsRead(): Observable<void> {
     return this.http.patch<void>(`${this.resourceUrl}/read-all`, {});
+  }
+
+  private connectSSE(): void {
+    if (this.abortController) {
+      return;
+    }
+    this.abortController = new AbortController();
+    const url = `${this.resourceUrl}/stream`;
+    const token = this.stateStorageService.getAuthenticationToken();
+
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    fetch(url, {
+      headers,
+      signal: this.abortController.signal,
+    })
+      .then(response => {
+        if (!response.ok || !response.body) {
+          this.disconnectSSE();
+          return;
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        const processStream = (): void => {
+          reader.read().then(({ done, value }) => {
+            if (done) {
+              this.disconnectSSE();
+              return;
+            }
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() ?? '';
+
+            let eventName = 'message';
+            let eventData = '';
+            for (const line of lines) {
+              if (line.startsWith('event:')) {
+                eventName = line.slice(6).trim();
+              } else if (line.startsWith('data:')) {
+                eventData = line.slice(5).trim();
+              } else if (line === '' && eventData) {
+                if (eventName === 'notification') {
+                  try {
+                    const notification: INotification = JSON.parse(eventData);
+                    this.unreadCount.update(c => c + 1);
+                    this.notifications.update(list => [notification, ...list].slice(0, 20));
+                    this.notificationReceived.next(notification);
+                  } catch {
+                    // ignore parse errors
+                  }
+                }
+                eventName = 'message';
+                eventData = '';
+              }
+            }
+            processStream();
+          });
+        };
+        processStream();
+      })
+      .catch(() => {
+        this.disconnectSSE();
+      });
+  }
+
+  private disconnectSSE(): void {
+    if (this.abortController) {
+      this.abortController.abort();
+      this.abortController = null;
+    }
   }
 }
