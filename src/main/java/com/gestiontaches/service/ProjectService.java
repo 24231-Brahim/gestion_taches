@@ -235,6 +235,24 @@ public class ProjectService {
         String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
         User user = userRepository.findOneByLogin(login).orElseThrow(() -> new RuntimeException("User not found"));
         List<ProjectMember> members = projectMemberRepository.findByUserId(user.getId());
-        return members.stream().map(projectMemberMapper::toDto).collect(Collectors.toSet());
+        Set<ProjectMemberDTO> memberships = members.stream().map(projectMemberMapper::toDto).collect(Collectors.toSet());
+
+        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+            Set<Long> memberProjectIds = memberships.stream().map(ProjectMemberDTO::getProjectId).collect(Collectors.toSet());
+            List<Project> allProjects = projectRepository.findAll();
+            for (Project project : allProjects) {
+                if (!memberProjectIds.contains(project.getId())) {
+                    ProjectMemberDTO synthetic = new ProjectMemberDTO();
+                    synthetic.setProjectId(project.getId());
+                    synthetic.setUserId(user.getId());
+                    synthetic.setUserLogin(user.getLogin());
+                    synthetic.setRole(ProjectRole.OWNER);
+                    synthetic.setJoinedAt(Instant.now());
+                    memberships.add(synthetic);
+                }
+            }
+        }
+
+        return memberships;
     }
 }
