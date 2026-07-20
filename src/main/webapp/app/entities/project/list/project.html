@@ -29,6 +29,13 @@
 
   <jhi-alert />
 
+  @if (isAdmin()) {
+    <div class="alert alert-info mb-3" role="alert">
+      <fa-icon icon="shield-alt" class="me-1" />
+      <span jhiTranslate="gestionTachesApp.project.member.adminAccess">Vous avez un accès administrateur complet à tous les projets.</span>
+    </div>
+  }
+
   @if (error()) {
     <div class="alert alert-danger">
       <span>{{ error() }}</span>

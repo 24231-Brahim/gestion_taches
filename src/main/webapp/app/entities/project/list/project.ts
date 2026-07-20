@@ -1,5 +1,5 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
@@ -8,6 +8,7 @@ import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription, combineLatest, tap } from 'rxjs';
 
+import { AccountService } from 'app/core/auth/account.service';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { DEFAULT_SORT_DATA, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
@@ -56,6 +57,12 @@ export class Project implements OnInit {
   readonly isLoading = this.projectService.projectsResource.isLoading;
   readonly activatedRoute = inject(ActivatedRoute);
   readonly sortService = inject(SortService);
+  private readonly accountService = inject(AccountService);
+
+  readonly isAdmin = computed(() => {
+    const account = this.accountService.account();
+    return !!account?.authorities?.includes('ROLE_ADMIN');
+  });
 
   constructor() {
     const appConfig = inject(ApplicationConfigService);
