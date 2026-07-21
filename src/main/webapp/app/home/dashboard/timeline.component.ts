@@ -41,18 +41,20 @@ interface TimelineItem {
     `
       .timeline-card {
         background: var(--color-surface-container);
-        border: 3px solid var(--color-primary);
-        box-shadow: var(--shadow-brutal);
+        border: 1px solid var(--color-outline-variant);
+        box-shadow: var(--shadow-sm);
         padding: var(--stack-md);
+        border-radius: var(--radius-lg);
       }
       .timeline-title {
-        font-family: var(--font-display);
+        font-family: var(--font-inter);
+        font-weight: 600;
         font-size: var(--headline-md);
-        letter-spacing: 0.04em;
-        color: var(--color-primary);
+        letter-spacing: 0;
+        color: var(--color-on-surface);
         margin-bottom: var(--stack-md);
         padding-bottom: var(--stack-sm);
-        border-bottom: 3px solid var(--color-primary);
+        border-bottom: 1px solid var(--color-outline-variant);
       }
       .timeline-body {
         min-height: 100px;
@@ -65,7 +67,7 @@ interface TimelineItem {
         display: flex;
         gap: var(--stack-sm);
         padding: var(--stack-sm) 0;
-        border-left: 3px solid var(--color-outline);
+        border-left: 1px solid var(--color-outline-variant);
         padding-left: var(--stack-md);
         position: relative;
       }
@@ -75,8 +77,8 @@ interface TimelineItem {
         top: var(--stack-sm);
         width: 12px;
         height: 12px;
-        border: 2px solid var(--color-outline);
-        transform: rotate(45deg);
+        border: none;
+        border-radius: 9999px;
       }
       .timeline-content {
         display: flex;
@@ -84,18 +86,18 @@ interface TimelineItem {
         gap: 2px;
       }
       .tl-title {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-sm);
-        text-transform: uppercase;
+        text-transform: none;
         color: var(--color-on-surface);
       }
       .tl-meta {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-xs);
         color: var(--color-muted);
       }
       .text-muted {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-sm);
         color: var(--color-muted);
       }

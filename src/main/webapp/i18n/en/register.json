@@ -1,6 +1,8 @@
 {
   "register": {
     "title": "Registration",
+    "welcomeBack": "Create your account",
+    "welcomeDescription": "Sign up to start organizing, tracking, and managing your tasks efficiently.",
     "form": {
       "button": "Register"
     },

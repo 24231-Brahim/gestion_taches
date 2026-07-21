@@ -1,6 +1,8 @@
 {
   "login": {
     "title": "Authentification",
+    "welcomeBack": "Bon retour !",
+    "welcomeDescription": "Connectez-vous pour accéder à votre tableau de bord et gérer vos tâches en toute simplicité.",
     "form": {
       "password": "Mot de passe",
       "password.placeholder": "Votre mot de passe",

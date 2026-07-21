@@ -1,6 +1,6 @@
 <div class="split-screen-wrapper">
   <div class="split-screen-top-actions">
-    <button class="split-screen-theme-toggle" (click)="themeService.toggle()" title="Changer de thème">
+    <button class="split-screen-theme-toggle" (click)="themeService.toggle()" title="{{ 'global.menu.theme' | translate }}">
       @if (themeService.theme() === 'dark') {
         <fa-icon icon="sun" />
       } @else {
@@ -26,8 +26,10 @@
     <!-- Left Panel -->
     <div class="col-md-5 d-none d-md-flex split-screen-left">
       <div class="split-screen-left-content">
-        <h1>Bon retour !</h1>
-        <p>Connectez-vous pour accéder à votre tableau de bord et gérer vos tâches en toute simplicité.</p>
+        <h1 jhiTranslate="login.welcomeBack">Bon retour !</h1>
+        <p jhiTranslate="login.welcomeDescription">
+          Connectez-vous pour accéder à votre tableau de bord et gérer vos tâches en toute simplicité.
+        </p>
       </div>
     </div>
 

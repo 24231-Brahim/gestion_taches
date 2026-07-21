@@ -2,6 +2,11 @@
   <div>
     <h2 id="configuration-page-heading" data-cy="configurationPageHeading" jhiTranslate="configuration.title">Configuration</h2>
 
+    <div class="alert alert-info" role="alert">
+      <fa-icon icon="info-circle" class="me-1" />
+      <span jhiTranslate="configuration.readonly">Configuration en lecture seule, à modifier via les fichiers application.yml.</span>
+    </div>
+
     <span jhiTranslate="configuration.filter">Filtrer (par préfixe)</span>
     <input type="text" [ngModel]="beansFilter()" (ngModelChange)="beansFilter.set($event)" class="form-control" />
 

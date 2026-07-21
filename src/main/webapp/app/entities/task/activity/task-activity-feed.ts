@@ -21,12 +21,12 @@ import { TranslateDirective } from 'app/shared/language';
         gap: 12px;
       }
       .task-section-title {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
+        text-transform: none;
         color: var(--color-text-muted, #6a8fac);
         margin: 0 0 4px;
+        font-weight: 600;
       }
       .activity-feed {
         display: flex;
@@ -49,15 +49,16 @@ import { TranslateDirective } from 'app/shared/language';
         flex-shrink: 0;
         background: var(--color-primary, #97cbff);
         border: 2px solid var(--color-primary-container, #25a7fd);
+        border-radius: 50%;
       }
       .activity-content {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.8rem;
         color: var(--color-text, #dfe3ea);
         line-height: 1.5;
       }
       .activity-action {
-        font-weight: 700;
+        font-weight: 600;
         color: var(--color-primary, #97cbff);
       }
       .activity-detail {
@@ -70,7 +71,7 @@ import { TranslateDirective } from 'app/shared/language';
       }
       .text-muted {
         color: var(--color-text-muted, #6a8fac);
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.8rem;
       }
     `,

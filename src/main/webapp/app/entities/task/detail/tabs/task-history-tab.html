@@ -21,7 +21,7 @@
                 <fa-icon icon="pen" class="me-1" />
                 {{ entry.action }}
               </span>
-              <span class="history-user text-muted">{{ entry.user?.login ?? 'System' }}</span>
+              <span class="history-user text-muted">{{ entry.user?.login ?? ('gestionTachesApp.task.system' | translate) }}</span>
               <span class="history-date text-muted ms-auto">{{ entry.createdAt | formatMediumDatetime }}</span>
             </div>
             @if (entry.fieldChanged) {

@@ -15,6 +15,7 @@ import { ISprint } from '../sprint.model';
       .burndown-container {
         display: flex;
         flex-direction: column;
+        border-radius: var(--radius-lg);
       }
 
       .burndown-stats {
@@ -24,14 +25,17 @@ import { ISprint } from '../sprint.model';
       }
 
       .stat-card {
-        border: 3px solid var(--color-outline-variant);
+        border: 1px solid var(--color-outline-variant);
+        border-radius: var(--radius-lg);
         padding: 16px;
         background: var(--color-surface-container);
+        box-shadow: var(--shadow-sm);
       }
 
       .stat-value {
         font-size: 1.5rem;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
+        font-weight: 600;
       }
 
       .stat-value.done {

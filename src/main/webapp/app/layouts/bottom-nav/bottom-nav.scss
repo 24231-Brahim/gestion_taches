@@ -1,3 +1,7 @@
+/* ═══════════════════════════════════════════════════════════════
+   Bottom Navigation — Mobile (fixed, bottom)
+   ═══════════════════════════════════════════════════════════════ */
+
 :host {
   display: none;
 }
@@ -9,7 +13,7 @@
   right: 0;
   height: 64px;
   background: var(--color-surface);
-  border-top: 3px solid var(--color-primary-container);
+  border-top: 1px solid var(--color-outline-variant);
   display: flex;
   align-items: center;
   justify-content: space-around;
@@ -22,14 +26,13 @@
   align-items: center;
   gap: 4px;
   padding: 8px 12px;
-  font-family: var(--font-mono);
+  font-family: var(--font-inter);
   font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: 500;
   color: var(--color-muted);
   text-decoration: none;
   transition: color var(--transition-fast);
+  border-radius: var(--radius-sm);
 
   fa-icon {
     font-size: var(--text-lg);
@@ -40,7 +43,12 @@
   }
 
   &.active {
-    color: var(--color-primary-container);
+    color: var(--color-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 }
 

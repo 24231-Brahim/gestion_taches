@@ -1,6 +1,11 @@
+/* ═══════════════════════════════════════════════════════════════
+   API Docs (Swagger)
+   ═══════════════════════════════════════════════════════════════ */
 @import 'bootstrap/scss/functions';
 @import 'bootstrap/scss/variables';
 
 iframe {
-  background: white;
+  background: var(--color-surface);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-md);
 }

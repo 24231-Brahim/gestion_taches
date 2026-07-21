@@ -63,21 +63,21 @@ const STATUS_COLORS: Record<string, string> = {
       }
       .roadmap-container {
         background: var(--color-surface-container, #1b2025);
-        border: 3px solid var(--color-outline-variant, #2a3038);
-        border-radius: 6px;
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
         overflow: hidden;
       }
       .roadmap-timeline-header {
         padding: 12px 20px;
-        border-bottom: 2px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
       }
       .roadmap-month-labels {
         display: flex;
         justify-content: space-between;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.7rem;
         color: var(--color-text-muted, #6a8fac);
-        text-transform: uppercase;
+        text-transform: none;
       }
       .roadmap-list {
         display: flex;
@@ -89,7 +89,7 @@ const STATUS_COLORS: Record<string, string> = {
         gap: 16px;
         padding: 14px 20px;
         border-bottom: 1px solid var(--color-outline-variant, #2a3038);
-        transition: background 0.15s;
+        transition: background-color var(--transition-fast);
       }
       .roadmap-epic-row:last-child {
         border-bottom: none;
@@ -102,7 +102,7 @@ const STATUS_COLORS: Record<string, string> = {
         flex-shrink: 0;
       }
       .roadmap-epic-title {
-        font-family: 'Audiowide', monospace;
+        font-family: var(--font-inter);
         font-size: 0.85rem;
         color: var(--color-text, #dfe3ea);
         text-decoration: none;
@@ -128,7 +128,7 @@ const STATUS_COLORS: Record<string, string> = {
         display: inline-block;
       }
       .roadmap-epic-dates {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.65rem;
       }
       .roadmap-epic-bar-container {
@@ -140,15 +140,14 @@ const STATUS_COLORS: Record<string, string> = {
       }
       .roadmap-epic-bar-track {
         flex: 1;
-        height: 20px;
-        background: var(--color-surface, #0f1419);
-        border-radius: 6px;
+        height: 6px;
+        background: var(--color-surface-container-high, #262d36);
+        border-radius: 9999px;
         overflow: hidden;
-        border: 2px solid var(--color-outline-variant, #2a3038);
       }
       .roadmap-epic-bar {
         height: 100%;
-        border-radius: 6px;
+        border-radius: 9999px;
         transition: width 0.4s ease;
         display: flex;
         align-items: center;
@@ -158,16 +157,16 @@ const STATUS_COLORS: Record<string, string> = {
       }
       .roadmap-epic-bar-label {
         font-size: 0.65rem;
-        font-weight: 700;
+        font-weight: 600;
         color: #000;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
       }
       .roadmap-pct {
         width: 40px;
         text-align: right;
         font-size: 0.75rem;
         color: var(--color-text-muted, #6a8fac);
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
       }
       .roadmap-legend {
         display: flex;

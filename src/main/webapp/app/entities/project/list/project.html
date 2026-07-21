@@ -8,10 +8,10 @@
         <span jhiTranslate="gestionTachesApp.project.home.refreshListLabel">Actualiser la liste</span>
       </button>
 
-      <a class="btn btn-success me-2" [href]="csvExportUrl" download="projects.csv">
+      <button class="btn btn-success me-2" (click)="exportCsv()">
         <fa-icon icon="download" />
         <span jhiTranslate="entity.action.exportCsv">CSV</span>
-      </a>
+      </button>
 
       <button
         id="jh-create-entity"
@@ -38,7 +38,7 @@
 
   @if (error()) {
     <div class="alert alert-danger">
-      <span>{{ error() }}</span>
+      <span>{{ error() | translate }}</span>
     </div>
   }
 

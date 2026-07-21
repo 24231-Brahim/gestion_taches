@@ -34,11 +34,13 @@ import { EpicService } from '../service/epic.service';
       .status-badge {
         display: inline-block;
         padding: 2px 10px;
-        border: 2px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: 9999px;
         font-size: 0.75rem;
-        font-family: 'JetBrains Mono', monospace;
-        text-transform: uppercase;
+        font-family: var(--font-inter);
+        text-transform: none;
         background: var(--color-surface-container, #1b2025);
+        font-weight: 600;
       }
     `,
   ],

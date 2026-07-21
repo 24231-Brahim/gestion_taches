@@ -7,24 +7,24 @@
   @if (account() !== null) {
     <a class="bottom-nav-item" routerLink="/project" routerLinkActive="active">
       <fa-icon icon="folder" />
-      <span class="bottom-nav-label">Projects</span>
+      <span class="bottom-nav-label" jhiTranslate="global.menu.entities.project">Projects</span>
     </a>
 
     <a class="bottom-nav-item" routerLink="/project" routerLinkActive="active">
       <fa-icon icon="tasks" />
-      <span class="bottom-nav-label">Tasks</span>
+      <span class="bottom-nav-label" jhiTranslate="global.menu.entities.task">Tasks</span>
     </a>
   }
 
   @if (account() !== null) {
     <a class="bottom-nav-item" routerLink="/account/settings" routerLinkActive="active">
       <fa-icon icon="cog" />
-      <span class="bottom-nav-label">Settings</span>
+      <span class="bottom-nav-label" jhiTranslate="global.menu.account.settings">Settings</span>
     </a>
   } @else {
     <a class="bottom-nav-item" routerLink="/login" routerLinkActive="active">
       <fa-icon icon="sign-in-alt" />
-      <span class="bottom-nav-label">Login</span>
+      <span class="bottom-nav-label" jhiTranslate="global.menu.account.login">Login</span>
     </a>
   }
 </nav>

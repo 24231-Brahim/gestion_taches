@@ -36,6 +36,7 @@
         "joinedAt": "Date d'ajout",
         "selectUser": "Sélectionner un utilisateur",
         "empty": "Aucun membre pour le moment",
+        "adminAccess": "Vous avez un accès administrateur complet à ce projet.",
         "error": {
           "add": "Erreur lors de l'ajout du membre",
           "remove": "Erreur lors du retrait du membre",

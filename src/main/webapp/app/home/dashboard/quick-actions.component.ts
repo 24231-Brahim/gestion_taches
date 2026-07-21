@@ -26,18 +26,20 @@ import { RouterLink } from '@angular/router';
     `
       .quick-actions-card {
         background: var(--color-surface-container);
-        border: 3px solid var(--color-primary);
-        box-shadow: var(--shadow-brutal);
+        border: 1px solid var(--color-outline-variant);
+        box-shadow: var(--shadow-sm);
         padding: var(--stack-md);
+        border-radius: var(--radius-lg);
       }
       .qa-title {
-        font-family: var(--font-display);
+        font-family: var(--font-inter);
+        font-weight: 600;
         font-size: var(--headline-md);
-        letter-spacing: 0.04em;
-        color: var(--color-primary);
+        letter-spacing: 0;
+        color: var(--color-on-surface);
         margin-bottom: var(--stack-md);
         padding-bottom: var(--stack-sm);
-        border-bottom: 3px solid var(--color-primary);
+        border-bottom: 1px solid var(--color-outline-variant);
       }
       .qa-grid {
         display: flex;
@@ -53,20 +55,21 @@ import { RouterLink } from '@angular/router';
         gap: var(--stack-sm);
         padding: var(--stack-md);
         background: var(--color-surface);
-        border: 3px solid var(--color-primary);
-        box-shadow: var(--shadow-brutal);
+        border: 1px solid var(--color-primary);
+        box-shadow: var(--shadow-sm);
+        border-radius: 12px;
         text-decoration: none;
         color: var(--color-on-surface);
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-sm);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
+        text-transform: none;
+        letter-spacing: 0;
         transition: none;
       }
       .qa-btn:hover {
         background: var(--color-surface-container-high);
         transform: translate(-2px, -2px);
-        box-shadow: var(--shadow-brutal-hover);
+        box-shadow: var(--shadow-md);
       }
       .qa-icon {
         font-size: var(--text-2xl);

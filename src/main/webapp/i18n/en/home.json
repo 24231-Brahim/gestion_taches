@@ -30,7 +30,8 @@
     },
     "charts": {
       "projectProgress": "PROJECT PROGRESS",
-      "taskDistribution": "TASK DISTRIBUTION"
+      "taskDistribution": "TASK DISTRIBUTION",
+      "total": "TOTAL"
     },
     "lists": {
       "recentProjects": "RECENT PROJECTS",

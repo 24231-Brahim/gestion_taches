@@ -8,6 +8,11 @@
 
     <div class="modal-body">
       <jhi-alert-error />
+      @if (errorMessage()) {
+        <div class="alert alert-danger">
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
       <p
         id="jhi-delete-userManagement-heading"
         jhiTranslate="userManagement.delete.question"

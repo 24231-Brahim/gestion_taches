@@ -22,24 +22,24 @@ import { TaskHistoryTab } from './tabs/task-history-tab';
       .tab-bar {
         display: flex;
         gap: 0;
-        border-bottom: 3px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
         margin-bottom: 20px;
       }
       .tab-item {
         padding: 10px 24px;
         cursor: pointer;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+        text-transform: none;
+        letter-spacing: 0;
         border: none;
         background: transparent;
         color: var(--color-text-muted, #6a8fac);
-        border-bottom: 3px solid transparent;
-        margin-bottom: -3px;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
         transition:
-          color 0.15s,
-          border-color 0.15s;
+          color var(--transition-fast),
+          border-color var(--transition-fast);
       }
       .tab-item:hover {
         color: var(--color-text, #dfe3ea);

@@ -9,7 +9,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subscription, combineLatest, tap } from 'rxjs';
 
 import { AccountService } from 'app/core/auth/account.service';
-import { ApplicationConfigService } from 'app/core/config/application-config.service';
+import { CsvDownloadService } from 'app/shared/csv/csv-download.service';
 import { DEFAULT_SORT_DATA, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { Alert } from 'app/shared/alert/alert';
@@ -51,7 +51,7 @@ export class Project implements OnInit {
   readonly page = signal(1);
   readonly error = signal<string | null>(null);
 
-  readonly csvExportUrl: string;
+  private readonly csvDownloadService = inject(CsvDownloadService);
   readonly router = inject(Router);
   readonly projectService = inject(ProjectService);
   readonly isLoading = this.projectService.projectsResource.isLoading;
@@ -65,8 +65,6 @@ export class Project implements OnInit {
   });
 
   constructor() {
-    const appConfig = inject(ApplicationConfigService);
-    this.csvExportUrl = appConfig.getEndpointFor('api/export/csv/projects');
     effect(() => {
       const headers = this.projectService.projectsResource.headers();
       if (headers) {
@@ -78,11 +76,15 @@ export class Project implements OnInit {
     });
     effect(() => {
       const err = this.projectService.projectsResource.error();
-      this.error.set(err ? 'Erreur lors du chargement des projets' : null);
+      this.error.set(err ? 'error.projects.loadFailed' : null);
     });
   }
 
   trackId = (item: IProject): number => this.projectService.getProjectIdentifier(item);
+
+  exportCsv(): void {
+    this.csvDownloadService.download('api/export/csv/projects', 'projects.csv');
+  }
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

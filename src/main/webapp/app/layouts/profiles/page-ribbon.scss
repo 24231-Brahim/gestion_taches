@@ -1,6 +1,6 @@
-/* ==========================================================================
-Development Ribbon
-========================================================================== */
+/* ═══════════════════════════════════════════════════════════════
+   Development Ribbon
+   ═══════════════════════════════════════════════════════════════ */
 .ribbon {
   background-color: rgba(170, 0, 0, 0.5);
   overflow: hidden;
@@ -11,15 +11,17 @@ Development Ribbon
   z-index: 9999;
   pointer-events: none;
   opacity: 0.75;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+
   a {
     color: #fff;
     display: block;
-    font-weight: 400;
+    font-family: var(--font-inter);
+    font-weight: 500;
     margin: 1px 0;
     padding: 10px 50px;
     text-align: center;
     text-decoration: none;
-    text-shadow: 0 0 5px #444;
     pointer-events: none;
   }
 }

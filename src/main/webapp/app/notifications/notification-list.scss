@@ -1,3 +1,7 @@
+/* ═══════════════════════════════════════════════════════════════
+   Notification List
+   ═══════════════════════════════════════════════════════════════ */
+
 jhi-notification-list {
   display: block;
   padding: var(--stack-lg);
@@ -17,7 +21,7 @@ jhi-notification-list {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--stack-2xl);
+  padding: var(--stack-lg);
   color: var(--color-muted);
   gap: var(--stack-md);
 }
@@ -27,8 +31,8 @@ jhi-notification-list {
   flex-direction: column;
   gap: 1px;
   background: var(--color-outline-variant);
-  border: 2px solid var(--color-outline-variant);
-  border-radius: 6px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -46,7 +50,7 @@ jhi-notification-list {
   }
 
   &.unread {
-    background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));
+    background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface));
     border-left: 3px solid var(--color-primary);
   }
 }
@@ -71,7 +75,7 @@ jhi-notification-list {
 }
 
 .notification-message {
-  font-family: var(--font-mono);
+  font-family: var(--font-inter);
   font-size: var(--text-sm);
   color: var(--color-on-surface);
   line-height: 1.5;
@@ -81,6 +85,7 @@ jhi-notification-list {
   display: flex;
   gap: 6px;
   margin-top: 4px;
+  font-family: var(--font-inter);
   font-size: var(--text-xs);
   color: var(--color-muted);
   flex-wrap: wrap;

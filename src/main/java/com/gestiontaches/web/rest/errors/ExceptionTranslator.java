@@ -96,6 +96,18 @@ public class ExceptionTranslator extends ResponseEntityExceptionHandler {
         if (
             ex instanceof com.gestiontaches.service.InvalidPasswordException
         ) return (ProblemDetailWithCause) new InvalidPasswordException().getBody();
+        if (ex instanceof com.gestiontaches.service.CannotDeleteOwnAccountException) {
+            return ProblemDetailWithCauseBuilder.instance()
+                .withStatus(HttpStatus.BAD_REQUEST.value())
+                .withDetail("Cannot delete your own account")
+                .build();
+        }
+        if (ex instanceof com.gestiontaches.service.LastAdminException) {
+            return ProblemDetailWithCauseBuilder.instance()
+                .withStatus(HttpStatus.BAD_REQUEST.value())
+                .withDetail("Cannot remove the last administrator account")
+                .build();
+        }
 
         if (
             ex instanceof ErrorResponseException exp && exp.getBody() instanceof ProblemDetailWithCause problemDetailWithCause

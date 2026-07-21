@@ -15,9 +15,9 @@
       <button class="btn btn-info btn-sm" (click)="load()" [disabled]="isLoading()">
         <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
       </button>
-      <a class="btn btn-success btn-sm" [href]="csvExportUrl()" download="tasks.csv">
+      <button class="btn btn-success btn-sm" (click)="exportCsv()">
         <fa-icon icon="download" /><span class="d-none d-md-inline ms-1" jhiTranslate="entity.action.exportCsv">CSV</span>
-      </a>
+      </button>
       <button
         id="jh-create-entity"
         data-cy="entityCreateButton"

@@ -19,6 +19,10 @@
       },
       "detail": {
         "title": "Issue",
+        "comments": "Commentaires",
+        "noComments": "Aucun commentaire pour le moment.",
+        "history": "Historique",
+        "noHistory": "Aucun historique pour le moment.",
         "tab": {
           "details": "Détails",
           "comments": "Commentaires",
@@ -42,7 +46,8 @@
       "epic": "Epic",
       "project": "Project",
       "assignee": "Assigné",
-      "createdBy": "Créé par"
+      "createdBy": "Créé par",
+      "system": "Système"
     }
   }
 }

@@ -1,6 +1,8 @@
 {
   "login": {
     "title": "Sign in",
+    "welcomeBack": "Welcome back!",
+    "welcomeDescription": "Sign in to access your dashboard and manage your tasks with ease.",
     "form": {
       "password": "Password",
       "password.placeholder": "Your password",

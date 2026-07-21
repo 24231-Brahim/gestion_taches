@@ -52,7 +52,7 @@ interface EpicStats {
         gap: 16px;
       }
       .epic-title {
-        font-family: 'Audiowide', monospace;
+        font-family: var(--font-inter);
         font-size: 1.4rem;
         color: var(--color-text, #dfe3ea);
         margin: 0;
@@ -60,7 +60,7 @@ interface EpicStats {
       .epic-meta {
         color: var(--color-text-muted, #6a8fac);
         font-size: 0.85rem;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
       }
       .epic-description {
         color: var(--color-text, #dfe3ea);
@@ -70,33 +70,35 @@ interface EpicStats {
       .status-badge {
         display: inline-block;
         padding: 2px 10px;
-        border: 2px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: 9999px;
         font-size: 0.75rem;
-        font-family: 'JetBrains Mono', monospace;
-        text-transform: uppercase;
+        font-family: var(--font-inter);
+        text-transform: none;
         background: var(--color-surface-container, #1b2025);
+        font-weight: 600;
       }
       .tab-bar {
         display: flex;
         gap: 0;
-        border-bottom: 3px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
         margin-bottom: 20px;
       }
       .tab-item {
         padding: 10px 24px;
         cursor: pointer;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+        text-transform: none;
+        letter-spacing: 0;
         border: none;
         background: transparent;
         color: var(--color-text-muted, #6a8fac);
-        border-bottom: 3px solid transparent;
-        margin-bottom: -3px;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
         transition:
-          color 0.15s,
-          border-color 0.15s;
+          color var(--transition-fast),
+          border-color var(--transition-fast);
       }
       .tab-item:hover {
         color: var(--color-text, #dfe3ea);
@@ -108,9 +110,10 @@ interface EpicStats {
       .progress-wrapper {
         margin-bottom: 20px;
         padding: 12px 16px;
-        border: 3px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
         background: var(--color-surface-container, #1b2025);
-        box-shadow: 4px 4px 0 var(--color-outline-variant, #2a3038);
+        box-shadow: var(--shadow-sm);
       }
       .progress-header {
         display: flex;
@@ -119,28 +122,28 @@ interface EpicStats {
         margin-bottom: 8px;
       }
       .progress-label {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.8rem;
         color: var(--color-text-muted, #6a8fac);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+        text-transform: none;
       }
       .progress-value {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.85rem;
         color: var(--color-primary, #97cbff);
-        font-weight: 700;
+        font-weight: 600;
       }
       .progress-bar {
         width: 100%;
-        height: 12px;
+        height: 6px;
         background: var(--color-surface-container-high, #262d36);
-        border: 2px solid var(--color-outline-variant, #2a3038);
+        border-radius: 9999px;
         overflow: hidden;
       }
       .progress-fill {
         height: 100%;
         background: var(--color-status-done, #4caf50);
+        border-radius: 9999px;
         transition: width 0.3s ease;
       }
       .stats-grid {
@@ -152,24 +155,24 @@ interface EpicStats {
       .stat-card {
         flex: 1;
         min-width: 140px;
-        border: 3px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
         padding: 12px 16px;
         background: var(--color-surface-container, #1b2025);
-        box-shadow: 4px 4px 0 var(--color-outline-variant, #2a3038);
+        box-shadow: var(--shadow-sm);
       }
       .stat-label {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+        text-transform: none;
         color: var(--color-text-muted, #6a8fac);
         display: block;
         margin-bottom: 4px;
       }
       .stat-value {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 1.3rem;
-        font-weight: 700;
+        font-weight: 600;
       }
       .stat-value.done {
         color: var(--color-status-done, #4caf50);
@@ -189,14 +192,14 @@ interface EpicStats {
         font-size: 0.85rem;
       }
       .task-table th {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+        text-transform: none;
         color: var(--color-text-muted, #6a8fac);
         text-align: left;
         padding: 8px 12px;
-        border-bottom: 2px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        font-weight: 600;
       }
       .task-table td {
         padding: 8px 12px;
@@ -216,20 +219,20 @@ interface EpicStats {
         background: var(--color-primary-container, #25a7fd);
         color: #000;
         font-size: 0.65rem;
-        font-weight: 700;
+        font-weight: 600;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-mono);
       }
       .sp-badge {
         background: var(--color-primary-container, #25a7fd);
         color: #000;
         font-size: 0.65rem;
-        font-weight: 700;
+        font-weight: 600;
         padding: 1px 6px;
-        font-family: 'JetBrains Mono', monospace;
-        border-radius: 3px;
+        font-family: var(--font-mono);
+        border-radius: var(--radius-sm);
       }
       .timeline-container {
         position: relative;
@@ -239,20 +242,20 @@ interface EpicStats {
         position: relative;
         height: 6px;
         background: var(--color-surface-container-high, #262d36);
-        border-radius: 3px;
+        border-radius: 9999px;
         margin: 40px 0;
       }
       .timeline-fill {
         height: 100%;
         background: var(--color-primary, #97cbff);
-        border-radius: 3px;
+        border-radius: 9999px;
         transition: width 0.4s ease;
       }
       .timeline-marker {
         position: absolute;
         top: -16px;
         transform: translateX(-50%);
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.65rem;
         color: var(--color-text-muted, #6a8fac);
       }
@@ -263,9 +266,10 @@ interface EpicStats {
       }
       .sprint-chip {
         padding: 4px 12px;
-        border: 2px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-sm);
         font-size: 0.75rem;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         background: var(--color-surface-container, #1b2025);
         color: var(--color-text, #dfe3ea);
         text-decoration: none;

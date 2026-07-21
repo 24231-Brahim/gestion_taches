@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
+import TranslateDirective from 'app/shared/language/translate.directive';
 
 interface ChartTaskStatusCount {
   label: string;
@@ -17,7 +18,7 @@ interface ChartProjectProgress {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-dashboard-charts',
   standalone: true,
-  imports: [TranslateModule],
+  imports: [TranslateModule, TranslateDirective],
   template: `
     <div class="charts-grid">
       <div class="chart-card">
@@ -64,7 +65,16 @@ interface ChartProjectProgress {
               <text x="100" y="95" text-anchor="middle" class="donut-center-value" fill="var(--color-on-surface)">
                 {{ totalTasks() }}
               </text>
-              <text x="100" y="115" text-anchor="middle" class="donut-center-label" fill="var(--color-muted)">TOTAL</text>
+              <text
+                x="100"
+                y="115"
+                text-anchor="middle"
+                class="donut-center-label"
+                fill="var(--color-muted)"
+                jhiTranslate="dashboard.charts.total"
+              >
+                TOTAL
+              </text>
             </svg>
             <div class="donut-legend">
               @for (slice of chartTaskDistribution(); track slice.label) {
@@ -91,18 +101,20 @@ interface ChartProjectProgress {
       }
       .chart-card {
         background: var(--color-surface-container);
-        border: 3px solid var(--color-primary);
-        box-shadow: var(--shadow-brutal);
+        border: 1px solid var(--color-outline-variant);
+        box-shadow: var(--shadow-sm);
         padding: var(--stack-md);
+        border-radius: var(--radius-lg);
       }
       .chart-title {
-        font-family: var(--font-display);
+        font-family: var(--font-inter);
+        font-weight: 600;
         font-size: var(--headline-md);
-        letter-spacing: 0.04em;
-        color: var(--color-primary);
+        letter-spacing: 0;
+        color: var(--color-on-surface);
         margin-bottom: var(--stack-md);
         padding-bottom: var(--stack-sm);
-        border-bottom: 3px solid var(--color-primary);
+        border-bottom: 1px solid var(--color-outline-variant);
       }
       .chart-body {
         min-height: 200px;
@@ -120,20 +132,21 @@ interface ChartProjectProgress {
       .progress-label {
         display: flex;
         justify-content: space-between;
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-sm);
         color: var(--color-on-surface);
       }
       .progress-name {
-        text-transform: uppercase;
+        text-transform: none;
       }
       .progress-pct {
         font-weight: 700;
       }
       .progress-bar-brutal {
-        height: 8px;
+        height: 6px;
         background: var(--color-surface-container-high);
-        border: 2px solid var(--color-outline);
+        border: none;
+        border-radius: 9999px;
       }
       .progress-fill {
         height: 100%;
@@ -146,15 +159,15 @@ interface ChartProjectProgress {
         margin: 0 auto;
       }
       .donut-center-value {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: 28px;
         font-weight: 700;
       }
       .donut-center-label {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: 10px;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
+        text-transform: none;
+        letter-spacing: 0;
       }
       .donut-legend {
         display: flex;
@@ -167,15 +180,16 @@ interface ChartProjectProgress {
         display: flex;
         align-items: center;
         gap: 6px;
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-xs);
         color: var(--color-on-surface);
-        text-transform: uppercase;
+        text-transform: none;
       }
       .legend-dot {
         width: 10px;
         height: 10px;
-        border: 2px solid var(--color-outline);
+        border: none;
+        border-radius: 50%;
       }
       .legend-value {
         font-weight: 700;

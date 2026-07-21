@@ -35,9 +35,10 @@ interface KanbanColumn {
         justify-content: space-between;
         gap: 16px;
         background: var(--color-surface-container, #1b2025);
-        border: 3px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
         padding: 16px;
-        box-shadow: 4px 4px 0 var(--color-outline-variant, #2a3038);
+        box-shadow: var(--shadow-sm);
       }
       .sprint-info {
         display: flex;
@@ -45,7 +46,7 @@ interface KanbanColumn {
         gap: 4px;
       }
       .sprint-name {
-        font-family: 'Audiowide', monospace;
+        font-family: var(--font-inter);
         font-size: 1.1rem;
         margin: 0;
         color: var(--color-text, #dfe3ea);
@@ -64,14 +65,15 @@ interface KanbanColumn {
         color: var(--color-text-muted, #6a8fac);
       }
       .sprint-status-badge {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.65rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+        text-transform: none;
         padding: 2px 8px;
-        border: 2px solid;
+        border: 1px solid var(--color-outline-variant);
+        border-radius: 9999px;
         background: var(--color-surface, #0f1419);
         color: var(--color-text, #dfe3ea);
+        font-weight: 600;
       }
       .sprint-actions {
         display: flex;
@@ -90,7 +92,8 @@ interface KanbanColumn {
         min-width: 200px;
         max-width: 300px;
         background: var(--color-surface-container, #1b2025);
-        border: 3px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
         transition: border-color 0.2s;
       }
       .kanban-column-drag-over {
@@ -98,23 +101,27 @@ interface KanbanColumn {
       }
       .kanban-column-header {
         padding: 12px;
-        border-top: 3px solid;
+        border-top: 2px solid;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
         display: flex;
         align-items: center;
         justify-content: space-between;
       }
       .kanban-column-title {
-        font-family: 'Audiowide', monospace;
+        font-family: var(--font-inter);
         font-size: 0.75rem;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0;
         color: var(--color-text, #dfe3ea);
+        font-weight: 600;
       }
       .kanban-column-count {
         background: var(--color-surface-container-high, #262d36);
         color: var(--color-text-muted, #6a8fac);
+        border-radius: 9999px;
         padding: 1px 8px;
         font-size: 0.75rem;
+        font-family: var(--font-inter);
       }
       .kanban-column-body {
         padding: 8px;
@@ -122,18 +129,22 @@ interface KanbanColumn {
         flex-direction: column;
         gap: 8px;
         min-height: 100px;
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
       }
       .kanban-card {
-        background: var(--color-surface, #0f1419);
-        border: 2px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container, #1b2025);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
         padding: 10px;
         cursor: grab;
-        transition: all 0.15s;
-        box-shadow: 3px 3px 0 var(--color-outline-variant, #2a3038);
+        transition:
+          background-color var(--transition-fast),
+          box-shadow var(--transition-fast);
+        box-shadow: var(--shadow-sm);
       }
       .kanban-card:hover {
-        transform: translate(-1px, -1px);
-        box-shadow: 4px 4px 0 var(--color-primary, #97cbff);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
       }
       .kanban-card-dragging {
         opacity: 0.5;
@@ -149,14 +160,16 @@ interface KanbanColumn {
         color: var(--color-text-muted, #6a8fac);
         font-size: 0.7rem;
         margin-left: auto;
+        font-family: var(--font-mono);
       }
       .kanban-card-sp {
         background: var(--color-primary-container, #25a7fd);
         color: #000;
         font-size: 0.65rem;
-        font-weight: 700;
+        font-weight: 600;
         padding: 1px 6px;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-mono);
+        border-radius: var(--radius-sm);
         margin-left: 4px;
       }
       .kanban-card-title {
@@ -177,16 +190,18 @@ interface KanbanColumn {
         background: var(--color-primary-container, #25a7fd);
         color: #000;
         font-size: 0.65rem;
-        font-weight: 700;
+        font-weight: 600;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-mono);
+        border-radius: 50%;
       }
       .kanban-empty {
         padding: 20px 8px;
         text-align: center;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-muted, #6a8fac);
+        font-family: var(--font-inter);
         font-size: 0.8rem;
       }
       .filter-bar {
@@ -195,8 +210,9 @@ interface KanbanColumn {
         gap: 16px;
         padding: 12px 16px;
         background: var(--color-surface-container, #1b2025);
-        border: 3px solid var(--color-outline-variant, #2a3038);
-        box-shadow: 4px 4px 0 var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
         flex-wrap: wrap;
       }
       .filter-group {
@@ -205,33 +221,36 @@ interface KanbanColumn {
         gap: 4px;
       }
       .filter-label {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+        text-transform: none;
         color: var(--color-text-muted, #6a8fac);
       }
       .filter-select {
         background: var(--color-surface, #0f1419);
-        border: 2px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-sm);
         color: var(--color-text, #dfe3ea);
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.8rem;
         padding: 6px 10px;
         min-width: 150px;
       }
       .filter-reset-btn {
         background: transparent;
-        border: 2px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-sm);
         color: var(--color-text-muted, #6a8fac);
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.75rem;
         padding: 6px 12px;
         cursor: pointer;
         display: flex;
         align-items: center;
         gap: 4px;
-        transition: all 0.15s;
+        transition:
+          background-color var(--transition-fast),
+          box-shadow var(--transition-fast);
       }
       .filter-reset-btn:hover {
         color: var(--color-text, #dfe3ea);

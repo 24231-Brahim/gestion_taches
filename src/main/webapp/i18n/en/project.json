@@ -36,6 +36,7 @@
         "joinedAt": "Joined At",
         "selectUser": "Select a user",
         "empty": "No members yet",
+        "adminAccess": "You have full administrative access to this project.",
         "error": {
           "add": "Error adding member",
           "remove": "Error removing member",

@@ -3,7 +3,7 @@
   @for (comment of comments(); track comment.id) {
     <div class="comment-item">
       <div class="comment-header">
-        <span class="comment-author">{{ comment.author?.login ?? 'anonymous' }}</span>
+        <span class="comment-author">{{ comment.author?.login ?? ('error.messages.unassigned' | translate) }}</span>
         <span class="comment-date">{{ comment.createdAt | formatMediumDatetime }}</span>
         @if (canModify(comment)) {
           <button class="btn btn-sm btn-danger comment-delete" (click)="deleteComment(comment.id)">

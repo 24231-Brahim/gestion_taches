@@ -15,6 +15,7 @@ import { TranslateDirective } from 'app/shared/language';
         display: flex;
         flex-direction: column;
         gap: 16px;
+        border-radius: var(--radius-lg);
       }
       .burndown-stats {
         display: flex;
@@ -23,15 +24,18 @@ import { TranslateDirective } from 'app/shared/language';
         flex-wrap: wrap;
       }
       .stat-card {
-        border: 3px solid var(--color-outline-variant);
+        border: 1px solid var(--color-outline-variant);
+        border-radius: var(--radius-lg);
         padding: 16px;
         background: var(--color-surface-container);
+        box-shadow: var(--shadow-sm);
         flex: 1;
         min-width: 120px;
       }
       .stat-value {
         font-size: 1.5rem;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
+        font-weight: 600;
       }
       .stat-value.done {
         color: var(--color-status-done);

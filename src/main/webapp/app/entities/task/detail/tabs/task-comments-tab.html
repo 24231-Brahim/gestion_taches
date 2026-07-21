@@ -19,7 +19,7 @@
             <div class="comment-header">
               <span class="comment-author">
                 <fa-icon icon="user" class="me-1" />
-                {{ comment.author?.login ?? 'Unknown' }}
+                {{ comment.author?.login ?? ('error.messages.unassigned' | translate) }}
               </span>
               <span class="comment-date">{{ comment.createdAt | formatMediumDatetime }}</span>
             </div>

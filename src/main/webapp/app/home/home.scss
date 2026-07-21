@@ -1,35 +1,41 @@
+/* ═══════════════════════════════════════════════════════════════
+   Home Page
+   ═══════════════════════════════════════════════════════════════ */
+
 jhi-home {
   display: block;
 }
 
 .home-welcome {
-  border: 3px solid var(--color-primary);
+  border: 1px solid var(--color-outline-variant);
   background-color: var(--color-surface-container);
   padding: var(--stack-lg);
-  box-shadow: var(--shadow-brutal);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
   margin-bottom: var(--stack-lg);
 }
 
 .home-title {
-  font-family: var(--font-display);
-  text-transform: uppercase;
-  font-size: var(--headline-lg);
-  letter-spacing: 0.04em;
-  color: var(--color-primary);
+  font-family: var(--font-inter);
+  font-weight: 600;
+  font-size: var(--headline-md-size);
+  color: var(--color-on-surface);
   margin-bottom: var(--stack-md);
-  border-bottom: 3px solid var(--color-primary);
+  border-bottom: 1px solid var(--color-outline-variant);
   padding-bottom: var(--stack-md);
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .home-subtitle {
-  font-family: var(--font-mono);
-  font-size: var(--body-lg);
+  font-family: var(--font-inter);
+  font-size: var(--body-lg-size);
   color: var(--color-muted);
   margin-bottom: var(--stack-lg);
 }
 
 .home-logged-message {
-  font-family: var(--font-mono);
+  font-family: var(--font-inter);
 }
 
 .home-links {
@@ -47,11 +53,9 @@ jhi-home {
   }
 
   a {
-    font-family: var(--font-mono);
-    font-weight: 700;
+    font-family: var(--font-inter);
+    font-weight: 500;
     font-size: var(--text-sm);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
     color: var(--color-primary);
     transition: color var(--transition-fast);
 

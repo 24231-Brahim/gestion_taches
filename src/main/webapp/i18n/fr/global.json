@@ -109,6 +109,7 @@
       "edit": "Editer",
       "delete": "Supprimer",
       "open": "Ouvrir",
+      "exportCsv": "CSV",
       "save": "Sauvegarder",
       "view": "Voir",
       "show": "Afficher {{otherEntity}}",
@@ -152,6 +153,9 @@
     "idnull": "Identifiant invalide",
     "idinvalid": "Identifiant invalide",
     "idnotfound": "Identifiant introuvable",
+    "projects": {
+      "loadFailed": "Erreur lors du chargement des projets"
+    },
     "file": {
       "could.not.extract": "Impossible d'extraire le fichier",
       "not.image": "Le fichier doit être une image et non du type \"{{ fileType }}\""

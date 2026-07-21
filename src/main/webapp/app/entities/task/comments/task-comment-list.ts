@@ -25,16 +25,17 @@ import { TranslateDirective } from 'app/shared/language';
         gap: 12px;
       }
       .task-section-title {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
+        text-transform: none;
         color: var(--color-text-muted, #6a8fac);
         margin: 0 0 4px;
+        font-weight: 600;
       }
       .comment-item {
         background: var(--color-surface-container, #1b2025);
-        border: 2px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
         padding: 10px 12px;
       }
       .comment-header {
@@ -44,13 +45,13 @@ import { TranslateDirective } from 'app/shared/language';
         margin-bottom: 6px;
       }
       .comment-author {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.8rem;
-        font-weight: 700;
+        font-weight: 600;
         color: var(--color-primary, #97cbff);
       }
       .comment-date {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.7rem;
         color: var(--color-text-muted, #6a8fac);
       }
@@ -58,7 +59,7 @@ import { TranslateDirective } from 'app/shared/language';
         margin-left: auto;
       }
       .comment-content {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.85rem;
         color: var(--color-text, #dfe3ea);
         white-space: pre-wrap;
@@ -71,7 +72,7 @@ import { TranslateDirective } from 'app/shared/language';
       }
       .text-muted {
         color: var(--color-text-muted, #6a8fac);
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.8rem;
       }
     `,

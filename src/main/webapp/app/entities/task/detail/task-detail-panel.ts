@@ -39,18 +39,19 @@ import { IUser } from 'app/entities/user/user.model';
         width: min(680px, 100vw);
         height: 100vh;
         background: var(--color-surface, #0f1419);
-        border-left: 3px solid var(--color-outline-variant, #2a3038);
+        border-left: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg) 0 0 var(--radius-lg);
         z-index: 1050;
         display: flex;
         flex-direction: column;
-        box-shadow: -4px 0 0 var(--color-primary, #97cbff);
+        box-shadow: var(--shadow-lg);
       }
       .task-drawer-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 16px 20px;
-        border-bottom: 2px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
       }
       .task-drawer-body {
         flex: 1;
@@ -68,7 +69,7 @@ import { IUser } from 'app/entities/user/user.model';
         flex-shrink: 0;
       }
       .task-drawer-title {
-        font-family: 'Audiowide', monospace;
+        font-family: var(--font-inter);
         font-size: 1.1rem;
         color: var(--color-text, #dfe3ea);
         margin-bottom: 20px;
@@ -80,11 +81,11 @@ import { IUser } from 'app/entities/user/user.model';
       .task-section-label {
         display: block;
         font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
+        text-transform: none;
         color: var(--color-text-muted, #6a8fac);
         margin-bottom: 4px;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
+        font-weight: 600;
       }
       .task-description {
         color: var(--color-text, #dfe3ea);
@@ -94,8 +95,8 @@ import { IUser } from 'app/entities/user/user.model';
       }
       .task-comment-box {
         background: var(--color-surface-container, #1b2025);
-        border: 2px solid var(--color-outline-variant, #2a3038);
-        border-radius: 6px;
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
         padding: 12px;
         min-height: 40px;
       }
@@ -105,11 +106,11 @@ import { IUser } from 'app/entities/user/user.model';
       .task-field-label {
         display: block;
         font-size: 0.65rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
+        text-transform: none;
         color: var(--color-text-muted, #6a8fac);
         margin-bottom: 4px;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
+        font-weight: 600;
       }
       .task-assignee {
         display: flex;
@@ -123,7 +124,7 @@ import { IUser } from 'app/entities/user/user.model';
       .task-drawer-actions {
         margin-top: 24px;
         padding-top: 16px;
-        border-top: 2px solid var(--color-outline-variant, #2a3038);
+        border-top: 1px solid var(--color-outline-variant, #2a3038);
       }
       .assignee-avatar {
         width: 28px;
@@ -132,11 +133,11 @@ import { IUser } from 'app/entities/user/user.model';
         background: var(--color-primary-container, #25a7fd);
         color: #000;
         font-size: 0.75rem;
-        font-weight: 700;
+        font-weight: 600;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-mono);
       }
       @media (max-width: 768px) {
         .task-drawer {

@@ -50,7 +50,7 @@ type Tab = 'board' | 'planning' | 'burndown';
         gap: 8px;
       }
       .sprint-name {
-        font-family: 'Audiowide', monospace;
+        font-family: var(--font-inter);
         font-size: 1.4rem;
         color: var(--color-text, #dfe3ea);
         margin: 0;
@@ -58,7 +58,7 @@ type Tab = 'board' | 'planning' | 'burndown';
       .sprint-meta {
         color: var(--color-text-muted, #6a8fac);
         font-size: 0.85rem;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
       }
       .sprint-goal {
         color: var(--color-text, #dfe3ea);
@@ -68,33 +68,35 @@ type Tab = 'board' | 'planning' | 'burndown';
       .status-badge {
         display: inline-block;
         padding: 2px 10px;
-        border: 2px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: 9999px;
         font-size: 0.75rem;
-        font-family: 'JetBrains Mono', monospace;
-        text-transform: uppercase;
+        font-family: var(--font-inter);
+        text-transform: none;
         background: var(--color-surface-container, #1b2025);
+        font-weight: 600;
       }
       .tab-bar {
         display: flex;
         gap: 0;
-        border-bottom: 3px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
         margin-bottom: 20px;
       }
       .tab-item {
         padding: 10px 24px;
         cursor: pointer;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+        text-transform: none;
+        letter-spacing: 0;
         border: none;
         background: transparent;
         color: var(--color-text-muted, #6a8fac);
-        border-bottom: 3px solid transparent;
-        margin-bottom: -3px;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
         transition:
-          color 0.15s,
-          border-color 0.15s;
+          color var(--transition-fast),
+          border-color var(--transition-fast);
       }
       .tab-item:hover {
         color: var(--color-text, #dfe3ea);
@@ -117,28 +119,30 @@ type Tab = 'board' | 'planning' | 'burndown';
       }
       .velocity-modal {
         background: var(--color-surface-container, #1b2025);
-        border: 3px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
         padding: 24px;
         max-width: 420px;
         width: 90%;
-        box-shadow: 6px 6px 0 var(--color-outline-variant, #2a3038);
+        box-shadow: var(--shadow-lg);
       }
       .velocity-modal h3 {
-        font-family: 'Audiowide', monospace;
+        font-family: var(--font-inter);
         color: var(--color-primary, #97cbff);
         margin-bottom: 16px;
+        font-weight: 600;
       }
       .velocity-stat {
         display: flex;
         justify-content: space-between;
         padding: 8px 0;
         border-bottom: 1px solid var(--color-outline-variant, #2a3038);
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.9rem;
         color: var(--color-text, #dfe3ea);
       }
       .velocity-stat-value {
-        font-weight: bold;
+        font-weight: 600;
         color: var(--color-primary, #97cbff);
       }
       .tooltip-wrapper {
@@ -154,9 +158,10 @@ type Tab = 'board' | 'planning' | 'burndown';
       .sprint-progress-wrapper {
         margin-bottom: 20px;
         padding: 12px 16px;
-        border: 3px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
         background: var(--color-surface-container, #1b2025);
-        box-shadow: 4px 4px 0 var(--color-outline-variant, #2a3038);
+        box-shadow: var(--shadow-sm);
       }
       .sprint-progress-header {
         display: flex;
@@ -165,28 +170,28 @@ type Tab = 'board' | 'planning' | 'burndown';
         margin-bottom: 8px;
       }
       .sprint-progress-label {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.8rem;
         color: var(--color-text-muted, #6a8fac);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+        text-transform: none;
       }
       .sprint-progress-value {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.85rem;
         color: var(--color-primary, #97cbff);
-        font-weight: 700;
+        font-weight: 600;
       }
       .sprint-progress-bar {
         width: 100%;
-        height: 12px;
+        height: 6px;
         background: var(--color-surface-container-high, #262d36);
-        border: 2px solid var(--color-outline-variant, #2a3038);
+        border-radius: 9999px;
         overflow: hidden;
       }
       .sprint-progress-fill {
         height: 100%;
         background: var(--color-status-done, #4caf50);
+        border-radius: 9999px;
         transition: width 0.3s ease;
       }
       @media (max-width: 768px) {

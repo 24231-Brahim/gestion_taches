@@ -11,6 +11,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subscription, combineLatest, switchMap, tap } from 'rxjs';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
+import { CsvDownloadService } from 'app/shared/csv/csv-download.service';
 import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { AccountService } from 'app/core/auth/account.service';
@@ -72,8 +73,8 @@ import { TaskService } from '../service/task.service';
       .view-mode-tabs {
         display: flex;
         gap: 0;
-        border: 2px solid var(--color-outline-variant, #2a3038);
-        border-radius: 6px;
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-md);
         overflow: hidden;
       }
       .view-mode-tabs .btn {
@@ -83,6 +84,7 @@ import { TaskService } from '../service/task.service';
         background: transparent;
         color: var(--color-text-muted, #6a8fac);
         font-size: 0.85rem;
+        font-family: var(--font-inter);
       }
       .view-mode-tabs .btn-active {
         background: var(--color-primary, #97cbff);
@@ -91,14 +93,15 @@ import { TaskService } from '../service/task.service';
       .status-badge {
         display: inline-block;
         padding: 2px 10px;
-        border-radius: 10px;
+        border-radius: 9999px;
         font-size: 0.75rem;
         color: #fff;
         font-weight: 600;
+        font-family: var(--font-inter);
       }
       .task-row {
         cursor: pointer;
-        transition: background 0.15s;
+        transition: background-color var(--transition-fast);
       }
       .task-row:hover {
         background: var(--color-surface-container, #1b2025);
@@ -117,11 +120,11 @@ import { TaskService } from '../service/task.service';
         background: var(--color-primary-container, #25a7fd);
         color: #000;
         font-size: 0.65rem;
-        font-weight: 700;
+        font-weight: 600;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-mono);
       }
     `,
   ],
@@ -160,6 +163,8 @@ export class Task implements OnInit {
   readonly selectedTask = signal<ITask | null>(null);
   readonly drawerVisible = signal(false);
 
+  private readonly csvDownloadService = inject(CsvDownloadService);
+
   filteredTasks = computed(() => {
     const q = this.searchQuery().toLowerCase();
     if (!q) {
@@ -168,13 +173,6 @@ export class Task implements OnInit {
     return this.tasks().filter(i => i.title?.toLowerCase().includes(q));
   });
 
-  readonly csvExportUrl = computed(() => {
-    const project = this.currentProject();
-    if (project) {
-      return this.appConfig.getEndpointFor(`api/projects/${encodeURIComponent(project.id)}/export/csv/tasks`);
-    }
-    return this.appConfig.getEndpointFor('api/export/csv/tasks');
-  });
   protected readonly appConfig = inject(ApplicationConfigService);
   readonly router = inject(Router);
   readonly taskService = inject(TaskService);
@@ -223,6 +221,18 @@ export class Task implements OnInit {
 
   canDeleteTask(task: ITask): boolean {
     return this.canEditTask(task);
+  }
+
+  exportCsv(): void {
+    const project = this.currentProject();
+    if (project) {
+      this.csvDownloadService.download(
+        `api/export/csv/projects/${encodeURIComponent(project.id)}/tasks`,
+        `project-${project.key}-tasks.csv`,
+      );
+    } else {
+      this.csvDownloadService.download('api/export/csv/tasks', 'tasks.csv');
+    }
   }
 
   trackId = (item: ITask): number => this.taskService.getTaskIdentifier(item);

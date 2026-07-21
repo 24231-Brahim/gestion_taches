@@ -19,9 +19,10 @@ import { ISprint } from '../sprint.model';
       .backlog-search-input {
         width: 100%;
         background: var(--color-surface, #0f1419);
-        border: 2px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-sm);
         color: var(--color-text, #dfe3ea);
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.8rem;
         padding: 8px 10px;
         box-sizing: border-box;
@@ -43,9 +44,10 @@ import { ISprint } from '../sprint.model';
         background: var(--color-primary-container, #25a7fd);
         color: #000;
         font-size: 0.65rem;
-        font-weight: 700;
+        font-weight: 600;
         padding: 1px 6px;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-mono);
+        border-radius: var(--radius-sm);
       }
     `,
   ],

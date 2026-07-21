@@ -55,18 +55,20 @@ import { RouterLink } from '@angular/router';
       }
       .list-card {
         background: var(--color-surface-container);
-        border: 3px solid var(--color-primary);
-        box-shadow: var(--shadow-brutal);
+        border: 1px solid var(--color-outline-variant);
+        box-shadow: var(--shadow-sm);
         padding: var(--stack-md);
+        border-radius: var(--radius-lg);
       }
       .list-title {
-        font-family: var(--font-display);
+        font-family: var(--font-inter);
+        font-weight: 600;
         font-size: var(--headline-md);
-        letter-spacing: 0.04em;
-        color: var(--color-primary);
+        letter-spacing: 0;
+        color: var(--color-on-surface);
         margin-bottom: var(--stack-md);
         padding-bottom: var(--stack-sm);
-        border-bottom: 3px solid var(--color-primary);
+        border-bottom: 1px solid var(--color-outline-variant);
       }
       .list-body {
         min-height: 100px;
@@ -91,30 +93,30 @@ import { RouterLink } from '@angular/router';
         border-color: var(--color-outline);
       }
       .item-name {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-sm);
-        text-transform: uppercase;
+        text-transform: none;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
       .item-key {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: none;
         flex-shrink: 0;
         color: var(--color-primary);
         font-weight: 700;
       }
       .item-meta {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: none;
         flex-shrink: 0;
         font-weight: 700;
       }
       .text-muted {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-sm);
         color: var(--color-muted);
       }

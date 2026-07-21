@@ -82,16 +82,18 @@ export interface DashboardKpis {
         background: var(--color-danger);
         color: white;
         padding: var(--stack-md);
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-sm);
-        border: 3px solid var(--color-outline);
+        border: 1px solid var(--color-outline);
+        border-radius: var(--radius-md);
       }
       .loading-banner {
         background: var(--color-surface-container-high);
         padding: var(--stack-md);
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-sm);
-        border: 3px solid var(--color-primary);
+        border: 1px solid var(--color-primary);
+        border-radius: var(--radius-md);
         animation: pulse 1.5s ease-in-out infinite;
       }
       @keyframes pulse {

@@ -8,9 +8,12 @@ import com.gestiontaches.domain.enumeration.TaskStatus;
 import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
+import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
+import com.gestiontaches.service.dto.NotificationDTO;
 import com.gestiontaches.service.dto.TaskDTO;
 import com.gestiontaches.service.mapper.TaskMapper;
+import java.time.Instant;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,18 +41,22 @@ public class TaskService {
 
     private final ProjectPermissionService projectPermissionService;
 
+    private final NotificationService notificationService;
+
     public TaskService(
         TaskRepository taskRepository,
         TaskMapper taskMapper,
         UserRepository userRepository,
         ProjectMemberRepository projectMemberRepository,
-        ProjectPermissionService projectPermissionService
+        ProjectPermissionService projectPermissionService,
+        NotificationService notificationService
     ) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
         this.userRepository = userRepository;
         this.projectMemberRepository = projectMemberRepository;
         this.projectPermissionService = projectPermissionService;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -91,9 +98,12 @@ public class TaskService {
         if (taskDTO.getId() != null) {
             checkTaskUpdatePermission(taskDTO.getId());
         }
+        Task existingTask = taskRepository.findById(taskDTO.getId()).orElse(null);
+        TaskStatus oldStatus = existingTask != null ? existingTask.getStatus() : null;
         Task task = taskMapper.toEntity(taskDTO);
         task.setUpdatedAt(java.time.Instant.now());
         task = taskRepository.save(task);
+        notifyStatusChangeIfNeeded(existingTask, task, oldStatus);
         return taskMapper.toDto(task);
     }
 
@@ -112,11 +122,13 @@ public class TaskService {
         return taskRepository
             .findById(taskDTO.getId())
             .map(existingTask -> {
+                TaskStatus oldStatus = existingTask.getStatus();
                 taskMapper.partialUpdate(existingTask, taskDTO);
                 existingTask.setUpdatedAt(java.time.Instant.now());
-                return existingTask;
+                Task savedTask = taskRepository.save(existingTask);
+                notifyStatusChangeIfNeeded(existingTask, savedTask, oldStatus);
+                return savedTask;
             })
-            .map(taskRepository::save)
             .map(taskMapper::toDto);
     }
 
@@ -132,6 +144,63 @@ public class TaskService {
             return;
         }
         throw new RuntimeException("Access denied: you can only update your own tasks");
+    }
+
+    private void notifyStatusChangeIfNeeded(Task existingTask, Task savedTask, TaskStatus oldStatus) {
+        if (existingTask == null || oldStatus == null || savedTask.getStatus() == null) {
+            return;
+        }
+        if (oldStatus == savedTask.getStatus()) {
+            return;
+        }
+        if (savedTask.getStatus() != TaskStatus.DONE && savedTask.getStatus() != TaskStatus.CANCELLED) {
+            return;
+        }
+
+        String statusLabel = savedTask.getStatus() == TaskStatus.DONE ? "DONE" : "CANCELLED";
+        User creator = existingTask.getCreatedBy();
+        User assignee = existingTask.getAssignee();
+        boolean creatorIsAdmin = creator != null && hasRole(creator, AuthoritiesConstants.ADMIN);
+        boolean assigneeIsAdmin = assignee != null && hasRole(assignee, AuthoritiesConstants.ADMIN);
+
+        if (!creatorIsAdmin && !assigneeIsAdmin) {
+            return;
+        }
+
+        boolean sameUser = creator != null && assignee != null && creator.getId().equals(assignee.getId());
+        Instant now = Instant.now();
+
+        if (creatorIsAdmin) {
+            NotificationDTO notification = new NotificationDTO();
+            notification.setMessage("La tâche '" + savedTask.getTitle() + "' que vous avez créée est passée à " + statusLabel);
+            notification.setTaskId(savedTask.getId());
+            notification.setTaskTitle(savedTask.getTitle());
+            notification.setUserId(creator.getId());
+            notification.setIsRead(false);
+            notification.setCreatedAt(now);
+            notificationService.save(notification);
+        }
+
+        if (assigneeIsAdmin && !sameUser) {
+            NotificationDTO notification = new NotificationDTO();
+            notification.setMessage("La tâche '" + savedTask.getTitle() + "' qui vous est assignée est passée à " + statusLabel);
+            notification.setTaskId(savedTask.getId());
+            notification.setTaskTitle(savedTask.getTitle());
+            notification.setUserId(assignee.getId());
+            notification.setIsRead(false);
+            notification.setCreatedAt(now);
+            notificationService.save(notification);
+        }
+    }
+
+    private boolean hasRole(User user, String role) {
+        return (
+            user.getAuthorities() != null &&
+            user
+                .getAuthorities()
+                .stream()
+                .anyMatch(a -> role.equals(a.getName()))
+        );
     }
 
     /**

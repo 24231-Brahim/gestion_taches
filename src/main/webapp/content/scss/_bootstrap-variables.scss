@@ -1,4 +1,10 @@
-$enable-rounded: false;
+/* ═══════════════════════════════════════════════════════════════
+   Bootstrap Variable Overrides — Modern Minimal Dashboard
+   Rounded corners, Inter font, soft shadows
+   NOTE: Bootstrap Sass functions need literal colors, not CSS vars
+   ═══════════════════════════════════════════════════════════════ */
+
+$enable-rounded: true;
 $enable-shadows: false;
 $enable-gradients: false;
 $enable-transitions: true;
@@ -6,27 +12,41 @@ $enable-hover-media-query: false;
 $enable-grid-classes: true;
 $enable-print-styles: true;
 
-$border-radius: 0;
-$border-radius-lg: 0;
-$border-radius-sm: 0;
+/* ─── Border Radius ─── */
+$border-radius: 8px;
+$border-radius-lg: 12px;
+$border-radius-sm: 6px;
 
+/* ─── Body ─── */
 $body-bg: #ffffff;
-$body-color: #090909;
+$body-color: #1a1d21;
 
-$font-family-sans-serif: 'JetBrains Mono', 'Courier New', monospace;
-$font-family-monospace: 'JetBrains Mono', 'Courier New', monospace;
+/* ─── Typography ─── */
+$font-family-sans-serif:
+  'Inter',
+  -apple-system,
+  BlinkMacSystemFont,
+  'Segoe UI',
+  sans-serif;
+$font-family-monospace: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
 $font-size-base: 1rem;
 $line-height-base: 1.5;
 
-$headings-font-family: 'Audiowide', cursive;
-$headings-font-weight: 400;
-$headings-line-height: 1.2;
+$headings-font-family:
+  'Inter',
+  -apple-system,
+  BlinkMacSystemFont,
+  'Segoe UI',
+  sans-serif;
+$headings-font-weight: 600;
+$headings-line-height: 1.25;
 
 $link-color: #0077cc;
 $link-hover-color: #0097b2;
-$link-font-weight: 700;
+$link-font-weight: 500;
 
-$navbar-dark-color: #090909;
+/* ─── Navbar ─── */
+$navbar-dark-color: #1a1d21;
 $navbar-dark-hover-color: #0077cc;
 $navbar-dark-active-color: #25a7fd;
 $navbar-padding-y: 0;
@@ -35,91 +55,113 @@ $navbar-padding-x: 0;
 $nav-link-padding-y: 0.75rem;
 $nav-link-padding-x: 1rem;
 
+/* ─── Dropdown ─── */
 $dropdown-bg: #ffffff;
-$dropdown-color: #090909;
-$dropdown-border-color: #0077cc;
-$dropdown-border-width: 3px;
-$dropdown-border-radius: 0;
-$dropdown-link-color: #090909;
+$dropdown-color: #1a1d21;
+$dropdown-border-color: #dde3ec;
+$dropdown-border-width: 1px;
+$dropdown-border-radius: 12px;
+$dropdown-link-color: #1a1d21;
 $dropdown-link-hover-color: #0077cc;
-$dropdown-link-hover-bg: #e8f0fe;
+$dropdown-link-hover-bg: #f1f4f9;
 $dropdown-link-active-color: #ffffff;
-$dropdown-link-active-bg: #0077cc;
+$dropdown-link-active-bg: #25a7fd;
 
-$card-bg: #ffffff;
-$card-border-color: #0077cc;
-$card-border-width: 3px;
-$card-border-radius: 0;
-$card-cap-bg: #ffffff;
-$card-cap-color: #090909;
+/* ─── Card ─── */
+$card-bg: #f1f4f9;
+$card-border-color: #dde3ec;
+$card-border-width: 1px;
+$card-border-radius: 12px;
+$card-cap-bg: transparent;
+$card-cap-color: #1a1d21;
 
+/* ─── Input ─── */
 $input-bg: #ffffff;
-$input-color: #090909;
-$input-border-color: #0077cc;
-$input-border-width: 3px;
-$input-border-radius: 0;
-$input-focus-border-color: #0097b2;
-$input-focus-color: #090909;
+$input-color: #1a1d21;
+$input-border-color: #dde3ec;
+$input-border-width: 1px;
+$input-border-radius: 6px;
+$input-focus-border-color: #0077cc;
+$input-focus-color: #1a1d21;
 $input-focus-bg: #ffffff;
-$input-placeholder-color: #47657d;
-$input-disabled-bg: #f5faff;
+$input-placeholder-color: #5b7286;
+$input-disabled-bg: #f7f9fc;
 
-$btn-border-radius: 0;
-$btn-border-radius-lg: 0;
-$btn-border-radius-sm: 0;
-$btn-font-family: 'JetBrains Mono', 'Courier New', monospace;
-$btn-font-weight: 700;
-$btn-padding-y: 0.5rem;
-$btn-padding-x: 1.5rem;
+/* ─── Buttons ─── */
+$btn-border-radius: 8px;
+$btn-border-radius-lg: 12px;
+$btn-border-radius-sm: 6px;
+$btn-font-family:
+  'Inter',
+  -apple-system,
+  BlinkMacSystemFont,
+  'Segoe UI',
+  sans-serif;
+$btn-font-weight: 600;
+$btn-padding-y: 0.625rem;
+$btn-padding-x: 1.25rem;
 $btn-font-size: 0.875rem;
 
-$table-color: #090909;
+/* ─── Table ─── */
+$table-color: #1a1d21;
 $table-bg: transparent;
-$table-border-color: #0077cc;
-$table-border-width: 2px;
-$table-striped-bg: #f5faff;
-$table-hover-bg: #e8f0fe;
-$table-hover-color: #090909;
+$table-border-color: #dde3ec;
+$table-border-width: 1px;
+$table-striped-bg: rgba(241, 244, 249, 0.4);
+$table-hover-bg: #e9edf3;
+$table-hover-color: #1a1d21;
 $table-cell-padding-y: 0.75rem;
 $table-cell-padding-x: 0.75rem;
-$table-th-font-weight: 700;
+$table-th-font-weight: 600;
 
-$pagination-bg: #ffffff;
-$pagination-color: #090909;
-$pagination-border-color: #0077cc;
-$pagination-border-width: 2px;
-$pagination-border-radius: 0;
-$pagination-hover-bg: #e8f0fe;
+/* ─── Pagination ─── */
+$pagination-bg: #f1f4f9;
+$pagination-color: #1a1d21;
+$pagination-border-color: #dde3ec;
+$pagination-border-width: 1px;
+$pagination-border-radius: 8px;
+$pagination-hover-bg: #e9edf3;
 $pagination-hover-color: #0077cc;
-$pagination-active-bg: #0077cc;
+$pagination-active-bg: #25a7fd;
 $pagination-active-color: #ffffff;
-$pagination-disabled-bg: #f5faff;
-$pagination-disabled-color: #47657d;
+$pagination-disabled-bg: #f7f9fc;
+$pagination-disabled-color: #5b7286;
 
-$alert-border-radius: 0;
-$alert-border-width: 3px;
+/* ─── Alert ─── */
+$alert-border-radius: 8px;
+$alert-border-width: 1px;
 
-$badge-border-radius: 0;
-$badge-font-family: 'JetBrains Mono', 'Courier New', monospace;
-$badge-font-weight: 700;
+/* ─── Badge ─── */
+$badge-border-radius: 9999px;
+$badge-font-family:
+  'Inter',
+  -apple-system,
+  BlinkMacSystemFont,
+  'Segoe UI',
+  sans-serif;
+$badge-font-weight: 600;
 $badge-font-size: 0.75rem;
-$badge-padding-y: 0.25rem;
-$badge-padding-x: 0.5rem;
+$badge-padding-y: 0.25em;
+$badge-padding-x: 0.625em;
 
+/* ─── Modal ─── */
 $modal-content-bg: #ffffff;
-$modal-content-border-color: #0077cc;
-$modal-content-border-width: 3px;
-$modal-content-border-radius: 0;
-$modal-header-border-color: #0077cc;
-$modal-footer-border-color: #0077cc;
-$modal-backdrop-bg: rgba(0, 0, 0, 0.6);
+$modal-content-border-color: #dde3ec;
+$modal-content-border-width: 1px;
+$modal-content-border-radius: 12px;
+$modal-header-border-color: #dde3ec;
+$modal-footer-border-color: #dde3ec;
+$modal-backdrop-bg: rgba(0, 0, 0, 0.5);
 
-$hr-border-color: #0077cc;
-$hr-border-width: 3px;
+/* ─── Divider ─── */
+$hr-border-color: #dde3ec;
+$hr-border-width: 1px;
 
-$progress-bg: #ffffff;
-$progress-border-radius: 0;
-$progress-bar-bg: #0077cc;
+/* ─── Progress ─── */
+$progress-bg: #e9edf3;
+$progress-border-radius: 9999px;
+$progress-bar-bg: #25a7fd;
 
-$close-color: #090909;
-$close-font-weight: 700;
+/* ─── Close ─── */
+$close-color: #1a1d21;
+$close-font-weight: 500;

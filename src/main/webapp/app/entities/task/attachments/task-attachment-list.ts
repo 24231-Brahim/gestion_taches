@@ -23,12 +23,12 @@ import { TranslateDirective } from 'app/shared/language';
         gap: 12px;
       }
       .task-section-title {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
+        text-transform: none;
         color: var(--color-text-muted, #6a8fac);
         margin: 0 0 4px;
+        font-weight: 600;
       }
       .attachment-drop-zone {
         display: flex;
@@ -36,14 +36,15 @@ import { TranslateDirective } from 'app/shared/language';
         gap: 10px;
         padding: 16px;
         border: 2px dashed var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
         background: var(--color-surface-container, #1b2025);
         color: var(--color-text-muted, #6a8fac);
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.8rem;
         cursor: pointer;
         transition:
-          border-color 0.15s,
-          background 0.15s;
+          border-color var(--transition-fast),
+          background var(--transition-fast);
       }
       .attachment-drop-zone:hover,
       .attachment-drop-zone.drag-over {
@@ -56,10 +57,11 @@ import { TranslateDirective } from 'app/shared/language';
         gap: 8px;
         padding: 8px 10px;
         background: var(--color-surface-container, #1b2025);
-        border: 2px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
       }
       .attachment-name {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.85rem;
         color: var(--color-primary, #97cbff);
         text-decoration: none;
@@ -72,14 +74,14 @@ import { TranslateDirective } from 'app/shared/language';
         text-decoration: underline;
       }
       .attachment-date {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.7rem;
         color: var(--color-text-muted, #6a8fac);
         white-space: nowrap;
       }
       .text-muted {
         color: var(--color-text-muted, #6a8fac);
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.8rem;
       }
     `,

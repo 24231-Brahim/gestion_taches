@@ -24,6 +24,9 @@
       "newValue": "New Value",
       "createdAt": "Created At",
       "task": "Issue"
+    },
+    "activity": {
+      "by": "by"
     }
   }
 }

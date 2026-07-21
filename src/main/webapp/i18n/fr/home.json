@@ -30,7 +30,8 @@
     },
     "charts": {
       "projectProgress": "AVANCEMENT PROJETS",
-      "taskDistribution": "RÉPARTITION TÂCHES"
+      "taskDistribution": "RÉPARTITION TÂCHES",
+      "total": "TOTAL"
     },
     "lists": {
       "recentProjects": "PROJETS RÉCENTS",

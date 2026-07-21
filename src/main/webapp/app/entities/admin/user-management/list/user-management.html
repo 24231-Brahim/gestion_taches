@@ -7,10 +7,10 @@
         <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
         <span jhiTranslate="userManagement.home.refreshListLabel">Actualiser la liste</span>
       </button>
-      <a class="btn btn-success me-2" [href]="csvExportUrl" download="users.csv">
+      <button class="btn btn-success me-2" (click)="exportCsv()">
         <fa-icon icon="download" />
         <span jhiTranslate="entity.action.exportCsv">CSV</span>
-      </a>
+      </button>
       <button class="btn btn-primary jh-create-entity" [routerLink]="['./new']" data-cy="entityCreateButton">
         <fa-icon icon="plus" />
         <span jhiTranslate="userManagement.home.createLabel">Créer un nouvel utilisateur</span>
