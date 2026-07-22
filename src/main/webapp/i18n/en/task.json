@@ -2,23 +2,23 @@
   "gestionTachesApp": {
     "task": {
       "home": {
-        "title": "Issues",
+        "title": "Tasks",
         "refreshListLabel": "Refresh list",
-        "createLabel": "Create a new Issue",
-        "createOrEditLabel": "Create or edit a Issue",
-        "notFound": "No Issues found",
+        "createLabel": "Create a new Task",
+        "createOrEditLabel": "Create or edit a Task",
+        "notFound": "No Tasks found",
         "backlog": "Backlog",
         "board": "Board",
-        "search": "Search issues..."
+        "search": "Search tasks..."
       },
-      "created": "A new Issue is created with identifier {{ param }}",
-      "updated": "A Issue is updated with identifier {{ param }}",
-      "deleted": "A Issue is deleted with identifier {{ param }}",
+      "created": "A new Task is created with identifier {{ param }}",
+      "updated": "A Task is updated with identifier {{ param }}",
+      "deleted": "A Task is deleted with identifier {{ param }}",
       "delete": {
-        "question": "Are you sure you want to delete Issue {{ id }}?"
+        "question": "Are you sure you want to delete Task {{ id }}?"
       },
       "detail": {
-        "title": "Issue",
+        "title": "Task",
         "comments": "Comments",
         "noComments": "No comments yet.",
         "history": "History",
@@ -36,7 +36,6 @@
       "type": "Type",
       "status": "Status",
       "priority": "Priority",
-      "storyPoints": "Story Points",
       "createdAt": "Created At",
       "updatedAt": "Updated At",
       "comments": "Comments",

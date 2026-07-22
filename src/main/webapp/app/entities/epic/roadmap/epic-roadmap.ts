@@ -7,7 +7,7 @@ import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/rou
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 import { KeyValuePipe } from '@angular/common';
-import { Subscription, combineLatest, tap } from 'rxjs';
+import { combineLatest, from, of, switchMap, tap } from 'rxjs';
 
 import { DEFAULT_SORT_DATA, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
@@ -15,7 +15,7 @@ import { IProject } from 'app/entities/project/project.model';
 import { ProjectService } from 'app/entities/project/service/project.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
-import { Filter, FilterOptions, IFilterOption, IFilterOptions } from 'app/shared/filter';
+import { FilterOptions, IFilterOption, IFilterOptions } from 'app/shared/filter';
 import FilterComponent from 'app/shared/filter/filter';
 import { TranslateDirective } from 'app/shared/language';
 import { SortService, type SortState, sortStateSignal } from 'app/shared/sort';
@@ -60,6 +60,15 @@ const STATUS_COLORS: Record<string, string> = {
         gap: 12px;
         margin-bottom: 20px;
         flex-wrap: wrap;
+      }
+      .roadmap-filters {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .roadmap-filters select {
+        width: auto;
       }
       .roadmap-container {
         background: var(--color-surface-container, #1b2025);
@@ -158,7 +167,7 @@ const STATUS_COLORS: Record<string, string> = {
       .roadmap-epic-bar-label {
         font-size: 0.65rem;
         font-weight: 600;
-        color: #000;
+        color: var(--color-on-primary-container);
         font-family: var(--font-inter);
       }
       .roadmap-pct {
@@ -216,25 +225,19 @@ const STATUS_COLORS: Record<string, string> = {
   ],
 })
 export class EpicRoadmap implements OnInit {
-  subscription: Subscription | null = null;
   readonly epics = signal<IEpic[]>([]);
   readonly allTasks = signal<ITask[]>([]);
   readonly filterStatus = signal<string>('');
-  readonly filterProject = signal<string>('');
   readonly filterPriority = signal<string>('');
   readonly sortBy = signal<string>('');
 
   filteredEpics = computed(() => {
     let list = this.epics();
     const statusFilter = this.filterStatus();
-    const projectFilter = this.filterProject();
     const priorityFilter = this.filterPriority();
     const sortField = this.sortBy();
     if (statusFilter) {
       list = list.filter(e => e.status === statusFilter);
-    }
-    if (projectFilter) {
-      list = list.filter(e => e.project?.name === projectFilter || e.project?.id?.toString() === projectFilter);
     }
     if (priorityFilter) {
       list = list.filter(e => e.priority === priorityFilter);
@@ -273,16 +276,6 @@ export class EpicRoadmap implements OnInit {
   readonly itemsPerPage = signal(ITEMS_PER_PAGE);
   readonly totalItems = signal(0);
   readonly page = signal(1);
-
-  protected readonly uniqueProjects = computed(() => {
-    const names = new Set<string>();
-    for (const e of this.epics()) {
-      if (e.project?.name) {
-        names.add(e.project.name);
-      }
-    }
-    return Array.from(names).sort();
-  });
 
   readonly currentProjectKey = signal<string | null>(null);
   readonly currentProject = signal<IProject | null>(null);
@@ -338,9 +331,18 @@ export class EpicRoadmap implements OnInit {
   trackId = (item: IEpic): number => this.epicService.getEpicIdentifier(item);
 
   ngOnInit(): void {
-    this.resolveProjectContext();
-    this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
+    const parentParamMap = this.activatedRoute.parent?.paramMap ?? this.activatedRoute.paramMap;
+    parentParamMap
       .pipe(
+        switchMap(params => {
+          const key = params.get('key');
+          if (key) {
+            this.currentProjectKey.set(key);
+            return from(this.projectService.findByKey(key).pipe(tap(project => this.currentProject.set(project))));
+          }
+          return of([]);
+        }),
+        switchMap(() => combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])),
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
         tap(() => this.load()),
       )
@@ -406,19 +408,6 @@ export class EpicRoadmap implements OnInit {
       queryObject['projectId.equals'] = this.currentProject()!.id;
     }
     this.epicService.epicsParams.set(queryObject);
-  }
-
-  private resolveProjectContext(): void {
-    let route: ActivatedRoute | null = this.activatedRoute;
-    while (route) {
-      const key = route.snapshot.paramMap.get('key');
-      if (key) {
-        this.currentProjectKey.set(key);
-        this.projectService.findByKey(key).subscribe(project => this.currentProject.set(project));
-        return;
-      }
-      route = route.parent;
-    }
   }
 
   protected handleNavigation(page: number, sortState: SortState, filterOptions?: IFilterOption[]): void {

@@ -44,8 +44,8 @@
       "title": "QUICK ACTIONS",
       "newProject": "New Project",
       "viewProjects": "View Projects",
-      "newTask": "New Issue",
-      "viewTasks": "View Issues"
+      "newTask": "New Task",
+      "viewTasks": "View Tasks"
     }
   }
 }

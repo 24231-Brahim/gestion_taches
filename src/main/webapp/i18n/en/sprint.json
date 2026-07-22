@@ -49,7 +49,6 @@
         "done": "Done",
         "remaining": "Remaining",
         "velocity": "Velocity",
-        "storyPointsVelocity": "SP Velocity",
         "days": "Days",
         "issues": "Tasks"
       },

@@ -8,13 +8,6 @@
       <div>
         <jhi-alert-error />
 
-        @if (editForm.controls.id.value !== null) {
-          <div class="mb-3">
-            <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
-            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
-          </div>
-        }
-
         @let titleRef = editForm.get('title')!;
         <div class="mb-3">
           <label class="form-label" for="field_title" jhiTranslate="gestionTachesApp.epic.title">Title</label>
@@ -41,14 +34,14 @@
         @let descriptionRef = editForm.get('description')!;
         <div class="mb-3">
           <label class="form-label" for="field_description" jhiTranslate="gestionTachesApp.epic.description">Description</label>
-          <input
-            type="text"
+          <textarea
+            rows="3"
             class="form-control"
             name="description"
             id="field_description"
             data-cy="description"
             formControlName="description"
-          />
+          ></textarea>
           @if (descriptionRef.invalid && (descriptionRef.dirty || descriptionRef.touched)) {
             <div>
               @if (editForm.get('description')?.errors?.maxlength) {
@@ -96,49 +89,8 @@
           }
         </div>
 
-        @let createdAtRef = editForm.get('createdAt')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_createdAt" jhiTranslate="gestionTachesApp.epic.createdAt">Created At</label>
-          <div class="d-flex">
-            <input
-              id="field_createdAt"
-              data-cy="createdAt"
-              type="datetime-local"
-              class="form-control"
-              name="createdAt"
-              formControlName="createdAt"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-          @if (createdAtRef.invalid && (createdAtRef.dirty || createdAtRef.touched)) {
-            <div>
-              @if (editForm.get('createdAt')?.errors?.required) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.required">Ce champ est obligatoire.</small>
-              }
-              <small
-                class="form-text text-danger"
-                [hidden]="!editForm.get('createdAt')?.errors?.datetimelocal"
-                jhiTranslate="entity.validation.datetimelocal"
-                >Ce champ doit être une date et une heure.</small
-              >
-            </div>
-          }
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_updatedAt" jhiTranslate="gestionTachesApp.epic.updatedAt">Updated At</label>
-          <div class="d-flex">
-            <input
-              id="field_updatedAt"
-              data-cy="updatedAt"
-              type="datetime-local"
-              class="form-control"
-              name="updatedAt"
-              formControlName="updatedAt"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-        </div>
+        <input type="hidden" name="createdAt" formControlName="createdAt" />
+        <input type="hidden" name="updatedAt" formControlName="updatedAt" />
 
         <div class="mb-3">
           <label class="form-label" for="field_startDate" jhiTranslate="gestionTachesApp.epic.startDate">Start Date</label>
@@ -164,6 +116,7 @@
             name="project"
             formControlName="project"
             [compareWith]="compareProject"
+            [attr.disabled]="isProjectContext() ? true : null"
           >
             @if (editForm.get(['project'])!.value === null) {
               <option [ngValue]="null" selected></option>

@@ -33,8 +33,6 @@ public class TaskDTO implements Serializable {
 
     private Instant updatedAt;
 
-    private Integer storyPoints;
-
     private SprintDTO sprint;
 
     private EpicDTO epic;
@@ -100,14 +98,6 @@ public class TaskDTO implements Serializable {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    public Integer getStoryPoints() {
-        return storyPoints;
-    }
-
-    public void setStoryPoints(Integer storyPoints) {
-        this.storyPoints = storyPoints;
     }
 
     public SprintDTO getSprint() {
@@ -180,7 +170,6 @@ public class TaskDTO implements Serializable {
             ", description='" + getDescription() + "'" +
             ", status='" + getStatus() + "'" +
             ", priority='" + getPriority() + "'" +
-            ", storyPoints=" + getStoryPoints() +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
             ", sprint=" + getSprint() +

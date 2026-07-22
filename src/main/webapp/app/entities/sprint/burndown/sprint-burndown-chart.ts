@@ -63,8 +63,6 @@ export class SprintBurndownChart {
   readonly totalTasks = input<number>(0);
   readonly doneTasks = input<number>(0);
   readonly daysLeft = input<number>(0);
-  readonly totalStoryPoints = input<number>(0);
-  readonly doneStoryPoints = input<number>(0);
 
   readonly actualPoints = computed(() => {
     const total = this.totalTasks();

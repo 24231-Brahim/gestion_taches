@@ -1,11 +1,10 @@
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, finalize, map } from 'rxjs';
 
 import { EpicStatus } from 'app/entities/enumerations/epic-status.model';
@@ -15,33 +14,34 @@ import { ProjectService } from 'app/entities/project/service/project.service';
 import { AlertService } from 'app/core/util/alert.service';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { TranslateDirective } from 'app/shared/language';
+import { ITEM_SAVED_EVENT } from 'app/config/navigation.constants';
 import { IEpic } from '../epic.model';
 import { EpicService } from '../service/epic.service';
-
 import { EpicFormGroup, EpicFormService } from './epic-form.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'jhi-epic-update',
-  templateUrl: './epic-update.html',
+  selector: 'jhi-epic-form-modal',
+  templateUrl: './epic-form-modal.html',
   imports: [TranslateDirective, TranslateModule, FontAwesomeModule, AlertError, ReactiveFormsModule],
 })
-export class EpicUpdate implements OnInit {
+export class EpicFormModal implements OnInit {
+  epic?: IEpic;
+  projectKey?: string;
+
   readonly isSaving = signal(false);
   readonly isProjectContext = signal(false);
-  epic: IEpic | null = null;
   epicStatusValues = Object.keys(EpicStatus);
   priorityValues = Object.keys(Priority);
 
   projectsSharedCollection = signal<IProject[]>([]);
 
+  protected activeModal = inject(NgbActiveModal);
   protected epicService = inject(EpicService);
   protected epicFormService = inject(EpicFormService);
   protected projectService = inject(ProjectService);
-  protected activatedRoute = inject(ActivatedRoute);
   protected alertService = inject(AlertService);
   protected translateService = inject(TranslateService);
-  protected destroyRef = inject(DestroyRef);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: EpicFormGroup = this.epicFormService.createEpicFormGroup();
@@ -49,30 +49,27 @@ export class EpicUpdate implements OnInit {
   compareProject = (o1: IProject | null, o2: IProject | null): boolean => this.projectService.compareProject(o1, o2);
 
   ngOnInit(): void {
-    this.activatedRoute.data.subscribe(({ epic }) => {
-      this.epic = epic;
-      if (epic) {
-        this.updateForm(epic);
-      }
+    if (this.epic) {
+      this.epicFormService.resetForm(this.editForm, this.epic);
+      this.projectsSharedCollection.update(projects =>
+        this.projectService.addProjectToCollectionIfMissing<IProject>(projects, this.epic!.project),
+      );
+    }
 
-      this.loadRelationshipsOptions();
-    });
+    this.loadRelationshipsOptions();
 
-    this.activatedRoute.parent?.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
-      const projectKey = params.get('key');
-      if (projectKey && !this.epic) {
-        this.projectService.findByKey(projectKey).subscribe(project => {
-          if (project) {
-            this.editForm.patchValue({ project });
-            this.isProjectContext.set(true);
-          }
-        });
-      }
-    });
+    if (this.projectKey && !this.epic) {
+      this.projectService.findByKey(this.projectKey).subscribe(project => {
+        if (project) {
+          this.editForm.patchValue({ project });
+          this.isProjectContext.set(true);
+        }
+      });
+    }
   }
 
-  previousState(): void {
-    globalThis.history.back();
+  cancel(): void {
+    this.activeModal.dismiss();
   }
 
   save(): void {
@@ -86,31 +83,16 @@ export class EpicUpdate implements OnInit {
   }
 
   protected subscribeToSaveResponse(result: Observable<IEpic | null>): void {
-    result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
-      error: (err: HttpErrorResponse) => this.onSaveError(err),
+    result.pipe(finalize(() => this.isSaving.set(false))).subscribe({
+      next: () => {
+        this.epicService.refresh();
+        this.activeModal.close(ITEM_SAVED_EVENT);
+      },
+      error: (err: HttpErrorResponse) => {
+        const message = err.error?.detail ?? err.message ?? this.translateService.instant('error.general');
+        this.alertService.addAlert({ type: 'danger', message });
+      },
     });
-  }
-
-  protected onSaveSuccess(): void {
-    this.epicService.refresh();
-    this.previousState();
-  }
-
-  protected onSaveError(err: HttpErrorResponse): void {
-    const message = err.error?.detail ?? err.message ?? this.translateService.instant('error.general');
-    this.alertService.addAlert({ type: 'danger', message });
-  }
-
-  protected onSaveFinalize(): void {
-    this.isSaving.set(false);
-  }
-
-  protected updateForm(epic: IEpic): void {
-    this.epic = epic;
-    this.epicFormService.resetForm(this.editForm, epic);
-
-    this.projectsSharedCollection.update(projects => this.projectService.addProjectToCollectionIfMissing<IProject>(projects, epic.project));
   }
 
   protected loadRelationshipsOptions(): void {

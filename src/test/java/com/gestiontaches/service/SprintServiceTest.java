@@ -199,6 +199,7 @@ class SprintServiceTest {
         assertThat(doneTask.getSprint()).isNotNull();
 
         verify(taskHistoryRepository, times(2)).save(any());
+        verify(notificationService, times(2)).notifyAdminsOfTaskHistory(any());
     }
 
     @Test
@@ -232,6 +233,8 @@ class SprintServiceTest {
         assertThat(report.getTachesTerminees()).isEqualTo(1);
         assertThat(report.getPourcentage()).isEqualTo(100);
         assertThat(report.getTachesReportees()).isEqualTo(0);
+
+        verify(notificationService, never()).notifyAdminsOfTaskHistory(any());
     }
 
     @Test
@@ -256,6 +259,8 @@ class SprintServiceTest {
         assertThat(report.getTachesTerminees()).isEqualTo(0);
         assertThat(report.getPourcentage()).isEqualTo(0);
         assertThat(report.getTachesReportees()).isEqualTo(1);
+
+        verify(notificationService, times(1)).notifyAdminsOfTaskHistory(any());
     }
 
     @Test

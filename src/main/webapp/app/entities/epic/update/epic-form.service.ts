@@ -31,7 +31,10 @@ type EpicFormRawValue = FormValueOf<IEpic>;
 
 type NewEpicFormRawValue = FormValueOf<NewEpic>;
 
-type EpicFormDefaults = Pick<NewEpic, 'id' | 'createdAt' | 'updatedAt'>;
+type EpicFormDefaults = Pick<NewEpic, 'id' | 'createdAt' | 'updatedAt'> & {
+  status: NewEpic['status'];
+  priority: NewEpic['priority'];
+};
 
 type EpicFormGroupContent = {
   id: FormControl<EpicFormRawValue['id'] | NewEpic['id']>;
@@ -117,6 +120,8 @@ export class EpicFormService {
       id: null,
       createdAt: currentTime,
       updatedAt: currentTime,
+      status: 'TODO',
+      priority: 'MEDIUM',
     };
   }
 

@@ -121,7 +121,7 @@ interface KanbanColumn {
         height: 22px;
         border-radius: 50%;
         background: var(--color-primary-container, #25a7fd);
-        color: #000;
+        color: var(--color-on-primary-container);
         font-size: 0.65rem;
         font-weight: 600;
         display: flex;

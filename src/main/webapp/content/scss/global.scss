@@ -195,12 +195,12 @@ select.form-control {
 .btn-primary {
   background-color: var(--color-primary-container);
   border-color: var(--color-primary-container);
-  color: #ffffff;
+  color: var(--color-on-primary-container);
 
   &:hover {
     background-color: var(--color-primary);
     border-color: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-on-primary-container);
   }
 
   &:active {
@@ -224,36 +224,36 @@ select.form-control {
 .btn-danger {
   background-color: var(--color-danger);
   border-color: var(--color-danger);
-  color: #ffffff;
+  color: var(--color-on-error);
 
   &:hover {
     background-color: color-mix(in srgb, var(--color-danger) 85%, black);
     border-color: color-mix(in srgb, var(--color-danger) 85%, black);
-    color: #ffffff;
+    color: var(--color-on-error);
   }
 }
 
 .btn-success {
   background-color: var(--color-success);
   border-color: var(--color-success);
-  color: #ffffff;
+  color: var(--color-on-primary-container);
 
   &:hover {
     background-color: color-mix(in srgb, var(--color-success) 85%, black);
     border-color: color-mix(in srgb, var(--color-success) 85%, black);
-    color: #ffffff;
+    color: var(--color-on-primary-container);
   }
 }
 
 .btn-warning {
   background-color: var(--color-warning);
   border-color: var(--color-warning);
-  color: #ffffff;
+  color: var(--color-on-primary-container);
 
   &:hover {
     background-color: color-mix(in srgb, var(--color-warning) 85%, black);
     border-color: color-mix(in srgb, var(--color-warning) 85%, black);
-    color: #ffffff;
+    color: var(--color-on-primary-container);
   }
 }
 
@@ -621,7 +621,7 @@ ngb-pagination {
     .page-item.active .page-link {
       background-color: var(--color-primary-container);
       border-color: var(--color-primary-container);
-      color: #ffffff;
+      color: var(--color-on-primary-container);
     }
 
     .page-item.disabled .page-link {
@@ -646,6 +646,42 @@ ngb-pagination {
   }
 }
 
+/* ─── Modal (theme-aware overrides) ─── */
+.modal-content {
+  background-color: var(--color-surface);
+  border-color: var(--color-outline-variant);
+  color: var(--color-on-surface);
+}
+
+.modal-header {
+  background-color: var(--color-surface);
+  border-bottom-color: var(--color-outline-variant);
+}
+
+.modal-body {
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+}
+
+.modal-footer {
+  background-color: var(--color-surface);
+  border-top-color: var(--color-outline-variant);
+}
+
+.modal-backdrop.show {
+  background-color: var(--color-bg);
+  opacity: 0.5;
+}
+
+.btn-close {
+  filter: none;
+  opacity: 0.6;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
 /* ─── ngb-alert ─── */
 ngb-alert {
   .alert {
@@ -667,6 +703,12 @@ ngb-alert {
   border: none;
   border-radius: 9999px;
   padding: 0.2em 0.625em;
+
+  &.border-primary {
+    border: 1px solid var(--color-primary) !important;
+    background-color: transparent;
+    color: var(--color-primary) !important;
+  }
 }
 
 /* ─── Progress Bar ─── */

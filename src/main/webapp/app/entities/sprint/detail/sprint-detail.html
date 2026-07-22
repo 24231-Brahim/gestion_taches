@@ -100,8 +100,6 @@
           [totalTasks]="tasks().length"
           [doneTasks]="tasks().filter(i => i.status === 'DONE').length"
           [daysLeft]="sp.endDate ? daysLeft() : 0"
-          [totalStoryPoints]="totalStoryPoints()"
-          [doneStoryPoints]="doneStoryPoints()"
         />
       }
     }

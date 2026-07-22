@@ -59,12 +59,6 @@
         <span class="stat-label">{{ 'gestionTachesApp.epic.detail.todoTasks' | translate }}</span>
         <span class="stat-value todo">{{ epicStats().todoTasks }}</span>
       </div>
-      @if (epicStats().totalStoryPoints > 0) {
-        <div class="stat-card">
-          <span class="stat-label">{{ 'gestionTachesApp.epic.detail.storyPoints' | translate }}</span>
-          <span class="stat-value points">{{ epicStats().doneStoryPoints }} / {{ epicStats().totalStoryPoints }}</span>
-        </div>
-      }
     </div>
 
     @if (uniqueSprints().length > 0) {
@@ -119,7 +113,6 @@
                 <th>{{ 'gestionTachesApp.epic.detail.taskTable.status' | translate }}</th>
                 <th>{{ 'gestionTachesApp.epic.detail.taskTable.priority' | translate }}</th>
                 <th>{{ 'gestionTachesApp.epic.detail.taskTable.assignee' | translate }}</th>
-                <th>{{ 'gestionTachesApp.epic.detail.taskTable.storyPoints' | translate }}</th>
                 <th>{{ 'gestionTachesApp.epic.detail.taskTable.sprint' | translate }}</th>
               </tr>
             </thead>
@@ -151,11 +144,6 @@
                     }
                   </td>
                   <td>
-                    @if (task.storyPoints) {
-                      <span class="sp-badge">{{ task.storyPoints }}</span>
-                    }
-                  </td>
-                  <td>
                     @if (task.sprint) {
                       <a
                         [routerLink]="['/project', currentProjectKey(), 'sprint', task.sprint.id, 'view']"
@@ -175,12 +163,7 @@
         <jhi-task-kanban-board [tasks]="tasks()" />
       }
       @case ('burndown') {
-        <jhi-epic-burndown-chart
-          [totalTasks]="epicStats().totalTasks"
-          [doneTasks]="epicStats().doneTasks"
-          [totalStoryPoints]="epicStats().totalStoryPoints"
-          [doneStoryPoints]="epicStats().doneStoryPoints"
-        />
+        <jhi-epic-burndown-chart [totalTasks]="epicStats().totalTasks" [doneTasks]="epicStats().doneTasks" />
       }
       @case ('timeline') {
         <div class="timeline-container">
@@ -204,9 +187,6 @@
                 <span class="status-badge" [style.border-color]="getStatusColor(task.status)" style="font-size: 0.65rem">{{
                   'gestionTachesApp.TaskStatus.' + (task.status ?? 'NEW') | translate
                 }}</span>
-                @if (task.storyPoints) {
-                  <span class="sp-badge">{{ task.storyPoints }}</span>
-                }
                 <span class="assignee-initials">{{ getInitials(task.assignee?.login) }}</span>
               </div>
             }

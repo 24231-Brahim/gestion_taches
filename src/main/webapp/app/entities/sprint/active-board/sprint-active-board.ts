@@ -164,7 +164,7 @@ interface KanbanColumn {
       }
       .kanban-card-sp {
         background: var(--color-primary-container, #25a7fd);
-        color: #000;
+        color: var(--color-on-primary-container);
         font-size: 0.65rem;
         font-weight: 600;
         padding: 1px 6px;
@@ -188,7 +188,7 @@ interface KanbanColumn {
         width: 22px;
         height: 22px;
         background: var(--color-primary-container, #25a7fd);
-        color: #000;
+        color: var(--color-on-primary-container);
         font-size: 0.65rem;
         font-weight: 600;
         display: flex;

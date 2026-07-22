@@ -2,17 +2,17 @@ import { HttpHeaders } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Data, ParamMap, Router } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subscription, combineLatest, switchMap, tap } from 'rxjs';
+import { Subscription, combineLatest, from, of, switchMap, tap } from 'rxjs';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { CsvDownloadService } from 'app/shared/csv/csv-download.service';
-import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
+import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, ITEM_SAVED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { AccountService } from 'app/core/auth/account.service';
 import { Alert } from 'app/shared/alert/alert';
@@ -28,6 +28,7 @@ import { IProject } from 'app/entities/project/project.model';
 import { ProjectService } from 'app/entities/project/service/project.service';
 import { TaskDeleteDialog } from '../delete/task-delete-dialog';
 import { TaskDetailPanel } from '../detail/task-detail-panel';
+import { TaskFormModal } from '../update/task-form-modal';
 import { TaskKanbanBoard } from '../kanban/task-kanban-board';
 import { ISSUE_TYPE_COLORS, ISSUE_TYPE_ICONS, PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES, ViewMode } from '../task-helper';
 import { ITask } from '../task.model';
@@ -88,14 +89,14 @@ import { TaskService } from '../service/task.service';
       }
       .view-mode-tabs .btn-active {
         background: var(--color-primary, #97cbff);
-        color: #000;
+        color: var(--color-on-primary-container);
       }
       .status-badge {
         display: inline-block;
         padding: 2px 10px;
         border-radius: 9999px;
         font-size: 0.75rem;
-        color: #fff;
+        color: var(--color-on-primary-container);
         font-weight: 600;
         font-family: var(--font-inter);
       }
@@ -118,7 +119,7 @@ import { TaskService } from '../service/task.service';
         height: 24px;
         border-radius: 50%;
         background: var(--color-primary-container, #25a7fd);
-        color: #000;
+        color: var(--color-on-primary-container);
         font-size: 0.65rem;
         font-weight: 600;
         display: inline-flex;
@@ -129,7 +130,6 @@ import { TaskService } from '../service/task.service';
     `,
   ],
   imports: [
-    RouterLink,
     FormsModule,
     FontAwesomeModule,
     AlertError,
@@ -242,12 +242,13 @@ export class Task implements OnInit {
     parentParamMap
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        tap(params => {
+        switchMap(params => {
           const key = params.get('key');
           if (key) {
             this.currentProjectKey.set(key);
-            this.projectService.findByKey(key).subscribe(project => this.currentProject.set(project));
+            return from(this.projectService.findByKey(key).pipe(tap(project => this.currentProject.set(project))));
           }
+          return of([]);
         }),
         switchMap(() => combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])),
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
@@ -276,6 +277,37 @@ export class Task implements OnInit {
       .pipe(
         tap(reason => {
           if (reason === ITEM_DELETED_EVENT) {
+            this.taskService.refresh();
+            this.load();
+          }
+        }),
+      )
+      .subscribe();
+  }
+
+  openCreateTaskModal(): void {
+    const modalRef = this.modalService.open(TaskFormModal, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.projectKey = this.currentProjectKey() ?? undefined;
+    modalRef.closed
+      .pipe(
+        tap(reason => {
+          if (reason === ITEM_SAVED_EVENT) {
+            this.taskService.refresh();
+            this.load();
+          }
+        }),
+      )
+      .subscribe();
+  }
+
+  openEditTaskModal(task: ITask): void {
+    const modalRef = this.modalService.open(TaskFormModal, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.task = task;
+    modalRef.componentInstance.projectKey = this.currentProjectKey() ?? undefined;
+    modalRef.closed
+      .pipe(
+        tap(reason => {
+          if (reason === ITEM_SAVED_EVENT) {
             this.taskService.refresh();
             this.load();
           }

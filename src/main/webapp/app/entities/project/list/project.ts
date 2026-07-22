@@ -4,13 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription, combineLatest, tap } from 'rxjs';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { CsvDownloadService } from 'app/shared/csv/csv-download.service';
-import { DEFAULT_SORT_DATA, SORT } from 'app/config/navigation.constants';
+import { DEFAULT_SORT_DATA, ITEM_SAVED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
@@ -19,6 +20,7 @@ import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
 import { IProject } from '../project.model';
+import { ProjectFormModal } from '../update/project-form-modal';
 import { ProjectService } from '../service/project.service';
 
 @Component({
@@ -58,6 +60,7 @@ export class Project implements OnInit {
   readonly activatedRoute = inject(ActivatedRoute);
   readonly sortService = inject(SortService);
   private readonly accountService = inject(AccountService);
+  protected modalService = inject(NgbModal);
 
   readonly isAdmin = computed(() => {
     const account = this.accountService.account();
@@ -98,6 +101,20 @@ export class Project implements OnInit {
   load(): void {
     this.queryBackend();
     this.projectService.refresh();
+  }
+
+  openCreateProjectModal(): void {
+    const modalRef = this.modalService.open(ProjectFormModal, { size: 'lg', backdrop: 'static' });
+    modalRef.closed
+      .pipe(
+        tap(reason => {
+          if (reason === ITEM_SAVED_EVENT) {
+            this.projectService.refresh();
+            this.load();
+          }
+        }),
+      )
+      .subscribe();
   }
 
   navigateToWithComponentValues(event: SortState): void {

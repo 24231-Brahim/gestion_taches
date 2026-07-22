@@ -8,9 +8,9 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subscription, combineLatest, filter, switchMap, tap } from 'rxjs';
+import { Subscription, combineLatest, filter, from, of, switchMap, tap } from 'rxjs';
 
-import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
+import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, ITEM_SAVED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { IProject } from 'app/entities/project/project.model';
 import { ProjectService } from 'app/entities/project/service/project.service';
@@ -21,6 +21,7 @@ import { Filter, FilterOptions, IFilterOption, IFilterOptions } from 'app/shared
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
+import { EpicFormModal } from '../update/epic-form-modal';
 import { EpicDeleteDialog } from '../delete/epic-delete-dialog';
 import { IEpic } from '../epic.model';
 import { EpicService } from '../service/epic.service';
@@ -116,12 +117,13 @@ export class Epic implements OnInit {
     parentParamMap
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        tap(params => {
+        switchMap(params => {
           const key = params.get('key');
           if (key) {
             this.currentProjectKey.set(key);
-            this.projectService.findByKey(key).subscribe(project => this.currentProject.set(project));
+            return from(this.projectService.findByKey(key).pipe(tap(project => this.currentProject.set(project))));
           }
+          return of([]);
         }),
         switchMap(() => combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])),
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
@@ -137,6 +139,35 @@ export class Epic implements OnInit {
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
+        tap(() => {
+          this.epicService.refresh();
+          this.load();
+        }),
+      )
+      .subscribe();
+  }
+
+  openCreateEpicModal(): void {
+    const modalRef = this.modalService.open(EpicFormModal, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.projectKey = this.currentProjectKey() ?? undefined;
+    modalRef.closed
+      .pipe(
+        filter(reason => reason === ITEM_SAVED_EVENT),
+        tap(() => {
+          this.epicService.refresh();
+          this.load();
+        }),
+      )
+      .subscribe();
+  }
+
+  openEditEpicModal(epic: IEpic): void {
+    const modalRef = this.modalService.open(EpicFormModal, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.epic = epic;
+    modalRef.componentInstance.projectKey = this.currentProjectKey() ?? undefined;
+    modalRef.closed
+      .pipe(
+        filter(reason => reason === ITEM_SAVED_EVENT),
         tap(() => {
           this.epicService.refresh();
           this.load();

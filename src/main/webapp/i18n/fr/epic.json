@@ -35,7 +35,6 @@
         "doneTasks": "Terminées",
         "inProgressTasks": "En cours",
         "todoTasks": "À faire",
-        "storyPoints": "Story Points",
         "sprints": "Sprints",
         "team": "Équipe",
         "noTasks": "Aucune tâche pour cet epic",
@@ -44,7 +43,6 @@
           "status": "Statut",
           "priority": "Priorité",
           "assignee": "Assigné",
-          "storyPoints": "SP",
           "sprint": "Sprint"
         }
       },
@@ -58,7 +56,6 @@
         "total": "Total Tâches",
         "done": "Fait",
         "remaining": "Restant",
-        "storyPoints": "Story Points",
         "time": "Temps",
         "tasks": "Tâches"
       },

@@ -18,12 +18,7 @@
       <button class="btn btn-success btn-sm" (click)="exportCsv()">
         <fa-icon icon="download" /><span class="d-none d-md-inline ms-1" jhiTranslate="entity.action.exportCsv">CSV</span>
       </button>
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary btn-sm"
-        [routerLink]="['/project', currentProjectKey(), 'task', 'new']"
-      >
+      <button id="jh-create-entity" data-cy="entityCreateButton" class="btn btn-primary btn-sm" (click)="openCreateTaskModal()">
         <fa-icon icon="plus" /><span jhiTranslate="gestionTachesApp.task.home.createLabel"></span>
       </button>
     </div>
@@ -93,7 +88,7 @@
                 <td class="task-title-cell">{{ task.title }}</td>
                 <td>
                   <span class="status-badge" [style.background]="statusBadges[task.status ?? 'NEW']?.color">
-                    {{ 'gestionTachesApp.IssueStatus.' + (task.status ?? 'null') | translate }}
+                    {{ 'gestionTachesApp.TaskStatus.' + (task.status ?? 'null') | translate }}
                   </span>
                 </td>
                 <td>
@@ -122,13 +117,9 @@
                 <td class="text-end">
                   <div class="btn-group btn-group-sm" (click)="$event.stopPropagation()">
                     @if (canEditTask(task)) {
-                      <a
-                        [routerLink]="['/project', currentProjectKey(), 'task', task.id, 'edit']"
-                        class="btn btn-primary btn-sm"
-                        data-cy="entityEditButton"
-                      >
+                      <button type="button" (click)="openEditTaskModal(task)" class="btn btn-primary btn-sm" data-cy="entityEditButton">
                         <fa-icon icon="pencil-alt" />
-                      </a>
+                      </button>
                     }
                     @if (canDeleteTask(task)) {
                       <button type="submit" (click)="delete(task)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">

@@ -8,13 +8,6 @@
       <div>
         <jhi-alert-error />
 
-        @if (editForm.controls.id.value !== null) {
-          <div class="mb-3">
-            <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
-            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
-          </div>
-        }
-
         @let titleRef = editForm.get('title')!;
         <div class="mb-3">
           <label class="form-label" for="field_title" jhiTranslate="gestionTachesApp.task.title">Title</label>
@@ -41,14 +34,14 @@
         @let descriptionRef = editForm.get('description')!;
         <div class="mb-3">
           <label class="form-label" for="field_description" jhiTranslate="gestionTachesApp.task.description">Description</label>
-          <input
-            type="text"
+          <textarea
             class="form-control"
             name="description"
             id="field_description"
             data-cy="description"
             formControlName="description"
-          />
+            rows="4"
+          ></textarea>
           @if (descriptionRef.invalid && (descriptionRef.dirty || descriptionRef.touched)) {
             <div>
               @if (editForm.get('description')?.errors?.maxlength) {
@@ -60,31 +53,13 @@
           }
         </div>
 
-        @let typeRef = editForm.get('type')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_type" jhiTranslate="gestionTachesApp.task.type">Type</label>
-          <select class="form-control" name="type" formControlName="type" id="field_type" data-cy="type">
-            <option [ngValue]="null">{{ 'gestionTachesApp.IssueType.null' | translate }}</option>
-            @for (taskType of taskTypeValues; track $index) {
-              <option [value]="taskType">{{ 'gestionTachesApp.IssueType.' + taskType | translate }}</option>
-            }
-          </select>
-          @if (typeRef.invalid && (typeRef.dirty || typeRef.touched)) {
-            <div>
-              @if (editForm.get('type')?.errors?.required) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.required">Ce champ est obligatoire.</small>
-              }
-            </div>
-          }
-        </div>
-
         @let statusRef = editForm.get('status')!;
         <div class="mb-3">
           <label class="form-label" for="field_status" jhiTranslate="gestionTachesApp.task.status">Status</label>
           <select class="form-control" name="status" formControlName="status" id="field_status" data-cy="status">
-            <option [ngValue]="null">{{ 'gestionTachesApp.IssueStatus.null' | translate }}</option>
+            <option [ngValue]="null">{{ 'gestionTachesApp.TaskStatus.null' | translate }}</option>
             @for (taskStatus of taskStatusValues; track $index) {
-              <option [value]="taskStatus">{{ 'gestionTachesApp.IssueStatus.' + taskStatus | translate }}</option>
+              <option [value]="taskStatus">{{ 'gestionTachesApp.TaskStatus.' + taskStatus | translate }}</option>
             }
           </select>
           @if (statusRef.invalid && (statusRef.dirty || statusRef.touched)) {
@@ -114,72 +89,8 @@
           }
         </div>
 
-        @let storyPointsRef = editForm.get('storyPoints')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_storyPoints" jhiTranslate="gestionTachesApp.task.storyPoints">Story Points</label>
-          <input
-            type="number"
-            class="form-control"
-            name="storyPoints"
-            id="field_storyPoints"
-            data-cy="storyPoints"
-            formControlName="storyPoints"
-            min="0"
-          />
-          @if (storyPointsRef.invalid && (storyPointsRef.dirty || storyPointsRef.touched)) {
-            <div>
-              @if (editForm.get('storyPoints')?.errors?.min) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.min" [translateValues]="{ min: '0' }"
-                  >La valeur minimale est 0.</small
-                >
-              }
-            </div>
-          }
-        </div>
-
-        @let createdAtRef = editForm.get('createdAt')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_createdAt" jhiTranslate="gestionTachesApp.task.createdAt">Created At</label>
-          <div class="d-flex">
-            <input
-              id="field_createdAt"
-              data-cy="createdAt"
-              type="datetime-local"
-              class="form-control"
-              name="createdAt"
-              formControlName="createdAt"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-          @if (createdAtRef.invalid && (createdAtRef.dirty || createdAtRef.touched)) {
-            <div>
-              @if (editForm.get('createdAt')?.errors?.required) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.required">Ce champ est obligatoire.</small>
-              }
-              <small
-                class="form-text text-danger"
-                [hidden]="!editForm.get('createdAt')?.errors?.datetimelocal"
-                jhiTranslate="entity.validation.datetimelocal"
-                >Ce champ doit être une date et une heure.</small
-              >
-            </div>
-          }
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_updatedAt" jhiTranslate="gestionTachesApp.task.updatedAt">Updated At</label>
-          <div class="d-flex">
-            <input
-              id="field_updatedAt"
-              data-cy="updatedAt"
-              type="datetime-local"
-              class="form-control"
-              name="updatedAt"
-              formControlName="updatedAt"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-        </div>
+        <input type="hidden" name="createdAt" formControlName="createdAt" />
+        <input type="hidden" name="updatedAt" formControlName="updatedAt" />
 
         <div class="mb-3">
           <label class="form-label" for="field_sprint" jhiTranslate="gestionTachesApp.task.sprint">Sprint</label>

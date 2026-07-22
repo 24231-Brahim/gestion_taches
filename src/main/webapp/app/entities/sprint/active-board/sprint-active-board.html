@@ -78,7 +78,7 @@
         (drop)="onDrop($event, col.status)"
       >
         <div class="kanban-column-header" [style.border-top-color]="getColumnColor(col.status)">
-          <span class="kanban-column-title">{{ 'gestionTachesApp.IssueStatus.' + col.status | translate }}</span>
+          <span class="kanban-column-title">{{ 'gestionTachesApp.TaskStatus.' + col.status | translate }}</span>
           <span class="kanban-column-count">{{ col.tasks.length }}</span>
         </div>
         <div class="kanban-column-body">
@@ -93,9 +93,6 @@
               <div class="kanban-card-top">
                 <fa-icon [icon]="getTypeIcon(task.type)" [style.color]="getTypeColor(task.type)" size="sm" />
                 <span class="kanban-card-id">#{{ task.id }}</span>
-                @if (task.storyPoints != null) {
-                  <span class="kanban-card-sp">{{ task.storyPoints }}</span>
-                }
               </div>
               <div class="kanban-card-title">{{ task.title }}</div>
               <div class="kanban-card-footer">

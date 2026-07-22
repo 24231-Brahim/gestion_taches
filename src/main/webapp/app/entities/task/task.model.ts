@@ -14,7 +14,6 @@ export interface ITask {
   type?: keyof typeof TaskType | null;
   status?: keyof typeof TaskStatus | null;
   priority?: keyof typeof Priority | null;
-  storyPoints?: number | null;
   createdAt?: dayjs.Dayjs | null;
   updatedAt?: dayjs.Dayjs | null;
   sprint?: Pick<ISprint, 'id' | 'name'> | null;

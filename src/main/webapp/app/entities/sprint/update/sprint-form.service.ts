@@ -14,7 +14,7 @@ type PartialWithRequiredKeyOf<T extends { id: unknown }> = Partial<Omit<T, 'id'>
  */
 type SprintFormGroupInput = ISprint | PartialWithRequiredKeyOf<NewSprint>;
 
-type SprintFormDefaults = Pick<NewSprint, 'id'>;
+type SprintFormDefaults = Pick<NewSprint, 'id' | 'status'>;
 
 type SprintFormGroupContent = {
   id: FormControl<ISprint['id'] | NewSprint['id']>;
@@ -75,6 +75,7 @@ export class SprintFormService {
   private getFormDefaults(): SprintFormDefaults {
     return {
       id: null,
+      status: 'PLANNED',
     };
   }
 }

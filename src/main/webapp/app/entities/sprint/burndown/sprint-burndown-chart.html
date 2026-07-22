@@ -16,12 +16,6 @@
       <span class="stat-label">{{ 'gestionTachesApp.sprint.burndown.velocity' | translate }}</span>
       <span class="stat-value velocity">{{ doneTasks() }}</span>
     </div>
-    @if (totalStoryPoints() > 0) {
-      <div class="stat-card">
-        <span class="stat-label">{{ 'gestionTachesApp.sprint.burndown.storyPointsVelocity' | translate }}</span>
-        <span class="stat-value velocity">{{ doneStoryPoints() }} / {{ totalStoryPoints() }}</span>
-      </div>
-    }
   </div>
 
   <div class="burndown-chart">

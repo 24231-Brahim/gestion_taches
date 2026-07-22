@@ -29,7 +29,7 @@ import { IUser } from 'app/entities/user/user.model';
       .task-drawer-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: color-mix(in srgb, var(--color-bg) 50%, transparent);
         z-index: 1040;
       }
       .task-drawer {
@@ -131,7 +131,7 @@ import { IUser } from 'app/entities/user/user.model';
         height: 28px;
         border-radius: 50%;
         background: var(--color-primary-container, #25a7fd);
-        color: #000;
+        color: var(--color-on-primary-container);
         font-size: 0.75rem;
         font-weight: 600;
         display: flex;

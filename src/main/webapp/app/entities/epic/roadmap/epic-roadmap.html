@@ -27,7 +27,7 @@
   <jhi-alert />
 
   <div class="roadmap-toolbar">
-    <div class="d-flex gap-2 flex-wrap">
+    <div class="roadmap-filters">
       <select class="form-control form-control-sm" [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)">
         <option value="">{{ 'gestionTachesApp.epic.filter.allStatuses' | translate }}</option>
         <option value="TODO">{{ 'gestionTachesApp.EpicStatus.TODO' | translate }}</option>
@@ -43,12 +43,7 @@
         <option value="HIGH">{{ 'gestionTachesApp.Priority.HIGH' | translate }}</option>
         <option value="HIGHEST">{{ 'gestionTachesApp.Priority.HIGHEST' | translate }}</option>
       </select>
-      <select class="form-control form-control-sm" [ngModel]="filterProject()" (ngModelChange)="filterProject.set($event)">
-        <option value="">{{ 'gestionTachesApp.epic.filter.allProjects' | translate }}</option>
-        @for (p of uniqueProjects(); track p) {
-          <option [value]="p">{{ p }}</option>
-        }
-      </select>
+
       <select class="form-control form-control-sm" [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event)">
         <option value="">{{ 'gestionTachesApp.epic.filter.defaultSort' | translate }}</option>
         <option value="priority:asc">{{ 'gestionTachesApp.epic.filter.sortPriorityAsc' | translate }}</option>

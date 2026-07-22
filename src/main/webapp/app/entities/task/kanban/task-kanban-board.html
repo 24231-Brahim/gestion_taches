@@ -8,7 +8,7 @@
       (drop)="onDrop($event, col.status)"
     >
       <div class="kanban-column-header" [style.border-top-color]="statusBadges[col.status]?.color">
-        <span class="kanban-column-title">{{ 'gestionTachesApp.IssueStatus.' + col.status | translate }}</span>
+        <span class="kanban-column-title">{{ 'gestionTachesApp.TaskStatus.' + col.status | translate }}</span>
         <span class="kanban-column-count">{{ col.tasks.length }}</span>
       </div>
       <div class="kanban-column-body">

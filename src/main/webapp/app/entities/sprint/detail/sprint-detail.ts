@@ -111,7 +111,7 @@ type Tab = 'board' | 'planning' | 'burndown';
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.7);
+        background: color-mix(in srgb, var(--color-bg) 70%, transparent);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -274,13 +274,9 @@ export class SprintDetail {
     return Math.round((this.doneTasksCount() / total) * 100);
   });
 
-  readonly totalStoryPoints = computed(() => this.tasks().reduce((sum, t) => sum + (t.storyPoints ?? 0), 0));
+  readonly totalStoryPoints = computed(() => 0);
 
-  readonly doneStoryPoints = computed(() =>
-    this.tasks()
-      .filter(t => t.status === 'DONE')
-      .reduce((sum, t) => sum + (t.storyPoints ?? 0), 0),
-  );
+  readonly doneStoryPoints = computed(() => 0);
 
   readonly daysLeft = computed(() => {
     const sp = this._currentSprint();

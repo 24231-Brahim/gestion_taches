@@ -180,6 +180,7 @@ public class SprintService {
                 history.setNewValue("Backlog");
                 history.setCreatedAt(now);
                 taskHistoryRepository.save(history);
+                notificationService.notifyAdminsOfTaskHistory(history);
             }
         }
 

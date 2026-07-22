@@ -12,12 +12,6 @@
       <span class="stat-label">{{ 'gestionTachesApp.epic.burndown.remaining' | translate }}</span>
       <span class="stat-value remaining">{{ totalTasks() - doneTasks() }}</span>
     </div>
-    @if (totalStoryPoints() > 0) {
-      <div class="stat-card">
-        <span class="stat-label">{{ 'gestionTachesApp.epic.burndown.storyPoints' | translate }}</span>
-        <span class="stat-value velocity">{{ doneStoryPoints() }} / {{ totalStoryPoints() }}</span>
-      </div>
-    }
   </div>
 
   <div class="burndown-chart">

@@ -66,7 +66,6 @@ classDiagram
         +String description
         +TaskStatus status
         +Priority priority
-        +Integer storyPoints
         +Instant createdAt
         +Instant updatedAt
     }
@@ -243,7 +242,6 @@ erDiagram
         String description
         String status
         String priority
-        Integer storyPoints
         Instant createdAt
         Instant updatedAt
         Long project_id FK

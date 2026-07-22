@@ -29,7 +29,10 @@ type TaskFormRawValue = FormValueOf<ITask>;
 
 type NewTaskFormRawValue = FormValueOf<NewTask>;
 
-type TaskFormDefaults = Pick<NewTask, 'id' | 'createdAt' | 'updatedAt'>;
+type TaskFormDefaults = Pick<NewTask, 'id' | 'createdAt' | 'updatedAt'> & {
+  status: NewTask['status'];
+  priority: NewTask['priority'];
+};
 
 type TaskFormGroupContent = {
   id: FormControl<TaskFormRawValue['id'] | NewTask['id']>;
@@ -38,7 +41,6 @@ type TaskFormGroupContent = {
   type: FormControl<TaskFormRawValue['type']>;
   status: FormControl<TaskFormRawValue['status']>;
   priority: FormControl<TaskFormRawValue['priority']>;
-  storyPoints: FormControl<TaskFormRawValue['storyPoints']>;
   createdAt: FormControl<TaskFormRawValue['createdAt']>;
   updatedAt: FormControl<TaskFormRawValue['updatedAt']>;
   sprint: FormControl<TaskFormRawValue['sprint']>;
@@ -70,17 +72,12 @@ export class TaskFormService {
       description: new FormControl(taskRawValue.description, {
         validators: [Validators.maxLength(5000)],
       }),
-      type: new FormControl(taskRawValue.type, {
-        validators: [Validators.required],
-      }),
+      type: new FormControl(taskRawValue.type),
       status: new FormControl(taskRawValue.status, {
         validators: [Validators.required],
       }),
       priority: new FormControl(taskRawValue.priority, {
         validators: [Validators.required],
-      }),
-      storyPoints: new FormControl(taskRawValue.storyPoints, {
-        validators: [Validators.min(0)],
       }),
       createdAt: new FormControl(taskRawValue.createdAt, {
         validators: [Validators.required],
@@ -114,6 +111,8 @@ export class TaskFormService {
       id: null,
       createdAt: currentTime,
       updatedAt: currentTime,
+      status: 'NEW',
+      priority: 'MEDIUM',
     };
   }
 

@@ -22,8 +22,6 @@ interface EpicStats {
   doneTasks: number;
   inProgressTasks: number;
   todoTasks: number;
-  totalStoryPoints: number;
-  doneStoryPoints: number;
   progress: number;
 }
 
@@ -217,7 +215,7 @@ interface EpicStats {
         height: 22px;
         border-radius: 50%;
         background: var(--color-primary-container, #25a7fd);
-        color: #000;
+        color: var(--color-on-primary-container);
         font-size: 0.65rem;
         font-weight: 600;
         display: inline-flex;
@@ -227,7 +225,7 @@ interface EpicStats {
       }
       .sp-badge {
         background: var(--color-primary-container, #25a7fd);
-        color: #000;
+        color: var(--color-on-primary-container);
         font-size: 0.65rem;
         font-weight: 600;
         padding: 1px 6px;
@@ -323,15 +321,11 @@ export class EpicDetail {
     const done = t.filter(i => i.status === 'DONE').length;
     const inProgress = t.filter(i => i.status === 'IN_PROGRESS').length;
     const todo = t.filter(i => i.status === 'TODO' || i.status === 'NEW').length;
-    const totalSp = t.reduce((s, i) => s + (i.storyPoints ?? 0), 0);
-    const doneSp = t.filter(i => i.status === 'DONE').reduce((s, i) => s + (i.storyPoints ?? 0), 0);
     return {
       totalTasks: total,
       doneTasks: done,
       inProgressTasks: inProgress,
       todoTasks: todo,
-      totalStoryPoints: totalSp,
-      doneStoryPoints: doneSp,
       progress: total > 0 ? Math.round((done / total) * 100) : 0,
     };
   });

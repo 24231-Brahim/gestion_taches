@@ -2,23 +2,23 @@
   "gestionTachesApp": {
     "task": {
       "home": {
-        "title": "Issues",
+        "title": "Tâches",
         "refreshListLabel": "Actualiser la liste",
-        "createLabel": "Créer un nouveau Issue",
-        "createOrEditLabel": "Créer ou éditer un Issue",
-        "notFound": "Aucun Issue trouvé",
+        "createLabel": "Créer une nouvelle Tâche",
+        "createOrEditLabel": "Créer ou éditer une Tâche",
+        "notFound": "Aucune Tâche trouvée",
         "backlog": "Backlog",
         "board": "Tableau",
-        "search": "Rechercher des issues..."
+        "search": "Rechercher des tâches..."
       },
-      "created": "Un nouveau Issue a été créé avec l'identifiant {{ param }}",
-      "updated": "Le Issue avec l'identifiant {{ param }} a été mis à jour",
-      "deleted": "Le Issue avec l'identifiant {{ param }} a été supprimé",
+      "created": "Une nouvelle Tâche a été créée avec l'identifiant {{ param }}",
+      "updated": "La Tâche avec l'identifiant {{ param }} a été mise à jour",
+      "deleted": "La Tâche avec l'identifiant {{ param }} a été supprimée",
       "delete": {
-        "question": "Êtes-vous certain de vouloir supprimer le Issue {{ id }} ?"
+        "question": "Êtes-vous certain de vouloir supprimer la Tâche {{ id }} ?"
       },
       "detail": {
-        "title": "Issue",
+        "title": "Tâche",
         "comments": "Commentaires",
         "noComments": "Aucun commentaire pour le moment.",
         "history": "Historique",
@@ -36,7 +36,6 @@
       "type": "Type",
       "status": "Status",
       "priority": "Priority",
-      "storyPoints": "Story Points",
       "createdAt": "Created At",
       "updatedAt": "Updated At",
       "comments": "Comments",

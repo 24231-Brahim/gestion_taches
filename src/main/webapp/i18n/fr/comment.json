@@ -21,7 +21,7 @@
       "content": "Contenu",
       "createdAt": "Créé le",
       "author": "Auteur",
-      "task": "Issue",
+      "task": "Tâche",
       "form": {
         "placeholder": "Écrire un commentaire...",
         "submit": "Ajouter"

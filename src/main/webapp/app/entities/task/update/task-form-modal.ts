@@ -2,39 +2,40 @@ import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
 import { TaskStatus } from 'app/entities/enumerations/task-status.model';
 import { Priority } from 'app/entities/enumerations/priority.model';
 import { IEpic } from 'app/entities/epic/epic.model';
-import { SprintService } from 'app/entities/sprint/service/sprint.service';
-import { ISprint } from 'app/entities/sprint/sprint.model';
-import { AlertService } from 'app/core/util/alert.service';
-import { AlertError } from 'app/shared/alert/alert-error';
-import { TranslateDirective } from 'app/shared/language';
-
-import { ITask } from '../task.model';
-import { TaskService } from '../service/task.service';
-
-import { TaskFormGroup, TaskFormService } from './task-form.service';
 import { EpicService } from 'app/entities/epic/service/epic.service';
 import { IProject, IProjectMember } from 'app/entities/project/project.model';
 import { ProjectService } from 'app/entities/project/service/project.service';
+import { ISprint } from 'app/entities/sprint/sprint.model';
+import { SprintService } from 'app/entities/sprint/service/sprint.service';
+import { AlertService } from 'app/core/util/alert.service';
+import { AlertError } from 'app/shared/alert/alert-error';
+import { TranslateDirective } from 'app/shared/language';
+import { ITEM_SAVED_EVENT } from 'app/config/navigation.constants';
+import { ITask } from '../task.model';
+import { TaskService } from '../service/task.service';
+import { TaskFormGroup, TaskFormService } from './task-form.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'jhi-task-update',
-  templateUrl: './task-update.html',
+  selector: 'jhi-task-form-modal',
+  templateUrl: './task-form-modal.html',
   imports: [TranslateDirective, TranslateModule, FontAwesomeModule, AlertError, ReactiveFormsModule],
 })
-export class TaskUpdate implements OnInit {
+export class TaskFormModal implements OnInit {
+  task?: ITask;
+  projectKey?: string;
+
   readonly isSaving = signal(false);
   readonly isProjectContext = signal(false);
-  task: ITask | null = null;
   taskStatusValues = Object.keys(TaskStatus);
   priorityValues = Object.keys(Priority);
 
@@ -43,12 +44,12 @@ export class TaskUpdate implements OnInit {
   projectsSharedCollection = signal<IProject[]>([]);
   projectMembers = signal<IProjectMember[]>([]);
 
+  protected activeModal = inject(NgbActiveModal);
   protected taskService = inject(TaskService);
   protected taskFormService = inject(TaskFormService);
   protected sprintService = inject(SprintService);
   protected epicService = inject(EpicService);
   protected projectService = inject(ProjectService);
-  protected activatedRoute = inject(ActivatedRoute);
   protected alertService = inject(AlertService);
   protected translateService = inject(TranslateService);
   protected destroyRef = inject(DestroyRef);
@@ -57,44 +58,35 @@ export class TaskUpdate implements OnInit {
   editForm: TaskFormGroup = this.taskFormService.createTaskFormGroup();
 
   compareSprint = (o1: ISprint | null, o2: ISprint | null): boolean => this.sprintService.compareSprint(o1, o2);
-
   compareEpic = (o1: IEpic | null, o2: IEpic | null): boolean => this.epicService.compareEpic(o1, o2);
-
   compareProject = (o1: IProject | null, o2: IProject | null): boolean => this.projectService.compareProject(o1, o2);
   compareProjectMember = (o1: { id: number; login: string } | null, o2: { id: number; login: string } | null): boolean =>
     o1 !== null && o2 !== null ? o1.id === o2.id : o1 === o2;
 
-  loadProjectMembers(projectId: number): void {
-    this.projectService.getMembers(projectId).subscribe({
-      next: members => this.projectMembers.set(members),
-    });
-  }
-
   ngOnInit(): void {
-    this.activatedRoute.data.subscribe(({ task }) => {
-      this.task = task;
-      if (task) {
-        this.updateForm(task);
-      }
+    if (this.task) {
+      this.taskFormService.resetForm(this.editForm, this.task);
+      this.sprintsSharedCollection.update(sprints =>
+        this.sprintService.addSprintToCollectionIfMissing<ISprint>(sprints, this.task!.sprint),
+      );
+      this.epicsSharedCollection.update(epics => this.epicService.addEpicToCollectionIfMissing<IEpic>(epics, this.task!.epic));
+      this.projectsSharedCollection.update(projects =>
+        this.projectService.addProjectToCollectionIfMissing<IProject>(projects, this.task!.project),
+      );
+    }
 
-      this.loadRelationshipsOptions();
-    });
+    this.loadRelationshipsOptions();
 
-    // Pre-select project from parent route :key param (e.g. when coming from project-detail)
-    this.activatedRoute.parent?.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
-      const projectKey = params.get('key');
-      if (projectKey && !this.task) {
-        this.projectService.findByKey(projectKey).subscribe(project => {
-          if (project) {
-            this.editForm.patchValue({ project });
-            this.loadProjectMembers(project.id!);
-            this.isProjectContext.set(true);
-          }
-        });
-      }
-    });
+    if (this.projectKey && !this.task) {
+      this.projectService.findByKey(this.projectKey).subscribe(project => {
+        if (project) {
+          this.editForm.patchValue({ project });
+          this.loadProjectMembers(project.id!);
+          this.isProjectContext.set(true);
+        }
+      });
+    }
 
-    // Watch for project changes to load members
     this.editForm
       .get('project')
       ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
@@ -107,8 +99,8 @@ export class TaskUpdate implements OnInit {
       });
   }
 
-  previousState(): void {
-    globalThis.history.back();
+  cancel(): void {
+    this.activeModal.dismiss();
   }
 
   save(): void {
@@ -122,33 +114,22 @@ export class TaskUpdate implements OnInit {
   }
 
   protected subscribeToSaveResponse(result: Observable<ITask | null>): void {
-    result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
-      next: () => this.onSaveSuccess(),
-      error: (err: HttpErrorResponse) => this.onSaveError(err),
+    result.pipe(finalize(() => this.isSaving.set(false))).subscribe({
+      next: () => {
+        this.taskService.refresh();
+        this.activeModal.close(ITEM_SAVED_EVENT);
+      },
+      error: (err: HttpErrorResponse) => {
+        const message = err.error?.detail ?? err.message ?? this.translateService.instant('error.general');
+        this.alertService.addAlert({ type: 'danger', message });
+      },
     });
   }
 
-  protected onSaveSuccess(): void {
-    this.taskService.refresh();
-    this.previousState();
-  }
-
-  protected onSaveError(err: HttpErrorResponse): void {
-    const message = err.error?.detail ?? err.message ?? this.translateService.instant('error.general');
-    this.alertService.addAlert({ type: 'danger', message });
-  }
-
-  protected onSaveFinalize(): void {
-    this.isSaving.set(false);
-  }
-
-  protected updateForm(task: ITask): void {
-    this.task = task;
-    this.taskFormService.resetForm(this.editForm, task);
-
-    this.sprintsSharedCollection.update(sprints => this.sprintService.addSprintToCollectionIfMissing<ISprint>(sprints, task.sprint));
-    this.epicsSharedCollection.update(epics => this.epicService.addEpicToCollectionIfMissing<IEpic>(epics, task.epic));
-    this.projectsSharedCollection.update(projects => this.projectService.addProjectToCollectionIfMissing<IProject>(projects, task.project));
+  protected loadProjectMembers(projectId: number): void {
+    this.projectService.getMembers(projectId).subscribe({
+      next: members => this.projectMembers.set(members),
+    });
   }
 
   protected loadRelationshipsOptions(): void {
@@ -170,7 +151,6 @@ export class TaskUpdate implements OnInit {
       .pipe(map((projects: IProject[]) => this.projectService.addProjectToCollectionIfMissing<IProject>(projects, this.task?.project)))
       .subscribe((projects: IProject[]) => {
         this.projectsSharedCollection.set(projects);
-        // Load project members if project is known
         const projectId = this.task?.project?.id ?? projects.find(p => this.editForm.get('project')?.value?.id === p.id)?.id;
         if (projectId) {
           this.loadProjectMembers(projectId);

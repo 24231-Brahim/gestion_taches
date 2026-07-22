@@ -4,11 +4,15 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import dayjs from 'dayjs/esm';
+import { filter, tap } from 'rxjs/operators';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
+
 import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
+import { ITEM_SAVED_EVENT } from 'app/config/navigation.constants';
 import { TaskService } from 'app/entities/task/service/task.service';
 import { ITask } from 'app/entities/task/task.model';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
@@ -21,6 +25,7 @@ import { SprintBacklogPlanning } from '../backlog-planning/sprint-backlog-planni
 import { SprintBurndownChart } from '../burndown/sprint-burndown-chart';
 import { SprintService, VelocityReport } from '../service/sprint.service';
 import { ISprint } from '../sprint.model';
+import { SprintFormModal } from '../update/sprint-form-modal';
 
 type Tab = 'board' | 'planning' | 'burndown';
 
@@ -131,7 +136,7 @@ type Tab = 'board' | 'planning' | 'burndown';
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(0, 0, 0, 0.7);
+        background: color-mix(in srgb, var(--color-bg) 70%, transparent);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -318,13 +323,9 @@ export class Sprint implements OnInit {
     return Math.round((this.doneTasksCount() / total) * 100);
   });
 
-  readonly totalStoryPoints = computed(() => this.tasks().reduce((sum, t) => sum + (t.storyPoints ?? 0), 0));
+  readonly totalStoryPoints = computed(() => 0);
 
-  readonly doneStoryPoints = computed(() =>
-    this.tasks()
-      .filter(t => t.status === 'DONE')
-      .reduce((sum, t) => sum + (t.storyPoints ?? 0), 0),
-  );
+  readonly doneStoryPoints = computed(() => 0);
 
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly projectService = inject(ProjectService);
@@ -333,6 +334,7 @@ export class Sprint implements OnInit {
   protected readonly alertService = inject(AlertService);
   protected readonly translateService = inject(TranslateService);
   protected readonly accountService = inject(AccountService);
+  protected modalService = inject(NgbModal);
 
   private sprintsEffect = effect(() => {
     const raw = this.sprintService.sprints();
@@ -517,5 +519,32 @@ export class Sprint implements OnInit {
 
   setTab(tab: Tab): void {
     this.activeTab.set(tab);
+  }
+
+  openCreateSprintModal(): void {
+    const modalRef = this.modalService.open(SprintFormModal, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.projectKey = this.currentProjectKey() ?? undefined;
+    modalRef.closed
+      .pipe(
+        filter(reason => reason === ITEM_SAVED_EVENT),
+        tap(() => {
+          this.sprintService.refresh();
+        }),
+      )
+      .subscribe();
+  }
+
+  openEditSprintModal(sprint: ISprint): void {
+    const modalRef = this.modalService.open(SprintFormModal, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.sprint = sprint;
+    modalRef.componentInstance.projectKey = this.currentProjectKey() ?? undefined;
+    modalRef.closed
+      .pipe(
+        filter(reason => reason === ITEM_SAVED_EVENT),
+        tap(() => {
+          this.sprintService.refresh();
+        }),
+      )
+      .subscribe();
   }
 }

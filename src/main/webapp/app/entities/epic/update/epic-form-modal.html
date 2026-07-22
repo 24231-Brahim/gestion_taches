@@ -1,0 +1,167 @@
+<form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
+  <div class="modal-header">
+    <h4 class="modal-title" data-cy="epicFormModalHeading" jhiTranslate="gestionTachesApp.epic.home.createOrEditLabel">
+      Créer ou éditer un Epic
+    </h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="cancel()"></button>
+  </div>
+
+  <div class="modal-body">
+    <jhi-alert-error />
+
+    @let titleRef = editForm.get('title')!;
+    <div class="mb-3">
+      <label class="form-label" for="field_title" jhiTranslate="gestionTachesApp.epic.title">Title</label>
+      <input type="text" class="form-control" name="title" id="field_title" data-cy="title" formControlName="title" autofocus />
+      @if (titleRef.invalid && (titleRef.dirty || titleRef.touched)) {
+        <div>
+          @if (editForm.get('title')?.errors?.required) {
+            <small class="form-text text-danger" jhiTranslate="entity.validation.required">Ce champ est obligatoire.</small>
+          }
+          @if (editForm.get('title')?.errors?.minlength) {
+            <small class="form-text text-danger" jhiTranslate="entity.validation.minlength" [translateValues]="{ min: '1' }"
+              >Ce champ doit faire au moins 1 caractères.</small
+            >
+          }
+          @if (editForm.get('title')?.errors?.maxlength) {
+            <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '200' }"
+              >Ce champ doit faire au maximum 200 caractères.</small
+            >
+          }
+        </div>
+      }
+    </div>
+
+    @let descriptionRef = editForm.get('description')!;
+    <div class="mb-3">
+      <label class="form-label" for="field_description" jhiTranslate="gestionTachesApp.epic.description">Description</label>
+      <textarea
+        class="form-control"
+        name="description"
+        id="field_description"
+        data-cy="description"
+        formControlName="description"
+        rows="4"
+      ></textarea>
+      @if (descriptionRef.invalid && (descriptionRef.dirty || descriptionRef.touched)) {
+        <div>
+          @if (editForm.get('description')?.errors?.maxlength) {
+            <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '1000' }"
+              >Ce champ doit faire au maximum 1000 caractères.</small
+            >
+          }
+        </div>
+      }
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        @let statusRef = editForm.get('status')!;
+        <label class="form-label" for="field_status" jhiTranslate="gestionTachesApp.epic.status">Status</label>
+        <select class="form-control" name="status" formControlName="status" id="field_status" data-cy="status">
+          @for (epicStatus of epicStatusValues; track $index) {
+            <option [value]="epicStatus">{{ 'gestionTachesApp.EpicStatus.' + epicStatus | translate }}</option>
+          }
+        </select>
+        @if (statusRef.invalid && (statusRef.dirty || statusRef.touched)) {
+          <div>
+            @if (editForm.get('status')?.errors?.required) {
+              <small class="form-text text-danger" jhiTranslate="entity.validation.required">Ce champ est obligatoire.</small>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="col-md-6 mb-3">
+        @let priorityRef = editForm.get('priority')!;
+        <label class="form-label" for="field_priority" jhiTranslate="gestionTachesApp.epic.priority">Priority</label>
+        <select class="form-control" name="priority" formControlName="priority" id="field_priority" data-cy="priority">
+          @for (priority of priorityValues; track $index) {
+            <option [value]="priority">{{ 'gestionTachesApp.Priority.' + priority | translate }}</option>
+          }
+        </select>
+        @if (priorityRef.invalid && (priorityRef.dirty || priorityRef.touched)) {
+          <div>
+            @if (editForm.get('priority')?.errors?.required) {
+              <small class="form-text text-danger" jhiTranslate="entity.validation.required">Ce champ est obligatoire.</small>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        @let startDateRef = editForm.get('startDate')!;
+        <label class="form-label" for="field_startDate" jhiTranslate="gestionTachesApp.epic.startDate">Start Date</label>
+        <input type="date" class="form-control" name="startDate" id="field_startDate" data-cy="startDate" formControlName="startDate" />
+        @if (startDateRef.invalid && (startDateRef.dirty || startDateRef.touched)) {
+          <div>
+            @if (editForm.get('startDate')?.errors?.required) {
+              <small class="form-text text-danger" jhiTranslate="entity.validation.required">Ce champ est obligatoire.</small>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="col-md-6 mb-3">
+        @let endDateRef = editForm.get('endDate')!;
+        <label class="form-label" for="field_endDate" jhiTranslate="gestionTachesApp.epic.endDate">End Date</label>
+        <input type="date" class="form-control" name="endDate" id="field_endDate" data-cy="endDate" formControlName="endDate" />
+      </div>
+    </div>
+
+    @if (editForm.errors?.dateRange) {
+      <div class="mb-3">
+        <small class="form-text text-danger" jhiTranslate="entity.validation.dateRange"
+          >La date de fin doit être après la date de début.</small
+        >
+      </div>
+    }
+
+    @if (isProjectContext()) {
+      <input type="hidden" formControlName="project" />
+    } @else {
+      <div class="mb-3">
+        <label class="form-label" for="field_project" jhiTranslate="gestionTachesApp.epic.project">Project</label>
+        <select
+          class="form-control"
+          id="field_project"
+          data-cy="project"
+          name="project"
+          formControlName="project"
+          [compareWith]="compareProject"
+        >
+          @if (editForm.get(['project'])!.value === null) {
+            <option [ngValue]="null" selected></option>
+          }
+          @for (projectOption of projectsSharedCollection(); track $index) {
+            <option [ngValue]="projectOption">{{ projectOption.name }}</option>
+          }
+        </select>
+        @if (editForm.get(['project'])!.invalid && (editForm.get(['project'])!.dirty || editForm.get(['project'])!.touched)) {
+          <div>
+            @if (editForm.get(['project'])?.errors?.required) {
+              <small class="form-text text-danger" jhiTranslate="entity.validation.required">Ce champ est obligatoire.</small>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-dismiss="modal" (click)="cancel()">
+      <fa-icon icon="ban" />&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+    </button>
+    <button
+      type="submit"
+      id="save-entity"
+      data-cy="entityCreateSaveButton"
+      [disabled]="editForm.invalid || isSaving()"
+      class="btn btn-primary"
+    >
+      <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+    </button>
+  </div>
+</form>

@@ -1,6 +1,8 @@
 package com.gestiontaches.service;
 
 import com.gestiontaches.domain.Notification;
+import com.gestiontaches.domain.Task;
+import com.gestiontaches.domain.TaskHistory;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.NotificationRepository;
 import com.gestiontaches.repository.UserRepository;
@@ -99,5 +101,30 @@ public class NotificationService {
             notificationRepository.save(notification);
         }
         LOG.debug("Sent new user registration notification to {} admin(s)", admins.size());
+    }
+
+    public void notifyAdminsOfTaskHistory(TaskHistory history) {
+        List<User> admins = userRepository.findAllActivatedByAuthorityNames(List.of(AuthoritiesConstants.ADMIN));
+        Task task = history.getTask();
+        String message = "Task \"" + task.getTitle() + "\" — " + history.getAction();
+        if (history.getOldValue() != null || history.getNewValue() != null) {
+            message +=
+                " (" +
+                (history.getOldValue() != null ? history.getOldValue() : "") +
+                " → " +
+                (history.getNewValue() != null ? history.getNewValue() : "") +
+                ")";
+        }
+        for (User admin : admins) {
+            Notification notification = new Notification();
+            notification.setMessage(message);
+            notification.setTask(task);
+            notification.setTaskTitle(task.getTitle());
+            notification.setUser(admin);
+            notification.setIsRead(false);
+            notification.setCreatedAt(Instant.now());
+            notificationRepository.save(notification);
+        }
+        LOG.debug("Sent task history notification to {} admin(s) for task {}", admins.size(), task.getId());
     }
 }

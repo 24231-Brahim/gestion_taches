@@ -17,7 +17,7 @@
         id="jh-create-entity"
         data-cy="entityCreateButton"
         class="btn btn-primary jh-create-entity create-project"
-        [routerLink]="['/project/new']"
+        (click)="openCreateProjectModal()"
       >
         <fa-icon icon="plus" />
         <span jhiTranslate="gestionTachesApp.project.home.createLabel">Créer un nouveau Project</span>
@@ -69,12 +69,6 @@
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
-            <th scope="col" jhiSortBy="createdAt">
-              <div class="d-flex">
-                <span jhiTranslate="gestionTachesApp.project.createdAt">Created At</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
           </tr>
         </thead>
         <tbody>
@@ -87,7 +81,6 @@
                 <a [routerLink]="['/project', project.key, 'view']">{{ project.name }}</a>
               </td>
               <td>{{ project.description }}</td>
-              <td>{{ project.createdAt | formatMediumDatetime }}</td>
             </tr>
           }
         </tbody>
