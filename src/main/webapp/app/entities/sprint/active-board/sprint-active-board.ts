@@ -1,19 +1,20 @@
-import { ChangeDetectionStrategy, Component, HostListener, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, computed, input, output, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { IssueStatus } from 'app/entities/enumerations/issue-status.model';
+import { TaskStatus } from 'app/entities/enumerations/task-status.model';
 import { SprintStatus } from 'app/entities/enumerations/sprint-status.model';
 import { TranslateDirective } from 'app/shared/language';
 import { FormatMediumDatePipe } from 'app/shared/date';
-import { ISSUE_TYPE_COLORS, ISSUE_TYPE_ICONS, PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES } from 'app/entities/issue/issue-helper';
-import { IIssue } from 'app/entities/issue/issue.model';
+import { ISSUE_TYPE_COLORS, ISSUE_TYPE_ICONS, PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES } from 'app/entities/task/task-helper';
+import { ITask } from 'app/entities/task/task.model';
 import { ISprint } from '../sprint.model';
 
 interface KanbanColumn {
   status: string;
-  issues: IIssue[];
+  tasks: ITask[];
 }
 
 @Component({
@@ -34,9 +35,10 @@ interface KanbanColumn {
         justify-content: space-between;
         gap: 16px;
         background: var(--color-surface-container, #1b2025);
-        border: 3px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
         padding: 16px;
-        box-shadow: 4px 4px 0 var(--color-outline-variant, #2a3038);
+        box-shadow: var(--shadow-sm);
       }
       .sprint-info {
         display: flex;
@@ -44,7 +46,7 @@ interface KanbanColumn {
         gap: 4px;
       }
       .sprint-name {
-        font-family: 'Audiowide', monospace;
+        font-family: var(--font-inter);
         font-size: 1.1rem;
         margin: 0;
         color: var(--color-text, #dfe3ea);
@@ -63,14 +65,15 @@ interface KanbanColumn {
         color: var(--color-text-muted, #6a8fac);
       }
       .sprint-status-badge {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.65rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+        text-transform: none;
         padding: 2px 8px;
-        border: 2px solid;
+        border: 1px solid var(--color-outline-variant);
+        border-radius: 9999px;
         background: var(--color-surface, #0f1419);
         color: var(--color-text, #dfe3ea);
+        font-weight: 600;
       }
       .sprint-actions {
         display: flex;
@@ -89,7 +92,8 @@ interface KanbanColumn {
         min-width: 200px;
         max-width: 300px;
         background: var(--color-surface-container, #1b2025);
-        border: 3px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
         transition: border-color 0.2s;
       }
       .kanban-column-drag-over {
@@ -97,23 +101,27 @@ interface KanbanColumn {
       }
       .kanban-column-header {
         padding: 12px;
-        border-top: 3px solid;
+        border-top: 2px solid;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
         display: flex;
         align-items: center;
         justify-content: space-between;
       }
       .kanban-column-title {
-        font-family: 'Audiowide', monospace;
+        font-family: var(--font-inter);
         font-size: 0.75rem;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0;
         color: var(--color-text, #dfe3ea);
+        font-weight: 600;
       }
       .kanban-column-count {
         background: var(--color-surface-container-high, #262d36);
         color: var(--color-text-muted, #6a8fac);
+        border-radius: 9999px;
         padding: 1px 8px;
         font-size: 0.75rem;
+        font-family: var(--font-inter);
       }
       .kanban-column-body {
         padding: 8px;
@@ -121,18 +129,22 @@ interface KanbanColumn {
         flex-direction: column;
         gap: 8px;
         min-height: 100px;
+        border-radius: 0 0 var(--radius-lg) var(--radius-lg);
       }
       .kanban-card {
-        background: var(--color-surface, #0f1419);
-        border: 2px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container, #1b2025);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
         padding: 10px;
         cursor: grab;
-        transition: all 0.15s;
-        box-shadow: 3px 3px 0 var(--color-outline-variant, #2a3038);
+        transition:
+          background-color var(--transition-fast),
+          box-shadow var(--transition-fast);
+        box-shadow: var(--shadow-sm);
       }
       .kanban-card:hover {
-        transform: translate(-1px, -1px);
-        box-shadow: 4px 4px 0 var(--color-primary, #97cbff);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
       }
       .kanban-card-dragging {
         opacity: 0.5;
@@ -148,6 +160,17 @@ interface KanbanColumn {
         color: var(--color-text-muted, #6a8fac);
         font-size: 0.7rem;
         margin-left: auto;
+        font-family: var(--font-mono);
+      }
+      .kanban-card-sp {
+        background: var(--color-primary-container, #25a7fd);
+        color: #000;
+        font-size: 0.65rem;
+        font-weight: 600;
+        padding: 1px 6px;
+        font-family: var(--font-mono);
+        border-radius: var(--radius-sm);
+        margin-left: 4px;
       }
       .kanban-card-title {
         font-size: 0.85rem;
@@ -167,29 +190,83 @@ interface KanbanColumn {
         background: var(--color-primary-container, #25a7fd);
         color: #000;
         font-size: 0.65rem;
-        font-weight: 700;
+        font-weight: 600;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-mono);
+        border-radius: 50%;
       }
       .kanban-empty {
         padding: 20px 8px;
         text-align: center;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-muted, #6a8fac);
+        font-family: var(--font-inter);
         font-size: 0.8rem;
+      }
+      .filter-bar {
+        display: flex;
+        align-items: flex-end;
+        gap: 16px;
+        padding: 12px 16px;
+        background: var(--color-surface-container, #1b2025);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        flex-wrap: wrap;
+      }
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .filter-label {
+        font-family: var(--font-inter);
+        font-size: 0.7rem;
+        text-transform: none;
+        color: var(--color-text-muted, #6a8fac);
+      }
+      .filter-select {
+        background: var(--color-surface, #0f1419);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-sm);
+        color: var(--color-text, #dfe3ea);
+        font-family: var(--font-inter);
+        font-size: 0.8rem;
+        padding: 6px 10px;
+        min-width: 150px;
+      }
+      .filter-reset-btn {
+        background: transparent;
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-sm);
+        color: var(--color-text-muted, #6a8fac);
+        font-family: var(--font-inter);
+        font-size: 0.75rem;
+        padding: 6px 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition:
+          background-color var(--transition-fast),
+          box-shadow var(--transition-fast);
+      }
+      .filter-reset-btn:hover {
+        color: var(--color-text, #dfe3ea);
+        border-color: var(--color-primary, #97cbff);
       }
     `,
   ],
-  imports: [FontAwesomeModule, TranslateDirective, TranslateModule, FormatMediumDatePipe],
+  imports: [FormsModule, FontAwesomeModule, TranslateDirective, TranslateModule, FormatMediumDatePipe],
 })
 export class SprintActiveBoard {
   readonly sprint = input<ISprint | null>(null);
-  readonly issues = input<IIssue[]>([]);
+  readonly tasks = input<ITask[]>([]);
   readonly canManage = input(false);
 
-  readonly selectIssue = output<IIssue>();
-  readonly statusChange = output<{ issueId: number; status: string }>();
+  readonly selectTask = output<ITask>();
+  readonly statusChange = output<{ taskId: number; status: string }>();
   readonly startSprint = output<void>();
   readonly completeSprint = output<void>();
   readonly reopenSprint = output<void>();
@@ -199,23 +276,68 @@ export class SprintActiveBoard {
   readonly priorityIcons = PRIORITY_ICONS;
   readonly priorityColors = PRIORITY_COLORS;
 
-  dragIssueId: number | null = null;
+  readonly filterAssignee = signal<string>('');
+  readonly filterType = signal<string>('');
+  readonly filterPriority = signal<string>('');
+
+  readonly typeValues = Object.keys(ISSUE_TYPE_ICONS);
+  readonly priorityValues = Object.keys(PRIORITY_ICONS);
+
+  readonly uniqueAssignees = computed(() => {
+    const logins = new Set<string>();
+    for (const task of this.tasks()) {
+      if (task.assignee?.login) {
+        logins.add(task.assignee.login);
+      }
+    }
+    return Array.from(logins).sort();
+  });
+
+  readonly filteredTasks = computed(() => {
+    let result = this.tasks();
+    const assignee = this.filterAssignee();
+    const type = this.filterType();
+    const priority = this.filterPriority();
+    if (assignee) {
+      result = result.filter(t => t.assignee?.login === assignee);
+    }
+    if (type) {
+      result = result.filter(t => t.type === type);
+    }
+    if (priority) {
+      result = result.filter(t => t.priority === priority);
+    }
+    return result;
+  });
+
+  readonly hasActiveFilters = computed(() => {
+    return !!(this.filterAssignee() || this.filterType() || this.filterPriority());
+  });
+
+  resetFilters(): void {
+    this.filterAssignee.set('');
+    this.filterType.set('');
+    this.filterPriority.set('');
+  }
+
+  dragTaskId: number | null = null;
   dragOverStatus: string | null = null;
 
-  readonly columns: KanbanColumn[] = Object.keys(IssueStatus).map(status => ({
+  readonly columns: KanbanColumn[] = Object.keys(TaskStatus).map(status => ({
     status,
-    issues: [],
+    tasks: [],
   }));
 
   getColumns(): KanbanColumn[] {
+    const filtered = this.filteredTasks();
     return this.columns.map(col => ({
       ...col,
-      issues: this.issues().filter(i => i.status === col.status),
+      tasks: filtered.filter(i => i.status === col.status),
     }));
   }
 
-  onDragStart(issue: IIssue): void {
-    this.dragIssueId = issue.id;
+  onDragStart(task: ITask): void {
+    this.dragTaskId = task.id;
   }
 
   onDragOver(event: DragEvent, status: string): void {
@@ -230,21 +352,21 @@ export class SprintActiveBoard {
   onDrop(event: DragEvent, targetStatus: string): void {
     event.preventDefault();
     this.dragOverStatus = null;
-    if (this.dragIssueId === null) {
+    if (this.dragTaskId === null) {
       return;
     }
-    const issue = this.issues().find(i => i.id === this.dragIssueId);
-    if (!issue || issue.status === targetStatus) {
-      this.dragIssueId = null;
+    const task = this.tasks().find(i => i.id === this.dragTaskId);
+    if (!task || task.status === targetStatus) {
+      this.dragTaskId = null;
       return;
     }
-    this.statusChange.emit({ issueId: this.dragIssueId, status: targetStatus });
-    this.dragIssueId = null;
+    this.statusChange.emit({ taskId: this.dragTaskId, status: targetStatus });
+    this.dragTaskId = null;
   }
 
   @HostListener('document:dragend')
   onDragEnd(): void {
-    this.dragIssueId = null;
+    this.dragTaskId = null;
     this.dragOverStatus = null;
   }
 

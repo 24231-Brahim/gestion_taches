@@ -28,7 +28,55 @@
       "updatedAt": "Mis à jour le",
       "startDate": "Date de début",
       "endDate": "Date de fin",
-      "project": "Projet"
+      "project": "Projet",
+      "detail": {
+        "progress": "Progression",
+        "totalTasks": "Total",
+        "doneTasks": "Terminées",
+        "inProgressTasks": "En cours",
+        "todoTasks": "À faire",
+        "storyPoints": "Story Points",
+        "sprints": "Sprints",
+        "team": "Équipe",
+        "noTasks": "Aucune tâche pour cet epic",
+        "taskTable": {
+          "title": "Titre",
+          "status": "Statut",
+          "priority": "Priorité",
+          "assignee": "Assigné",
+          "storyPoints": "SP",
+          "sprint": "Sprint"
+        }
+      },
+      "tab": {
+        "tasks": "Tâches",
+        "kanban": "Kanban",
+        "burndown": "Burndown",
+        "timeline": "Timeline"
+      },
+      "burndown": {
+        "total": "Total Tâches",
+        "done": "Fait",
+        "remaining": "Restant",
+        "storyPoints": "Story Points",
+        "time": "Temps",
+        "tasks": "Tâches"
+      },
+      "validation": {
+        "endDateAfterStartDate": "La date de fin doit être postérieure à la date de début."
+      },
+      "filter": {
+        "allStatuses": "Tous les statuts",
+        "allPriorities": "Toutes les priorités",
+        "allProjects": "Tous les projets",
+        "defaultSort": "Tri par défaut",
+        "sortPriorityAsc": "Priorité ↑",
+        "sortPriorityDesc": "Priorité ↓",
+        "sortDateAsc": "Date ↑",
+        "sortDateDesc": "Date ↓",
+        "sortStatusAsc": "Statut ↑",
+        "sortStatusDesc": "Statut ↓"
+      }
     }
   }
 }

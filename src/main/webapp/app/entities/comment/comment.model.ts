@@ -1,12 +1,12 @@
 import dayjs from 'dayjs/esm';
 
-import { IIssue } from 'app/entities/issue/issue.model';
+import { ITask } from 'app/entities/task/task.model';
 
 export interface IComment {
   id: number;
   content?: string | null;
   createdAt?: dayjs.Dayjs | null;
-  issue?: Pick<IIssue, 'id'> | null;
+  task?: Pick<ITask, 'id'> | null;
   author?: { id: number; login: string } | null;
 }
 

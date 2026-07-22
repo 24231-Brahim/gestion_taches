@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="20260714000000-1" author="brahim">
+        <comment>Migrate TaskStatus: READY_FOR_TEST → IN_REVIEW, NEEDS_INFO → NEW</comment>
+        <sql dbms="postgresql">
+            UPDATE task SET status = 'IN_REVIEW' WHERE status = 'READY_FOR_TEST';
+            UPDATE task SET status = 'NEW' WHERE status = 'NEEDS_INFO';
+        </sql>
+        <sql dbms="h2">
+            UPDATE task SET status = 'IN_REVIEW' WHERE status = 'READY_FOR_TEST';
+            UPDATE task SET status = 'NEW' WHERE status = 'NEEDS_INFO';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

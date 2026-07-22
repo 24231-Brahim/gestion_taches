@@ -4,7 +4,7 @@ id;title;description;type;status;priority;created_at;updated_at;sprint_id;epic_i
 1003;OAuth integration;Add Google OAuth login option;STORY;TODO;MEDIUM;2026-06-22 10:00:00;2026-06-22 10:00:00;1002;1001;1001
 1004;KPI card component;Build the KPI card UI component;TASK;DONE;HIGH;2026-06-21 14:00:00;2026-06-27 15:00:00;1001;1002;1001
 1005;Chart rendering;Fix SVG donut chart rendering issue;BUG;IN_REVIEW;HIGH;2026-06-25 08:00:00;2026-06-30 09:00:00;1001;1002;1001
-1006;Dashboard filters;Add date range filter to dashboard;STORY;BACKLOG;MEDIUM;2026-06-26 10:00:00;2026-06-26 10:00:00;null;1002;1001
+1006;Dashboard filters;Add date range filter to dashboard;STORY;NEW;MEDIUM;2026-06-26 10:00:00;2026-06-26 10:00:00;null;1002;1001
 1007;Client form;Create client registration form;TASK;DONE;HIGH;2026-06-23 09:00:00;2026-06-28 14:00:00;1003;1003;1002
 1008;Client list view;Display all clients in a table;TASK;IN_PROGRESS;MEDIUM;2026-06-24 10:00:00;2026-06-30 10:00:00;1003;1003;1002
 1009;Report PDF export;Generate PDF reports from data;STORY;TODO;LOW;2026-06-25 11:00:00;2026-06-25 11:00:00;1004;1004;1002

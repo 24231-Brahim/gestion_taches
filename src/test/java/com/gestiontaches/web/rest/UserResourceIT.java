@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gestiontaches.IntegrationTest;
+import com.gestiontaches.domain.Authority;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
@@ -127,6 +128,21 @@ class UserResourceIT {
         userService.deleteUser(UPDATED_LOGIN);
         userService.deleteUser(user.getLogin());
         userService.deleteUser("anotherlogin");
+        userService.deleteUser("self-delete-user");
+        userService.deleteUser("admin-to-delete");
+        userService.deleteUser("admin-deleter");
+        // Restore any modified admin users
+        userRepository
+            .findAllByAuthorityNames(List.of(AuthoritiesConstants.USER))
+            .stream()
+            .filter(u -> u.getLogin().startsWith("admin-to-delete"))
+            .forEach(u -> {
+                u.getAuthorities().clear();
+                Authority adminAuth = new Authority();
+                adminAuth.setName(AuthoritiesConstants.ADMIN);
+                u.getAuthorities().add(adminAuth);
+                userRepository.saveAndFlush(u);
+            });
         assertThat(userRepository.count()).isEqualTo(numberOfUsers);
         numberOfUsers = null;
         cacheManager
@@ -483,6 +499,76 @@ class UserResourceIT {
 
         // Validate the database is empty
         assertPersistedUsers(users -> assertThat(users).hasSize(databaseSizeBeforeDelete - 1));
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "self-delete-user", authorities = AuthoritiesConstants.ADMIN)
+    void deleteUserCannotDeleteOwnAccount() throws Exception {
+        // Create a user with the same login as the current mock user
+        User selfUser = new User();
+        selfUser.setLogin("self-delete-user");
+        selfUser.setPassword(RandomStringUtils.insecure().nextAlphanumeric(60));
+        selfUser.setActivated(true);
+        selfUser.setEmail("self-delete-user@localhost");
+        selfUser.setFirstName("self");
+        selfUser.setLastName("user");
+        selfUser.setImageUrl(DEFAULT_IMAGEURL);
+        selfUser.setLangKey(DEFAULT_LANGKEY);
+        Authority adminAuth = new Authority();
+        adminAuth.setName(AuthoritiesConstants.ADMIN);
+        selfUser.setAuthorities(Set.of(adminAuth));
+        userRepository.saveAndFlush(selfUser);
+
+        // Attempt to delete the current user - should fail
+        restUserMockMvc
+            .perform(delete("/api/admin/users/{login}", "self-delete-user").accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+
+        // Validate the user still exists
+        assertPersistedUsers(users -> assertThat(users.stream().anyMatch(u -> "self-delete-user".equals(u.getLogin()))).isTrue());
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "admin-deleter", authorities = AuthoritiesConstants.ADMIN)
+    void deleteUserCannotDeleteLastAdmin() throws Exception {
+        // Create an admin user to delete (the only admin besides mock user "admin-deleter")
+        User adminToDelete = new User();
+        adminToDelete.setLogin("admin-to-delete");
+        adminToDelete.setPassword(RandomStringUtils.insecure().nextAlphanumeric(60));
+        adminToDelete.setActivated(true);
+        adminToDelete.setEmail("admin-to-delete@localhost");
+        adminToDelete.setFirstName("admin");
+        adminToDelete.setLastName("todelete");
+        adminToDelete.setImageUrl(DEFAULT_IMAGEURL);
+        adminToDelete.setLangKey(DEFAULT_LANGKEY);
+        Authority adminAuth = new Authority();
+        adminAuth.setName(AuthoritiesConstants.ADMIN);
+        adminToDelete.setAuthorities(Set.of(adminAuth));
+        userRepository.saveAndFlush(adminToDelete);
+
+        // Make this user the last real admin (the mock user "admin-deleter" doesn't exist in DB)
+        // The count query checks DB users, so we need to ensure this is the last admin in DB
+        // Remove any other admin users from DB to ensure this is the last one
+        List<User> allAdmins = userRepository.findAllByAuthorityNames(List.of(AuthoritiesConstants.ADMIN));
+        for (User existingAdmin : allAdmins) {
+            if (!existingAdmin.getLogin().equals("admin-to-delete")) {
+                existingAdmin.getAuthorities().clear();
+                Authority userAuth = new Authority();
+                userAuth.setName(AuthoritiesConstants.USER);
+                existingAdmin.getAuthorities().add(userAuth);
+                userRepository.saveAndFlush(existingAdmin);
+            }
+        }
+
+        // Attempt to delete the last admin - should fail
+        restUserMockMvc
+            .perform(delete("/api/admin/users/{login}", "admin-to-delete").accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isBadRequest());
+
+        // Validate the admin user still exists
+        assertPersistedUsers(users -> assertThat(users.stream().anyMatch(u -> "admin-to-delete".equals(u.getLogin()))).isTrue());
     }
 
     @Test

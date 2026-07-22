@@ -1,0 +1,53 @@
+{
+  "gestionTachesApp": {
+    "task": {
+      "home": {
+        "title": "Issues",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Issue",
+        "createOrEditLabel": "Create or edit a Issue",
+        "notFound": "No Issues found",
+        "backlog": "Backlog",
+        "board": "Board",
+        "search": "Search issues..."
+      },
+      "created": "A new Issue is created with identifier {{ param }}",
+      "updated": "A Issue is updated with identifier {{ param }}",
+      "deleted": "A Issue is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Issue {{ id }}?"
+      },
+      "detail": {
+        "title": "Issue",
+        "comments": "Comments",
+        "noComments": "No comments yet.",
+        "history": "History",
+        "noHistory": "No history yet.",
+        "tab": {
+          "details": "Details",
+          "comments": "Comments",
+          "attachments": "Attachments",
+          "history": "History"
+        }
+      },
+      "id": "ID",
+      "title": "Title",
+      "description": "Description",
+      "type": "Type",
+      "status": "Status",
+      "priority": "Priority",
+      "storyPoints": "Story Points",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "comments": "Comments",
+      "attachments": "Attachments",
+      "history": "History",
+      "sprint": "Sprint",
+      "epic": "Epic",
+      "project": "Project",
+      "assignee": "Assignee",
+      "createdBy": "Created By",
+      "system": "System"
+    }
+  }
+}

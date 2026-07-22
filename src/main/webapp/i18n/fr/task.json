@@ -1,0 +1,53 @@
+{
+  "gestionTachesApp": {
+    "task": {
+      "home": {
+        "title": "Issues",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer un nouveau Issue",
+        "createOrEditLabel": "Créer ou éditer un Issue",
+        "notFound": "Aucun Issue trouvé",
+        "backlog": "Backlog",
+        "board": "Tableau",
+        "search": "Rechercher des issues..."
+      },
+      "created": "Un nouveau Issue a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Issue avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Issue avec l'identifiant {{ param }} a été supprimé",
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer le Issue {{ id }} ?"
+      },
+      "detail": {
+        "title": "Issue",
+        "comments": "Commentaires",
+        "noComments": "Aucun commentaire pour le moment.",
+        "history": "Historique",
+        "noHistory": "Aucun historique pour le moment.",
+        "tab": {
+          "details": "Détails",
+          "comments": "Commentaires",
+          "attachments": "Pièces jointes",
+          "history": "Historique"
+        }
+      },
+      "id": "ID",
+      "title": "Title",
+      "description": "Description",
+      "type": "Type",
+      "status": "Status",
+      "priority": "Priority",
+      "storyPoints": "Story Points",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "comments": "Comments",
+      "attachments": "Attachments",
+      "history": "History",
+      "sprint": "Sprint",
+      "epic": "Epic",
+      "project": "Project",
+      "assignee": "Assigné",
+      "createdBy": "Créé par",
+      "system": "Système"
+    }
+  }
+}

@@ -57,6 +57,7 @@ export class AuthorityUpdate implements OnInit {
   }
 
   protected onSaveSuccess(): void {
+    this.authorityService.refresh();
     this.previousState();
   }
 

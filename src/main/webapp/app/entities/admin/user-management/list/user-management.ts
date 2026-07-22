@@ -9,9 +9,10 @@ import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
 import { combineLatest } from 'rxjs';
 
+import { AccountService } from 'app/core/auth/account.service';
+import { CsvDownloadService } from 'app/shared/csv/csv-download.service';
 import { SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
-import { AccountService } from 'app/core/auth/account.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { TranslateDirective } from 'app/shared/language';
@@ -40,6 +41,7 @@ import { IUserManagement } from '../user-management.model';
   ],
 })
 export class UserManagement implements OnInit {
+  private readonly csvDownloadService = inject(CsvDownloadService);
   readonly currentAccount = inject(AccountService).account;
   readonly users = signal<IUserManagement[] | null>(null);
   readonly isLoading = signal(false);
@@ -53,6 +55,10 @@ export class UserManagement implements OnInit {
   private readonly router = inject(Router);
   private readonly sortService = inject(SortService);
   private readonly modalService = inject(NgbModal);
+
+  exportCsv(): void {
+    this.csvDownloadService.download('api/export/csv/users', 'users.csv');
+  }
 
   ngOnInit(): void {
     this.handleNavigation();

@@ -43,8 +43,8 @@ public class Attachment implements Serializable {
 
     @ManyToOne(optional = false)
     @NotNull
-    @JsonIgnoreProperties(value = { "commentses", "attachmentses", "histories", "sprint", "epic", "project" }, allowSetters = true)
-    private Issue issue;
+    @JsonIgnoreProperties(value = { "comments", "attachments", "sprint", "epic", "project" }, allowSetters = true)
+    private Task task;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -100,16 +100,16 @@ public class Attachment implements Serializable {
         this.uploadedAt = uploadedAt;
     }
 
-    public Issue getIssue() {
-        return this.issue;
+    public Task getTask() {
+        return this.task;
     }
 
-    public void setIssue(Issue issue) {
-        this.issue = issue;
+    public void setTask(Task task) {
+        this.task = task;
     }
 
-    public Attachment issue(Issue issue) {
-        this.setIssue(issue);
+    public Attachment task(Task task) {
+        this.setTask(task);
         return this;
     }
 

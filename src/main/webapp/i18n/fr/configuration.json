@@ -1,6 +1,7 @@
 {
   "configuration": {
     "title": "Configuration",
+    "readonly": "Configuration en lecture seule, à modifier via les fichiers application.yml.",
     "filter": "Filtrer (par préfixe)",
     "table": {
       "prefix": "Préfixe",

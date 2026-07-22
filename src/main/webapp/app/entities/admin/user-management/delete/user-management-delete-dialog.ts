@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -18,6 +18,7 @@ import { IUserManagement } from '../user-management.model';
 })
 export class UserManagementDeleteDialog {
   userManagement?: IUserManagement;
+  readonly errorMessage = signal<string | null>(null);
 
   protected readonly userManagementService = inject(UserManagementService);
   protected readonly activeModal = inject(NgbActiveModal);
@@ -27,8 +28,19 @@ export class UserManagementDeleteDialog {
   }
 
   confirmDelete(login: string): void {
-    this.userManagementService.delete(login).subscribe(() => {
-      this.activeModal.close(ITEM_DELETED_EVENT);
+    this.errorMessage.set(null);
+    this.userManagementService.delete(login).subscribe({
+      next: () => {
+        this.activeModal.close(ITEM_DELETED_EVENT);
+      },
+      error: err => {
+        const detail = err.error?.detail;
+        if (detail) {
+          this.errorMessage.set(detail);
+        } else {
+          this.errorMessage.set('An error occurred while deleting the user.');
+        }
+      },
     });
   }
 }

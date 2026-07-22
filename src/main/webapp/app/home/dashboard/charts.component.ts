@@ -1,9 +1,16 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
+import TranslateDirective from 'app/shared/language/translate.directive';
 
-interface TaskStatusCount {
+interface ChartTaskStatusCount {
   label: string;
   value: number;
+  color: string;
+}
+
+interface ChartProjectProgress {
+  name: string;
+  percent: number;
   color: string;
 }
 
@@ -11,15 +18,15 @@ interface TaskStatusCount {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-dashboard-charts',
   standalone: true,
-  imports: [TranslateModule],
+  imports: [TranslateModule, TranslateDirective],
   template: `
     <div class="charts-grid">
       <div class="chart-card">
         <h3 class="chart-title" jhiTranslate="dashboard.charts.projectProgress">PROJECT PROGRESS</h3>
         <div class="chart-body">
-          @if (projectProgress().length > 0) {
+          @if (chartProjectProgress().length > 0) {
             <div class="progress-list">
-              @for (p of projectProgress(); track p.name) {
+              @for (p of chartProjectProgress(); track p.name) {
                 <div class="progress-item">
                   <div class="progress-label">
                     <span class="progress-name">{{ p.name }}</span>
@@ -40,7 +47,7 @@ interface TaskStatusCount {
       <div class="chart-card">
         <h3 class="chart-title" jhiTranslate="dashboard.charts.taskDistribution">TASK DISTRIBUTION</h3>
         <div class="chart-body">
-          @if (taskDistribution().length > 0) {
+          @if (chartTaskDistribution().length > 0) {
             <svg [attr.viewBox]="'0 0 200 200'" class="donut-svg">
               @for (slice of donutSlices(); track slice.label) {
                 <circle
@@ -58,10 +65,19 @@ interface TaskStatusCount {
               <text x="100" y="95" text-anchor="middle" class="donut-center-value" fill="var(--color-on-surface)">
                 {{ totalTasks() }}
               </text>
-              <text x="100" y="115" text-anchor="middle" class="donut-center-label" fill="var(--color-muted)">TOTAL</text>
+              <text
+                x="100"
+                y="115"
+                text-anchor="middle"
+                class="donut-center-label"
+                fill="var(--color-muted)"
+                jhiTranslate="dashboard.charts.total"
+              >
+                TOTAL
+              </text>
             </svg>
             <div class="donut-legend">
-              @for (slice of taskDistribution(); track slice.label) {
+              @for (slice of chartTaskDistribution(); track slice.label) {
                 <div class="legend-item">
                   <span class="legend-dot" [style.background]="slice.color"></span>
                   <span class="legend-label">{{ slice.label }}</span>
@@ -85,18 +101,20 @@ interface TaskStatusCount {
       }
       .chart-card {
         background: var(--color-surface-container);
-        border: 3px solid var(--color-primary);
-        box-shadow: var(--shadow-brutal);
+        border: 1px solid var(--color-outline-variant);
+        box-shadow: var(--shadow-sm);
         padding: var(--stack-md);
+        border-radius: var(--radius-lg);
       }
       .chart-title {
-        font-family: var(--font-display);
+        font-family: var(--font-inter);
+        font-weight: 600;
         font-size: var(--headline-md);
-        letter-spacing: 0.04em;
-        color: var(--color-primary);
+        letter-spacing: 0;
+        color: var(--color-on-surface);
         margin-bottom: var(--stack-md);
         padding-bottom: var(--stack-sm);
-        border-bottom: 3px solid var(--color-primary);
+        border-bottom: 1px solid var(--color-outline-variant);
       }
       .chart-body {
         min-height: 200px;
@@ -114,20 +132,21 @@ interface TaskStatusCount {
       .progress-label {
         display: flex;
         justify-content: space-between;
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-sm);
         color: var(--color-on-surface);
       }
       .progress-name {
-        text-transform: uppercase;
+        text-transform: none;
       }
       .progress-pct {
         font-weight: 700;
       }
       .progress-bar-brutal {
-        height: 8px;
+        height: 6px;
         background: var(--color-surface-container-high);
-        border: 2px solid var(--color-outline);
+        border: none;
+        border-radius: 9999px;
       }
       .progress-fill {
         height: 100%;
@@ -140,15 +159,15 @@ interface TaskStatusCount {
         margin: 0 auto;
       }
       .donut-center-value {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: 28px;
         font-weight: 700;
       }
       .donut-center-label {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: 10px;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
+        text-transform: none;
+        letter-spacing: 0;
       }
       .donut-legend {
         display: flex;
@@ -161,15 +180,16 @@ interface TaskStatusCount {
         display: flex;
         align-items: center;
         gap: 6px;
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-xs);
         color: var(--color-on-surface);
-        text-transform: uppercase;
+        text-transform: none;
       }
       .legend-dot {
         width: 10px;
         height: 10px;
-        border: 2px solid var(--color-outline);
+        border: none;
+        border-radius: 50%;
       }
       .legend-value {
         font-weight: 700;
@@ -179,33 +199,28 @@ interface TaskStatusCount {
   ],
 })
 export class DashboardChartsComponent {
-  readonly issues = input.required<any[]>();
-  readonly projects = input.required<any[]>();
+  readonly taskDistribution = input.required<Array<{ status: string; count: number }>>();
+  readonly projectProgress = input.required<Array<{ projectId: number; projectName: string; totalTasks: number; doneTasks: number }>>();
 
-  readonly totalTasks = computed(() => this.issues().length);
+  readonly totalTasks = computed(() => this.taskDistribution().reduce((sum, d) => sum + d.count, 0));
 
-  readonly taskDistribution = computed<TaskStatusCount[]>(() => {
-    const statuses = ['BACKLOG', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE', 'CANCELLED'];
+  readonly chartTaskDistribution = computed<ChartTaskStatusCount[]>(() => {
+    const statuses = ['NEW', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE', 'CANCELLED'];
     const colors = ['#6a8fac', '#f59e0b', '#25a7fd', '#a855f7', '#22c55e', '#ef4444'];
-    const map = new Map<string, number>();
-    for (const s of statuses) map.set(s, 0);
-    for (const issue of this.issues()) {
-      const st = issue.status ?? 'BACKLOG';
-      map.set(st, (map.get(st) ?? 0) + 1);
-    }
-    return Array.from(map.entries())
-      .filter(([_, v]) => v > 0)
-      .map(([label, value], i) => ({
-        label,
-        value,
-        color: colors[statuses.indexOf(label)] ?? '#6a8fac',
+    const input = this.taskDistribution();
+    return input
+      .filter(d => d.count > 0)
+      .map(d => ({
+        label: d.status,
+        value: d.count,
+        color: colors[statuses.indexOf(d.status)] ?? '#6a8fac',
       }));
   });
 
   readonly donutSlices = computed(() => {
     const total = this.totalTasks();
     if (total === 0) return [];
-    const slices = this.taskDistribution();
+    const slices = this.chartTaskDistribution();
     const circumference = 2 * Math.PI * 80;
     let offset = 0;
     return slices.map(s => {
@@ -221,29 +236,14 @@ export class DashboardChartsComponent {
     });
   });
 
-  readonly projectProgress = computed(() => {
-    const projectIssues = new Map<number, any[]>();
-    for (const issue of this.issues()) {
-      const pid = issue.project?.id;
-      if (pid) {
-        if (!projectIssues.has(pid)) projectIssues.set(pid, []);
-        projectIssues.get(pid)!.push(issue);
-      }
-    }
-    const projectMap = new Map(this.projects().map(p => [p.id, p]));
+  readonly chartProjectProgress = computed<ChartProjectProgress[]>(() => {
     const colors = ['#22c55e', '#25a7fd', '#f59e0b', '#a855f7', '#52d6fd', '#ef4444', '#ec4899', '#8b5cf6', '#0ea5e9', '#84cc16'];
-    return Array.from(projectIssues.entries())
-      .map(([pid, iss], i) => {
-        const total = iss.length;
-        const done = iss.filter(x => x.status === 'DONE').length;
-        const project = projectMap.get(pid);
-        return {
-          name: project?.name ?? `Project #${pid}`,
-          percent: total > 0 ? Math.round((done / total) * 100) : 0,
-          color: colors[i % colors.length],
-        };
-      })
-      .sort((a, b) => a.percent - b.percent)
-      .slice(0, 10);
+    return this.projectProgress()
+      .map((p, i) => ({
+        name: p.projectName,
+        percent: p.totalTasks > 0 ? Math.round((p.doneTasks * 100) / p.totalTasks) : 0,
+        color: colors[i % colors.length],
+      }))
+      .sort((a, b) => a.percent - b.percent);
   });
 }

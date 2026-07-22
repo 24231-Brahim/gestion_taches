@@ -1,6 +1,7 @@
 {
   "configuration": {
     "title": "Configuration",
+    "readonly": "Read-only configuration. To modify, edit the application.yml files.",
     "filter": "Filter (by prefix)",
     "table": {
       "prefix": "Prefix",

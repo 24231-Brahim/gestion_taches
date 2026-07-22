@@ -8,6 +8,11 @@ import { errorRoute } from './layouts/error/error.route';
 const routes: Routes = [
   {
     path: '',
+    redirectTo: 'login',
+    pathMatch: 'full',
+  },
+  {
+    path: 'home',
     loadComponent: () => import('./home/home'),
     title: 'home.title',
   },
@@ -32,6 +37,11 @@ const routes: Routes = [
     path: 'login',
     loadComponent: () => import('./login/login'),
     title: 'login.title',
+  },
+  {
+    path: 'notifications',
+    loadComponent: () => import('./notifications/notification-list'),
+    title: 'global.menu.notifications',
   },
   {
     path: '',

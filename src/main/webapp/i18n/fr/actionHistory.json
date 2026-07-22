@@ -23,7 +23,10 @@
       "oldValue": "Old Value",
       "newValue": "New Value",
       "createdAt": "Created At",
-      "issue": "Issue"
+      "task": "Issue"
+    },
+    "activity": {
+      "by": "par"
     }
   }
 }

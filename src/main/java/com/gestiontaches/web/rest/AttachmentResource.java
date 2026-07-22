@@ -1,14 +1,14 @@
 package com.gestiontaches.web.rest;
 
 import com.gestiontaches.domain.Attachment;
-import com.gestiontaches.domain.Issue;
+import com.gestiontaches.domain.Task;
 import com.gestiontaches.repository.AttachmentRepository;
-import com.gestiontaches.repository.IssueRepository;
+import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.AttachmentService;
 import com.gestiontaches.service.dto.AttachmentDTO;
-import com.gestiontaches.service.dto.IssueDTO;
-import com.gestiontaches.service.mapper.IssueMapper;
+import com.gestiontaches.service.dto.TaskDTO;
+import com.gestiontaches.service.mapper.TaskMapper;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -58,8 +58,8 @@ public class AttachmentResource {
 
     private final AttachmentService attachmentService;
     private final AttachmentRepository attachmentRepository;
-    private final IssueRepository issueRepository;
-    private final IssueMapper issueMapper;
+    private final TaskRepository taskRepository;
+    private final TaskMapper taskMapper;
 
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
@@ -67,13 +67,13 @@ public class AttachmentResource {
     public AttachmentResource(
         AttachmentService attachmentService,
         AttachmentRepository attachmentRepository,
-        IssueRepository issueRepository,
-        IssueMapper issueMapper
+        TaskRepository taskRepository,
+        TaskMapper taskMapper
     ) {
         this.attachmentService = attachmentService;
         this.attachmentRepository = attachmentRepository;
-        this.issueRepository = issueRepository;
-        this.issueMapper = issueMapper;
+        this.taskRepository = taskRepository;
+        this.taskMapper = taskMapper;
     }
 
     /**
@@ -93,12 +93,12 @@ public class AttachmentResource {
             AuthoritiesConstants.DEVELOPER +
             "')"
     )
-    public ResponseEntity<AttachmentDTO> uploadAttachment(@RequestParam("file") MultipartFile file, @RequestParam("issueId") Long issueId)
+    public ResponseEntity<AttachmentDTO> uploadAttachment(@RequestParam("file") MultipartFile file, @RequestParam("taskId") Long taskId)
         throws URISyntaxException, IOException {
-        LOG.debug("REST request to upload Attachment for Issue : {}", issueId);
-        Issue issue = issueRepository
-            .findById(issueId)
-            .orElseThrow(() -> new BadRequestAlertException("Issue not found", ENTITY_NAME, "idnotfound"));
+        LOG.debug("REST request to upload Attachment for Task : {}", taskId);
+        Task task = taskRepository
+            .findById(taskId)
+            .orElseThrow(() -> new BadRequestAlertException("Task not found", ENTITY_NAME, "idnotfound"));
         String originalName = file.getOriginalFilename();
         if (originalName == null || originalName.isBlank()) {
             throw new BadRequestAlertException("File name is required", ENTITY_NAME, "filenamerequired");
@@ -112,7 +112,7 @@ public class AttachmentResource {
         attachmentDTO.setFileName(originalName);
         attachmentDTO.setFilePath(storedName);
         attachmentDTO.setUploadedAt(Instant.now());
-        attachmentDTO.setIssue(issueMapper.toDto(issue));
+        attachmentDTO.setTask(taskMapper.toDto(task));
         attachmentDTO = attachmentService.save(attachmentDTO);
         return ResponseEntity.created(new URI("/api/attachments/" + attachmentDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, attachmentDTO.getId().toString()))
@@ -250,10 +250,10 @@ public class AttachmentResource {
      * @param pageable the pagination information.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of Attachments in body.
      */
-    @GetMapping("/by-issue/{issueId}")
-    public ResponseEntity<List<AttachmentDTO>> getAttachmentsByIssue(@PathVariable("issueId") Long issueId) {
-        LOG.debug("REST request to get Attachments for Issue : {}", issueId);
-        List<AttachmentDTO> attachments = attachmentService.findByIssueId(issueId);
+    @GetMapping("/by-task/{taskId}")
+    public ResponseEntity<List<AttachmentDTO>> getAttachmentsByTask(@PathVariable("taskId") Long taskId) {
+        LOG.debug("REST request to get Attachments for Task : {}", taskId);
+        List<AttachmentDTO> attachments = attachmentService.findByTaskId(taskId);
         return ResponseEntity.ok(attachments);
     }
 

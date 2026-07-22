@@ -1,6 +1,6 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, effect, inject, signal, untracked } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, effect, inject, signal, untracked } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
@@ -8,13 +8,15 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subscription, combineLatest, filter, tap } from 'rxjs';
+import { Subscription, combineLatest, filter, switchMap, tap } from 'rxjs';
 
 import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
+import { IProject } from 'app/entities/project/project.model';
+import { ProjectService } from 'app/entities/project/service/project.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
-import { FormatMediumDatetimePipe } from 'app/shared/date';
+import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
 import { Filter, FilterOptions, IFilterOption, IFilterOptions } from 'app/shared/filter';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
@@ -27,6 +29,21 @@ import { EpicService } from '../service/epic.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-epic',
   templateUrl: './epic.html',
+  styles: [
+    `
+      .status-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-family: var(--font-inter);
+        text-transform: none;
+        background: var(--color-surface-container, #1b2025);
+        font-weight: 600;
+      }
+    `,
+  ],
   imports: [
     RouterLink,
     FormsModule,
@@ -38,6 +55,7 @@ import { EpicService } from '../service/epic.service';
     TranslateDirective,
     TranslateModule,
     FormatMediumDatetimePipe,
+    FormatMediumDatePipe,
     Filter,
     NgbPagination,
     ItemCount,
@@ -54,14 +72,20 @@ export class Epic implements OnInit {
   readonly totalItems = signal(0);
   readonly page = signal(1);
 
+  readonly currentProjectKey = signal<string | null>(null);
+  readonly currentProject = signal<IProject | null>(null);
+
   readonly router = inject(Router);
   protected readonly epicService = inject(EpicService);
+  protected readonly projectService = inject(ProjectService);
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly isLoading = this.epicService.epicsResource.isLoading;
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly sortService = inject(SortService);
   protected readonly filterOptions = toSignal(this.filters.filterChanges);
   protected modalService = inject(NgbModal);
+
+  protected readonly destroyRef = inject(DestroyRef);
 
   constructor() {
     effect(() => {
@@ -88,8 +112,18 @@ export class Epic implements OnInit {
   trackId = (item: IEpic): number => this.epicService.getEpicIdentifier(item);
 
   ngOnInit(): void {
-    this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
+    const parentParamMap = this.activatedRoute.parent?.paramMap ?? this.activatedRoute.paramMap;
+    parentParamMap
       .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        tap(params => {
+          const key = params.get('key');
+          if (key) {
+            this.currentProjectKey.set(key);
+            this.projectService.findByKey(key).subscribe(project => this.currentProject.set(project));
+          }
+        }),
+        switchMap(() => combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])),
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
         tap(() => this.load()),
       )
@@ -103,13 +137,17 @@ export class Epic implements OnInit {
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
-        tap(() => this.load()),
+        tap(() => {
+          this.epicService.refresh();
+          this.load();
+        }),
       )
       .subscribe();
   }
 
   load(): void {
     this.queryBackend();
+    this.epicService.refresh();
   }
 
   navigateToWithComponentValues(event: SortState): void {
@@ -118,6 +156,27 @@ export class Epic implements OnInit {
 
   navigateToPage(page: number): void {
     this.handleNavigation(page, this.sortState(), this.filters.filterOptions);
+  }
+
+  getStatusColor(status: string | null | undefined): string {
+    const colors: Record<string, string> = {
+      TODO: 'var(--color-status-todo, #2196f3)',
+      IN_PROGRESS: 'var(--color-status-in-progress, #ff9800)',
+      DONE: 'var(--color-status-done, #4caf50)',
+      CANCELLED: 'var(--color-status-cancelled, #f44336)',
+    };
+    return colors[status ?? ''] ?? 'var(--color-outline-variant)';
+  }
+
+  getPriorityColor(priority: string | null | undefined): string {
+    const colors: Record<string, string> = {
+      LOWEST: 'var(--color-priority-lowest, #9e9e9e)',
+      LOW: 'var(--color-priority-low, #607d8b)',
+      MEDIUM: 'var(--color-priority-medium, #2196f3)',
+      HIGH: 'var(--color-priority-high, #ff9800)',
+      HIGHEST: 'var(--color-priority-highest, #f44336)',
+    };
+    return colors[priority ?? ''] ?? 'var(--color-outline-variant)';
   }
 
   protected fillComponentAttributeFromRoute(params: ParamMap, data: Data): void {
@@ -145,6 +204,9 @@ export class Epic implements OnInit {
     };
     for (const filterOption of this.filters.filterOptions) {
       queryObject[filterOption.name] = filterOption.values;
+    }
+    if (this.currentProject()) {
+      queryObject['projectId.equals'] = this.currentProject()!.id;
     }
     this.epicService.epicsParams.set(queryObject);
   }

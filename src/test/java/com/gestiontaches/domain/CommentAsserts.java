@@ -60,6 +60,6 @@ public class CommentAsserts {
     public static void assertCommentUpdatableRelationshipsEquals(Comment expected, Comment actual) {
         assertThat(actual)
             .as("Verify Comment relationships")
-            .satisfies(a -> assertThat(a.getIssue()).as("check issue").isEqualTo(expected.getIssue()));
+            .satisfies(a -> assertThat(a.getTask()).as("check task").isEqualTo(expected.getTask()));
     }
 }

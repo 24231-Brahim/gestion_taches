@@ -1,0 +1,25 @@
+<div class="task-attachments">
+  <h5 class="task-section-title" jhiTranslate="gestionTachesApp.task.attachments"></h5>
+  <div class="attachment-drop-zone" (dragover)="$event.preventDefault()" (dragenter)="$event.preventDefault()" (drop)="onFileDrop($event)">
+    <fa-icon icon="cloud-upload-alt" />
+    <span jhiTranslate="gestionTachesApp.attachment.form.dropzone"></span>
+    <input type="file" #fileInput (change)="onFileSelected($event)" hidden />
+    <button class="btn btn-outline-primary btn-sm" (click)="fileInput.click()">
+      {{ 'gestionTachesApp.attachment.form.browse' | translate }}
+    </button>
+  </div>
+  @for (att of attachments(); track att.id) {
+    <div class="attachment-item">
+      <fa-icon icon="paperclip" />
+      <a [href]="downloadUrl(att)" target="_blank" class="attachment-name">{{ att.fileName }}</a>
+      <span class="attachment-date">{{ att.uploadedAt | formatMediumDatetime }}</span>
+      @if (isAdminOrManagerOrDev()) {
+        <button class="btn btn-sm btn-danger" (click)="deleteAttachment(att.id)">
+          <fa-icon icon="times" />
+        </button>
+      }
+    </div>
+  } @empty {
+    <div class="text-muted" jhiTranslate="gestionTachesApp.attachment.home.notFound"></div>
+  }
+</div>

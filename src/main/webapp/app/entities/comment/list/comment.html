@@ -47,9 +47,9 @@
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
-            <th scope="col" jhiSortBy="issue.id">
+            <th scope="col" jhiSortBy="task.id">
               <div class="d-flex">
-                <span jhiTranslate="gestionTachesApp.comment.issue">Issue</span>
+                <span jhiTranslate="gestionTachesApp.comment.task">Task</span>
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
@@ -62,9 +62,9 @@
               <td>{{ comment.content }}</td>
               <td>{{ comment.createdAt | formatMediumDatetime }}</td>
               <td>
-                @if (comment.issue) {
+                @if (comment.task) {
                   <div>
-                    <a [routerLink]="['/issue', comment.issue.id, 'view']">{{ comment.issue.id }}</a>
+                    <a [routerLink]="['/task', comment.task!.id, 'view']">{{ comment.task!.id }}</a>
                   </div>
                 }
               </td>

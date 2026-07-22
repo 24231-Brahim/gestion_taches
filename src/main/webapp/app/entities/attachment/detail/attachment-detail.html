@@ -23,11 +23,11 @@
           <dd>
             <span>{{ attachmentRef.uploadedAt | formatMediumDatetime }}</span>
           </dd>
-          <dt><span jhiTranslate="gestionTachesApp.attachment.issue">Issue</span></dt>
+          <dt><span jhiTranslate="gestionTachesApp.attachment.task">Task</span></dt>
           <dd>
-            @if (attachment()!.issue) {
+            @if (attachment()!.task) {
               <div>
-                <a [routerLink]="['/issue', attachment()!.issue?.id, 'view']">{{ attachmentRef.issue?.id }}</a>
+                <a [routerLink]="['/task', attachment()!.task!.id, 'view']">{{ attachmentRef.task!.id }}</a>
               </div>
             }
           </dd>

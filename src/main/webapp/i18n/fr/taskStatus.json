@@ -1,0 +1,22 @@
+{
+  "gestionTachesApp": {
+    "IssueStatus": {
+      "null": "",
+      "NEW": "NOUVEAU",
+      "TODO": "A FAIRE",
+      "IN_PROGRESS": "EN COURS",
+      "IN_REVIEW": "EN REVUE",
+      "DONE": "TERMINE",
+      "CANCELLED": "ANNULE"
+    },
+    "TaskStatus": {
+      "null": "",
+      "NEW": "NOUVEAU",
+      "TODO": "A FAIRE",
+      "IN_PROGRESS": "EN COURS",
+      "IN_REVIEW": "EN REVUE",
+      "DONE": "TERMINE",
+      "CANCELLED": "ANNULE"
+    }
+  }
+}

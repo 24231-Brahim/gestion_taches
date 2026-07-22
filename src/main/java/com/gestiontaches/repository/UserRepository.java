@@ -37,4 +37,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT DISTINCT u FROM User u JOIN u.authorities a WHERE a.name IN (?1)")
     List<User> findAllByAuthorityNames(List<String> authorityNames);
+
+    @Query("SELECT DISTINCT u FROM User u JOIN u.authorities a WHERE a.name IN (?1) AND u.activated = true")
+    List<User> findAllActivatedByAuthorityNames(List<String> authorityNames);
 }

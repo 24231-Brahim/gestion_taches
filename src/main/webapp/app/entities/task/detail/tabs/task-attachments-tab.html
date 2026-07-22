@@ -1,0 +1,27 @@
+<div class="tab-section">
+  <h4 class="tab-section-title">
+    <fa-icon icon="paperclip" class="me-2" />
+    <span jhiTranslate="gestionTachesApp.task.detail.attachments">Attachments</span>
+    <span class="badge bg-secondary ms-2">{{ attachments().length }}</span>
+  </h4>
+
+  @if (isLoading()) {
+    <div class="text-center p-3">
+      <fa-icon icon="sync" animation="spin" />
+    </div>
+  } @else {
+    @if (attachments().length === 0) {
+      <p class="text-muted" jhiTranslate="gestionTachesApp.task.detail.noAttachments">No attachments yet.</p>
+    } @else {
+      <div class="attachments-list">
+        @for (attachment of attachments(); track attachment.id) {
+          <div class="attachment-item">
+            <fa-icon icon="file" class="me-2" />
+            <span class="attachment-name">{{ attachment.fileName }}</span>
+            <span class="attachment-date text-muted ms-auto">{{ attachment.uploadedAt | formatMediumDatetime }}</span>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

@@ -1,13 +1,17 @@
+/* ═══════════════════════════════════════════════════════════════
+   Navbar — Global Top Bar (64px, sticky)
+   ═══════════════════════════════════════════════════════════════ */
+
 jhi-navbar {
   display: block;
 }
 
 .topbar {
-  height: 56px;
-  background-color: var(--color-surface) !important;
-  border-bottom: 2px solid var(--color-primary-container);
+  height: 64px;
+  background-color: var(--color-surface);
+  border-bottom: 1px solid var(--color-outline-variant);
   padding: 0;
-  font-family: var(--font-mono);
+  font-family: var(--font-inter);
   position: fixed;
   top: 0;
   left: 0;
@@ -21,6 +25,7 @@ jhi-navbar {
   justify-content: space-between;
   height: 100%;
   width: 100%;
+  padding: 0 var(--margin-page);
 }
 
 .topbar-start {
@@ -32,17 +37,18 @@ jhi-navbar {
 .topbar-end {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .topbar-brand {
   display: flex;
   align-items: center;
   gap: var(--stack-sm);
-  color: var(--color-primary);
+  color: var(--color-on-surface);
   text-decoration: none;
   padding: 0;
   line-height: 1;
+  font-weight: 600;
 
   &:hover {
     color: var(--color-primary);
@@ -52,35 +58,37 @@ jhi-navbar {
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     color: var(--color-muted);
+    font-weight: 400;
   }
 }
 
 .topbar-logo {
-  height: 32px;
+  height: 28px;
   width: auto;
   display: block;
 }
 
 .topbar-menu-btn {
   background: none;
-  border: 2px solid var(--color-primary);
-  border-radius: 0;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-sm);
   color: var(--color-on-surface);
-  padding: 4px 8px;
+  padding: 6px 8px;
   cursor: pointer;
   font-size: var(--text-base);
   line-height: 1;
   transition:
     color var(--transition-fast),
-    background-color var(--transition-fast);
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
 
   &:hover {
-    background-color: var(--color-primary);
-    color: var(--color-bg);
+    background-color: var(--color-surface-container-high);
+    border-color: var(--color-outline);
   }
 
   &:focus-visible {
-    outline: 3px solid var(--color-secondary);
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
 }
@@ -91,11 +99,13 @@ jhi-navbar {
   justify-content: center;
   width: 36px;
   height: 36px;
-  color: var(--color-on-surface);
+  color: var(--color-on-surface-variant);
   text-decoration: none;
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
   transition:
     color var(--transition-fast),
     background-color var(--transition-fast);
@@ -106,36 +116,35 @@ jhi-navbar {
   }
 
   &.active {
-    color: var(--color-primary-container);
+    color: var(--color-primary);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 }
 
 .topbar-dropdown {
   .dropdown-menu {
-    border: 2px solid var(--color-primary);
-    border-radius: 0;
+    border: 1px solid var(--color-outline-variant);
+    border-radius: var(--radius-lg);
     background-color: var(--color-surface-container);
-    padding: 4px 0;
-    box-shadow: var(--shadow-brutal);
-    margin-top: 6px;
-    min-width: 220px;
+    padding: var(--stack-xs) 0;
+    box-shadow: var(--shadow-lg);
+    margin-top: 8px;
+    min-width: 240px;
 
     .dropdown-item {
-      font-family: var(--font-mono);
+      font-family: var(--font-inter);
       font-size: var(--text-sm);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
       color: var(--color-on-surface);
       padding: 0.5rem 1rem;
-      border-bottom: 1px solid var(--color-outline-variant);
-      font-weight: 700;
+      font-weight: 500;
+      border-radius: 0;
       transition:
-        color var(--transition-fast),
-        background-color var(--transition-fast);
-
-      &:last-child {
-        border-bottom: none;
-      }
+        background-color var(--transition-fast),
+        color var(--transition-fast);
 
       &:hover {
         color: var(--color-primary);
@@ -143,8 +152,8 @@ jhi-navbar {
       }
 
       &.active {
-        color: var(--color-bg);
-        background-color: var(--color-primary);
+        color: var(--color-on-primary);
+        background-color: var(--color-primary-container);
       }
     }
   }
@@ -155,47 +164,47 @@ jhi-navbar {
 }
 
 .profile-image {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 9999px;
-  border: 2px solid var(--color-primary);
+  border: 2px solid var(--color-surface);
   object-fit: cover;
 }
 
 .notification-badge {
   position: absolute;
-  top: 0;
-  right: 0;
-  background-color: var(--color-error);
-  color: var(--color-on-error);
+  top: 2px;
+  right: 2px;
+  background-color: var(--color-danger);
+  color: #ffffff;
+  font-family: var(--font-inter);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   min-width: 16px;
   height: 16px;
   line-height: 16px;
   text-align: center;
-  border-radius: 8px;
+  border-radius: 9999px;
   padding: 0 4px;
 }
 
 .notification-dropdown {
-  min-width: 320px !important;
+  min-width: 340px !important;
 }
 
 .notification-item {
   white-space: normal !important;
-  text-transform: none !important;
   font-weight: 400 !important;
   border-left: 3px solid transparent;
 
   &.unread {
     border-left-color: var(--color-primary);
-    background-color: var(--color-surface-container-high);
+    background-color: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface-container));
   }
 
   .notification-message {
     font-size: var(--text-sm);
-    line-height: 1.3;
+    line-height: 1.4;
     margin-bottom: 2px;
   }
 

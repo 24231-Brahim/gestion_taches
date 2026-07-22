@@ -30,7 +30,8 @@
     },
     "charts": {
       "projectProgress": "AVANCEMENT PROJETS",
-      "taskDistribution": "RÉPARTITION TÂCHES"
+      "taskDistribution": "RÉPARTITION TÂCHES",
+      "total": "TOTAL"
     },
     "lists": {
       "recentProjects": "PROJETS RÉCENTS",
@@ -42,9 +43,9 @@
     "quickActions": {
       "title": "ACTIONS RAPIDES",
       "newProject": "Nouveau Projet",
-      "newIssue": "Nouvelle Tâche",
       "viewProjects": "Voir Projets",
-      "viewIssues": "Voir Tâches"
+      "newTask": "Nouvelle Tâche",
+      "viewTasks": "Voir Tâches"
     }
   }
 }

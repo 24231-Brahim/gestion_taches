@@ -25,7 +25,7 @@ public class AttachmentDTO implements Serializable {
     private Instant uploadedAt;
 
     @NotNull
-    private IssueDTO issue;
+    private TaskDTO task;
 
     public Long getId() {
         return id;
@@ -59,12 +59,12 @@ public class AttachmentDTO implements Serializable {
         this.uploadedAt = uploadedAt;
     }
 
-    public IssueDTO getIssue() {
-        return issue;
+    public TaskDTO getTask() {
+        return task;
     }
 
-    public void setIssue(IssueDTO issue) {
-        this.issue = issue;
+    public void setTask(TaskDTO task) {
+        this.task = task;
     }
 
     @Override
@@ -96,7 +96,7 @@ public class AttachmentDTO implements Serializable {
             ", fileName='" + getFileName() + "'" +
             ", filePath='" + getFilePath() + "'" +
             ", uploadedAt='" + getUploadedAt() + "'" +
-            ", issue=" + getIssue() +
+            ", task=" + getTask() +
             "}";
     }
 }

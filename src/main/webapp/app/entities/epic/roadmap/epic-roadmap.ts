@@ -11,12 +11,16 @@ import { Subscription, combineLatest, tap } from 'rxjs';
 
 import { DEFAULT_SORT_DATA, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
+import { IProject } from 'app/entities/project/project.model';
+import { ProjectService } from 'app/entities/project/service/project.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { Filter, FilterOptions, IFilterOption, IFilterOptions } from 'app/shared/filter';
 import FilterComponent from 'app/shared/filter/filter';
 import { TranslateDirective } from 'app/shared/language';
 import { SortService, type SortState, sortStateSignal } from 'app/shared/sort';
+import { TaskService } from 'app/entities/task/service/task.service';
+import { ITask } from 'app/entities/task/task.model';
 import { IEpic } from '../epic.model';
 import { EpicService } from '../service/epic.service';
 
@@ -59,21 +63,21 @@ const STATUS_COLORS: Record<string, string> = {
       }
       .roadmap-container {
         background: var(--color-surface-container, #1b2025);
-        border: 3px solid var(--color-outline-variant, #2a3038);
-        border-radius: 6px;
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
         overflow: hidden;
       }
       .roadmap-timeline-header {
         padding: 12px 20px;
-        border-bottom: 2px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
       }
       .roadmap-month-labels {
         display: flex;
         justify-content: space-between;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.7rem;
         color: var(--color-text-muted, #6a8fac);
-        text-transform: uppercase;
+        text-transform: none;
       }
       .roadmap-list {
         display: flex;
@@ -85,7 +89,7 @@ const STATUS_COLORS: Record<string, string> = {
         gap: 16px;
         padding: 14px 20px;
         border-bottom: 1px solid var(--color-outline-variant, #2a3038);
-        transition: background 0.15s;
+        transition: background-color var(--transition-fast);
       }
       .roadmap-epic-row:last-child {
         border-bottom: none;
@@ -98,7 +102,7 @@ const STATUS_COLORS: Record<string, string> = {
         flex-shrink: 0;
       }
       .roadmap-epic-title {
-        font-family: 'Audiowide', monospace;
+        font-family: var(--font-inter);
         font-size: 0.85rem;
         color: var(--color-text, #dfe3ea);
         text-decoration: none;
@@ -124,7 +128,7 @@ const STATUS_COLORS: Record<string, string> = {
         display: inline-block;
       }
       .roadmap-epic-dates {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.65rem;
       }
       .roadmap-epic-bar-container {
@@ -136,15 +140,14 @@ const STATUS_COLORS: Record<string, string> = {
       }
       .roadmap-epic-bar-track {
         flex: 1;
-        height: 20px;
-        background: var(--color-surface, #0f1419);
-        border-radius: 6px;
+        height: 6px;
+        background: var(--color-surface-container-high, #262d36);
+        border-radius: 9999px;
         overflow: hidden;
-        border: 2px solid var(--color-outline-variant, #2a3038);
       }
       .roadmap-epic-bar {
         height: 100%;
-        border-radius: 6px;
+        border-radius: 9999px;
         transition: width 0.4s ease;
         display: flex;
         align-items: center;
@@ -154,16 +157,16 @@ const STATUS_COLORS: Record<string, string> = {
       }
       .roadmap-epic-bar-label {
         font-size: 0.65rem;
-        font-weight: 700;
+        font-weight: 600;
         color: #000;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
       }
       .roadmap-pct {
         width: 40px;
         text-align: right;
         font-size: 0.75rem;
         color: var(--color-text-muted, #6a8fac);
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
       }
       .roadmap-legend {
         display: flex;
@@ -215,26 +218,53 @@ const STATUS_COLORS: Record<string, string> = {
 export class EpicRoadmap implements OnInit {
   subscription: Subscription | null = null;
   readonly epics = signal<IEpic[]>([]);
+  readonly allTasks = signal<ITask[]>([]);
   readonly filterStatus = signal<string>('');
   readonly filterProject = signal<string>('');
+  readonly filterPriority = signal<string>('');
+  readonly sortBy = signal<string>('');
 
   filteredEpics = computed(() => {
     let list = this.epics();
     const statusFilter = this.filterStatus();
+    const projectFilter = this.filterProject();
+    const priorityFilter = this.filterPriority();
+    const sortField = this.sortBy();
     if (statusFilter) {
       list = list.filter(e => e.status === statusFilter);
+    }
+    if (projectFilter) {
+      list = list.filter(e => e.project?.name === projectFilter || e.project?.id?.toString() === projectFilter);
+    }
+    if (priorityFilter) {
+      list = list.filter(e => e.priority === priorityFilter);
+    }
+    if (sortField) {
+      const [field, dir] = sortField.split(':') as [string, string];
+      list = [...list].sort((a, b) => {
+        const aVal = String((a as any)[field] ?? '');
+        const bVal = String((b as any)[field] ?? '');
+        const cmp = aVal.localeCompare(bVal);
+        return dir === 'desc' ? -cmp : cmp;
+      });
     }
     return list;
   });
 
-  readonly epicsWithProgress = computed<EpicWithProgress[]>(() =>
-    this.filteredEpics().map(e => ({
-      ...e,
-      progress: 0,
-      totalIssues: 0,
-      doneIssues: 0,
-    })),
-  );
+  readonly epicsWithProgress = computed<EpicWithProgress[]>(() => {
+    const tasks = this.allTasks();
+    return this.filteredEpics().map(e => {
+      const epicTasks = tasks.filter(t => t.epic?.id === e.id);
+      const total = epicTasks.length;
+      const done = epicTasks.filter(t => t.status === 'DONE').length;
+      return {
+        ...e,
+        progress: total > 0 ? Math.round((done / total) * 100) : 0,
+        totalIssues: total,
+        doneIssues: done,
+      };
+    });
+  });
 
   readonly hasDateRange = computed(() => this.epics().some(e => e.startDate && e.endDate));
 
@@ -244,8 +274,23 @@ export class EpicRoadmap implements OnInit {
   readonly totalItems = signal(0);
   readonly page = signal(1);
 
+  protected readonly uniqueProjects = computed(() => {
+    const names = new Set<string>();
+    for (const e of this.epics()) {
+      if (e.project?.name) {
+        names.add(e.project.name);
+      }
+    }
+    return Array.from(names).sort();
+  });
+
+  readonly currentProjectKey = signal<string | null>(null);
+  readonly currentProject = signal<IProject | null>(null);
+
   readonly router = inject(Router);
   readonly epicService = inject(EpicService);
+  readonly taskService = inject(TaskService);
+  protected readonly projectService = inject(ProjectService);
   readonly isLoading = this.epicService.epicsResource.isLoading;
   readonly statusColors = STATUS_COLORS;
   protected readonly activatedRoute = inject(ActivatedRoute);
@@ -263,6 +308,24 @@ export class EpicRoadmap implements OnInit {
       this.epics.set(this.fillComponentAttributesFromResponseBody([...this.epicService.epics()]));
     });
     effect(() => {
+      const tasks = this.taskService.tasks();
+      if (tasks) {
+        this.allTasks.set(tasks);
+      }
+    });
+    effect(() => {
+      const epics = this.epics();
+      if (epics.length > 0) {
+        const projectId = epics[0]?.project?.id;
+        if (projectId) {
+          this.taskService.tasksParams.set({
+            'projectId.equals': projectId,
+            size: 500,
+          });
+        }
+      }
+    });
+    effect(() => {
       const filterOptions = this.filterOptions();
       if (filterOptions) {
         untracked(() => {
@@ -275,6 +338,7 @@ export class EpicRoadmap implements OnInit {
   trackId = (item: IEpic): number => this.epicService.getEpicIdentifier(item);
 
   ngOnInit(): void {
+    this.resolveProjectContext();
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
       .pipe(
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
@@ -338,7 +402,23 @@ export class EpicRoadmap implements OnInit {
     for (const filterOption of this.filters.filterOptions) {
       queryObject[filterOption.name] = filterOption.values;
     }
+    if (this.currentProject()) {
+      queryObject['projectId.equals'] = this.currentProject()!.id;
+    }
     this.epicService.epicsParams.set(queryObject);
+  }
+
+  private resolveProjectContext(): void {
+    let route: ActivatedRoute | null = this.activatedRoute;
+    while (route) {
+      const key = route.snapshot.paramMap.get('key');
+      if (key) {
+        this.currentProjectKey.set(key);
+        this.projectService.findByKey(key).subscribe(project => this.currentProject.set(project));
+        return;
+      }
+      route = route.parent;
+    }
   }
 
   protected handleNavigation(page: number, sortState: SortState, filterOptions?: IFilterOption[]): void {

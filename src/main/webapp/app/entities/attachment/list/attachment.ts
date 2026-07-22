@@ -100,13 +100,17 @@ export class Attachment implements OnInit {
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
-        tap(() => this.load()),
+        tap(() => {
+          this.attachmentService.refresh();
+          this.load();
+        }),
       )
       .subscribe();
   }
 
   load(): void {
     this.queryBackend();
+    this.attachmentService.refresh();
   }
 
   navigateToWithComponentValues(event: SortState): void {

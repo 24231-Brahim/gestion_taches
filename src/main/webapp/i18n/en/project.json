@@ -24,7 +24,7 @@
       "createdAt": "Created At",
       "sprints": "Sprints",
       "epics": "Epics",
-      "issues": "Issues",
+      "tasks": "Issues",
       "members": "Members",
       "member": {
         "add": "Add member",
@@ -36,6 +36,7 @@
         "joinedAt": "Joined At",
         "selectUser": "Select a user",
         "empty": "No members yet",
+        "adminAccess": "You have full administrative access to this project.",
         "error": {
           "add": "Error adding member",
           "remove": "Error removing member",

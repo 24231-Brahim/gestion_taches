@@ -25,7 +25,7 @@ describe('ActionHistory Form Service', () => {
             oldValue: expect.any(Object),
             newValue: expect.any(Object),
             createdAt: expect.any(Object),
-            issue: expect.any(Object),
+            task: expect.any(Object),
           }),
         );
       });
@@ -41,7 +41,7 @@ describe('ActionHistory Form Service', () => {
             oldValue: expect.any(Object),
             newValue: expect.any(Object),
             createdAt: expect.any(Object),
-            issue: expect.any(Object),
+            task: expect.any(Object),
           }),
         );
       });

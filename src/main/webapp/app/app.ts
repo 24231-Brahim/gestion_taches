@@ -1,5 +1,6 @@
 import { registerLocaleData } from '@angular/common';
-import locale from '@angular/common/locales/fr';
+import localeFr from '@angular/common/locales/fr';
+import localeEn from '@angular/common/locales/en';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
@@ -24,7 +25,8 @@ export default class App {
 
   constructor() {
     this.applicationConfigService.setEndpointPrefix(SERVER_API_URL);
-    registerLocaleData(locale);
+    registerLocaleData(localeFr);
+    registerLocaleData(localeEn);
     this.iconLibrary.addIcons(...fontAwesomeIcons);
     this.dpConfig.minDate = { year: dayjs().subtract(100, 'year').year(), month: 1, day: 1 };
   }

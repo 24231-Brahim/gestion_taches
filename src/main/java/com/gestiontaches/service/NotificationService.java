@@ -1,13 +1,19 @@
 package com.gestiontaches.service;
 
 import com.gestiontaches.domain.Notification;
+import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.NotificationRepository;
+import com.gestiontaches.repository.UserRepository;
+import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.dto.NotificationDTO;
 import com.gestiontaches.service.mapper.NotificationMapper;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,28 +25,47 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
+    private final UserRepository userRepository;
+    private final NotificationSseService notificationSseService;
 
-    public NotificationService(NotificationRepository notificationRepository, NotificationMapper notificationMapper) {
+    public NotificationService(
+        NotificationRepository notificationRepository,
+        NotificationMapper notificationMapper,
+        UserRepository userRepository,
+        NotificationSseService notificationSseService
+    ) {
         this.notificationRepository = notificationRepository;
         this.notificationMapper = notificationMapper;
+        this.userRepository = userRepository;
+        this.notificationSseService = notificationSseService;
     }
 
     public NotificationDTO save(NotificationDTO notificationDTO) {
         LOG.debug("Request to save Notification : {}", notificationDTO);
         Notification notification = notificationMapper.toEntity(notificationDTO);
         notification = notificationRepository.save(notification);
-        return notificationMapper.toDto(notification);
+        NotificationDTO saved = notificationMapper.toDto(notification);
+        if (saved.getUserId() != null) {
+            notificationSseService.sendNotification(saved.getUserId(), saved);
+        }
+        return saved;
     }
 
     @Transactional(readOnly = true)
     public List<NotificationDTO> findByUserId(Long userId) {
         LOG.debug("Request to get Notifications for user : {}", userId);
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId).stream().map(notificationMapper::toDto).toList();
+        return notificationRepository.findByUser_idOrderByCreatedAtDesc(userId).stream().map(notificationMapper::toDto).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<NotificationDTO> findByUserId(Long userId, Pageable pageable) {
+        LOG.debug("Request to get paginated Notifications for user : {}", userId);
+        return notificationRepository.findByUser_idOrderByCreatedAtDesc(userId, pageable).map(notificationMapper::toDto);
     }
 
     @Transactional(readOnly = true)
     public long countUnreadByUserId(Long userId) {
-        return notificationRepository.countByUserIdAndIsReadFalse(userId);
+        return notificationRepository.countByUser_idAndIsReadFalse(userId);
     }
 
     public Optional<NotificationDTO> partialUpdate(NotificationDTO notificationDTO) {
@@ -55,5 +80,24 @@ public class NotificationService {
             })
             .map(notificationRepository::save)
             .map(notificationMapper::toDto);
+    }
+
+    public int markAllAsRead(Long userId) {
+        LOG.debug("Request to mark all notifications as read for user : {}", userId);
+        return notificationRepository.markAllAsReadByUserId(userId);
+    }
+
+    public void notifyAdminsOfNewUser(User newUser) {
+        List<User> admins = userRepository.findAllActivatedByAuthorityNames(List.of(AuthoritiesConstants.ADMIN));
+        String message = "New user registered: " + newUser.getLogin() + " (" + newUser.getEmail() + ")";
+        for (User admin : admins) {
+            Notification notification = new Notification();
+            notification.setMessage(message);
+            notification.setUser(admin);
+            notification.setIsRead(false);
+            notification.setCreatedAt(Instant.now());
+            notificationRepository.save(notification);
+        }
+        LOG.debug("Sent new user registration notification to {} admin(s)", admins.size());
     }
 }

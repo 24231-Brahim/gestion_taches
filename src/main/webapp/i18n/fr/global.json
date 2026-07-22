@@ -12,14 +12,14 @@
         "project": "Project",
         "sprint": "Sprint",
         "epic": "Epic",
-        "issue": "Issue",
+        "task": "Tasks",
         "comment": "Comment",
         "attachment": "Attachment",
         "actionHistory": "Action History"
       },
       "account": {
         "main": "Compte",
-        "settings": "Profil",
+        "settings": "Paramètres",
         "password": "Mot de passe",
         "sessions": "Sessions",
         "login": "S'authentifier",
@@ -38,7 +38,9 @@
         "database": "Base de données",
         "jhipster-needle-menu-add-admin-element": "JHipster will add additional menu entries here (do not translate!)"
       },
-      "language": "Langue"
+      "language": "Langue",
+      "theme": "Thème",
+      "notifications": "Notifications"
     },
     "form": {
       "username.label": "Nom d'utilisateur",
@@ -53,6 +55,9 @@
       "email.placeholder": "Votre email"
     },
     "messages": {
+      "viewAllNotifications": "Voir tout",
+      "markAllAsRead": "Tout marquer comme lu",
+      "noNotifications": "Aucune notification",
       "info": {
         "authenticated": {
           "prefix": "Si vous voulez vous ",
@@ -104,6 +109,7 @@
       "edit": "Editer",
       "delete": "Supprimer",
       "open": "Ouvrir",
+      "exportCsv": "CSV",
       "save": "Sauvegarder",
       "view": "Voir",
       "show": "Afficher {{otherEntity}}",
@@ -147,6 +153,9 @@
     "idnull": "Identifiant invalide",
     "idinvalid": "Identifiant invalide",
     "idnotfound": "Identifiant introuvable",
+    "projects": {
+      "loadFailed": "Erreur lors du chargement des projets"
+    },
     "file": {
       "could.not.extract": "Impossible d'extraire le fichier",
       "not.image": "Le fichier doit être une image et non du type \"{{ fileType }}\""

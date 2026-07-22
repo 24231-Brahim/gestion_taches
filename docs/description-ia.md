@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble
 
-Application web de **gestion de projet agile** (type Jira) générée avec **JHipster 9.1.0**. Permet de créer des projets, d'y ajouter des membres, de planifier des sprints/epics et de suivre des issues (tâches, bugs, stories).
+Application web de **gestion de projet agile** (type Jira) générée avec **JHipster 9.1.0**. Permet de créer des projets, d'y ajouter des membres, de planifier des sprints/epics et de suivre des tâches.
 
 ## Stack Technique
 
@@ -48,10 +48,10 @@ src/main/webapp/app/
 │   ├── project/      #   Project (liste, update, detail, service, model)
 │   ├── sprint/
 │   ├── epic/
-│   ├── issue/
+│   ├── task/
 │   ├── comment/
 │   ├── attachment/
-│   └── action-history/
+│   └── task-history/
 ├── home/             # Page d'accueil
 ├── layouts/          # Topbar, Sidebar, BottomNav, Footer, Main
 ├── login/            # Page de login
@@ -61,7 +61,7 @@ src/main/webapp/app/
 ## Entités du Domaine
 
 ### Project
-- Table racine. Contient sprints, epics, issues.
+- Table racine. Contient sprints, epics, tasks.
 - Champs : `id`, `name`, `description`, `project_key` (unique), `createdAt`
 - Relations : `@ManyToOne User owner` (propriétaire), `@OneToMany Set<ProjectMember> projectMembers`
 - Visibilité filtrée par propriétaire (ADMIN voit tout, les autres voient leurs projets)
@@ -69,7 +69,7 @@ src/main/webapp/app/
 ### ProjectMember
 - Remplace un `@ManyToMany` entre Project et User par une entité complète.
 - Table `project_member`
-- Champs : `id`, `project` (ManyToOne), `user` (ManyToOne), `role` (String), `joinedAt` (Instant)
+- Champs : `id`, `project` (ManyToOne), `user` (ManyToOne), `role` (ProjectRole enum : OWNER, MANAGER, MEMBER), `joinedAt` (Instant)
 - Contrainte d'unicité : `(project_id, user_id)`
 - Endpoints : `GET/POST/PATCH/DELETE /api/projects/{id}/members/{userId}`
 
@@ -83,25 +83,30 @@ src/main/webapp/app/
 - Champs : `id`, `title`, `description`, `status` (TODO/IN_PROGRESS/DONE/CANCELLED), `priority`
 - Relation : `@ManyToOne Project`
 
-### Issue
+### Task
 - Unité de travail atomique.
-- Champs : `id`, `title`, `description`, `type` (STORY/BUG/TASK/SUBTASK/IMPROVEMENT), `status` (BACKLOG/TODO/IN_PROGRESS/IN_REVIEW/DONE/CANCELLED), `priority` (LOWEST/LOW/MEDIUM/HIGH/HIGHEST)
+- Champs : `id`, `title`, `description`, `status` (NEW/TODO/IN_PROGRESS/IN_REVIEW/DONE/CANCELLED), `priority` (LOWEST/LOW/MEDIUM/HIGH/HIGHEST)
 - Relations : `@ManyToOne Project` (obligatoire), `@ManyToOne Sprint` (optionnel), `@ManyToOne Epic` (optionnel)
 
 ### Comment
-- Commentaire texte attaché à une issue.
+- Commentaire texte attaché à une tâche.
 - Champs : `content`, `createdAt`
-- Relation : `@ManyToOne Issue`
+- Relation : `@ManyToOne Task`
 
 ### Attachment
-- Fichier joint à une issue.
+- Fichier joint à une tâche.
 - Champs : `fileName`, `filePath`, `uploadedAt`
-- Relation : `@ManyToOne Issue`
+- Relation : `@ManyToOne Task`
 
-### ActionHistory
-- Audit trail des modifications d'une issue.
-- Champs : `action`, `fieldChanged`, `oldValue`, `newValue`, `createdAt`
-- Relation : `@ManyToOne Issue`
+### TaskHistory
+- Audit trail des modifications d'une tâche.
+- Champs : `id`, `action`, `oldValue`, `newValue`, `createdAt`
+- Relations : `@ManyToOne Task`, `@ManyToOne User`
+
+### Notification
+- Notification utilisateur.
+- Champs : `id`, `message`, `read` (boolean), `createdAt`
+- Relations : `@ManyToOne Task`, `@ManyToOne User`
 
 ### User (géré par JHipster)
 - Entité gérée automatiquement par JHipster (table `jhi_user`).
@@ -143,10 +148,10 @@ Mapper (service/mapper/)  ───  DTO (service/dto/)
 | Entité                        | POST/PUT/PATCH/DELETE               | GET |
 |-------------------------------|-------------------------------------|-----|
 | Project, Sprint, Epic         | ADMIN, PROJET_MANAGER               | Tous |
-| Issue                         | ADMIN, PROJET_MANAGER, DEVELOPER    | Tous |
+| Task                          | ADMIN, PROJET_MANAGER, DEVELOPER    | Tous |
 | Comment (POST)                | ADMIN, PROJET_MANAGER, DEVELOPER, USER | Tous |
 | Comment (PUT/PATCH/DELETE)    | ADMIN, PROJET_MANAGER, DEVELOPER    | Tous |
-| Attachment, ActionHistory     | ADMIN, PROJET_MANAGER, DEVELOPER    | Tous |
+| Attachment, TaskHistory       | ADMIN, PROJET_MANAGER, DEVELOPER    | Tous |
 | UserResource                  | ADMIN uniquement                    | ADMIN |
 
 ### Authentification JWT
@@ -183,7 +188,7 @@ Mapper (service/mapper/)  ───  DTO (service/dto/)
 
 - **Topbar** : sticky, branding + hamburger mobile + dropdowns (admin, compte, langue)
 - **Sidebar** : collapsible 256px ↔ 80px, overlay mobile, navigation par entité
-- **BottomNav** : visible <768px, 4 items (Accueil, Projects, Issues, Settings/Login)
+- **BottomNav** : visible <768px, 4 items (Accueil, Projects, Tasks, Settings/Login)
 - **Main** : layout shell combinant topbar + sidebar + content + footer + bottom-nav
 - Communication hamburger ↔ sidebar : via `document.body.classList` + `MutationObserver`
 
@@ -198,6 +203,7 @@ Mapper (service/mapper/)  ───  DTO (service/dto/)
 - `ProjectsService` : `httpResource` pour la liste projet avec params réactifs.
 - `AlertService` : ajout d'alertes (type, message).
 - `ThemeService` : gestion du thème dark/light.
+- `TaskQueryService` : requêtes avancées sur les tâches (filtres, tri, pagination).
 
 ### Ressource HTTP
 `httpResource()` est utilisé pour les listes en lecture. Les mutations (POST/PUT/DELETE) utilisent `http` classique + `Observable`.

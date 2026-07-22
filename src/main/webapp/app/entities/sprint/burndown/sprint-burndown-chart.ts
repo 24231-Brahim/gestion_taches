@@ -15,6 +15,7 @@ import { ISprint } from '../sprint.model';
       .burndown-container {
         display: flex;
         flex-direction: column;
+        border-radius: var(--radius-lg);
       }
 
       .burndown-stats {
@@ -24,14 +25,17 @@ import { ISprint } from '../sprint.model';
       }
 
       .stat-card {
-        border: 3px solid var(--color-outline-variant);
+        border: 1px solid var(--color-outline-variant);
+        border-radius: var(--radius-lg);
         padding: 16px;
         background: var(--color-surface-container);
+        box-shadow: var(--shadow-sm);
       }
 
       .stat-value {
         font-size: 1.5rem;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
+        font-weight: 600;
       }
 
       .stat-value.done {
@@ -56,13 +60,15 @@ import { ISprint } from '../sprint.model';
 })
 export class SprintBurndownChart {
   readonly sprint = input<ISprint | null>(null);
-  readonly totalIssues = input<number>(0);
-  readonly doneIssues = input<number>(0);
+  readonly totalTasks = input<number>(0);
+  readonly doneTasks = input<number>(0);
   readonly daysLeft = input<number>(0);
+  readonly totalStoryPoints = input<number>(0);
+  readonly doneStoryPoints = input<number>(0);
 
   readonly actualPoints = computed(() => {
-    const total = this.totalIssues();
-    const done = this.doneIssues();
+    const total = this.totalTasks();
+    const done = this.doneTasks();
     const xStart = 40;
     const xEnd = 290;
     const yTop = 40;

@@ -49,8 +49,8 @@ export class SprintFormService {
       goal: new FormControl(sprintRawValue.goal, {
         validators: [Validators.maxLength(500)],
       }),
-      startDate: new FormControl(sprintRawValue.startDate),
-      endDate: new FormControl(sprintRawValue.endDate),
+      startDate: new FormControl(sprintRawValue.startDate, { validators: [Validators.required] }),
+      endDate: new FormControl(sprintRawValue.endDate, { validators: [Validators.required] }),
       status: new FormControl(sprintRawValue.status, {
         validators: [Validators.required],
       }),

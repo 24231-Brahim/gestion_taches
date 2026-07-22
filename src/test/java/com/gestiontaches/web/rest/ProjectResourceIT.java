@@ -12,10 +12,12 @@ import com.gestiontaches.IntegrationTest;
 import com.gestiontaches.domain.Project;
 import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.service.dto.ProjectDTO;
+import com.gestiontaches.service.dto.ProjectMemberDTO;
 import com.gestiontaches.service.mapper.ProjectMapper;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.AfterEach;
@@ -26,6 +28,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -487,5 +490,29 @@ class ProjectResourceIT {
 
     protected void assertPersistedProjectToMatchUpdatableProperties(Project expectedProject) {
         assertProjectAllUpdatablePropertiesEquals(expectedProject, getPersistedProject(expectedProject));
+    }
+
+    @Test
+    @Transactional
+    void getCurrentUserMemberships_AdminNotExplicitMember_GetsOwnerRole() throws Exception {
+        // Create a project directly in the repo WITHOUT adding admin as a member
+        Project project1 = createEntity().key("TEST1").name("Test1");
+        insertedProject = projectRepository.saveAndFlush(project1);
+
+        Project project2 = createEntity().key("TEST2").name("Test2");
+        project2 = projectRepository.saveAndFlush(project2);
+
+        // Admin is NOT an explicit member of either project, but should get OWNER role for all
+        MvcResult result = restProjectMockMvc
+            .perform(get(ENTITY_API_URL + "/my-roles").accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andReturn();
+
+        String responseBody = result.getResponse().getContentAsString();
+        // Verify the response contains entries for both projects with OWNER role
+        org.assertj.core.api.Assertions.assertThat(responseBody).contains("\"projectId\":" + insertedProject.getId());
+        org.assertj.core.api.Assertions.assertThat(responseBody).contains("\"projectId\":" + project2.getId());
+        org.assertj.core.api.Assertions.assertThat(responseBody).contains("\"role\":\"OWNER\"");
     }
 }
