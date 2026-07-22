@@ -4,7 +4,7 @@
 
     <div class="d-flex justify-content-end">
       <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
-        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <fa-icon icon="arrows-rotate" [animation]="isLoading() ? 'spin' : undefined" />
         <span jhiTranslate="gestionTachesApp.epic.home.refreshListLabel">Actualiser la liste</span>
       </button>
 
@@ -118,12 +118,12 @@
                   </a>
 
                   <button type="button" (click)="openEditEpicModal(epic)" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                    <fa-icon icon="pencil-alt" />
+                    <fa-icon icon="pencil" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
                   </button>
 
                   <button type="submit" (click)="delete(epic)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                    <fa-icon icon="times" />
+                    <fa-icon icon="xmark" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
                   </button>
                 </div>

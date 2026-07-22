@@ -9,11 +9,11 @@
           <fa-icon icon="list" /><span class="d-none d-md-inline ms-1" jhiTranslate="gestionTachesApp.task.home.backlog">Backlog</span>
         </button>
         <button class="btn btn-sm" [class.btn-active]="viewMode() === 'kanban'" (click)="setViewMode('kanban')">
-          <fa-icon icon="columns" /><span class="d-none d-md-inline ms-1" jhiTranslate="gestionTachesApp.task.home.board">Board</span>
+          <fa-icon icon="table-columns" /><span class="d-none d-md-inline ms-1" jhiTranslate="gestionTachesApp.task.home.board">Board</span>
         </button>
       </div>
       <button class="btn btn-info btn-sm" (click)="load()" [disabled]="isLoading()">
-        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <fa-icon icon="arrows-rotate" [animation]="isLoading() ? 'spin' : undefined" />
       </button>
       <button class="btn btn-success btn-sm" (click)="exportCsv()">
         <fa-icon icon="download" /><span class="d-none d-md-inline ms-1" jhiTranslate="entity.action.exportCsv">CSV</span>
@@ -29,7 +29,7 @@
 
   <div class="task-toolbar">
     <div class="search-box">
-      <fa-icon icon="search" class="search-icon" />
+      <fa-icon icon="magnifying-glass" class="search-icon" />
       <input
         type="text"
         class="form-control form-control-sm"
@@ -118,12 +118,12 @@
                   <div class="btn-group btn-group-sm" (click)="$event.stopPropagation()">
                     @if (canEditTask(task)) {
                       <button type="button" (click)="openEditTaskModal(task)" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                        <fa-icon icon="pencil-alt" />
+                        <fa-icon icon="pencil" />
                       </button>
                     }
                     @if (canDeleteTask(task)) {
                       <button type="submit" (click)="delete(task)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                        <fa-icon icon="times" />
+                        <fa-icon icon="xmark" />
                       </button>
                     }
                   </div>

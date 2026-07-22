@@ -1,6 +1,6 @@
 <nav class="bottom-nav">
   <a class="bottom-nav-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-    <fa-icon icon="home" />
+    <fa-icon icon="house" />
     <span class="bottom-nav-label" jhiTranslate="global.menu.home">Accueil</span>
   </a>
 
@@ -11,19 +11,19 @@
     </a>
 
     <a class="bottom-nav-item" routerLink="/project" routerLinkActive="active">
-      <fa-icon icon="tasks" />
+      <fa-icon icon="list-check" />
       <span class="bottom-nav-label" jhiTranslate="global.menu.entities.task">Tasks</span>
     </a>
   }
 
   @if (account() !== null) {
     <a class="bottom-nav-item" routerLink="/account/settings" routerLinkActive="active">
-      <fa-icon icon="cog" />
+      <fa-icon icon="gear" />
       <span class="bottom-nav-label" jhiTranslate="global.menu.account.settings">Settings</span>
     </a>
   } @else {
     <a class="bottom-nav-item" routerLink="/login" routerLinkActive="active">
-      <fa-icon icon="sign-in-alt" />
+      <fa-icon icon="right-to-bracket" />
       <span class="bottom-nav-label" jhiTranslate="global.menu.account.login">Login</span>
     </a>
   }

@@ -7,7 +7,7 @@
 
   <nav class="sidebar-nav">
     <a class="sidebar-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobile()">
-      <fa-icon icon="home" [fixedWidth]="true" />
+      <fa-icon icon="house" [fixedWidth]="true" />
       <span class="sidebar-label" jhiTranslate="global.menu.home">Accueil</span>
     </a>
 
@@ -33,7 +33,7 @@
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobile()"
         >
-          <fa-icon icon="sync" [fixedWidth]="true" />
+          <fa-icon icon="arrows-rotate" [fixedWidth]="true" />
           <span class="sidebar-label" jhiTranslate="global.menu.entities.sprint">Sprints</span>
         </a>
 
@@ -55,7 +55,7 @@
           [routerLinkActiveOptions]="{ exact: true }"
           (click)="closeMobile()"
         >
-          <fa-icon icon="tasks" [fixedWidth]="true" />
+          <fa-icon icon="list-check" [fixedWidth]="true" />
           <span class="sidebar-label" jhiTranslate="global.menu.entities.task">Tasks</span>
         </a>
       } @else {
@@ -79,7 +79,7 @@
 
       <div class="sidebar-accordion">
         <button class="sidebar-item sidebar-accordion-toggle" (click)="toggleSettings()">
-          <fa-icon icon="cog" [fixedWidth]="true" />
+          <fa-icon icon="gear" [fixedWidth]="true" />
           <span class="sidebar-label" jhiTranslate="global.menu.account.settings">Paramètres</span>
           <fa-icon icon="chevron-down" class="sidebar-accordion-chevron" [class.open]="settingsOpen()" />
         </button>
@@ -123,7 +123,7 @@
               </a>
 
               <a class="sidebar-item sidebar-item-nested" routerLink="/admin/metrics" routerLinkActive="active" (click)="closeMobile()">
-                <fa-icon icon="tachometer-alt" [fixedWidth]="true" />
+                <fa-icon icon="gauge-high" [fixedWidth]="true" />
                 <span class="sidebar-label" jhiTranslate="global.menu.admin.metrics">Métriques</span>
               </a>
 
@@ -138,12 +138,12 @@
                 routerLinkActive="active"
                 (click)="closeMobile()"
               >
-                <fa-icon icon="cogs" [fixedWidth]="true" />
+                <fa-icon icon="gears" [fixedWidth]="true" />
                 <span class="sidebar-label" jhiTranslate="global.menu.admin.configuration">Configuration</span>
               </a>
 
               <a class="sidebar-item sidebar-item-nested" routerLink="/admin/logs" routerLinkActive="active" (click)="closeMobile()">
-                <fa-icon icon="tasks" [fixedWidth]="true" />
+                <fa-icon icon="list-check" [fixedWidth]="true" />
                 <span class="sidebar-label" jhiTranslate="global.menu.admin.logs">Logs</span>
               </a>
 
@@ -172,7 +172,7 @@
           @if (account()?.imageUrl) {
             <img [src]="account()!.imageUrl" class="sidebar-user-avatar" alt="Avatar" />
           } @else {
-            <fa-icon icon="user-circle" class="sidebar-user-icon" />
+            <fa-icon icon="circle-user" class="sidebar-user-icon" />
           }
           <span class="sidebar-label sidebar-user-name">{{ account()?.login }}</span>
         </a>
@@ -186,7 +186,7 @@
             <span jhiTranslate="global.menu.account.password">Mot de passe</span>
           </a>
           <a class="dropdown-item" (click)="logout()">
-            <fa-icon icon="sign-out-alt" [fixedWidth]="true" />
+            <fa-icon icon="right-from-bracket" [fixedWidth]="true" />
             <span jhiTranslate="global.menu.account.logout">Déconnexion</span>
           </a>
         </div>

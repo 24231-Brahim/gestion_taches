@@ -26,7 +26,7 @@
         }
         @if (sprint()?.status === 'COMPLETED') {
           <button class="btn btn-warning btn-sm" (click)="reopenSprint.emit()">
-            <fa-icon icon="undo" /> {{ 'gestionTachesApp.sprint.action.reopen' | translate }}
+            <fa-icon icon="arrow-rotate-left" /> {{ 'gestionTachesApp.sprint.action.reopen' | translate }}
           </button>
         }
       </div>
@@ -63,7 +63,7 @@
     </div>
     @if (hasActiveFilters()) {
       <button class="filter-reset-btn" (click)="resetFilters()">
-        <fa-icon icon="times" size="sm" /> {{ 'gestionTachesApp.sprint.board.filter.reset' | translate }}
+        <fa-icon icon="xmark" size="sm" /> {{ 'gestionTachesApp.sprint.board.filter.reset' | translate }}
       </button>
     }
   </div>

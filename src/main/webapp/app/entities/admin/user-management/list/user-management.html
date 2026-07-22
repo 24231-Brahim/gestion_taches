@@ -4,7 +4,7 @@
 
     <div class="d-flex justify-content-end">
       <button class="btn btn-info me-2" (click)="loadAll()" [disabled]="isLoading()">
-        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <fa-icon icon="arrows-rotate" [animation]="isLoading() ? 'spin' : undefined" />
         <span jhiTranslate="userManagement.home.refreshListLabel">Actualiser la liste</span>
       </button>
       <button class="btn btn-success me-2" (click)="exportCsv()">
@@ -99,7 +99,7 @@
                     class="btn btn-primary btn-sm"
                     data-cy="entityEditButton"
                   >
-                    <fa-icon icon="pencil-alt" />
+                    <fa-icon icon="pencil" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
                   </button>
 
@@ -110,7 +110,7 @@
                     data-cy="entityDeleteButton"
                     [disabled]="!currentAccount() || currentAccount()?.login === userManagement.login"
                   >
-                    <fa-icon icon="times" />
+                    <fa-icon icon="xmark" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
                   </button>
                 </div>

@@ -1,13 +1,13 @@
 <div class="tab-section">
   <h4 class="tab-section-title">
-    <fa-icon icon="history" class="me-2" />
+    <fa-icon icon="clock-rotate-left" class="me-2" />
     <span jhiTranslate="gestionTachesApp.task.detail.history">History</span>
     <span class="badge bg-secondary ms-2">{{ actionHistories().length }}</span>
   </h4>
 
   @if (isLoading()) {
     <div class="text-center p-3">
-      <fa-icon icon="sync" animation="spin" />
+      <fa-icon icon="arrows-rotate" animation="spin" />
     </div>
   } @else {
     @if (actionHistories().length === 0) {

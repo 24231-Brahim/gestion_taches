@@ -59,7 +59,7 @@
               #startDateDp="ngbDatepicker"
               formControlName="startDate"
             />
-            <button type="button" class="btn btn-secondary" (click)="startDateDp.toggle()"><fa-icon icon="calendar-alt" /></button>
+            <button type="button" class="btn btn-secondary" (click)="startDateDp.toggle()"><fa-icon icon="calendar-days" /></button>
           </div>
         </div>
 
@@ -76,7 +76,7 @@
               #endDateDp="ngbDatepicker"
               formControlName="endDate"
             />
-            <button type="button" class="btn btn-secondary" (click)="endDateDp.toggle()"><fa-icon icon="calendar-alt" /></button>
+            <button type="button" class="btn btn-secondary" (click)="endDateDp.toggle()"><fa-icon icon="calendar-days" /></button>
           </div>
         </div>
 
@@ -138,7 +138,7 @@
           [disabled]="editForm.invalid || isSaving()"
           class="btn btn-primary"
         >
-          <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+          <fa-icon icon="floppy-disk" />&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
         </button>
       </div>
     </form>

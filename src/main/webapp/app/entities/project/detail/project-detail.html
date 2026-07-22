@@ -6,10 +6,10 @@
 
       <div class="d-flex">
         <a [routerLink]="['/project', projectRef.key, 'edit']" class="btn btn-primary btn-sm me-2">
-          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+          <fa-icon icon="pencil" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
         </a>
         <button type="button" class="btn btn-danger btn-sm" (click)="delete(projectRef)">
-          <fa-icon icon="times" />&nbsp;<span jhiTranslate="entity.action.delete">Supprimer</span>
+          <fa-icon icon="xmark" />&nbsp;<span jhiTranslate="entity.action.delete">Supprimer</span>
         </button>
       </div>
     </h2>
@@ -42,7 +42,7 @@
 
     @if (isAdminNotExplicitMember()) {
       <div class="alert alert-info mb-3" role="alert">
-        <fa-icon icon="shield-alt" class="me-1" />
+        <fa-icon icon="shield-halved" class="me-1" />
         <span jhiTranslate="gestionTachesApp.project.member.adminAccess">Vous avez un accès administrateur complet à ce projet.</span>
       </div>
     }
@@ -63,10 +63,10 @@
             </div>
             <div class="col-auto">
               <button class="btn btn-primary" (click)="addMember(projectRef.id)" [disabled]="!selectedUserId()">
-                <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Save</span>
+                <fa-icon icon="floppy-disk" />&nbsp;<span jhiTranslate="entity.action.save">Save</span>
               </button>
               <button class="btn btn-secondary ms-1" (click)="toggleAddForm()">
-                <fa-icon icon="times" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
+                <fa-icon icon="xmark" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancel</span>
               </button>
             </div>
           </div>
@@ -102,10 +102,10 @@
                       <option [ngValue]="'MEMBER'">MEMBER</option>
                     </select>
                     <button class="btn btn-sm btn-primary" (click)="saveRole(projectRef.id, member)">
-                      <fa-icon icon="save" />
+                      <fa-icon icon="floppy-disk" />
                     </button>
                     <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">
-                      <fa-icon icon="times" />
+                      <fa-icon icon="xmark" />
                     </button>
                   </div>
                 } @else {
@@ -118,11 +118,11 @@
                   <div class="d-flex gap-1">
                     @if (editingMemberId() !== member.id) {
                       <button class="btn btn-sm btn-warning" (click)="startEdit(member)">
-                        <fa-icon icon="pencil-alt" />
+                        <fa-icon icon="pencil" />
                       </button>
                     }
                     <button class="btn btn-sm btn-danger" (click)="removeMember(projectRef.id, member.userId!)">
-                      <fa-icon icon="trash-alt" />
+                      <fa-icon icon="trash-can" />
                     </button>
                   </div>
                 }

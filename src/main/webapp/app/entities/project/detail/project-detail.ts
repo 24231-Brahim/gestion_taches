@@ -6,6 +6,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { TranslateModule } from '@ngx-translate/core';
 import { filter, tap } from 'rxjs';
+import dayjs from 'dayjs/esm';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
@@ -82,7 +83,7 @@ export class ProjectDetail {
       userId: null,
       projectId: null,
       role: ProjectRole.OWNER,
-      joinedAt: new Date().toISOString() as any,
+      joinedAt: dayjs(),
       isSynthetic: true,
     };
     return [...realMembers, syntheticMember];

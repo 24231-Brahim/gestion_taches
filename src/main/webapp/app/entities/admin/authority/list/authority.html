@@ -4,7 +4,7 @@
 
     <div class="d-flex justify-content-end">
       <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
-        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <fa-icon icon="arrows-rotate" [animation]="isLoading() ? 'spin' : undefined" />
         <span jhiTranslate="gestionTachesApp.adminAuthority.home.refreshListLabel">Actualiser la liste</span>
       </button>
 
@@ -57,7 +57,7 @@
                   </a>
 
                   <button type="submit" (click)="delete(authority)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                    <fa-icon icon="times" />
+                    <fa-icon icon="xmark" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
                   </button>
                 </div>
