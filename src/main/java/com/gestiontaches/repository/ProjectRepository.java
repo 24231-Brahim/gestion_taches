@@ -26,6 +26,11 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     )
     Optional<Project> findByIdAndOwnerLoginOrMemberLogin(Long id, String login);
 
+    @Query(
+        "SELECT DISTINCT p FROM Project p LEFT JOIN FETCH p.owner LEFT JOIN p.projectMembers pm WHERE p.owner.login = ?1 OR pm.user.login = ?1"
+    )
+    java.util.List<Project> findAllByOwnerLoginOrMemberLogin(String login);
+
     Optional<Project> findByKey(String key);
 
     @Query("SELECT DISTINCT p FROM Project p LEFT JOIN FETCH p.owner")

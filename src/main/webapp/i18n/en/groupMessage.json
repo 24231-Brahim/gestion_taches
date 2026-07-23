@@ -1,0 +1,36 @@
+{
+  "gestionTachesApp": {
+    "groupMessage": {
+      "home": {
+        "title": "Discussion",
+        "refreshListLabel": "Refresh",
+        "createLabel": "New message",
+        "createOrEditLabel": "Create or edit a message",
+        "notFound": "No messages yet."
+      },
+      "created": "Message sent",
+      "updated": "Message updated",
+      "deleted": "Message deleted",
+      "delete": {
+        "question": "Are you sure you want to delete this message?"
+      },
+      "detail": {
+        "title": "Message"
+      },
+      "id": "ID",
+      "content": "Content",
+      "createdAt": "Date",
+      "sender": "Sender",
+      "recipient": {
+        "label": "Recipient",
+        "group": "Everyone"
+      },
+      "members": "Members",
+      "form": {
+        "placeholder": "Write your message...",
+        "everyone": "Everyone",
+        "submit": "Send"
+      }
+    }
+  }
+}

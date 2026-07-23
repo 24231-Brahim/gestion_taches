@@ -26,6 +26,11 @@
       "epics": "Epics",
       "tasks": "Tâches",
       "members": "Membres",
+      "tab": {
+        "details": "Détails",
+        "members": "Membres",
+        "discussion": "Discussion"
+      },
       "member": {
         "add": "Ajouter un membre",
         "added": "Membre ajouté au projet",

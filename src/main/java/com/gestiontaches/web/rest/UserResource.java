@@ -2,11 +2,16 @@ package com.gestiontaches.web.rest;
 
 import com.gestiontaches.config.Constants;
 import com.gestiontaches.domain.User;
+import com.gestiontaches.repository.ProjectMemberRepository;
+import com.gestiontaches.repository.TaskHistoryRepository;
+import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.MailService;
+import com.gestiontaches.service.UserAdminDetailMapper;
 import com.gestiontaches.service.UserService;
 import com.gestiontaches.service.dto.AdminUserDTO;
+import com.gestiontaches.service.dto.UserAdminDetailDTO;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import com.gestiontaches.web.rest.errors.EmailAlreadyUsedException;
 import com.gestiontaches.web.rest.errors.LoginAlreadyUsedException;
@@ -19,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
@@ -84,10 +90,30 @@ public class UserResource {
 
     private final MailService mailService;
 
-    public UserResource(UserService userService, UserRepository userRepository, MailService mailService) {
+    private final TaskRepository taskRepository;
+
+    private final ProjectMemberRepository projectMemberRepository;
+
+    private final TaskHistoryRepository taskHistoryRepository;
+
+    private final UserAdminDetailMapper userAdminDetailMapper;
+
+    public UserResource(
+        UserService userService,
+        UserRepository userRepository,
+        MailService mailService,
+        TaskRepository taskRepository,
+        ProjectMemberRepository projectMemberRepository,
+        TaskHistoryRepository taskHistoryRepository,
+        UserAdminDetailMapper userAdminDetailMapper
+    ) {
         this.userService = userService;
         this.userRepository = userRepository;
         this.mailService = mailService;
+        this.taskRepository = taskRepository;
+        this.projectMemberRepository = projectMemberRepository;
+        this.taskHistoryRepository = taskHistoryRepository;
+        this.userAdminDetailMapper = userAdminDetailMapper;
     }
 
     /**
@@ -188,6 +214,29 @@ public class UserResource {
     public ResponseEntity<AdminUserDTO> getUser(@PathVariable("login") @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
         LOG.debug("REST request to get User : {}", login);
         return ResponseUtil.wrapOrNotFound(userService.getUserWithAuthoritiesByLogin(login).map(AdminUserDTO::new));
+    }
+
+    /**
+     * {@code GET /admin/users/:login/detail} : get detailed admin view of the "login" user
+     * including assigned tasks, project memberships, and recent activity.
+     *
+     * @param login the login of the user to find.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the user detail DTO, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/users/{login}/detail")
+    @PreAuthorize("hasAuthority(\"" + AuthoritiesConstants.ADMIN + "\")")
+    public ResponseEntity<UserAdminDetailDTO> getUserDetail(@PathVariable("login") @Pattern(regexp = Constants.LOGIN_REGEX) String login) {
+        LOG.debug("REST request to get User detail : {}", login);
+        return userService
+            .getUserWithAuthoritiesByLogin(login)
+            .map(user -> {
+                var tasks = taskRepository.findByAssigneeLoginWithToOneRelationships(login);
+                var memberships = projectMemberRepository.findByUserLogin(login);
+                var history = taskHistoryRepository.findByUserLoginOrderByCreatedAtDesc(login, PageRequest.of(0, 20));
+                UserAdminDetailDTO dto = userAdminDetailMapper.toDto(user, tasks, memberships, history);
+                return ResponseEntity.ok().body(dto);
+            })
+            .orElse(ResponseEntity.notFound().build());
     }
 
     /**

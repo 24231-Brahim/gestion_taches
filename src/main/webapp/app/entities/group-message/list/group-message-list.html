@@ -1,0 +1,76 @@
+<div class="discussion-container">
+  <div class="discussion-header">
+    <h4 class="discussion-title">
+      <fa-icon icon="comments" class="me-2" />
+      <span jhiTranslate="gestionTachesApp.groupMessage.home.title">Discussion</span>
+    </h4>
+    <button class="btn btn-info btn-sm" (click)="loadMessages(projectId())" [disabled]="isLoading()">
+      <fa-icon icon="arrows-rotate" [animation]="isLoading() ? 'spin' : undefined" />
+      <span jhiTranslate="gestionTachesApp.groupMessage.home.refreshListLabel">Actualiser</span>
+    </button>
+  </div>
+
+  <div class="d-flex gap-3" style="min-height: 400px">
+    <div class="message-list flex-grow-1">
+      @if (messages().length === 0 && !isLoading()) {
+        <div class="empty-state">
+          <fa-icon icon="comment-dots" size="2x" class="mb-2" />
+          <p jhiTranslate="gestionTachesApp.groupMessage.home.notFound">Aucun message pour le moment.</p>
+        </div>
+      }
+
+      @for (msg of messages(); track trackById($index, msg)) {
+        <div class="message-item" [class.private]="msg.recipient">
+          <div class="message-header">
+            <span class="message-author">{{ msg.sender?.login }}</span>
+            @if (msg.recipient) {
+              <span class="message-recipient">
+                <fa-icon icon="arrow-right" class="me-1" />
+                {{ msg.recipient.login }}
+              </span>
+            } @else {
+              <span class="message-recipient">
+                <fa-icon icon="users" class="me-1" />
+                <span jhiTranslate="gestionTachesApp.groupMessage.recipient.group">Tout le groupe</span>
+              </span>
+            }
+            <span class="message-date">{{ msg.createdAt | formatMediumDatetime }}</span>
+          </div>
+          <div class="message-content">{{ msg.content }}</div>
+        </div>
+      }
+    </div>
+
+    <div class="members-sidebar" style="width: 200px; flex-shrink: 0">
+      <h5 class="members-title" jhiTranslate="gestionTachesApp.groupMessage.members">Membres</h5>
+      @for (member of members(); track member.id) {
+        <div class="member-item">
+          <span class="member-avatar">{{ getInitials(member.userLogin ?? undefined) }}</span>
+          <span>{{ member.userLogin }}</span>
+          <span class="member-role">{{ member.role }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="compose-box">
+    <div class="compose-row">
+      <textarea
+        class="form-control"
+        [ngModel]="newMessageText()"
+        (ngModelChange)="newMessageText.set($event)"
+        rows="2"
+        placeholder="{{ 'gestionTachesApp.groupMessage.form.placeholder' | translate }}"
+      ></textarea>
+      <select class="form-select" [ngModel]="selectedRecipientId()" (ngModelChange)="selectedRecipientId.set($event)">
+        <option [ngValue]="null" jhiTranslate="gestionTachesApp.groupMessage.form.everyone">Tout le groupe</option>
+        @for (member of members(); track member.id) {
+          <option [ngValue]="member.userId">{{ member.userLogin }}</option>
+        }
+      </select>
+      <button class="btn btn-primary" (click)="sendMessage()" [disabled]="!newMessageText().trim()">
+        <fa-icon icon="paper-plane" />&nbsp;{{ 'gestionTachesApp.groupMessage.form.submit' | translate }}
+      </button>
+    </div>
+  </div>
+</div>

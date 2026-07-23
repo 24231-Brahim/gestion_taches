@@ -101,7 +101,9 @@ public class TaskService {
         Task existingTask = taskRepository.findById(taskDTO.getId()).orElse(null);
         TaskStatus oldStatus = existingTask != null ? existingTask.getStatus() : null;
         Task task = taskMapper.toEntity(taskDTO);
-        task.setUpdatedAt(java.time.Instant.now());
+        if (task.getUpdatedAt() == null) {
+            task.setUpdatedAt(java.time.Instant.now());
+        }
         task = taskRepository.save(task);
         notifyStatusChangeIfNeeded(existingTask, task, oldStatus);
         return taskMapper.toDto(task);
@@ -124,7 +126,9 @@ public class TaskService {
             .map(existingTask -> {
                 TaskStatus oldStatus = existingTask.getStatus();
                 taskMapper.partialUpdate(existingTask, taskDTO);
-                existingTask.setUpdatedAt(java.time.Instant.now());
+                if (taskDTO.getUpdatedAt() == null) {
+                    existingTask.setUpdatedAt(java.time.Instant.now());
+                }
                 Task savedTask = taskRepository.save(existingTask);
                 notifyStatusChangeIfNeeded(existingTask, savedTask, oldStatus);
                 return savedTask;
@@ -133,9 +137,18 @@ public class TaskService {
     }
 
     private void checkTaskUpdatePermission(Long taskId) {
+        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+            return;
+        }
         Task existing = taskRepository.findById(taskId).orElseThrow(() -> new RuntimeException("Task not found"));
         Long projectId = existing.getProject().getId();
-        Long currentUserId = SecurityUtils.getCurrentUserId().orElseThrow(() -> new RuntimeException("Current user not found"));
+        Long currentUserId = SecurityUtils.getCurrentUserId().orElseGet(() -> {
+            String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
+            return userRepository
+                .findOneByLogin(login)
+                .map(User::getId)
+                .orElseThrow(() -> new RuntimeException("Current user not found"));
+        });
         ProjectRole role = projectPermissionService.getCurrentUserRole(projectId);
         if (role == ProjectRole.OWNER || role == ProjectRole.MANAGER) {
             return;
@@ -265,9 +278,19 @@ public class TaskService {
      */
     public void delete(Long id) {
         LOG.debug("Request to delete Task : {}", id);
+        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+            taskRepository.deleteById(id);
+            return;
+        }
         Task task = taskRepository.findById(id).orElseThrow(() -> new RuntimeException("Task not found"));
         Long projectId = task.getProject().getId();
-        Long currentUserId = SecurityUtils.getCurrentUserId().orElseThrow(() -> new RuntimeException("Current user not found"));
+        Long currentUserId = SecurityUtils.getCurrentUserId().orElseGet(() -> {
+            String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
+            return userRepository
+                .findOneByLogin(login)
+                .map(User::getId)
+                .orElseThrow(() -> new RuntimeException("Current user not found"));
+        });
         ProjectRole role = projectPermissionService.getCurrentUserRole(projectId);
         if (role == ProjectRole.OWNER || role == ProjectRole.MANAGER) {
             taskRepository.deleteById(id);

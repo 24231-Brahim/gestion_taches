@@ -17,7 +17,6 @@ public class CommentDTO implements Serializable {
     @Size(min = 1, max = 2000)
     private String content;
 
-    @NotNull
     private Instant createdAt;
 
     @NotNull

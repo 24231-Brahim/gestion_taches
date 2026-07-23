@@ -1,10 +1,11 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { AccountService } from 'app/core/auth/account.service';
+import { AlertService } from 'app/core/util/alert.service';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { IAttachment } from 'app/entities/attachment/attachment.model';
 import { AttachmentService } from 'app/entities/attachment/service/attachment.service';
@@ -96,6 +97,7 @@ export class TaskAttachmentList implements OnInit {
   protected readonly http = inject(HttpClient);
   protected readonly attachmentService = inject(AttachmentService);
   protected readonly accountService = inject(AccountService);
+  protected readonly alertService = inject(AlertService);
   protected readonly appConfig = inject(ApplicationConfigService);
 
   ngOnInit(): void {
@@ -105,6 +107,7 @@ export class TaskAttachmentList implements OnInit {
   loadAttachments(): void {
     this.http.get<IAttachment[]>(this.appConfig.getEndpointFor(`api/attachments/by-task/${this.taskId()}`)).subscribe({
       next: attachments => this.attachments.set(attachments),
+      error: () => this.alertService.addAlert({ type: 'danger', translationKey: 'error.general' }),
     });
   }
 
@@ -113,12 +116,20 @@ export class TaskAttachmentList implements OnInit {
     formData.append('file', file);
     this.http.post(this.appConfig.getEndpointFor(`api/attachments/upload?taskId=${this.taskId()}`), formData).subscribe({
       next: () => this.loadAttachments(),
+      error: (err: HttpErrorResponse) => {
+        const message = err.error?.detail ?? err.message ?? 'error.general';
+        this.alertService.addAlert({ type: 'danger', message });
+      },
     });
   }
 
   deleteAttachment(id: number): void {
     this.attachmentService.delete(id).subscribe({
       next: () => this.loadAttachments(),
+      error: (err: HttpErrorResponse) => {
+        const message = err.error?.detail ?? err.message ?? 'error.general';
+        this.alertService.addAlert({ type: 'danger', message });
+      },
     });
   }
 

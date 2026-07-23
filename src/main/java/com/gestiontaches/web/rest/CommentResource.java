@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -86,6 +87,9 @@ public class CommentResource {
             )
             .orElseThrow(() -> new BadRequestAlertException("User not found", ENTITY_NAME, "usernotfound"));
         commentDTO.setAuthor(new com.gestiontaches.service.dto.UserDTO(currentUser));
+        if (commentDTO.getCreatedAt() == null) {
+            commentDTO.setCreatedAt(Instant.now());
+        }
         commentDTO = commentService.save(commentDTO);
         return ResponseEntity.created(new URI("/api/comments/" + commentDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, commentDTO.getId().toString()))

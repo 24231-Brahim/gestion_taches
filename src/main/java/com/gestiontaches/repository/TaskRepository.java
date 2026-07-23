@@ -63,11 +63,42 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
 
     long countByStatusNotIn(java.util.Collection<TaskStatus> statuses);
 
+    long countByProjectIdIn(java.util.Collection<Long> projectIds);
+
+    long countByProjectIdInAndStatus(java.util.Collection<Long> projectIds, TaskStatus status);
+
     @Query(
-        "SELECT t.project.id, t.project.name, COUNT(t), SUM(CASE WHEN t.status = com.gestiontaches.domain.enumeration.TaskStatus.DONE THEN 1 ELSE 0 END) FROM Task t WHERE t.project IS NOT NULL GROUP BY t.project.id, t.project.name ORDER BY t.project.name"
+        "SELECT COUNT(t) FROM Task t WHERE t.status NOT IN (com.gestiontaches.domain.enumeration.TaskStatus.DONE, com.gestiontaches.domain.enumeration.TaskStatus.CANCELLED) AND ((t.sprint IS NOT NULL AND t.sprint.endDate < :today) OR (t.sprint IS NULL AND t.createdAt < :cutoff))"
     )
-    List<Object[]> countTasksGroupByProject();
+    long countOverdueTasksGlobal(@Param("today") java.time.LocalDate today, @Param("cutoff") java.time.Instant cutoff);
+
+    @Query(
+        "SELECT COUNT(t) FROM Task t WHERE t.project.id IN :projectIds AND t.status NOT IN (com.gestiontaches.domain.enumeration.TaskStatus.DONE, com.gestiontaches.domain.enumeration.TaskStatus.CANCELLED) AND ((t.sprint IS NOT NULL AND t.sprint.endDate < :today) OR (t.sprint IS NULL AND t.createdAt < :cutoff))"
+    )
+    long countOverdueTasksByProjectIds(
+        @Param("projectIds") java.util.Collection<Long> projectIds,
+        @Param("today") java.time.LocalDate today,
+        @Param("cutoff") java.time.Instant cutoff
+    );
+
+    @Query(
+        "SELECT p.id, p.name, COUNT(t), SUM(CASE WHEN t.status = com.gestiontaches.domain.enumeration.TaskStatus.DONE THEN 1 ELSE 0 END) FROM Project p LEFT JOIN p.tasks t GROUP BY p.id, p.name ORDER BY p.name"
+    )
+    List<Object[]> countTasksGroupByProjectAll();
+
+    @Query(
+        "SELECT p.id, p.name, COUNT(t), SUM(CASE WHEN t.status = com.gestiontaches.domain.enumeration.TaskStatus.DONE THEN 1 ELSE 0 END) FROM Project p LEFT JOIN p.tasks t WHERE p.id IN :projectIds GROUP BY p.id, p.name ORDER BY p.name"
+    )
+    List<Object[]> countTasksGroupByProjectForProjects(@Param("projectIds") java.util.Collection<Long> projectIds);
 
     @Query("SELECT t.status, COUNT(t) FROM Task t GROUP BY t.status")
     List<Object[]> countTasksGroupByStatus();
+
+    @Query("SELECT t.status, COUNT(t) FROM Task t WHERE t.project.id IN :projectIds GROUP BY t.status")
+    List<Object[]> countTasksGroupByStatusForProjects(@Param("projectIds") java.util.Collection<Long> projectIds);
+
+    @Query(
+        "select t from Task t left join fetch t.sprint left join fetch t.epic left join fetch t.project left join fetch t.assignee left join fetch t.createdBy where t.assignee.login = :login"
+    )
+    List<Task> findByAssigneeLoginWithToOneRelationships(@Param("login") String login);
 }

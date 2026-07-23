@@ -16,6 +16,28 @@
     "detail": {
       "title": "Utilisateur"
     },
+    "adminDetail": {
+      "title": "Détail utilisateur",
+      "shortLabel": "Détail admin",
+      "loading": "Chargement...",
+      "loadError": "Erreur lors du chargement des détails",
+      "userInfo": "Informations utilisateur",
+      "status": "Statut",
+      "tasks": "Tâches assignées",
+      "taskKey": "Clé",
+      "taskTitle": "Titre",
+      "taskStatus": "Statut",
+      "taskPriority": "Priorité",
+      "taskProject": "Projet",
+      "taskSprint": "Sprint",
+      "taskEpic": "Epic",
+      "noTasks": "Aucune tâche assignée",
+      "projects": "Projets",
+      "joinedAt": "Rejoint le",
+      "noProjects": "Aucun projet",
+      "activity": "Activité récente",
+      "noActivity": "Aucune activité récente"
+    },
     "id": "ID",
     "login": "Login",
     "firstName": "Prénom",

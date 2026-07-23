@@ -1,16 +1,20 @@
 package com.gestiontaches.web.rest;
 
+import com.gestiontaches.domain.Project;
 import com.gestiontaches.domain.enumeration.TaskStatus;
 import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.repository.TaskRepository;
+import com.gestiontaches.security.AuthoritiesConstants;
+import com.gestiontaches.security.SecurityUtils;
 import com.gestiontaches.service.dto.DashboardKpiDTO;
 import com.gestiontaches.service.dto.DashboardKpiDTO.ProjectProgressDTO;
 import com.gestiontaches.service.dto.DashboardKpiDTO.TaskStatusCountDTO;
-import java.util.Arrays;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,25 +48,61 @@ public class DashboardResource {
         LOG.debug("REST request to get Dashboard KPIs");
 
         DashboardKpiDTO dto = new DashboardKpiDTO();
+        boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
+        String currentLogin = SecurityUtils.getCurrentUserLogin().orElse(null);
 
-        dto.setTotalProjects(projectRepository.count());
-        dto.setTeamMembers(projectMemberRepository.countDistinctUsers());
+        LocalDate today = LocalDate.now();
+        Instant cutoff = Instant.now().minus(14, ChronoUnit.DAYS);
 
-        long totalTasks = taskRepository.count();
-        dto.setTotalTasks(totalTasks);
+        if (isAdmin) {
+            dto.setTotalProjects(projectRepository.count());
+            dto.setTeamMembers(projectMemberRepository.countDistinctUsers());
+            dto.setTotalTasks(taskRepository.count());
+            dto.setCompletedTasks(taskRepository.countByStatus(TaskStatus.DONE));
+            dto.setOverdueTasks(taskRepository.countOverdueTasksGlobal(today, cutoff));
 
-        long completedTasks = taskRepository.countByStatus(TaskStatus.DONE);
-        dto.setCompletedTasks(completedTasks);
+            List<Object[]> projectStats = taskRepository.countTasksGroupByProjectAll();
+            populateProjectProgressAndActiveProjects(dto, projectStats);
 
-        long overdueTasks = taskRepository.countByStatusNotIn(Arrays.asList(TaskStatus.DONE, TaskStatus.CANCELLED));
-        dto.setOverdueTasks(overdueTasks);
+            List<Object[]> statusStats = taskRepository.countTasksGroupByStatus();
+            populateTaskDistribution(dto, statusStats);
+        } else if (currentLogin != null) {
+            List<Project> userProjects = projectRepository.findAllByOwnerLoginOrMemberLogin(currentLogin);
+            List<Long> projectIds = userProjects.stream().map(Project::getId).toList();
 
-        List<Object[]> projectStats = taskRepository.countTasksGroupByProject();
+            dto.setTotalProjects((long) userProjects.size());
+
+            if (projectIds.isEmpty()) {
+                dto.setTeamMembers(0L);
+                dto.setTotalTasks(0L);
+                dto.setCompletedTasks(0L);
+                dto.setOverdueTasks(0L);
+                dto.setActiveProjects(0L);
+                dto.setProjectProgress(Collections.emptyList());
+                dto.setTaskDistribution(Collections.emptyList());
+            } else {
+                dto.setTeamMembers(projectMemberRepository.countDistinctUsersByProjectIds(projectIds));
+                dto.setTotalTasks(taskRepository.countByProjectIdIn(projectIds));
+                dto.setCompletedTasks(taskRepository.countByProjectIdInAndStatus(projectIds, TaskStatus.DONE));
+                dto.setOverdueTasks(taskRepository.countOverdueTasksByProjectIds(projectIds, today, cutoff));
+
+                List<Object[]> projectStats = taskRepository.countTasksGroupByProjectForProjects(projectIds);
+                populateProjectProgressAndActiveProjects(dto, projectStats);
+
+                List<Object[]> statusStats = taskRepository.countTasksGroupByStatusForProjects(projectIds);
+                populateTaskDistribution(dto, statusStats);
+            }
+        }
+
+        return dto;
+    }
+
+    private void populateProjectProgressAndActiveProjects(DashboardKpiDTO dto, List<Object[]> projectStats) {
         long activeProjects = projectStats
             .stream()
             .filter(row -> {
-                long done = ((Number) row[3]).longValue();
                 long total = ((Number) row[2]).longValue();
+                long done = ((Number) row[3]).longValue();
                 return total > 0 && done < total;
             })
             .count();
@@ -87,14 +127,13 @@ public class DashboardResource {
             .limit(10)
             .toList();
         dto.setProjectProgress(progress);
+    }
 
-        List<Object[]> statusStats = taskRepository.countTasksGroupByStatus();
+    private void populateTaskDistribution(DashboardKpiDTO dto, List<Object[]> statusStats) {
         List<TaskStatusCountDTO> distribution = statusStats
             .stream()
-            .map(row -> new TaskStatusCountDTO((String) row[0], ((Number) row[1]).longValue()))
+            .map(row -> new TaskStatusCountDTO(row[0] != null ? row[0].toString() : "UNKNOWN", ((Number) row[1]).longValue()))
             .toList();
         dto.setTaskDistribution(distribution);
-
-        return dto;
     }
 }
