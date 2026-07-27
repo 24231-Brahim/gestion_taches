@@ -12,13 +12,14 @@ import com.gestiontaches.service.mapper.TaskMapper;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -109,15 +110,25 @@ public class AttachmentResource {
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
         Files.createDirectories(uploadPath);
         Path filePath = uploadPath.resolve(storedName);
-        file.transferTo(filePath.toFile());
+        try (InputStream inputStream = file.getInputStream()) {
+            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+        }
+        Attachment attachment = new Attachment();
+        attachment.setFileName(originalName);
+        attachment.setFilePath(storedName);
+        attachment.setUploadedAt(Instant.now());
+        attachment.setTask(task);
+        attachment = attachmentRepository.save(attachment);
         AttachmentDTO attachmentDTO = new AttachmentDTO();
-        attachmentDTO.setFileName(originalName);
-        attachmentDTO.setFilePath(storedName);
-        attachmentDTO.setUploadedAt(Instant.now());
-        attachmentDTO.setTask(taskMapper.toDto(task));
-        attachmentDTO = attachmentService.save(attachmentDTO);
-        return ResponseEntity.created(new URI("/api/attachments/" + attachmentDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, attachmentDTO.getId().toString()))
+        attachmentDTO.setId(attachment.getId());
+        attachmentDTO.setFileName(attachment.getFileName());
+        attachmentDTO.setFilePath(attachment.getFilePath());
+        attachmentDTO.setUploadedAt(attachment.getUploadedAt());
+        TaskDTO taskDTO = new TaskDTO();
+        taskDTO.setId(task.getId());
+        attachmentDTO.setTask(taskDTO);
+        return ResponseEntity.created(new URI("/api/attachments/" + attachment.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, attachment.getId().toString()))
             .body(attachmentDTO);
     }
 
