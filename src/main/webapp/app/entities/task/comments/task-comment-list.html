@@ -7,7 +7,7 @@
         <span class="comment-date">{{ comment.createdAt | formatMediumDatetime }}</span>
         @if (canModify(comment)) {
           <button class="btn btn-sm btn-danger comment-delete" (click)="deleteComment(comment.id)">
-            <fa-icon icon="times" />
+            <fa-icon icon="xmark" />
           </button>
         }
       </div>

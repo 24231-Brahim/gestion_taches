@@ -19,6 +19,12 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
     @Query("SELECT COUNT(DISTINCT pm.user.id) FROM ProjectMember pm")
     long countDistinctUsers();
 
+    @Query("SELECT COUNT(DISTINCT pm.user.id) FROM ProjectMember pm WHERE pm.project.id IN :projectIds")
+    long countDistinctUsersByProjectIds(@Param("projectIds") java.util.Collection<Long> projectIds);
+
     @Query("SELECT pm FROM ProjectMember pm LEFT JOIN FETCH pm.project LEFT JOIN FETCH pm.user WHERE pm.user.id = :userId")
     List<ProjectMember> findByUserId(@Param("userId") Long userId);
+
+    @Query("SELECT pm FROM ProjectMember pm LEFT JOIN FETCH pm.project LEFT JOIN FETCH pm.user WHERE pm.user.login = :login")
+    List<ProjectMember> findByUserLogin(@Param("login") String login);
 }

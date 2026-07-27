@@ -1,0 +1,36 @@
+{
+  "gestionTachesApp": {
+    "groupMessage": {
+      "home": {
+        "title": "Discussion",
+        "refreshListLabel": "Actualiser",
+        "createLabel": "Nouveau message",
+        "createOrEditLabel": "Créer ou modifier un message",
+        "notFound": "Aucun message pour le moment."
+      },
+      "created": "Message envoyé",
+      "updated": "Message mis à jour",
+      "deleted": "Message supprimé",
+      "delete": {
+        "question": "Êtes-vous sûr de vouloir supprimer ce message ?"
+      },
+      "detail": {
+        "title": "Message"
+      },
+      "id": "ID",
+      "content": "Contenu",
+      "createdAt": "Date",
+      "sender": "Expéditeur",
+      "recipient": {
+        "label": "Destinataire",
+        "group": "Tout le groupe"
+      },
+      "members": "Membres",
+      "form": {
+        "placeholder": "Écrivez votre message...",
+        "everyone": "Tout le groupe",
+        "submit": "Envoyer"
+      }
+    }
+  }
+}

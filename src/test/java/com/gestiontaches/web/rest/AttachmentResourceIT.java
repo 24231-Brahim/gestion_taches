@@ -513,6 +513,39 @@ class AttachmentResourceIT {
             .andExpect(status().isForbidden());
     }
 
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_USER" })
+    void uploadAttachment_asUser_shouldSucceed() throws Exception {
+        long databaseSizeBeforeCreate = getRepositoryCount();
+
+        org.springframework.mock.web.MockMultipartFile file = new org.springframework.mock.web.MockMultipartFile(
+            "file",
+            "test.txt",
+            MediaType.TEXT_PLAIN_VALUE,
+            "test content".getBytes()
+        );
+
+        Task task;
+        if (TestUtil.findAll(em, Task.class).isEmpty()) {
+            task = TaskResourceIT.createEntity(em);
+            em.persist(task);
+            em.flush();
+        } else {
+            task = TestUtil.findAll(em, Task.class).get(0);
+        }
+
+        restAttachmentMockMvc
+            .perform(
+                org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart(ENTITY_API_URL + "/upload")
+                    .file(file)
+                    .param("taskId", task.getId().toString())
+            )
+            .andExpect(status().isCreated());
+
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+    }
+
     protected long getRepositoryCount() {
         return attachmentRepository.count();
     }

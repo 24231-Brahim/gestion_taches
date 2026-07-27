@@ -1,16 +1,24 @@
 package com.gestiontaches.web.rest;
 
 import com.gestiontaches.repository.EpicRepository;
+import com.gestiontaches.repository.TaskRepository;
+import com.gestiontaches.repository.TaskTransitionRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.EpicQueryService;
 import com.gestiontaches.service.EpicService;
 import com.gestiontaches.service.criteria.EpicCriteria;
+import com.gestiontaches.service.dto.BurndownData;
 import com.gestiontaches.service.dto.EpicDTO;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -48,10 +56,22 @@ public class EpicResource {
 
     private final EpicQueryService epicQueryService;
 
-    public EpicResource(EpicService epicService, EpicRepository epicRepository, EpicQueryService epicQueryService) {
+    private final TaskRepository taskRepository;
+
+    private final TaskTransitionRepository taskTransitionRepository;
+
+    public EpicResource(
+        EpicService epicService,
+        EpicRepository epicRepository,
+        EpicQueryService epicQueryService,
+        TaskRepository taskRepository,
+        TaskTransitionRepository taskTransitionRepository
+    ) {
         this.epicService = epicService;
         this.epicRepository = epicRepository;
         this.epicQueryService = epicQueryService;
+        this.taskRepository = taskRepository;
+        this.taskTransitionRepository = taskTransitionRepository;
     }
 
     /**
@@ -235,5 +255,55 @@ public class EpicResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    @GetMapping("/{id}/burndown")
+    public ResponseEntity<BurndownData> getBurndown(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get burndown for Epic : {}", id);
+        EpicDTO epicDTO = epicService.findOne(id).orElseThrow(() -> new RuntimeException("Epic not found"));
+        List<com.gestiontaches.domain.Task> epicTasks = taskRepository.findByEpicId(id);
+        int totalTasks = epicTasks.size();
+        if (totalTasks == 0) {
+            LocalDate today = LocalDate.now();
+            return ResponseEntity.ok(new BurndownData(List.of(today.toString()), List.of(0L), List.of(0L)));
+        }
+        List<Object[]> transitions = taskTransitionRepository.findTransitionsByEpicId(id);
+        LocalDate startDate = epicDTO.getStartDate() != null ? epicDTO.getStartDate() : LocalDate.now().minusDays(30);
+        LocalDate endDate = epicDTO.getEndDate() != null ? epicDTO.getEndDate() : LocalDate.now();
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        List<String> dates = new ArrayList<>();
+        List<Long> ideal = new ArrayList<>();
+        List<Long> actual = new ArrayList<>();
+        long remaining = totalTasks;
+        LocalDate cursor = startDate;
+        LocalDate end = endDate.plusDays(1);
+        int totalDays = Math.max(1, (int) (endDate.toEpochDay() - startDate.toEpochDay()));
+        int dayIndex = 0;
+        int trIdx = 0;
+        while (!cursor.isAfter(end)) {
+            Instant cursorInstant = cursor.atStartOfDay(ZoneId.systemDefault()).toInstant();
+            while (trIdx < transitions.size()) {
+                Instant trTime = (Instant) transitions.get(trIdx)[0];
+                if (trTime.isAfter(cursorInstant)) {
+                    break;
+                }
+                String toStatus = (String) transitions.get(trIdx)[2];
+                if ("DONE".equals(toStatus) || "CANCELLED".equals(toStatus)) {
+                    remaining = Math.max(0, remaining - 1);
+                }
+                trIdx++;
+            }
+            dates.add(cursor.format(fmt));
+            ideal.add((long) Math.max(0, totalTasks - (int) (((long) dayIndex * totalTasks) / totalDays)));
+            actual.add(remaining);
+            cursor = cursor.plusDays(1);
+            dayIndex++;
+        }
+        if (dates.isEmpty()) {
+            dates.add(LocalDate.now().format(fmt));
+            ideal.add((long) totalTasks);
+            actual.add(remaining);
+        }
+        return ResponseEntity.ok(new BurndownData(dates, ideal, actual));
     }
 }

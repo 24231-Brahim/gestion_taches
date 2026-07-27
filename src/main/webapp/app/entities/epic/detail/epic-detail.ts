@@ -351,9 +351,9 @@ export class EpicDetail {
   });
 
   readonly typeIcons: Record<string, string> = {
-    STORY: 'th-list',
+    STORY: 'table-list',
     BUG: 'bug',
-    TASK: 'check-circle',
+    TASK: 'circle-check',
     SUBTASK: 'plus',
     IMPROVEMENT: 'arrow-up',
   };

@@ -1,0 +1,127 @@
+{
+  "metrics": {
+    "title": "مقاييس التطبيق",
+    "refresh.button": "تحديث",
+    "updating": "جاري التحديث...",
+    "jvm": {
+      "title": "مقاييس JVM",
+      "system": {
+        "title": "النظام",
+        "uptime": "وقت التشغيل",
+        "startTime": "وقت البداية",
+        "processCpuUsage": "استخدام معالج العملية",
+        "systemCpuUsage": "استخدام معالج النظام",
+        "systemCpuCount": "عدد معالجات النظام",
+        "loadAverage": "متوسط حمل النظام (دقيقة)",
+        "processFilesMax": "الملفات القصوى للعملية",
+        "processFilesOpen": "الملفات المفتوحة للعملية"
+      },
+      "memory": {
+        "title": "الذاكرة",
+        "total": "إجمالي الذاكرة",
+        "heap": "ذاكرة Heap",
+        "nonheap": "ذاكرة غير Heap",
+        "committed": "المخصصة"
+      },
+      "threads": {
+        "title": "الخيوط",
+        "all": "الكل",
+        "runnable": "قابل للتنفيذ",
+        "timedwaiting": "انتظار محدد بوقت",
+        "waiting": "ينتظر",
+        "blocked": "محجوب",
+        "total": "الإجمالي",
+        "expand": "توسيع",
+        "dump": {
+          "title": "تصدير الخيوط",
+          "id": "المعرف: ",
+          "blockedtime": "وقت الحجب",
+          "blockedcount": "عدد مرات الحجب",
+          "waitedtime": "وقت الانتظار",
+          "waitedcount": "عدد مرات الانتظار",
+          "lockname": "اسم القفل",
+          "stacktrace": "تتبع المكدس",
+          "show": "إظهار تتبع المكدس",
+          "hide": "إخفاء تتبع المكدس",
+          "caption": "تصدير الخيوط:"
+        }
+      },
+      "gc": {
+        "title": "جمع القمامة",
+        "marksweepcount": "عدد عمليات Mark Sweep",
+        "marksweeptime": "وقت Mark Sweep",
+        "scavengecount": "عدد عمليات Scavenge",
+        "scavengetime": "وقت Scavenge",
+        "classesLoaded": "الفئات المحملة",
+        "classesUnloaded": "الفئات غير المحملة"
+      },
+      "http": {
+        "title": "طلبات HTTP (الوقت بالميلي ثانية)",
+        "active": "الطلبات النشطة:",
+        "total": "إجمالي الطلبات:",
+        "endpoints": {
+          "title": "طلبات endpoints (الوقت بالميلي ثانية)"
+        },
+        "table": {
+          "code": "الكود",
+          "count": "العدد",
+          "mean": "المتوسط",
+          "average": "المتوسط",
+          "max": "الأعلى",
+          "method": "الطريقة",
+          "url": "رابط endpoint"
+        },
+        "code": {
+          "ok": "حسنًا",
+          "notfound": "غير موجود",
+          "servererror": "خطأ في الخادم"
+        }
+      }
+    },
+    "servicesstats": {
+      "title": "إحصائيات الخدمات (الوقت بالميلي ثانية)",
+      "table": {
+        "name": "اسم الخدمة",
+        "count": "العدد",
+        "mean": "المتوسط",
+        "min": "الأدنى",
+        "max": "الأعلى",
+        "p50": "p50",
+        "p75": "p75",
+        "p95": "p95",
+        "p99": "p99"
+      }
+    },
+    "cache": {
+      "title": "إحصائيات التخزين المؤقت",
+      "cachename": "اسم التخزين المؤقت",
+      "hits": "ضربات التخزين المؤقت",
+      "misses": "إخفاقات التخزين المؤقت",
+      "gets": "عمليات جلب التخزين المؤقت",
+      "puts": "عمليات وضع التخزين المؤقت",
+      "removals": "عمليات إزالة التخزين المؤقت",
+      "evictions": "عمليات طرد التخزين المؤقت",
+      "hitPercent": "نسبة ضربات التخزين المؤقت %",
+      "missPercent": "نسبة إخفاقات التخزين المؤقت %",
+      "averageGetTime": "متوسط وقت الجلب (µs)",
+      "averagePutTime": "متوسط وقت الوضع (µs)",
+      "averageRemoveTime": "متوسط وقت الإزالة (µs)"
+    },
+    "datasource": {
+      "usage": "استخدام مجمع الاتصالات",
+      "title": "إحصائيات مصدر البيانات (الوقت بالميلي ثانية)",
+      "name": "استخدام المجمع",
+      "count": "العدد",
+      "mean": "المتوسط",
+      "min": "الأدنى",
+      "max": "الأعلى",
+      "p50": "p50",
+      "p75": "p75",
+      "p95": "p95",
+      "p99": "p99",
+      "acquire": "الحصول",
+      "creation": "الإنشاء",
+      "usageLabel": "الاستخدام"
+    }
+  }
+}

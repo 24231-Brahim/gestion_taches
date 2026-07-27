@@ -26,6 +26,11 @@
       "epics": "Epics",
       "tasks": "Tâches",
       "members": "Membres",
+      "tab": {
+        "details": "Détails",
+        "members": "Membres",
+        "discussion": "Discussion"
+      },
       "member": {
         "add": "Ajouter un membre",
         "added": "Membre ajouté au projet",
@@ -33,6 +38,11 @@
         "updated": "Rôle du membre mis à jour",
         "userLogin": "Utilisateur",
         "role": "Rôle",
+        "role": {
+          "OWNER": "PROPRIÉTAIRE",
+          "MANAGER": "GESTIONNAIRE",
+          "MEMBER": "MEMBRE"
+        },
         "joinedAt": "Date d'ajout",
         "selectUser": "Sélectionner un utilisateur",
         "empty": "Aucun membre pour le moment",

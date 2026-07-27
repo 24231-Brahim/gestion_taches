@@ -1,0 +1,52 @@
+{
+  "gestionTachesApp": {
+    "task": {
+      "home": {
+        "title": "المهام",
+        "refreshListLabel": "تحديث القائمة",
+        "createLabel": "إنشاء مهمة جديدة",
+        "createOrEditLabel": "إنشاء أو تعديل مهمة",
+        "notFound": "لم يتم العثور على مهام",
+        "backlog": "قائمة المهام",
+        "board": "لوحة المهام",
+        "search": "البحث عن مهام..."
+      },
+      "created": "تم إنشاء مهمة جديدة بالمعرف {{ param }}",
+      "updated": "تم تحديث المهمة بالمعرف {{ param }}",
+      "deleted": "تم حذف المهمة بالمعرف {{ param }}",
+      "delete": {
+        "question": "هل أنت متأكد أنك تريد حذف المهمة {{ id }}؟"
+      },
+      "detail": {
+        "title": "المهمة",
+        "comments": "التعليقات",
+        "noComments": "لا توجد تعليقات بعد.",
+        "history": "السجل",
+        "noHistory": "لا يوجد سجل بعد.",
+        "tab": {
+          "details": "التفاصيل",
+          "comments": "التعليقات",
+          "attachments": "المرفقات",
+          "history": "السجل"
+        }
+      },
+      "id": "المعرف",
+      "title": "العنوان",
+      "description": "الوصف",
+      "type": "النوع",
+      "status": "الحالة",
+      "priority": "الأولوية",
+      "createdAt": "تاريخ الإنشاء",
+      "updatedAt": "تاريخ التحديث",
+      "comments": "التعليقات",
+      "attachments": "المرفقات",
+      "history": "السجل",
+      "sprint": "السبرنت",
+      "epic": "الإيبك",
+      "project": "المشروع",
+      "assignee": "المُعيَّن",
+      "createdBy": "أنشئ بواسطة",
+      "system": "النظام"
+    }
+  }
+}

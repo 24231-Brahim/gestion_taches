@@ -66,6 +66,11 @@ entity Notification {
   createdAt Instant
 }
 
+entity GroupMessage {
+  content String required,
+  createdAt Instant
+}
+
 // =========================================================
 // Enumérations
 // =========================================================
@@ -97,6 +102,9 @@ relationship ManyToOne {
   Task{assignee} to User
   Task{createdBy} to User
   Comment{author} to User
+  GroupMessage{sender} to User
+  GroupMessage{recipient} to User
+  GroupMessage{project} to Project
 }
 
 // =========================================================
@@ -117,6 +125,7 @@ relationship OneToMany {
   Project{sprint} to Sprint{project}
   Project{epic} to Epic{project}
   Project{task} to Task{project}
+  Project{groupMessage} to GroupMessage{project}
   Sprint{task} to Task{sprint}
   Epic{task} to Task{epic}
   Task{comment} to Comment{task}
@@ -129,5 +138,5 @@ relationship OneToMany {
 
 paginate Project, Sprint, Epic, Task, Comment, Attachment, Notification with pagination
 dto Project, Sprint, Epic, Task with mapstruct
-service Project, ProjectMember, Sprint, Epic, Task, Comment, Attachment, Notification, Role with serviceImpl
+service Project, ProjectMember, Sprint, Epic, Task, Comment, Attachment, Notification, Role, GroupMessage with serviceImpl
 filter Project, Sprint, Epic, Task

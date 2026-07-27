@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @IntegrationTest
 @AutoConfigureMockMvc
-@WithMockUser(authorities = { "ROLE_ADMIN" })
+@WithMockUser(username = "admin", authorities = { "ROLE_ADMIN" })
 class TaskResourceIT {
 
     private static final String DEFAULT_TITLE = "AAAAAAAAAA";

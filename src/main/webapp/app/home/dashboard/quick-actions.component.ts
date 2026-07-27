@@ -9,15 +9,15 @@ import { RouterLink } from '@angular/router';
   imports: [TranslateModule, RouterLink],
   template: `
     <div class="quick-actions-card">
-      <h3 class="qa-title" jhiTranslate="dashboard.quickActions.title">QUICK ACTIONS</h3>
+      <h3 class="qa-title">{{ 'dashboard.quickActions.title' | translate }}</h3>
       <div class="qa-grid">
         <a [routerLink]="['/project/new']" class="qa-btn">
           <span class="qa-icon">+</span>
-          <span jhiTranslate="dashboard.quickActions.newProject">New Project</span>
+          <span>{{ 'dashboard.quickActions.newProject' | translate }}</span>
         </a>
         <a [routerLink]="['/project']" class="qa-btn">
           <span class="qa-icon">◉</span>
-          <span jhiTranslate="dashboard.quickActions.viewProjects">View Projects</span>
+          <span>{{ 'dashboard.quickActions.viewProjects' | translate }}</span>
         </a>
       </div>
     </div>

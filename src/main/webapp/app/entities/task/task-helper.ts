@@ -14,9 +14,9 @@ export const ISSUE_TYPE_LABELS: Record<string, string> = {
 };
 
 export const ISSUE_TYPE_ICONS: Record<string, string> = {
-  STORY: 'th-list',
+  STORY: 'table-list',
   BUG: 'bug',
-  TASK: 'check-circle',
+  TASK: 'circle-check',
   SUBTASK: 'plus',
   IMPROVEMENT: 'arrow-up',
 };
@@ -34,7 +34,7 @@ export const PRIORITY_ICONS: Record<string, string> = {
   LOW: 'arrow-down',
   MEDIUM: 'flag',
   HIGH: 'arrow-up',
-  HIGHEST: 'exclamation-triangle',
+  HIGHEST: 'triangle-exclamation',
 };
 
 export const PRIORITY_COLORS: Record<string, string> = {

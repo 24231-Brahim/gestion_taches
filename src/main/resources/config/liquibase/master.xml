@@ -51,4 +51,5 @@
     <include file="config/liquibase/changelog/20260714000002_added_entity_TaskTransition.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260715000000_added_task_story_points.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260722000000_removed_story_points_from_task.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260723000000_added_entity_GroupMessage.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

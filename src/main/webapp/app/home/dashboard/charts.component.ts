@@ -22,7 +22,7 @@ interface ChartProjectProgress {
   template: `
     <div class="charts-grid">
       <div class="chart-card">
-        <h3 class="chart-title" jhiTranslate="dashboard.charts.projectProgress">PROJECT PROGRESS</h3>
+        <h3 class="chart-title">{{ 'dashboard.charts.projectProgress' | translate }}</h3>
         <div class="chart-body">
           @if (chartProjectProgress().length > 0) {
             <div class="progress-list">
@@ -39,13 +39,13 @@ interface ChartProjectProgress {
               }
             </div>
           } @else {
-            <p class="text-muted" jhiTranslate="dashboard.noData">No data</p>
+            <p class="text-muted">{{ 'dashboard.noData' | translate }}</p>
           }
         </div>
       </div>
 
       <div class="chart-card">
-        <h3 class="chart-title" jhiTranslate="dashboard.charts.taskDistribution">TASK DISTRIBUTION</h3>
+        <h3 class="chart-title">{{ 'dashboard.charts.taskDistribution' | translate }}</h3>
         <div class="chart-body">
           @if (chartTaskDistribution().length > 0) {
             <svg [attr.viewBox]="'0 0 200 200'" class="donut-svg">
@@ -65,28 +65,21 @@ interface ChartProjectProgress {
               <text x="100" y="95" text-anchor="middle" class="donut-center-value" fill="var(--color-on-surface)">
                 {{ totalTasks() }}
               </text>
-              <text
-                x="100"
-                y="115"
-                text-anchor="middle"
-                class="donut-center-label"
-                fill="var(--color-muted)"
-                jhiTranslate="dashboard.charts.total"
-              >
-                TOTAL
+              <text x="100" y="115" text-anchor="middle" class="donut-center-label" fill="var(--color-muted)">
+                {{ 'dashboard.charts.total' | translate }}
               </text>
             </svg>
             <div class="donut-legend">
               @for (slice of chartTaskDistribution(); track slice.label) {
                 <div class="legend-item">
                   <span class="legend-dot" [style.background]="slice.color"></span>
-                  <span class="legend-label">{{ slice.label }}</span>
+                  <span class="legend-label">{{ 'gestionTachesApp.TaskStatus.' + slice.label | translate }}</span>
                   <span class="legend-value">{{ slice.value }}</span>
                 </div>
               }
             </div>
           } @else {
-            <p class="text-muted" jhiTranslate="dashboard.noData">No data</p>
+            <p class="text-muted">{{ 'dashboard.noData' | translate }}</p>
           }
         </div>
       </div>

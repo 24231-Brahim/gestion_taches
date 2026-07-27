@@ -8,6 +8,55 @@ import { createRequestOption } from 'app/core/request/request-util';
 import { Pagination } from 'app/core/request/request.model';
 import { IUserManagement } from '../user-management.model';
 
+export interface IUserAdminDetail {
+  id?: number | null;
+  login?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string;
+  activated?: boolean;
+  langKey?: string;
+  createdBy?: string;
+  createdDate?: Date;
+  authorities?: string[];
+  tasks?: ITaskSummary[];
+  projects?: IProjectMembership[];
+  recentActivity?: ITaskHistoryEntry[];
+}
+
+export interface ITaskSummary {
+  id?: number | null;
+  title?: string;
+  status?: string;
+  priority?: string;
+  createdAt?: Date;
+  projectId?: number | null;
+  projectName?: string;
+  projectKey?: string;
+  sprintId?: number | null;
+  sprintName?: string;
+  epicId?: number | null;
+  epicTitle?: string;
+}
+
+export interface IProjectMembership {
+  projectId?: number | null;
+  projectName?: string;
+  projectKey?: string;
+  role?: string;
+  joinedAt?: Date;
+}
+
+export interface ITaskHistoryEntry {
+  id?: number | null;
+  action?: string;
+  oldValue?: string;
+  newValue?: string;
+  createdAt?: Date;
+  taskId?: number | null;
+  taskTitle?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class UserManagementService {
   private readonly http = inject(HttpClient);
@@ -25,6 +74,10 @@ export class UserManagementService {
 
   find(login: string): Observable<IUserManagement> {
     return this.http.get<IUserManagement>(`${this.resourceUrl}/${encodeURIComponent(login)}`);
+  }
+
+  findDetail(login: string): Observable<IUserAdminDetail> {
+    return this.http.get<IUserAdminDetail>(`${this.resourceUrl}/${encodeURIComponent(login)}/detail`);
   }
 
   query(req?: Pagination): Observable<HttpResponse<IUserManagement[]>> {

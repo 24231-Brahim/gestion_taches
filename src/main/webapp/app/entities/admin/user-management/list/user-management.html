@@ -4,7 +4,7 @@
 
     <div class="d-flex justify-content-end">
       <button class="btn btn-info me-2" (click)="loadAll()" [disabled]="isLoading()">
-        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <fa-icon icon="arrows-rotate" [animation]="isLoading() ? 'spin' : undefined" />
         <span jhiTranslate="userManagement.home.refreshListLabel">Actualiser la liste</span>
       </button>
       <button class="btn btn-success me-2" (click)="exportCsv()">
@@ -17,6 +17,43 @@
       </button>
     </div>
   </h2>
+
+  @if (stats()) {
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <h5 class="card-title text-muted">Total</h5>
+            <h3>{{ stats()!.totalUsers }}</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center border-primary">
+          <div class="card-body">
+            <h5 class="card-title text-primary">Admins</h5>
+            <h3 class="text-primary">{{ stats()!.usersByRole['ROLE_ADMIN'] ?? 0 }}</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center border-info">
+          <div class="card-body">
+            <h5 class="card-title text-info">Managers</h5>
+            <h3 class="text-info">{{ stats()!.usersByRole['ROLE_PROJET_MANAGER'] ?? 0 }}</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center border-success">
+          <div class="card-body">
+            <h5 class="card-title text-success">Développeurs</h5>
+            <h3 class="text-success">{{ stats()!.usersByRole['ROLE_DEVELOPER'] ?? 0 }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
 
   <jhi-alert-error />
 
@@ -49,7 +86,7 @@
           @for (userManagement of users(); track trackIdentity(userManagement)) {
             <tr data-cy="entityTable">
               <td>
-                <a [routerLink]="['./', userManagement.login, 'view']">{{ userManagement.id }}</a>
+                {{ userManagement.id }}
               </td>
               <td>{{ userManagement.login }}</td>
               <td>{{ userManagement.email }}</td>
@@ -84,12 +121,12 @@
                 <div class="btn-group">
                   <button
                     type="submit"
-                    [routerLink]="['./', userManagement.login, 'view']"
+                    [routerLink]="['./', userManagement.login, 'detail']"
                     class="btn btn-info btn-sm"
-                    data-cy="entityDetailsButton"
+                    data-cy="entityAdminDetailButton"
                   >
-                    <fa-icon icon="eye" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
+                    <fa-icon icon="chart-bar" />
+                    <span class="d-none d-md-inline" jhiTranslate="userManagement.adminDetail.shortLabel">Détail admin</span>
                   </button>
 
                   <button
@@ -99,7 +136,7 @@
                     class="btn btn-primary btn-sm"
                     data-cy="entityEditButton"
                   >
-                    <fa-icon icon="pencil-alt" />
+                    <fa-icon icon="pencil" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
                   </button>
 
@@ -110,7 +147,7 @@
                     data-cy="entityDeleteButton"
                     [disabled]="!currentAccount() || currentAccount()?.login === userManagement.login"
                   >
-                    <fa-icon icon="times" />
+                    <fa-icon icon="xmark" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
                   </button>
                 </div>

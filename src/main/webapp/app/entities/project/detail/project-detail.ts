@@ -6,6 +6,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { TranslateModule } from '@ngx-translate/core';
 import { filter, tap } from 'rxjs';
+import dayjs from 'dayjs/esm';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
@@ -20,6 +21,7 @@ import { UserService } from 'app/entities/user/service/user.service';
 import { IUser } from 'app/entities/user/user.model';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
 import { ProjectDeleteDialog } from '../delete/project-delete-dialog';
+import { GroupMessageListComponent } from 'app/entities/group-message/list/group-message-list';
 
 export interface DisplayMember extends IProjectMember {
   isSynthetic?: boolean;
@@ -29,10 +31,54 @@ export interface DisplayMember extends IProjectMember {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-project-detail',
   templateUrl: './project-detail.html',
-  imports: [FontAwesomeModule, Alert, AlertError, TranslateDirective, TranslateModule, RouterLink, FormatMediumDatetimePipe, FormsModule],
+  styles: [
+    `
+      .tab-bar {
+        display: flex;
+        gap: 0;
+        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        margin-bottom: 20px;
+      }
+      .tab-item {
+        padding: 10px 24px;
+        cursor: pointer;
+        font-family: var(--font-inter);
+        font-size: 0.85rem;
+        text-transform: none;
+        letter-spacing: 0;
+        border: none;
+        background: transparent;
+        color: var(--color-text-muted, #6a8fac);
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+        transition:
+          color var(--transition-fast),
+          border-color var(--transition-fast);
+      }
+      .tab-item:hover {
+        color: var(--color-text, #dfe3ea);
+      }
+      .tab-item.active {
+        color: var(--color-primary, #97cbff);
+        border-bottom-color: var(--color-primary, #97cbff);
+      }
+    `,
+  ],
+  imports: [
+    FontAwesomeModule,
+    Alert,
+    AlertError,
+    TranslateDirective,
+    TranslateModule,
+    RouterLink,
+    FormatMediumDatetimePipe,
+    FormsModule,
+    GroupMessageListComponent,
+  ],
 })
 export class ProjectDetail {
   readonly project = input<IProject | null>(null);
+  readonly activeTab = signal<'details' | 'members' | 'discussion'>('details');
 
   readonly members = signal<IProjectMember[]>([]);
   readonly showAddForm = signal(false);
@@ -82,7 +128,7 @@ export class ProjectDetail {
       userId: null,
       projectId: null,
       role: ProjectRole.OWNER,
-      joinedAt: new Date().toISOString() as any,
+      joinedAt: dayjs(),
       isSynthetic: true,
     };
     return [...realMembers, syntheticMember];
@@ -184,5 +230,9 @@ export class ProjectDetail {
         }),
       )
       .subscribe();
+  }
+
+  setTab(tab: 'details' | 'members' | 'discussion'): void {
+    this.activeTab.set(tab);
   }
 }

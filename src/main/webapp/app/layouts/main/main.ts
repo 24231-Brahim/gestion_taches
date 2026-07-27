@@ -9,6 +9,7 @@ import { AccountService } from 'app/core/auth/account.service';
 import Breadcrumb from '../breadcrumb/breadcrumb';
 import BottomNav from '../bottom-nav/bottom-nav';
 import PageRibbon from '../profiles/page-ribbon';
+import { SearchDialogComponent } from '../search/search-dialog.component';
 import Sidebar from '../sidebar/sidebar';
 
 @Component({
@@ -16,7 +17,7 @@ import Sidebar from '../sidebar/sidebar';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './main.html',
   providers: [AppPageTitleStrategy],
-  imports: [RouterOutlet, BottomNav, PageRibbon, Sidebar, Breadcrumb],
+  imports: [RouterOutlet, BottomNav, PageRibbon, Sidebar, Breadcrumb, SearchDialogComponent],
 })
 export default class Main implements OnInit {
   readonly account = inject(AccountService).account;
@@ -46,6 +47,8 @@ export default class Main implements OnInit {
       this.appPageTitleStrategy.updateTitle(this.router.routerState.snapshot);
       dayjs.locale(langChangeEvent.lang);
       this.renderer.setAttribute(this.htmlElement, 'lang', langChangeEvent.lang);
+      const isRtl = langChangeEvent.lang === 'ar';
+      this.renderer.setAttribute(this.htmlElement, 'dir', isRtl ? 'rtl' : 'ltr');
     });
   }
 }

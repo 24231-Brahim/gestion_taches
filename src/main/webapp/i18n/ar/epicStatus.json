@@ -1,0 +1,11 @@
+{
+  "gestionTachesApp": {
+    "EpicStatus": {
+      "null": "",
+      "TODO": "قائمة الانتظار",
+      "IN_PROGRESS": "قيد التنفيذ",
+      "DONE": "مكتمل",
+      "CANCELLED": "ملغى"
+    }
+  }
+}

@@ -16,6 +16,9 @@ export interface DashboardKpis {
   completedTasks: number;
   overdueTasks: number;
   teamMembers: number;
+  totalTimeSpentSeconds: number;
+  timeSpentByUser: Array<{ login: string; totalSeconds: number }>;
+  timeSpentByProject: Array<{ projectName: string; totalSeconds: number }>;
   projectProgress: Array<{ projectId: number; projectName: string; totalTasks: number; doneTasks: number }>;
   taskDistribution: Array<{ status: string; count: number }>;
 }
@@ -36,12 +39,12 @@ export interface DashboardKpis {
     <div class="dashboard">
       @if (error()) {
         <div class="error-banner">
-          <span jhiTranslate="dashboard.error">Failed to load dashboard data</span>
+          <span>{{ 'dashboard.error' | translate }}</span>
         </div>
       }
       @if (loading()) {
         <div class="loading-banner">
-          <span jhiTranslate="dashboard.loading">Loading dashboard data...</span>
+          <span>{{ 'dashboard.loading' | translate }}</span>
         </div>
       }
       <div class="kpi-grid">
@@ -51,9 +54,35 @@ export interface DashboardKpis {
         <jhi-kpi-card label="{{ 'dashboard.kpi.completedTasks' | translate }}" [value]="completedTasks()" icon="check-circle" />
         <jhi-kpi-card label="{{ 'dashboard.kpi.overdueTasks' | translate }}" [value]="overdueTasks()" icon="exclamation-circle" />
         <jhi-kpi-card label="{{ 'dashboard.kpi.teamMembers' | translate }}" [value]="teamMembers()" icon="users" />
+        <jhi-kpi-card label="{{ 'dashboard.kpi.totalTimeSpent' | translate }}" [value]="totalTimeSpent()" icon="clock" unit="s" />
       </div>
       <jhi-dashboard-quick-actions />
       <jhi-dashboard-charts [taskDistribution]="taskDistribution()" [projectProgress]="projectProgress()" />
+      @if (timeSpentByUser().length > 0) {
+        <div class="time-tracking-section">
+          <h4>{{ 'dashboard.timeTracking.title' | translate }}</h4>
+          <div class="time-tracking-grid">
+            <div class="time-tracking-card">
+              <h5>{{ 'dashboard.timeTracking.byUser' | translate }}</h5>
+              @for (item of timeSpentByUser(); track item.login) {
+                <div class="time-tracking-row">
+                  <span class="user-name">{{ item.login }}</span>
+                  <span class="time-value">{{ formatTime(item.totalSeconds) }}</span>
+                </div>
+              }
+            </div>
+            <div class="time-tracking-card">
+              <h5>{{ 'dashboard.timeTracking.byProject' | translate }}</h5>
+              @for (item of timeSpentByProject(); track item.projectName) {
+                <div class="time-tracking-row">
+                  <span class="project-name">{{ item.projectName }}</span>
+                  <span class="time-value">{{ formatTime(item.totalSeconds) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
       <jhi-dashboard-lists [recentProjects]="recentProjects()" [recentTasks]="recentTasks()" />
       <div class="bottom-grid">
         <jhi-dashboard-timeline [tasks]="recentTasks()" />
@@ -105,6 +134,60 @@ export interface DashboardKpis {
           opacity: 0.5;
         }
       }
+      .time-tracking-section {
+        display: flex;
+        flex-direction: column;
+        gap: var(--stack-md);
+      }
+      .time-tracking-section h4 {
+        font-family: var(--font-inter);
+        font-size: var(--text-lg);
+        font-weight: 600;
+        color: var(--color-text);
+        margin: 0;
+      }
+      .time-tracking-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--stack-md);
+      }
+      .time-tracking-card {
+        border: 1px solid var(--color-outline-variant);
+        border-radius: var(--radius-lg);
+        padding: var(--stack-md);
+        background: var(--color-surface-container);
+      }
+      .time-tracking-card h5 {
+        font-family: var(--font-inter);
+        font-size: var(--text-sm);
+        font-weight: 600;
+        color: var(--color-text-muted);
+        margin: 0 0 var(--stack-sm) 0;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .time-tracking-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px solid var(--color-outline-variant);
+      }
+      .time-tracking-row:last-child {
+        border-bottom: none;
+      }
+      .user-name,
+      .project-name {
+        font-family: var(--font-inter);
+        font-size: var(--text-sm);
+        color: var(--color-text);
+      }
+      .time-value {
+        font-family: var(--font-jetbrains);
+        font-size: var(--text-sm);
+        font-weight: 500;
+        color: var(--color-primary);
+      }
     `,
   ],
 })
@@ -115,6 +198,9 @@ export class DashboardComponent {
   readonly completedTasks = computed(() => this.kpisResource.value()?.completedTasks ?? 0);
   readonly overdueTasks = computed(() => this.kpisResource.value()?.overdueTasks ?? 0);
   readonly teamMembers = computed(() => this.kpisResource.value()?.teamMembers ?? 0);
+  readonly totalTimeSpent = computed(() => this.kpisResource.value()?.totalTimeSpentSeconds ?? 0);
+  readonly timeSpentByUser = computed(() => this.kpisResource.value()?.timeSpentByUser ?? []);
+  readonly timeSpentByProject = computed(() => this.kpisResource.value()?.timeSpentByProject ?? []);
   readonly taskDistribution = computed(() => this.kpisResource.value()?.taskDistribution ?? []);
   readonly projectProgress = computed(() => this.kpisResource.value()?.projectProgress ?? []);
   readonly recentProjects = computed<any[]>(() => this.projectsResource.value() ?? []);
@@ -134,4 +220,12 @@ export class DashboardComponent {
     url: this.applicationConfigService.getEndpointFor('api/tasks'),
     params: new HttpParams().set('page', '0').set('size', '10').set('sort', 'updatedAt,desc'),
   }));
+
+  formatTime(seconds: number): string {
+    if (seconds < 60) return `${seconds}s`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return `${h}h ${m}m`;
+  }
 }

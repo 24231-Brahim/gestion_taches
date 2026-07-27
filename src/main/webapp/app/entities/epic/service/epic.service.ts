@@ -24,6 +24,12 @@ export type NewRestEpic = RestOf<NewEpic>;
 
 export type PartialUpdateRestEpic = RestOf<PartialUpdateEpic>;
 
+export interface EpicBurndownData {
+  dates: string[];
+  ideal: number[];
+  actual: number[];
+}
+
 @Injectable()
 export class EpicsService {
   readonly epicsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(undefined);
@@ -95,6 +101,10 @@ export class EpicService extends EpicsService {
 
   delete(id: number): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
+  }
+
+  getBurndown(id: number): Observable<EpicBurndownData> {
+    return this.http.get<EpicBurndownData>(`${this.resourceUrl}/${encodeURIComponent(id)}/burndown`);
   }
 
   getEpicIdentifier(epic: Pick<IEpic, 'id'>): number {

@@ -1,0 +1,57 @@
+{
+  "home": {
+    "title": "مرحبًا، يا جافا هيبستر!",
+    "subtitle": "هذه صفحتك الرئيسية",
+    "logged": {
+      "message": "أنت مسجل الدخول كمستخدم \"{{username}}\"."
+    },
+    "question": "إذا كان لديك أي أسئلة حول JHipster:",
+    "link": {
+      "homepage": "موقع JHipster",
+      "stackoverflow": "JHipster على Stack Overflow",
+      "bugtracker": "متتبع أخطاء JHipster",
+      "chat": "غرفة الدردشة العامة لـ JHipster",
+      "follow": "متابعة @jhipster على تويتر"
+    },
+    "like": "إذا أعجبك JHipster، لا تنسَ منحنا نجمة على",
+    "github": "GitHub"
+  },
+  "dashboard": {
+    "noData": "لا توجد بيانات",
+    "loading": "جاري تحميل بيانات لوحة التحكم...",
+    "error": "فشل تحميل بيانات لوحة التحكم",
+    "kpi": {
+      "totalProjects": "إجمالي المشاريع",
+      "activeProjects": "المشاريع النشطة",
+      "totalTasks": "إجمالي المهام",
+      "completedTasks": "المهام المكتملة",
+      "overdueTasks": "المهام المتأخرة",
+      "teamMembers": "أعضاء الفريق",
+      "totalTimeSpent": "إجمالي الوقت المستغرق"
+    },
+    "timeTracking": {
+      "title": "تتبع الوقت",
+      "byUser": "حسب المستخدم",
+      "byProject": "حسب المشروع"
+    },
+    "charts": {
+      "projectProgress": "تقدم المشروع",
+      "taskDistribution": "توزيع المهام",
+      "total": "الإجمالي"
+    },
+    "lists": {
+      "recentProjects": "المشاريع الأخيرة",
+      "recentTasks": "المهام الأخيرة"
+    },
+    "timeline": {
+      "title": "النشاط الأخير"
+    },
+    "quickActions": {
+      "title": "إجراءات سريعة",
+      "newProject": "مشروع جديد",
+      "viewProjects": "عرض المشاريع",
+      "newTask": "مهمة جديدة",
+      "viewTasks": "عرض المهام"
+    }
+  }
+}

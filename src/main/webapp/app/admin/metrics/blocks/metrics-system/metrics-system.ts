@@ -3,13 +3,15 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 import { NgbProgressbar } from '@ng-bootstrap/ng-bootstrap/progressbar';
 
+import { TranslateDirective, TranslateModule } from '@ngx-translate/core';
+
 import { ProcessMetrics } from 'app/admin/metrics/metrics.model';
 
 @Component({
   selector: 'jhi-metrics-system',
   templateUrl: './metrics-system.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgbProgressbar, DecimalPipe, DatePipe],
+  imports: [NgbProgressbar, DecimalPipe, DatePipe, TranslateDirective, TranslateModule],
 })
 export class MetricsSystem {
   /**

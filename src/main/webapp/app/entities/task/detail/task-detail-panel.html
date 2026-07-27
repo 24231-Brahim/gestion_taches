@@ -10,7 +10,7 @@
         <span [jhiTranslate]="'gestionTachesApp.IssueType.' + (tsk.type ?? 'null')" class="fw-bold"></span>
       </div>
       <button class="btn btn-sm btn-ghost" (click)="close()()">
-        <fa-icon icon="times" />
+        <fa-icon icon="xmark" />
       </button>
     </div>
 
@@ -123,7 +123,7 @@
 
         <div class="task-drawer-actions">
           <a [routerLink]="['/project', tsk.project?.key, 'task', tsk.id, 'edit']" class="btn btn-primary btn-sm w-100">
-            <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit"></span>
+            <fa-icon icon="pencil" />&nbsp;<span jhiTranslate="entity.action.edit"></span>
           </a>
         </div>
       </div>

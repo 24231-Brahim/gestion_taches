@@ -2,12 +2,14 @@ package com.gestiontaches.web.rest;
 
 import com.gestiontaches.domain.Authority;
 import com.gestiontaches.repository.AuthorityRepository;
+import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +31,13 @@ public class AuthorityResource {
     private static final Logger LOG = LoggerFactory.getLogger(AuthorityResource.class);
 
     private static final String ENTITY_NAME = "adminAuthority";
+
+    private static final Set<String> PROTECTED_AUTHORITIES = Set.of(
+        AuthoritiesConstants.ADMIN,
+        AuthoritiesConstants.USER,
+        AuthoritiesConstants.DEVELOPER,
+        AuthoritiesConstants.PROJET_MANAGER
+    );
 
     @Value("${jhipster.clientApp.name:gestionTaches}")
     private String applicationName;
@@ -86,6 +95,30 @@ public class AuthorityResource {
     }
 
     /**
+     * {@code PUT  /authorities/:id} : Updates an existing authority.
+     *
+     * @param id the id of the authority to update.
+     * @param authority the authority to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated authority.
+     */
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    public ResponseEntity<Authority> updateAuthority(@PathVariable("id") String id, @Valid @RequestBody Authority authority)
+        throws URISyntaxException {
+        LOG.debug("REST request to update Authority : {}", authority);
+        if (!authority.getName().equals(id)) {
+            throw new BadRequestAlertException("Authority name mismatch", ENTITY_NAME, "namemismatch");
+        }
+        if (PROTECTED_AUTHORITIES.contains(id)) {
+            throw new BadRequestAlertException("Cannot update a system authority", ENTITY_NAME, "protectedauthority");
+        }
+        Authority result = authorityRepository.save(authority);
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, result.getName()))
+            .body(result);
+    }
+
+    /**
      * {@code DELETE  /authorities/:id} : delete the "id" authority.
      *
      * @param id the id of the authority to delete.
@@ -95,6 +128,9 @@ public class AuthorityResource {
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteAuthority(@PathVariable("id") String id) {
         LOG.debug("REST request to delete Authority : {}", id);
+        if (PROTECTED_AUTHORITIES.contains(id)) {
+            throw new BadRequestAlertException("Cannot delete a system authority", ENTITY_NAME, "protectedauthority");
+        }
         authorityRepository.deleteById(id);
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id))

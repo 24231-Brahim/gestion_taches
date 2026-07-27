@@ -14,11 +14,8 @@ const userManagementRoute: Routes = [
     canActivate: [UserRouteAccessService],
   },
   {
-    path: ':login/view',
-    loadComponent: () => import('./detail/user-management-detail').then(m => m.UserManagementDetail),
-    resolve: {
-      userManagement: UserManagementResolve,
-    },
+    path: ':login/detail',
+    loadComponent: () => import('./user-admin-detail/user-admin-detail').then(m => m.UserAdminDetail),
     data: {
       authorities: ['ROLE_ADMIN'],
     },

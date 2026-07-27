@@ -4,6 +4,9 @@
     "browsehappy": "You are using an <strong>outdated</strong> browser. Please <a href=\"https://browsehappy.com/?locale=en\">upgrade your browser</a> to improve your experience.",
     "menu": {
       "home": "Home",
+      "search": {
+        "placeholder": "Search projects, tasks, sprints..."
+      },
       "jhipster-needle-menu-add-element": "JHipster will add additional menu entries here (do not translate!)",
       "entities": {
         "main": "Entities",
@@ -98,7 +101,8 @@
     "ribbon": {
       "dev": "Development"
     },
-    "item-count": "Showing {{first}} - {{second}} of {{total}} items."
+    "item-count": "Showing {{first}} - {{second}} of {{total}} items.",
+    "loading": "Loading..."
   },
   "entity": {
     "action": {
@@ -112,6 +116,7 @@
       "exportCsv": "CSV",
       "save": "Save",
       "view": "View",
+      "close": "Close",
       "show": "Show {{otherEntity}}",
       "related": "Related"
     },
@@ -133,7 +138,8 @@
       "pattern": "This field should follow pattern for {{ pattern }}.",
       "number": "This field should be a number.",
       "datetimelocal": "This field should be a date and time.",
-      "patternLogin": "This field can only contain letters, digits and e-mail addresses."
+      "patternLogin": "This field can only contain letters, digits and e-mail addresses.",
+      "dateRange": "End date must be after start date."
     },
     "filters": {
       "set": "Following filters are set",

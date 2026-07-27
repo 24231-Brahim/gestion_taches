@@ -40,4 +40,9 @@ public interface SprintRepository extends JpaRepository<Sprint, Long>, JpaSpecif
     Optional<Sprint> findOneWithToOneRelationships(@Param("id") Long id);
 
     Optional<Sprint> findByProjectIdAndStatus(Long projectId, SprintStatus status);
+
+    @Query(
+        "SELECT s FROM Sprint s LEFT JOIN FETCH s.project WHERE s.project.id IN :projectIds AND (LOWER(s.name) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(s.goal) LIKE LOWER(CONCAT('%', :query, '%')))"
+    )
+    List<Sprint> searchByQuery(@Param("query") String query, @Param("projectIds") java.util.Collection<Long> projectIds);
 }

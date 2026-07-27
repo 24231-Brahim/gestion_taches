@@ -184,19 +184,29 @@ class CommentResourceIT {
 
     @Test
     @Transactional
-    void checkCreatedAtIsRequired() throws Exception {
-        long databaseSizeBeforeTest = getRepositoryCount();
-        // set the field null
+    void createCommentWithNullCreatedAt_shouldAutoSet() throws Exception {
+        long databaseSizeBeforeCreate = getRepositoryCount();
+        // set createdAt to null
         comment.setCreatedAt(null);
 
-        // Create the Comment, which fails.
+        // Create the Comment - createdAt should be auto-set by the server
         CommentDTO commentDTO = commentMapper.toDto(comment);
+        var returnedCommentDTO = om.readValue(
+            restCommentMockMvc
+                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(commentDTO)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.createdAt").isNotEmpty())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(),
+            CommentDTO.class
+        );
 
-        restCommentMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(commentDTO)))
-            .andExpect(status().isBadRequest());
+        // Validate the Comment in the database
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        assertThat(returnedCommentDTO.getCreatedAt()).isNotNull();
 
-        assertSameRepositoryCount(databaseSizeBeforeTest);
+        insertedComment = commentMapper.toEntity(returnedCommentDTO);
     }
 
     @Test

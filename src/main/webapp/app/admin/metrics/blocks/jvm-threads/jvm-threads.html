@@ -26,8 +26,8 @@
   <span>{{ (stats.threadDumpBlocked * 100) / stats.threadDumpAll | number: '1.0-0' }}%</span>
 </ngb-progressbar>
 
-<div>Total: {{ stats.threadDumpAll }}</div>
+<div><span jhiTranslate="metrics.jvm.threads.total">Total</span>: {{ stats.threadDumpAll }}</div>
 
 <button class="hand btn btn-primary btn-sm" (click)="open()" data-toggle="modal" data-target="#threadDump">
-  <span>Expand</span>
+  <span jhiTranslate="metrics.jvm.threads.expand">Expand</span>
 </button>

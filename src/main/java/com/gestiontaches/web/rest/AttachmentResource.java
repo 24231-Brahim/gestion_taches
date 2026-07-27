@@ -91,6 +91,8 @@ public class AttachmentResource {
             AuthoritiesConstants.PROJET_MANAGER +
             "', '" +
             AuthoritiesConstants.DEVELOPER +
+            "', '" +
+            AuthoritiesConstants.USER +
             "')"
     )
     public ResponseEntity<AttachmentDTO> uploadAttachment(@RequestParam("file") MultipartFile file, @RequestParam("taskId") Long taskId)

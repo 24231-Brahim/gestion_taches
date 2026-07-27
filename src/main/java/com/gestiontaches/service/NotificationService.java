@@ -5,17 +5,22 @@ import com.gestiontaches.domain.Task;
 import com.gestiontaches.domain.TaskHistory;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.NotificationRepository;
+import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.dto.NotificationDTO;
 import com.gestiontaches.service.mapper.NotificationMapper;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,17 +34,20 @@ public class NotificationService {
     private final NotificationMapper notificationMapper;
     private final UserRepository userRepository;
     private final NotificationSseService notificationSseService;
+    private final TaskRepository taskRepository;
 
     public NotificationService(
         NotificationRepository notificationRepository,
         NotificationMapper notificationMapper,
         UserRepository userRepository,
-        NotificationSseService notificationSseService
+        NotificationSseService notificationSseService,
+        TaskRepository taskRepository
     ) {
         this.notificationRepository = notificationRepository;
         this.notificationMapper = notificationMapper;
         this.userRepository = userRepository;
         this.notificationSseService = notificationSseService;
+        this.taskRepository = taskRepository;
     }
 
     public NotificationDTO save(NotificationDTO notificationDTO) {
@@ -126,5 +134,40 @@ public class NotificationService {
             notificationRepository.save(notification);
         }
         LOG.debug("Sent task history notification to {} admin(s) for task {}", admins.size(), task.getId());
+    }
+
+    @Scheduled(cron = "0 0 8 * * ?")
+    @Transactional
+    public void createOverdueNotifications() {
+        LocalDate today = LocalDate.now();
+        Instant cutoff = Instant.now().minus(14, ChronoUnit.DAYS);
+        List<Task> overdueTasks = taskRepository.findOverdueTasks(today, cutoff);
+        List<User> admins = userRepository.findAllActivatedByAuthorityNames(List.of(AuthoritiesConstants.ADMIN));
+
+        for (Task task : overdueTasks) {
+            boolean alreadyNotified = notificationRepository.existsByTaskIdAndMessageContaining(task.getId(), "overdue");
+            if (alreadyNotified) {
+                continue;
+            }
+            String message = "Task \"" + task.getTitle() + "\" is overdue — deadline has passed";
+            List<User> recipients = new java.util.ArrayList<>(admins);
+            if (task.getAssignee() != null && !recipients.stream().anyMatch(u -> u.getId().equals(task.getAssignee().getId()))) {
+                recipients.add(task.getAssignee());
+            }
+            for (User recipient : recipients) {
+                Notification notification = new Notification();
+                notification.setMessage(message);
+                notification.setTask(task);
+                notification.setTaskTitle(task.getTitle());
+                notification.setUser(recipient);
+                notification.setIsRead(false);
+                notification.setCreatedAt(Instant.now());
+                notificationRepository.save(notification);
+                notificationSseService.sendNotification(recipient.getId(), notificationMapper.toDto(notification));
+            }
+        }
+        if (!overdueTasks.isEmpty()) {
+            LOG.debug("Created overdue notifications for {} task(s)", overdueTasks.size());
+        }
     }
 }

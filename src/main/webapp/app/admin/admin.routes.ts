@@ -27,6 +27,12 @@ const routes: Routes = [
     loadComponent: () => import('./metrics/metrics'),
     title: 'metrics.title',
   },
+  {
+    path: 'tasks',
+    loadComponent: () => import('../entities/admin/admin-tasks/admin-tasks').then(m => m.AdminTasks),
+    data: { authorities: ['ROLE_ADMIN'] },
+    title: 'adminTasks.title',
+  },
   /* jhipster-needle-add-admin-route - JHipster will add admin routes here */
 ];
 

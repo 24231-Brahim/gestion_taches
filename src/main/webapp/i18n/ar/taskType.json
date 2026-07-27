@@ -1,0 +1,12 @@
+{
+  "gestionTachesApp": {
+    "IssueType": {
+      "null": "",
+      "STORY": "قصة",
+      "BUG": "خطأ",
+      "TASK": "مهمة",
+      "SUBTASK": "مهمة فرعية",
+      "IMPROVEMENT": "تحسين"
+    }
+  }
+}

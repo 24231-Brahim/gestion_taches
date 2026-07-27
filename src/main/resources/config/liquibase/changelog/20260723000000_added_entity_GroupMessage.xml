@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="20260723000000-1" author="jhipster">
+        <createTable tableName="group_message">
+            <column name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_group_message"/>
+            </column>
+            <column name="content" type="varchar(5000)">
+                <constraints nullable="false" />
+            </column>
+            <column name="created_at" type="datetime(6)"/>
+            <column name="sender_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+            <column name="recipient_id" type="bigint"/>
+            <column name="project_id" type="bigint">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="20260723000000-2" author="jhipster">
+        <addForeignKeyConstraint baseColumnNames="sender_id"
+                                 baseTableName="group_message"
+                                 constraintName="fk_group_message__sender_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="jhi_user"
+                                 />
+    </changeSet>
+
+    <changeSet id="20260723000000-3" author="jhipster">
+        <addForeignKeyConstraint baseColumnNames="recipient_id"
+                                 baseTableName="group_message"
+                                 constraintName="fk_group_message__recipient_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="jhi_user"
+                                 />
+    </changeSet>
+
+    <changeSet id="20260723000000-4" author="jhipster">
+        <addForeignKeyConstraint baseColumnNames="project_id"
+                                 baseTableName="group_message"
+                                 constraintName="fk_group_message__project_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="project"
+                                 />
+    </changeSet>
+
+    <changeSet id="20260723000000-5" author="jhipster">
+        <createIndex tableName="group_message" indexName="idx_group_message__project_created">
+            <column name="project_id"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

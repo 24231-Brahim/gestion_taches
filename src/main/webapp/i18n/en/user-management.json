@@ -16,6 +16,28 @@
     "detail": {
       "title": "User"
     },
+    "adminDetail": {
+      "title": "User Detail",
+      "shortLabel": "Admin Detail",
+      "loading": "Loading...",
+      "loadError": "Error loading details",
+      "userInfo": "User Information",
+      "status": "Status",
+      "tasks": "Assigned Tasks",
+      "taskKey": "Key",
+      "taskTitle": "Title",
+      "taskStatus": "Status",
+      "taskPriority": "Priority",
+      "taskProject": "Project",
+      "taskSprint": "Sprint",
+      "taskEpic": "Epic",
+      "noTasks": "No assigned tasks",
+      "projects": "Projects",
+      "joinedAt": "Joined on",
+      "noProjects": "No projects",
+      "activity": "Recent Activity",
+      "noActivity": "No recent activity"
+    },
     "id": "ID",
     "login": "Login",
     "firstName": "First name",

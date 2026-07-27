@@ -12,6 +12,12 @@ import { ISprint, NewSprint } from '../sprint.model';
 
 export type PartialUpdateSprint = Partial<ISprint> & Pick<ISprint, 'id'>;
 
+export interface BurndownData {
+  dates: string[];
+  ideal: number[];
+  actual: number[];
+}
+
 export interface VelocityReport {
   tachesPrevues: number;
   tachesTerminees: number;
@@ -111,6 +117,10 @@ export class SprintService extends SprintsService {
 
   closeSprint(id: number): Observable<VelocityReport> {
     return this.http.post<VelocityReport>(`${this.resourceUrl}/${encodeURIComponent(id)}/close`, {});
+  }
+
+  getBurndown(id: number): Observable<BurndownData> {
+    return this.http.get<BurndownData>(`${this.resourceUrl}/${encodeURIComponent(id)}/burndown`);
   }
 
   getSprintIdentifier(sprint: Pick<ISprint, 'id'>): number {

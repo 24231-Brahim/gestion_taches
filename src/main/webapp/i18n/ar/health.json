@@ -1,0 +1,33 @@
+{
+  "health": {
+    "title": "فحوصات الحالة الصحية",
+    "refresh.button": "تحديث",
+    "stacktrace": "تتبع المكدس",
+    "details": {
+      "details": "التفاصيل",
+      "properties": "الخصائص",
+      "name": "الاسم",
+      "value": "القيمة",
+      "error": "خطأ"
+    },
+    "indicator": {
+      "diskSpace": "مساحة القرص",
+      "ssl": "SSL",
+      "mail": "البريد الإلكتروني",
+      "livenessState": "حالة التشغيل",
+      "readinessState": "حالة الجاهزية",
+      "ping": "التطبيق",
+      "db": "قاعدة البيانات"
+    },
+    "table": {
+      "service": "اسم الخدمة",
+      "status": "الحالة"
+    },
+    "status": {
+      "UNKNOWN": "غير معروف",
+      "UP": "يعمل",
+      "OUT_OF_SERVICE": "خارج الخدمة",
+      "DOWN": "متوقف"
+    }
+  }
+}

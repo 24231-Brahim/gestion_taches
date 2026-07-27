@@ -10,7 +10,7 @@
       @if (threadStateFilter === undefined) {
         <fa-icon icon="check" />
       }
-      All&nbsp;<span class="badge rounded-pill bg-default">{{ threadDumpAll }}</span>
+      <span jhiTranslate="metrics.jvm.threads.all">All</span>&nbsp;<span class="badge rounded-pill bg-default">{{ threadDumpAll }}</span>
     </button>
 
     <button
@@ -21,7 +21,9 @@
       @if (threadStateFilter === ThreadState.Runnable) {
         <fa-icon icon="check" />
       }
-      Runnable&nbsp;<span class="badge rounded-pill bg-default">{{ threadDumpRunnable }}</span>
+      <span jhiTranslate="metrics.jvm.threads.runnable">Runnable</span>&nbsp;<span class="badge rounded-pill bg-default">{{
+        threadDumpRunnable
+      }}</span>
     </button>
 
     <button
@@ -32,7 +34,9 @@
       @if (threadStateFilter === ThreadState.Waiting) {
         <fa-icon icon="check" />
       }
-      Waiting&nbsp;<span class="badge rounded-pill bg-default">{{ threadDumpWaiting }}</span>
+      <span jhiTranslate="metrics.jvm.threads.waiting">Waiting</span>&nbsp;<span class="badge rounded-pill bg-default">{{
+        threadDumpWaiting
+      }}</span>
     </button>
 
     <button
@@ -43,7 +47,9 @@
       @if (threadStateFilter === ThreadState.TimedWaiting) {
         <fa-icon icon="check" />
       }
-      Timed Waiting&nbsp;<span class="badge rounded-pill bg-default">{{ threadDumpTimedWaiting }}</span>
+      <span jhiTranslate="metrics.jvm.threads.timedwaiting">Timed Waiting</span>&nbsp;<span class="badge rounded-pill bg-default">{{
+        threadDumpTimedWaiting
+      }}</span>
     </button>
 
     <button
@@ -54,7 +60,9 @@
       @if (threadStateFilter === ThreadState.Blocked) {
         <fa-icon icon="check" />
       }
-      Blocked&nbsp;<span class="badge rounded-pill bg-default">{{ threadDumpBlocked }}</span>
+      <span jhiTranslate="metrics.jvm.threads.blocked">Blocked</span>&nbsp;<span class="badge rounded-pill bg-default">{{
+        threadDumpBlocked
+      }}</span>
     </button>
   </div>
 
@@ -85,7 +93,7 @@
         </div>
       </div>
       <table class="table table-sm table-responsive">
-        <caption>
+        <caption jhiTranslate="metrics.jvm.threads.dump.caption">
           Threads dump:
           {{
             thread.threadName
@@ -116,5 +124,7 @@
   }
 </div>
 <div class="modal-footer">
-  <button type="button" class="btn btn-secondary float-start" data-dismiss="modal" (click)="dismiss()">Done</button>
+  <button type="button" class="btn btn-secondary float-start" data-dismiss="modal" (click)="dismiss()" jhiTranslate="entity.action.close">
+    Done
+  </button>
 </div>

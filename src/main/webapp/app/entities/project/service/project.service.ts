@@ -103,11 +103,15 @@ export class ProjectService extends ProjectsService {
   }
 
   getMembers(id: number): Observable<IProjectMember[]> {
-    return this.http.get<IProjectMember[]>(`${this.resourceUrl}/${encodeURIComponent(id)}/members`);
+    return this.http
+      .get<IProjectMember[]>(`${this.resourceUrl}/${encodeURIComponent(id)}/members`)
+      .pipe(map(members => members.map(m => this.convertMemberFromServer(m))));
   }
 
   getMyRoles(): Observable<IProjectMember[]> {
-    return this.http.get<IProjectMember[]>(`${this.resourceUrl}/my-roles`);
+    return this.http
+      .get<IProjectMember[]>(`${this.resourceUrl}/my-roles`)
+      .pipe(map(members => members.map(m => this.convertMemberFromServer(m))));
   }
 
   addMember(projectId: number, userId: number): Observable<undefined> {
@@ -165,5 +169,12 @@ export class ProjectService extends ProjectsService {
 
   protected convertResponseArrayFromServer(res: RestProject[]): IProject[] {
     return res.map(item => this.convertValueFromServer(item));
+  }
+
+  protected convertMemberFromServer(member: IProjectMember): IProjectMember {
+    return {
+      ...member,
+      joinedAt: member.joinedAt ? dayjs(member.joinedAt) : null,
+    };
   }
 }

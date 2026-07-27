@@ -4,7 +4,7 @@
 
     <div class="d-flex justify-content-end">
       <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
-        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <fa-icon icon="arrows-rotate" [animation]="isLoading() ? 'spin' : undefined" />
         <span jhiTranslate="gestionTachesApp.project.home.refreshListLabel">Actualiser la liste</span>
       </button>
 
@@ -31,7 +31,7 @@
 
   @if (isAdmin()) {
     <div class="alert alert-info mb-3" role="alert">
-      <fa-icon icon="shield-alt" class="me-1" />
+      <fa-icon icon="shield-halved" class="me-1" />
       <span jhiTranslate="gestionTachesApp.project.member.adminAccess">Vous avez un accès administrateur complet à tous les projets.</span>
     </div>
   }

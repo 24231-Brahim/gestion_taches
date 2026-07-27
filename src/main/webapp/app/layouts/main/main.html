@@ -4,7 +4,7 @@
   @if (!appReady()) {
     <div class="app-loading d-flex align-items-center justify-content-center" style="height: 100vh">
       <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+        <span class="visually-hidden" jhiTranslate="global.loading">Loading...</span>
       </div>
     </div>
   } @else {
@@ -25,6 +25,7 @@
 
     @if (account() !== null) {
       <jhi-bottom-nav />
+      <jhi-search-dialog />
     }
   }
 </div>
