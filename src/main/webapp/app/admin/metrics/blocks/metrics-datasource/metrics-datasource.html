@@ -23,7 +23,7 @@
       </thead>
       <tbody>
         <tr>
-          <td>Acquire</td>
+          <td jhiTranslate="metrics.datasource.acquire">Acquire</td>
           @let acquire = datasourceMetricsRef.acquire;
           <td class="text-end">{{ acquire.count }}</td>
           <td class="text-end">{{ filterNaN(acquire.mean) | number: '1.0-2' }}</td>
@@ -35,7 +35,7 @@
           <td class="text-end">{{ filterNaN(acquire.max) | number: '1.0-2' }}</td>
         </tr>
         <tr>
-          <td>Creation</td>
+          <td jhiTranslate="metrics.datasource.creation">Creation</td>
           @let creation = datasourceMetricsRef.creation;
           <td class="text-end">{{ creation.count }}</td>
           <td class="text-end">{{ filterNaN(creation.mean) | number: '1.0-2' }}</td>
@@ -47,7 +47,7 @@
           <td class="text-end">{{ filterNaN(creation.max) | number: '1.0-2' }}</td>
         </tr>
         <tr>
-          <td>Usage</td>
+          <td jhiTranslate="metrics.datasource.usageLabel">Usage</td>
           @let usage = datasourceMetricsRef.usage;
           <td class="text-end">{{ usage.count }}</td>
           <td class="text-end">{{ filterNaN(usage.mean) | number: '1.0-2' }}</td>

@@ -116,9 +116,9 @@
                     @if (editingMemberId() === member.id) {
                       <div class="d-flex gap-1 align-items-center">
                         <select class="form-select form-select-sm" style="width: 140px" [(ngModel)]="editingRole">
-                          <option [ngValue]="'OWNER'">OWNER</option>
-                          <option [ngValue]="'MANAGER'">MANAGER</option>
-                          <option [ngValue]="'MEMBER'">MEMBER</option>
+                          <option [ngValue]="'OWNER'" jhiTranslate="gestionTachesApp.project.member.role.OWNER">OWNER</option>
+                          <option [ngValue]="'MANAGER'" jhiTranslate="gestionTachesApp.project.member.role.MANAGER">MANAGER</option>
+                          <option [ngValue]="'MEMBER'" jhiTranslate="gestionTachesApp.project.member.role.MEMBER">MEMBER</option>
                         </select>
                         <button class="btn btn-sm btn-primary" (click)="saveRole(projectRef.id, member)">
                           <fa-icon icon="floppy-disk" />

@@ -5,11 +5,14 @@ import com.gestiontaches.domain.enumeration.TaskStatus;
 import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.repository.TaskRepository;
+import com.gestiontaches.repository.TaskTransitionRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
 import com.gestiontaches.service.dto.DashboardKpiDTO;
 import com.gestiontaches.service.dto.DashboardKpiDTO.ProjectProgressDTO;
 import com.gestiontaches.service.dto.DashboardKpiDTO.TaskStatusCountDTO;
+import com.gestiontaches.service.dto.DashboardKpiDTO.TimeSpentByProjectDTO;
+import com.gestiontaches.service.dto.DashboardKpiDTO.TimeSpentByUserDTO;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -31,15 +34,18 @@ public class DashboardResource {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
+    private final TaskTransitionRepository taskTransitionRepository;
 
     public DashboardResource(
         TaskRepository taskRepository,
         ProjectRepository projectRepository,
-        ProjectMemberRepository projectMemberRepository
+        ProjectMemberRepository projectMemberRepository,
+        TaskTransitionRepository taskTransitionRepository
     ) {
         this.taskRepository = taskRepository;
         this.projectRepository = projectRepository;
         this.projectMemberRepository = projectMemberRepository;
+        this.taskTransitionRepository = taskTransitionRepository;
     }
 
     @GetMapping("/kpis")
@@ -66,6 +72,22 @@ public class DashboardResource {
 
             List<Object[]> statusStats = taskRepository.countTasksGroupByStatus();
             populateTaskDistribution(dto, statusStats);
+
+            dto.setTotalTimeSpentSeconds(taskTransitionRepository.sumTimeSpentGlobal());
+            dto.setTimeSpentByUser(
+                taskTransitionRepository
+                    .sumTimeSpentGroupByUser()
+                    .stream()
+                    .map(row -> new TimeSpentByUserDTO((String) row[0], ((Number) row[1]).longValue()))
+                    .toList()
+            );
+            dto.setTimeSpentByProject(
+                taskTransitionRepository
+                    .sumTimeSpentGroupByProject()
+                    .stream()
+                    .map(row -> new TimeSpentByProjectDTO((String) row[0], ((Number) row[1]).longValue()))
+                    .toList()
+            );
         } else if (currentLogin != null) {
             List<Project> userProjects = projectRepository.findAllByOwnerLoginOrMemberLogin(currentLogin);
             List<Long> projectIds = userProjects.stream().map(Project::getId).toList();
@@ -80,6 +102,9 @@ public class DashboardResource {
                 dto.setActiveProjects(0L);
                 dto.setProjectProgress(Collections.emptyList());
                 dto.setTaskDistribution(Collections.emptyList());
+                dto.setTotalTimeSpentSeconds(0L);
+                dto.setTimeSpentByUser(Collections.emptyList());
+                dto.setTimeSpentByProject(Collections.emptyList());
             } else {
                 dto.setTeamMembers(projectMemberRepository.countDistinctUsersByProjectIds(projectIds));
                 dto.setTotalTasks(taskRepository.countByProjectIdIn(projectIds));
@@ -91,6 +116,22 @@ public class DashboardResource {
 
                 List<Object[]> statusStats = taskRepository.countTasksGroupByStatusForProjects(projectIds);
                 populateTaskDistribution(dto, statusStats);
+
+                dto.setTotalTimeSpentSeconds(taskTransitionRepository.sumTimeSpentByProjectIds(projectIds));
+                dto.setTimeSpentByUser(
+                    taskTransitionRepository
+                        .sumTimeSpentGroupByUserForProjects(projectIds)
+                        .stream()
+                        .map(row -> new TimeSpentByUserDTO((String) row[0], ((Number) row[1]).longValue()))
+                        .toList()
+                );
+                dto.setTimeSpentByProject(
+                    taskTransitionRepository
+                        .sumTimeSpentGroupByProjectForProjects(projectIds)
+                        .stream()
+                        .map(row -> new TimeSpentByProjectDTO((String) row[0], ((Number) row[1]).longValue()))
+                        .toList()
+                );
             }
         }
 

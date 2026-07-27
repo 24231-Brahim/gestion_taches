@@ -70,6 +70,20 @@ export class TaskUpdate implements OnInit {
     });
   }
 
+  loadProjectScopedOptions(projectId: number): void {
+    this.sprintService
+      .query({ 'projectId.equals': projectId })
+      .pipe(map((res: HttpResponse<ISprint[]>) => res.body ?? []))
+      .pipe(map((sprints: ISprint[]) => this.sprintService.addSprintToCollectionIfMissing<ISprint>(sprints, this.task?.sprint)))
+      .subscribe((sprints: ISprint[]) => this.sprintsSharedCollection.set(sprints));
+
+    this.epicService
+      .query({ 'projectId.equals': projectId })
+      .pipe(map((res: HttpResponse<IEpic[]>) => res.body ?? []))
+      .pipe(map((epics: IEpic[]) => this.epicService.addEpicToCollectionIfMissing<IEpic>(epics, this.task?.epic)))
+      .subscribe((epics: IEpic[]) => this.epicsSharedCollection.set(epics));
+  }
+
   ngOnInit(): void {
     this.activatedRoute.data.subscribe(({ task }) => {
       this.task = task;
@@ -88,13 +102,14 @@ export class TaskUpdate implements OnInit {
           if (project) {
             this.editForm.patchValue({ project });
             this.loadProjectMembers(project.id!);
+            this.loadProjectScopedOptions(project.id!);
             this.isProjectContext.set(true);
           }
         });
       }
     });
 
-    // Watch for project changes to load members
+    // Watch for project changes to load members and filter sprints/epics
     this.editForm
       .get('project')
       ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
@@ -102,7 +117,12 @@ export class TaskUpdate implements OnInit {
         const projectVal = project as IProject | null;
         if (projectVal?.id) {
           this.loadProjectMembers(projectVal.id);
-          this.editForm.patchValue({ assignee: null }, { emitEvent: false });
+          this.loadProjectScopedOptions(projectVal.id);
+          this.editForm.patchValue({ assignee: null, sprint: null, epic: null }, { emitEvent: false });
+        } else {
+          this.loadRelationshipsOptions();
+          this.projectMembers.set([]);
+          this.editForm.patchValue({ assignee: null, sprint: null, epic: null }, { emitEvent: false });
         }
       });
   }

@@ -1,0 +1,180 @@
+{
+  "global": {
+    "title": "إدارة المهام",
+    "browsehappy": "أنت تستخدم متصفح<strong>قديم</strong>. يرجى <a href=\"https://browsehappy.com/?locale=ar\">ترقية متصفحك</a> لتحسين تجربتك.",
+    "menu": {
+      "home": "الرئيسية",
+      "search": {
+        "placeholder": "البحث عن مشاريع، مهام، سبرنتات..."
+      },
+      "jhipster-needle-menu-add-element": "JHipster will add additional menu entries here (do not translate!)",
+      "entities": {
+        "main": "الكيانات",
+        "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)",
+        "adminAuthority": "الصلاحية",
+        "project": "المشروع",
+        "sprint": "السبرنت",
+        "epic": "الإيبك",
+        "task": "المهام",
+        "comment": "التعليقات",
+        "attachment": "المرفقات",
+        "actionHistory": "سجل الإجراءات"
+      },
+      "account": {
+        "main": "الحساب",
+        "settings": "الإعدادات",
+        "password": "كلمة المرور",
+        "sessions": "الجلسات",
+        "login": "تسجيل الدخول",
+        "logout": "تسجيل الخروج",
+        "register": "التسجيل"
+      },
+      "admin": {
+        "main": "الإدارة",
+        "userManagement": "إدارة المستخدمين",
+        "tracker": "تتبع المستخدمين",
+        "metrics": "المقاييس",
+        "health": "الحالة الصحية",
+        "configuration": "الإعدادات",
+        "logs": "السجلات",
+        "apidocs": "واجهة API",
+        "database": "قاعدة البيانات",
+        "jhipster-needle-menu-add-admin-element": "JHipster will add additional menu entries here (do not translate!)"
+      },
+      "language": "اللغة",
+      "theme": "المظهر",
+      "notifications": "الإشعارات"
+    },
+    "form": {
+      "username.label": "اسم المستخدم",
+      "username.placeholder": "اسم المستخدم الخاص بك",
+      "currentpassword.label": "كلمة المرور الحالية",
+      "currentpassword.placeholder": "كلمة المرور الحالية",
+      "newpassword.label": "كلمة المرور الجديدة",
+      "newpassword.placeholder": "كلمة المرور الجديدة",
+      "confirmpassword.label": "تأكيد كلمة المرور الجديدة",
+      "confirmpassword.placeholder": "تأكيد كلمة المرور الجديدة",
+      "email.label": "البريد الإلكتروني",
+      "email.placeholder": "البريد الإلكتروني الخاص بك"
+    },
+    "messages": {
+      "viewAllNotifications": "عرض الكل",
+      "markAllAsRead": "تعيين الكل كمقروء",
+      "noNotifications": "لا توجد إشعارات",
+      "info": {
+        "authenticated": {
+          "prefix": "إذا كنت ترغب في ",
+          "link": "تسجيل الدخول",
+          "suffix": "، يمكنك تجربة الحسابات الافتراضية:<br/>- المدير (اسم المستخدم=\"admin\" وكلمة المرور=\"admin\") <br/>- المستخدم (اسم المستخدم=\"user\" وكلمة المرور=\"user\")."
+        },
+        "register": {
+          "noaccount": "ليس لديك حساب بعد؟",
+          "link": "تسجيل حساب جديد"
+        }
+      },
+      "error": {
+        "dontmatch": "كلمة المرور وتأكيدها غير متطابقين!"
+      },
+      "validate": {
+        "newpassword": {
+          "required": "كلمة المرور مطلوبة.",
+          "minlength": "يجب أن تكون كلمة المرور 4 أحرف على الأقل.",
+          "maxlength": "لا يمكن أن تتجاوز كلمة المرور 50 حرفًا.",
+          "strength": "قوة كلمة المرور:"
+        },
+        "confirmpassword": {
+          "required": "تأكيد كلمة المرور مطلوب.",
+          "minlength": "يجب أن يكون تأكيد كلمة المرور 4 أحرف على الأقل.",
+          "maxlength": "لا يمكن أن يتجاوز تأكيد كلمة المرور 50 حرفًا."
+        },
+        "email": {
+          "required": "البريد الإلكتروني مطلوب.",
+          "invalid": "البريد الإلكتروني غير صالح.",
+          "minlength": "يجب أن يكون البريد الإلكتروني 5 أحرف على الأقل.",
+          "maxlength": "لا يمكن أن يتجاوز البريد الإلكتروني 50 حرفًا."
+        }
+      }
+    },
+    "field": {
+      "id": "المعرف"
+    },
+    "ribbon": {
+      "dev": "التطوير"
+    },
+    "item-count": "عرض {{first}} - {{second}} من {{total}} عنصر.",
+    "loading": "جاري التحميل..."
+  },
+  "entity": {
+    "action": {
+      "addblob": "إضافة ملف",
+      "addimage": "إضافة صورة",
+      "back": "رجوع",
+      "cancel": "إلغاء",
+      "delete": "حذف",
+      "edit": "تعديل",
+      "open": "فتح",
+      "exportCsv": "CSV",
+      "save": "حفظ",
+      "view": "عرض",
+      "close": "إغلاق",
+      "show": "عرض {{otherEntity}}",
+      "related": "مرتبط"
+    },
+    "detail": {
+      "field": "الحقل",
+      "value": "القيمة"
+    },
+    "delete": {
+      "title": "تأكيد عملية الحذف"
+    },
+    "validation": {
+      "required": "هذا الحقل مطلوب.",
+      "minlength": "يجب أن يكون هذا الحقل {{ min }} أحرف على الأقل.",
+      "maxlength": "لا يمكن أن يتجاوز هذا الحقل {{ max }} حرفًا.",
+      "min": "يجب أن يكون هذا الحقل {{ min }} على الأقل.",
+      "max": "لا يمكن أن يتجاوز هذا الحقل {{ max }}.",
+      "minbytes": "يجب أن يكون هذا الحقل {{ min }} بايت على الأقل.",
+      "maxbytes": "لا يمكن أن يتجاوز هذا الحقل {{ max }} بايت.",
+      "pattern": "يجب أن يتبع هذا الحقل النمط {{ pattern }}.",
+      "number": "يجب أن يكون هذا الحقل رقمًا.",
+      "datetimelocal": "يجب أن يكون هذا الحقل تاريخًا ووقتًا.",
+      "patternLogin": "يمكن أن يحتوي هذا الحقل على أحرف وأرقام وعناوين بريد إلكتروني فقط.",
+      "dateRange": "يجب أن تكون تاريخ النهاية بعد تاريخ البداية."
+    },
+    "filters": {
+      "set": "المرشحات التالية مضبوطة",
+      "clear": "مسح المرشح",
+      "clearAll": "مسح جميع المرشحات"
+    }
+  },
+  "error": {
+    "internalServerError": "خطأ داخلي في الخادم",
+    "server.not.reachable": "الخادم غيرachable",
+    "url.not.found": "غير موجود",
+    "NotNull": "لا يمكن أن يكون الحقل {{ fieldName }} فارغًا!",
+    "Size": "الحقل {{ fieldName }} لا يستوفي متطلبات الحجم الأدنى/الأعلى!",
+    "userexists": "اسم المستخدم مستخدم بالفعل!",
+    "emailexists": "البريد الإلكتروني مستخدم بالفعل!",
+    "idexists": "لا يمكن أن يكون لـ {{ entityName }} جديد معرف بالفعل",
+    "idnull": "معرف غير صالح",
+    "idinvalid": "معرف غير صالح",
+    "idnotfound": "المعرف غير موجود",
+    "projects": {
+      "loadFailed": "فشل تحميل المشاريع"
+    },
+    "file": {
+      "could.not.extract": "لم يتمكن من استخراج الملف",
+      "not.image": "كان متوقعًا أن يكون الملف صورة ولكن تم العثور عليه بأنه \"{{ fileType }}\""
+    },
+    "messages": {
+      "empty": "لا شيء",
+      "notSet": "غير محدد",
+      "notAssigned": "غير مُعيَّن",
+      "unassigned": "غير مُعيَّن",
+      "noNotifications": "لا توجد إشعارات",
+      "viewAllNotifications": "عرض الكل",
+      "markAllAsRead": "تعيين الكل كمقروء"
+    }
+  },
+  "footer": "هذا هو تذييلك"
+}

@@ -1,10 +1,13 @@
 package com.gestiontaches.web.rest;
 
 import com.gestiontaches.repository.SprintRepository;
+import com.gestiontaches.repository.TaskRepository;
+import com.gestiontaches.repository.TaskTransitionRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.SprintQueryService;
 import com.gestiontaches.service.SprintService;
 import com.gestiontaches.service.criteria.SprintCriteria;
+import com.gestiontaches.service.dto.BurndownData;
 import com.gestiontaches.service.dto.SprintDTO;
 import com.gestiontaches.service.dto.TaskDTO;
 import com.gestiontaches.service.dto.VelocityReportDTO;
@@ -13,6 +16,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -47,10 +55,22 @@ public class SprintResource {
 
     private final SprintQueryService sprintQueryService;
 
-    public SprintResource(SprintService sprintService, SprintRepository sprintRepository, SprintQueryService sprintQueryService) {
+    private final TaskRepository taskRepository;
+
+    private final TaskTransitionRepository taskTransitionRepository;
+
+    public SprintResource(
+        SprintService sprintService,
+        SprintRepository sprintRepository,
+        SprintQueryService sprintQueryService,
+        TaskRepository taskRepository,
+        TaskTransitionRepository taskTransitionRepository
+    ) {
         this.sprintService = sprintService;
         this.sprintRepository = sprintRepository;
         this.sprintQueryService = sprintQueryService;
+        this.taskRepository = taskRepository;
+        this.taskTransitionRepository = taskTransitionRepository;
     }
 
     @PostMapping("/sprints")
@@ -216,5 +236,55 @@ public class SprintResource {
         LOG.debug("REST request to get backlog for project : {}", projectId);
         List<TaskDTO> tasks = sprintService.getBacklogTasks(projectId);
         return ResponseEntity.ok().body(tasks);
+    }
+
+    @GetMapping("/sprints/{id}/burndown")
+    public ResponseEntity<BurndownData> getBurndown(@PathVariable("id") Long id) {
+        LOG.debug("REST request to get burndown for Sprint : {}", id);
+        SprintDTO sprintDTO = sprintService.findOne(id).orElseThrow(() -> new RuntimeException("Sprint not found"));
+        List<com.gestiontaches.domain.Task> sprintTasks = taskRepository.findBySprintId(id);
+        int totalTasks = sprintTasks.size();
+        if (totalTasks == 0) {
+            LocalDate today = LocalDate.now();
+            return ResponseEntity.ok(new BurndownData(List.of(today.toString()), List.of(0L), List.of(0L)));
+        }
+        List<Object[]> transitions = taskTransitionRepository.findTransitionsBySprintId(id);
+        LocalDate startDate = sprintDTO.getStartDate() != null ? sprintDTO.getStartDate() : LocalDate.now().minusDays(14);
+        LocalDate endDate = sprintDTO.getEndDate() != null ? sprintDTO.getEndDate() : LocalDate.now();
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        List<String> dates = new ArrayList<>();
+        List<Long> ideal = new ArrayList<>();
+        List<Long> actual = new ArrayList<>();
+        long remaining = totalTasks;
+        LocalDate cursor = startDate;
+        LocalDate end = endDate.plusDays(1);
+        int totalDays = Math.max(1, (int) (endDate.toEpochDay() - startDate.toEpochDay()));
+        int dayIndex = 0;
+        int trIdx = 0;
+        while (!cursor.isAfter(end)) {
+            Instant cursorInstant = cursor.atStartOfDay(ZoneId.systemDefault()).toInstant();
+            while (trIdx < transitions.size()) {
+                Instant trTime = (Instant) transitions.get(trIdx)[0];
+                if (trTime.isAfter(cursorInstant)) {
+                    break;
+                }
+                String toStatus = (String) transitions.get(trIdx)[2];
+                if ("DONE".equals(toStatus) || "CANCELLED".equals(toStatus)) {
+                    remaining = Math.max(0, remaining - 1);
+                }
+                trIdx++;
+            }
+            dates.add(cursor.format(fmt));
+            ideal.add((long) Math.max(0, totalTasks - (int) (((long) dayIndex * totalTasks) / totalDays)));
+            actual.add(remaining);
+            cursor = cursor.plusDays(1);
+            dayIndex++;
+        }
+        if (dates.isEmpty()) {
+            dates.add(LocalDate.now().format(fmt));
+            ideal.add((long) totalTasks);
+            actual.add(remaining);
+        }
+        return ResponseEntity.ok(new BurndownData(dates, ideal, actual));
     }
 }

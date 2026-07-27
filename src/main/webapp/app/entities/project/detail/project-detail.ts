@@ -31,6 +31,39 @@ export interface DisplayMember extends IProjectMember {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-project-detail',
   templateUrl: './project-detail.html',
+  styles: [
+    `
+      .tab-bar {
+        display: flex;
+        gap: 0;
+        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        margin-bottom: 20px;
+      }
+      .tab-item {
+        padding: 10px 24px;
+        cursor: pointer;
+        font-family: var(--font-inter);
+        font-size: 0.85rem;
+        text-transform: none;
+        letter-spacing: 0;
+        border: none;
+        background: transparent;
+        color: var(--color-text-muted, #6a8fac);
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+        transition:
+          color var(--transition-fast),
+          border-color var(--transition-fast);
+      }
+      .tab-item:hover {
+        color: var(--color-text, #dfe3ea);
+      }
+      .tab-item.active {
+        color: var(--color-primary, #97cbff);
+        border-bottom-color: var(--color-primary, #97cbff);
+      }
+    `,
+  ],
   imports: [
     FontAwesomeModule,
     Alert,

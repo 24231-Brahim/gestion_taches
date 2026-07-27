@@ -41,6 +41,10 @@ export class AuthorityService extends AuthoritiesService {
     return this.http.post<IAuthority>(this.resourceUrl, authority);
   }
 
+  update(authority: IAuthority): Observable<IAuthority> {
+    return this.http.put<IAuthority>(`${this.resourceUrl}/${encodeURIComponent(authority.name)}`, authority);
+  }
+
   find(name: string): Observable<IAuthority> {
     return this.http.get<IAuthority>(`${this.resourceUrl}/${encodeURIComponent(name)}`);
   }

@@ -56,6 +56,11 @@
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
                   </a>
 
+                  <a [routerLink]="['/authority', authority.name, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil" />
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
+                  </a>
+
                   <button type="submit" (click)="delete(authority)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
                     <fa-icon icon="xmark" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>

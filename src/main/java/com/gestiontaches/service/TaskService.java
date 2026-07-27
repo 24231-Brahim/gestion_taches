@@ -2,11 +2,13 @@ package com.gestiontaches.service;
 
 import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.Task;
+import com.gestiontaches.domain.TaskTransition;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.domain.enumeration.TaskStatus;
 import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.TaskRepository;
+import com.gestiontaches.repository.TaskTransitionRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
@@ -43,13 +45,16 @@ public class TaskService {
 
     private final NotificationService notificationService;
 
+    private final TaskTransitionRepository taskTransitionRepository;
+
     public TaskService(
         TaskRepository taskRepository,
         TaskMapper taskMapper,
         UserRepository userRepository,
         ProjectMemberRepository projectMemberRepository,
         ProjectPermissionService projectPermissionService,
-        NotificationService notificationService
+        NotificationService notificationService,
+        TaskTransitionRepository taskTransitionRepository
     ) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
@@ -57,6 +62,7 @@ public class TaskService {
         this.projectMemberRepository = projectMemberRepository;
         this.projectPermissionService = projectPermissionService;
         this.notificationService = notificationService;
+        this.taskTransitionRepository = taskTransitionRepository;
     }
 
     /**
@@ -75,6 +81,11 @@ public class TaskService {
                 ProjectRole.MEMBER
             );
         }
+        validateSprintEpicBelongToProject(taskDTO);
+        TaskStatus oldStatus = null;
+        if (taskDTO.getId() != null) {
+            oldStatus = taskRepository.findById(taskDTO.getId()).map(Task::getStatus).orElse(null);
+        }
         Task task = taskMapper.toEntity(taskDTO);
         if (task.getId() == null) {
             String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
@@ -84,6 +95,9 @@ public class TaskService {
             task.setCreatedBy(currentUser);
         }
         task = taskRepository.save(task);
+        if (taskDTO.getId() != null && task.getStatus() != null && oldStatus != null && oldStatus != task.getStatus()) {
+            recordTransition(task, oldStatus, task.getStatus());
+        }
         return taskMapper.toDto(task);
     }
 
@@ -98,6 +112,7 @@ public class TaskService {
         if (taskDTO.getId() != null) {
             checkTaskUpdatePermission(taskDTO.getId());
         }
+        validateSprintEpicBelongToProject(taskDTO);
         Task existingTask = taskRepository.findById(taskDTO.getId()).orElse(null);
         TaskStatus oldStatus = existingTask != null ? existingTask.getStatus() : null;
         Task task = taskMapper.toEntity(taskDTO);
@@ -106,6 +121,9 @@ public class TaskService {
         }
         task = taskRepository.save(task);
         notifyStatusChangeIfNeeded(existingTask, task, oldStatus);
+        if (existingTask != null && task.getStatus() != null && oldStatus != null && oldStatus != task.getStatus()) {
+            recordTransition(task, oldStatus, task.getStatus());
+        }
         return taskMapper.toDto(task);
     }
 
@@ -214,6 +232,41 @@ public class TaskService {
                 .stream()
                 .anyMatch(a -> role.equals(a.getName()))
         );
+    }
+
+    private void recordTransition(Task task, TaskStatus fromStatus, TaskStatus toStatus) {
+        try {
+            String currentLogin = SecurityUtils.getCurrentUserLogin().orElse(null);
+            User currentUser = currentLogin != null ? userRepository.findOneByLogin(currentLogin).orElse(null) : null;
+            TaskTransition transition = new TaskTransition();
+            transition.setTask(task);
+            transition.setFromStatus(fromStatus.name());
+            transition.setToStatus(toStatus.name());
+            transition.setUser(currentUser);
+            transition.setCreatedAt(Instant.now());
+            taskTransitionRepository.save(transition);
+        } catch (Exception e) {
+            LOG.warn("Failed to record task transition for task {}: {}", task.getId(), e.getMessage());
+        }
+    }
+
+    private void validateSprintEpicBelongToProject(TaskDTO taskDTO) {
+        Long projectId = taskDTO.getProject() != null ? taskDTO.getProject().getId() : null;
+        if (projectId == null) {
+            return;
+        }
+        if (taskDTO.getSprint() != null && taskDTO.getSprint().getId() != null) {
+            boolean sprintMatches = taskDTO.getSprint().getProject() != null && projectId.equals(taskDTO.getSprint().getProject().getId());
+            if (!sprintMatches) {
+                throw new RuntimeException("Sprint must belong to the same project as the task");
+            }
+        }
+        if (taskDTO.getEpic() != null && taskDTO.getEpic().getId() != null) {
+            boolean epicMatches = taskDTO.getEpic().getProject() != null && projectId.equals(taskDTO.getEpic().getProject().getId());
+            if (!epicMatches) {
+                throw new RuntimeException("Epic must belong to the same project as the task");
+            }
+        }
     }
 
     /**

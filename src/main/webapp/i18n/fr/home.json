@@ -26,7 +26,13 @@
       "totalTasks": "Tâches Totales",
       "completedTasks": "Terminées",
       "overdueTasks": "Tâches en Retard",
-      "teamMembers": "Membres Équipe"
+      "teamMembers": "Membres Équipe",
+      "totalTimeSpent": "Temps Total Passé"
+    },
+    "timeTracking": {
+      "title": "SUIVI DU TEMPS",
+      "byUser": "Par utilisateur",
+      "byProject": "Par projet"
     },
     "charts": {
       "projectProgress": "AVANCEMENT PROJETS",

@@ -11,6 +11,9 @@ public class DashboardKpiDTO implements Serializable {
     private long completedTasks;
     private long overdueTasks;
     private long teamMembers;
+    private long totalTimeSpentSeconds;
+    private List<TimeSpentByUserDTO> timeSpentByUser;
+    private List<TimeSpentByProjectDTO> timeSpentByProject;
     private List<ProjectProgressDTO> projectProgress;
     private List<TaskStatusCountDTO> taskDistribution;
 
@@ -60,6 +63,30 @@ public class DashboardKpiDTO implements Serializable {
 
     public void setTeamMembers(long teamMembers) {
         this.teamMembers = teamMembers;
+    }
+
+    public long getTotalTimeSpentSeconds() {
+        return totalTimeSpentSeconds;
+    }
+
+    public void setTotalTimeSpentSeconds(long totalTimeSpentSeconds) {
+        this.totalTimeSpentSeconds = totalTimeSpentSeconds;
+    }
+
+    public List<TimeSpentByUserDTO> getTimeSpentByUser() {
+        return timeSpentByUser;
+    }
+
+    public void setTimeSpentByUser(List<TimeSpentByUserDTO> timeSpentByUser) {
+        this.timeSpentByUser = timeSpentByUser;
+    }
+
+    public List<TimeSpentByProjectDTO> getTimeSpentByProject() {
+        return timeSpentByProject;
+    }
+
+    public void setTimeSpentByProject(List<TimeSpentByProjectDTO> timeSpentByProject) {
+        this.timeSpentByProject = timeSpentByProject;
     }
 
     public List<ProjectProgressDTO> getProjectProgress() {
@@ -144,6 +171,64 @@ public class DashboardKpiDTO implements Serializable {
 
         public void setCount(long count) {
             this.count = count;
+        }
+    }
+
+    public static class TimeSpentByUserDTO implements Serializable {
+
+        private String login;
+        private long totalSeconds;
+
+        public TimeSpentByUserDTO() {}
+
+        public TimeSpentByUserDTO(String login, long totalSeconds) {
+            this.login = login;
+            this.totalSeconds = totalSeconds;
+        }
+
+        public String getLogin() {
+            return login;
+        }
+
+        public void setLogin(String login) {
+            this.login = login;
+        }
+
+        public long getTotalSeconds() {
+            return totalSeconds;
+        }
+
+        public void setTotalSeconds(long totalSeconds) {
+            this.totalSeconds = totalSeconds;
+        }
+    }
+
+    public static class TimeSpentByProjectDTO implements Serializable {
+
+        private String projectName;
+        private long totalSeconds;
+
+        public TimeSpentByProjectDTO() {}
+
+        public TimeSpentByProjectDTO(String projectName, long totalSeconds) {
+            this.projectName = projectName;
+            this.totalSeconds = totalSeconds;
+        }
+
+        public String getProjectName() {
+            return projectName;
+        }
+
+        public void setProjectName(String projectName) {
+            this.projectName = projectName;
+        }
+
+        public long getTotalSeconds() {
+            return totalSeconds;
+        }
+
+        public void setTotalSeconds(long totalSeconds) {
+            this.totalSeconds = totalSeconds;
         }
     }
 }

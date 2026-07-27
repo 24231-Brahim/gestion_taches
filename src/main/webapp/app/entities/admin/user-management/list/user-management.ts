@@ -21,6 +21,7 @@ import { SortByDirective, SortDirective, SortService, SortState, sortStateSignal
 import { UserManagementDeleteDialog } from '../delete/user-management-delete-dialog';
 import { UserManagementService } from '../service/user-management.service';
 import { IUserManagement } from '../user-management.model';
+import { AdminStatsService, IAdminStats } from 'app/entities/admin/admin-stats.service';
 
 @Component({
   selector: 'jhi-user-mgmt',
@@ -41,7 +42,6 @@ import { IUserManagement } from '../user-management.model';
   ],
 })
 export class UserManagement implements OnInit {
-  private readonly csvDownloadService = inject(CsvDownloadService);
   readonly currentAccount = inject(AccountService).account;
   readonly users = signal<IUserManagement[] | null>(null);
   readonly isLoading = signal(false);
@@ -49,12 +49,15 @@ export class UserManagement implements OnInit {
   readonly itemsPerPage = signal(ITEMS_PER_PAGE);
   readonly page = signal(0);
   sortState = sortStateSignal({});
+  readonly stats = signal<IAdminStats | null>(null);
 
+  private readonly csvDownloadService = inject(CsvDownloadService);
   private readonly userService = inject(UserManagementService);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly sortService = inject(SortService);
   private readonly modalService = inject(NgbModal);
+  private readonly adminStatsService = inject(AdminStatsService);
 
   exportCsv(): void {
     this.csvDownloadService.download('api/export/csv/users', 'users.csv');
@@ -62,6 +65,11 @@ export class UserManagement implements OnInit {
 
   ngOnInit(): void {
     this.handleNavigation();
+    this.loadStats();
+  }
+
+  loadStats(): void {
+    this.adminStatsService.getStats().subscribe(stats => this.stats.set(stats));
   }
 
   setActive(userManagement: IUserManagement, isActivated: boolean): void {

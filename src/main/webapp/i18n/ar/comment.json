@@ -1,0 +1,31 @@
+{
+  "gestionTachesApp": {
+    "comment": {
+      "home": {
+        "title": "التعليقات",
+        "refreshListLabel": "تحديث القائمة",
+        "createLabel": "إنشاء تعليق جديد",
+        "createOrEditLabel": "إنشاء أو تعديل تعليق",
+        "notFound": "لم يتم العثور على تعليقات"
+      },
+      "created": "تم إنشاء تعليق جديد بالمعرف {{ param }}",
+      "updated": "تم تحديث التعليق بالمعرف {{ param }}",
+      "deleted": "تم حذف التعليق بالمعرف {{ param }}",
+      "delete": {
+        "question": "هل أنت متأكد أنك تريد حذف التعليق {{ id }}؟"
+      },
+      "detail": {
+        "title": "التعليق"
+      },
+      "id": "المعرف",
+      "content": "المحتوى",
+      "createdAt": "تاريخ الإنشاء",
+      "author": "المؤلف",
+      "task": "المهمة",
+      "form": {
+        "placeholder": "اكتب تعليقًا...",
+        "submit": "إضافة تعليق"
+      }
+    }
+  }
+}

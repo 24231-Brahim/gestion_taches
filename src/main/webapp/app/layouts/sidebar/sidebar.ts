@@ -11,6 +11,7 @@ import { StateStorageService } from 'app/core/auth/state-storage.service';
 import { ProfileService } from 'app/layouts/profiles/profile.service';
 import { LoginService } from 'app/login/login.service';
 import { ThemeService } from 'app/core/util/theme.service';
+import { SearchService } from 'app/layouts/search/search.service';
 import { LANGUAGES } from 'app/config/language.constants';
 import { TranslateDirective } from 'app/shared/language';
 import FindLanguageFromKeyPipe from 'app/shared/language/find-language-from-key.pipe';
@@ -56,6 +57,7 @@ export default class Sidebar implements OnDestroy {
   private readonly loginService = inject(LoginService);
   private readonly translateService = inject(TranslateService);
   private readonly stateStorageService = inject(StateStorageService);
+  private readonly searchService = inject(SearchService);
   private readonly bodyObserver = new MutationObserver(() => {
     this.mobileOpen.set(document.body.classList.contains('sidebar-mobile-open'));
   });
@@ -111,6 +113,11 @@ export default class Sidebar implements OnDestroy {
   logout(): void {
     this.loginService.logout();
     this.router.navigate(['']);
+  }
+
+  openSearch(): void {
+    this.closeMobile();
+    this.searchService.open();
   }
 
   private detectProjectContext(): void {

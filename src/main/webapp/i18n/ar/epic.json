@@ -1,0 +1,82 @@
+{
+  "gestionTachesApp": {
+    "epic": {
+      "home": {
+        "title": "الإيبكات",
+        "refreshListLabel": "تحديث القائمة",
+        "createLabel": "إنشاء إيبك جديد",
+        "createOrEditLabel": "إنشاء أو تعديل إيبك",
+        "notFound": "لم يتم العثور على إيبكات",
+        "tableLabel": "الإيبكات",
+        "roadmap": "خارطة طريق الإيبك",
+        "details": "تفاصيل الإيبك",
+        "roadmapStart": "البداية",
+        "roadmapEnd": "النهاية"
+      },
+      "created": "تم إنشاء إيبك جديد بالمعرف {{ param }}",
+      "updated": "تم تحديث الإيبك بالمعرف {{ param }}",
+      "deleted": "تم حذف الإيبك بالمعرف {{ param }}",
+      "delete": {
+        "question": "هل أنت متأكد أنك تريد حذف الإيبك {{ id }}؟"
+      },
+      "detail": {
+        "title": "الإيبك"
+      },
+      "id": "المعرف",
+      "title": "العنوان",
+      "description": "الوصف",
+      "status": "الحالة",
+      "priority": "الأولوية",
+      "createdAt": "تاريخ الإنشاء",
+      "updatedAt": "تاريخ التحديث",
+      "startDate": "تاريخ البداية",
+      "endDate": "تاريخ النهاية",
+      "project": "المشروع",
+      "detail": {
+        "progress": "التقدم",
+        "totalTasks": "الإجمالي",
+        "doneTasks": "المكتملة",
+        "inProgressTasks": "قيد التنفيذ",
+        "todoTasks": "قائمة الانتظار",
+        "sprints": "السبرنتات",
+        "team": "الفريق",
+        "noTasks": "لا توجد مهام لهذا الإيبك",
+        "taskTable": {
+          "title": "العنوان",
+          "status": "الحالة",
+          "priority": "الأولوية",
+          "assignee": "المُعيَّن",
+          "sprint": "السبرنت"
+        }
+      },
+      "tab": {
+        "tasks": "المهام",
+        "kanban": "كانبان",
+        "burndown": "مخطط الحرق",
+        "timeline": "الجدول الزمني"
+      },
+      "burndown": {
+        "total": "إجمالي المهام",
+        "done": "المكتملة",
+        "remaining": "المتبقية",
+        "time": "الوقت",
+        "tasks": "المهام"
+      },
+      "validation": {
+        "endDateAfterStartDate": "يجب أن يكون تاريخ النهاية بعد تاريخ البداية."
+      },
+      "filter": {
+        "allStatuses": "جميع الحالات",
+        "allPriorities": "جميع الأولويات",
+        "allProjects": "جميع المشاريع",
+        "defaultSort": "الترتيب الافتراضي",
+        "sortPriorityAsc": "الأولوية ↑",
+        "sortPriorityDesc": "الأولوية ↓",
+        "sortDateAsc": "التاريخ ↑",
+        "sortDateDesc": "التاريخ ↓",
+        "sortStatusAsc": "الحالة ↑",
+        "sortStatusDesc": "الحالة ↓"
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "gestionTachesApp": {
+    "adminAuthority": {
+      "home": {
+        "title": "الصلاحيات",
+        "refreshListLabel": "تحديث القائمة",
+        "createLabel": "إنشاء صلاحية جديدة",
+        "createOrEditLabel": "إنشاء أو تعديل صلاحية",
+        "notFound": "لم يتم العثور على صلاحيات"
+      },
+      "created": "تم إنشاء صلاحية جديدة بالمعرف {{ param }}",
+      "updated": "تم تحديث الصلاحية بالمعرف {{ param }}",
+      "deleted": "تم حذف الصلاحية بالمعرف {{ param }}",
+      "delete": {
+        "question": "هل أنت متأكد أنك تريد حذف الصلاحية {{ id }}؟"
+      },
+      "detail": {
+        "title": "الصلاحية"
+      },
+      "name": "الاسم"
+    }
+  }
+}

@@ -38,6 +38,11 @@
         "updated": "Member role updated",
         "userLogin": "User",
         "role": "Role",
+        "role": {
+          "OWNER": "OWNER",
+          "MANAGER": "MANAGER",
+          "MEMBER": "MEMBER"
+        },
         "joinedAt": "Joined At",
         "selectUser": "Select a user",
         "empty": "No members yet",

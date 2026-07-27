@@ -1,0 +1,56 @@
+{
+  "userManagement": {
+    "home": {
+      "title": "المستخدمون",
+      "refreshListLabel": "تحديث القائمة",
+      "createLabel": "إنشاء مستخدم جديد",
+      "createOrEditLabel": "إنشاء أو تعديل مستخدم",
+      "notFound": "لم يتم العثور على مستخدم"
+    },
+    "created": "تم إنشاء مستخدم جديد بالمعرف {{ param }}",
+    "updated": "تم تحديث المستخدم بالمعرف {{ param }}",
+    "deleted": "تم حذف المستخدم بالمعرف {{ param }}",
+    "delete": {
+      "question": "هل أنت متأكد أنك تريد حذف المستخدم {{ login }}؟"
+    },
+    "detail": {
+      "title": "المستخدم"
+    },
+    "adminDetail": {
+      "title": "تفاصيل المستخدم",
+      "shortLabel": "تفاصيل الإدارة",
+      "loading": "جاري التحميل...",
+      "loadError": "خطأ في تحميل التفاصيل",
+      "userInfo": "معلومات المستخدم",
+      "status": "الحالة",
+      "tasks": "المهام المُعيَّنة",
+      "taskKey": "المفتاح",
+      "taskTitle": "العنوان",
+      "taskStatus": "الحالة",
+      "taskPriority": "الأولوية",
+      "taskProject": "المشروع",
+      "taskSprint": "السبرنت",
+      "taskEpic": "الإيبك",
+      "noTasks": "لا توجد مهام مُعيَّنة",
+      "projects": "المشاريع",
+      "joinedAt": "انضم في",
+      "noProjects": "لا توجد مشاريع",
+      "activity": "النشاط الأخير",
+      "noActivity": "لا يوجد نشاط حديث"
+    },
+    "id": "المعرف",
+    "login": "اسم المستخدم",
+    "firstName": "الاسم الأول",
+    "lastName": "اسم العائلة",
+    "email": "البريد الإلكتروني",
+    "imageUrl": "الصورة",
+    "activated": "نشط",
+    "deactivated": "غير نشط",
+    "profiles": "الملفات الشخصية",
+    "langKey": "اللغة",
+    "createdBy": "أنشئ بواسطة",
+    "createdDate": "تاريخ الإنشاء",
+    "lastModifiedBy": "آخر تعديل بواسطة",
+    "lastModifiedDate": "تاريخ آخر تعديل"
+  }
+}

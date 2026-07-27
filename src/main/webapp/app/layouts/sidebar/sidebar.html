@@ -6,6 +6,12 @@
   </button>
 
   <nav class="sidebar-nav">
+    <button class="sidebar-item sidebar-search-trigger" (click)="openSearch()">
+      <fa-icon icon="search" [fixedWidth]="true" />
+      <span class="sidebar-label" jhiTranslate="global.menu.search.placeholder">Search</span>
+      <kbd class="sidebar-shortcut">⌘K</kbd>
+    </button>
+
     <a class="sidebar-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobile()">
       <fa-icon icon="house" [fixedWidth]="true" />
       <span class="sidebar-label" jhiTranslate="global.menu.home">Accueil</span>
@@ -122,6 +128,16 @@
                 <span class="sidebar-label" jhiTranslate="userManagement.home.title">Utilisateurs</span>
               </a>
 
+              <a class="sidebar-item sidebar-item-nested" routerLink="/authority" routerLinkActive="active" (click)="closeMobile()">
+                <fa-icon icon="shield-halved" [fixedWidth]="true" />
+                <span class="sidebar-label" jhiTranslate="gestionTachesApp.adminAuthority.home.title">Autorités</span>
+              </a>
+
+              <a class="sidebar-item sidebar-item-nested" routerLink="/admin/tasks" routerLinkActive="active" (click)="closeMobile()">
+                <fa-icon icon="list-check" [fixedWidth]="true" />
+                <span class="sidebar-label">Toutes les tâches</span>
+              </a>
+
               <a class="sidebar-item sidebar-item-nested" routerLink="/admin/metrics" routerLinkActive="active" (click)="closeMobile()">
                 <fa-icon icon="gauge-high" [fixedWidth]="true" />
                 <span class="sidebar-label" jhiTranslate="global.menu.admin.metrics">Métriques</span>
@@ -151,13 +167,6 @@
                 <a class="sidebar-item sidebar-item-nested" routerLink="/admin/docs" routerLinkActive="active" (click)="closeMobile()">
                   <fa-icon icon="book" [fixedWidth]="true" />
                   <span class="sidebar-label" jhiTranslate="global.menu.admin.apidocs">API</span>
-                </a>
-              }
-
-              @if (!inProduction()) {
-                <a class="sidebar-item sidebar-item-nested" href="./h2-console/" target="_blank" (click)="closeMobile()">
-                  <fa-icon icon="database" [fixedWidth]="true" />
-                  <span class="sidebar-label" jhiTranslate="global.menu.admin.database">Base de données</span>
                 </a>
               }
             }

@@ -1,0 +1,22 @@
+{
+  "gestionTachesApp": {
+    "IssueStatus": {
+      "null": "",
+      "NEW": "جديد",
+      "TODO": "قائمة الانتظار",
+      "IN_PROGRESS": "قيد التنفيذ",
+      "IN_REVIEW": "قيد المراجعة",
+      "DONE": "مكتمل",
+      "CANCELLED": "ملغى"
+    },
+    "TaskStatus": {
+      "null": "",
+      "NEW": "جديد",
+      "TODO": "قائمة الانتظار",
+      "IN_PROGRESS": "قيد التنفيذ",
+      "IN_REVIEW": "قيد المراجعة",
+      "DONE": "مكتمل",
+      "CANCELLED": "ملغى"
+    }
+  }
+}

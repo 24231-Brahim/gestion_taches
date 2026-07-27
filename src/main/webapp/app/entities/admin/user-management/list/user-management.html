@@ -18,6 +18,43 @@
     </div>
   </h2>
 
+  @if (stats()) {
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <h5 class="card-title text-muted">Total</h5>
+            <h3>{{ stats()!.totalUsers }}</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center border-primary">
+          <div class="card-body">
+            <h5 class="card-title text-primary">Admins</h5>
+            <h3 class="text-primary">{{ stats()!.usersByRole['ROLE_ADMIN'] ?? 0 }}</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center border-info">
+          <div class="card-body">
+            <h5 class="card-title text-info">Managers</h5>
+            <h3 class="text-info">{{ stats()!.usersByRole['ROLE_PROJET_MANAGER'] ?? 0 }}</h3>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-center border-success">
+          <div class="card-body">
+            <h5 class="card-title text-success">Développeurs</h5>
+            <h3 class="text-success">{{ stats()!.usersByRole['ROLE_DEVELOPER'] ?? 0 }}</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
   <jhi-alert-error />
 
   <jhi-alert />
@@ -49,7 +86,7 @@
           @for (userManagement of users(); track trackIdentity(userManagement)) {
             <tr data-cy="entityTable">
               <td>
-                <a [routerLink]="['./', userManagement.login, 'view']">{{ userManagement.id }}</a>
+                {{ userManagement.id }}
               </td>
               <td>{{ userManagement.login }}</td>
               <td>{{ userManagement.email }}</td>
@@ -90,16 +127,6 @@
                   >
                     <fa-icon icon="chart-bar" />
                     <span class="d-none d-md-inline" jhiTranslate="userManagement.adminDetail.shortLabel">Détail admin</span>
-                  </button>
-
-                  <button
-                    type="submit"
-                    [routerLink]="['./', userManagement.login, 'view']"
-                    class="btn btn-info btn-sm"
-                    data-cy="entityDetailsButton"
-                  >
-                    <fa-icon icon="eye" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
                   </button>
 
                   <button

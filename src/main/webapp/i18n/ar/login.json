@@ -1,0 +1,21 @@
+{
+  "login": {
+    "title": "تسجيل الدخول",
+    "welcomeBack": "مرحبًا بعودتك!",
+    "welcomeDescription": "سجّل الدخول للوصول إلى لوحة التحكم وإدارة مهامك بسهولة.",
+    "form": {
+      "password": "كلمة المرور",
+      "password.placeholder": "كلمة المرور الخاصة بك",
+      "rememberme": "تذكرني",
+      "button": "تسجيل الدخول"
+    },
+    "messages": {
+      "error": {
+        "authentication": "<strong>فشل تسجيل الدخول!</strong> يرجى التحقق من بيانات الاعتماد الخاصة بك والمحاولة مرة أخرى."
+      }
+    },
+    "password": {
+      "forgot": "هل نسيت كلمة المرور؟"
+    }
+  }
+}

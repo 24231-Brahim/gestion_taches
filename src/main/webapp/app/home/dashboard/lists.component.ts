@@ -10,7 +10,7 @@ import { RouterLink } from '@angular/router';
   template: `
     <div class="lists-grid">
       <div class="list-card">
-        <h3 class="list-title" jhiTranslate="dashboard.lists.recentProjects">RECENT PROJECTS</h3>
+        <h3 class="list-title">{{ 'dashboard.lists.recentProjects' | translate }}</h3>
         <div class="list-body">
           @if (recentProjects().length > 0) {
             <div class="list-items">
@@ -22,25 +22,27 @@ import { RouterLink } from '@angular/router';
               }
             </div>
           } @else {
-            <p class="text-muted" jhiTranslate="dashboard.noData">No data</p>
+            <p class="text-muted">{{ 'dashboard.noData' | translate }}</p>
           }
         </div>
       </div>
 
       <div class="list-card">
-        <h3 class="list-title" jhiTranslate="dashboard.lists.recentTasks">RECENT TASKS</h3>
+        <h3 class="list-title">{{ 'dashboard.lists.recentTasks' | translate }}</h3>
         <div class="list-body">
           @if (recentTasks().length > 0) {
             <div class="list-items">
               @for (t of recentTasks(); track t.id) {
                 <a [routerLink]="['/project', t.project?.key, 'task', t.id, 'view']" class="list-item">
                   <span class="item-name">{{ t.title }}</span>
-                  <span class="item-meta" [style.color]="statusColor(t.status!)">{{ t.status }}</span>
+                  <span class="item-meta" [style.color]="statusColor(t.status!)">{{
+                    'gestionTachesApp.TaskStatus.' + t.status | translate
+                  }}</span>
                 </a>
               }
             </div>
           } @else {
-            <p class="text-muted" jhiTranslate="dashboard.noData">No data</p>
+            <p class="text-muted">{{ 'dashboard.noData' | translate }}</p>
           }
         </div>
       </div>

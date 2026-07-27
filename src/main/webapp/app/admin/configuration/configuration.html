@@ -10,7 +10,7 @@
     <span jhiTranslate="configuration.filter">Filtrer (par préfixe)</span>
     <input type="text" [ngModel]="beansFilter()" (ngModelChange)="beansFilter.set($event)" class="form-control" />
 
-    <h3 id="spring-configuration">Spring configuration</h3>
+    <h3 id="spring-configuration" jhiTranslate="configuration.spring.title">Spring configuration</h3>
 
     <table class="table table-striped table-bordered table-responsive d-table" aria-describedby="spring-configuration">
       <thead>
@@ -51,8 +51,8 @@
         <table class="table table-sm table-striped table-bordered table-responsive d-table" [aria-describedby]="'property-source-' + i">
           <thead>
             <tr>
-              <th scope="col" class="w-40">Property</th>
-              <th scope="col" class="w-60">Value</th>
+              <th scope="col" class="w-40" jhiTranslate="configuration.table.property">Property</th>
+              <th scope="col" class="w-60" jhiTranslate="configuration.table.value">Value</th>
             </tr>
           </thead>
           <tbody>

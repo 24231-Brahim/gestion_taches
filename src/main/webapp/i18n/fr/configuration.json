@@ -3,9 +3,14 @@
     "title": "Configuration",
     "readonly": "Configuration en lecture seule, à modifier via les fichiers application.yml.",
     "filter": "Filtrer (par préfixe)",
+    "spring": {
+      "title": "Configuration Spring"
+    },
     "table": {
       "prefix": "Préfixe",
-      "properties": "Propriétés"
+      "properties": "Propriétés",
+      "property": "Propriété",
+      "value": "Valeur"
     }
   }
 }
