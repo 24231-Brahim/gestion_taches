@@ -168,12 +168,17 @@
       @case ('timeline') {
         <div class="timeline-container">
           <div class="timeline-bar">
-            <div class="timeline-fill" [style.width.%]="epicStats().progress"></div>
+            <div class="timeline-fill" [style.width.%]="timelineProgress()"></div>
             @if (ep.startDate) {
               <span class="timeline-marker" style="left: 0%">{{ ep.startDate.format('MMM D') }}</span>
             }
             @if (ep.endDate) {
-              <span class="timeline-marker" style="right: 0; left: auto; transform: translateX(50%)">{{ ep.endDate.format('MMM D') }}</span>
+              <span class="timeline-marker" style="right: 0; left: auto; transform: translateX(50%)">{{
+                ep.endDate.format(
+                  'MMM
+        D'
+                )
+              }}</span>
             }
           </div>
           <div class="d-flex flex-column gap-2">

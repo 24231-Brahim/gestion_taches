@@ -39,8 +39,8 @@
 | Rôle               | Login     | Mot de passe | Description                                |
 | ------------------ | --------- | ------------ | ------------------------------------------ |
 | **ADMIN**          | `admin`   | `admin`      | Administrateur système. A accès à TOUT.    |
-| **PROJET_MANAGER** | `manager` | `manager`    | Chef de projet. Crée et gère les projets.  |
-| **DEVELOPER**      | `dev`     | `dev`        | Développeur. Travaille sur les tâches.     |
+| **PROJET_MANAGER** | `manager` | `user`       | Chef de projet. Crée et gère les projets.  |
+| **DEVELOPER**      | `dev`     | `user`       | Développeur. Travaille sur les tâches.     |
 | **USER**           | `user`    | `user`       | Utilisateur basique. Consulte et commente. |
 
 > Chaque utilisateur peut avoir **plusieurs rôles** simultanément (ex: `admin` a `ROLE_ADMIN` + `ROLE_USER`).
@@ -971,8 +971,8 @@ Projet
 | Login     | Mot de passe | Rôle(s)                         | Dashboard             |
 | --------- | ------------ | ------------------------------- | --------------------- |
 | `admin`   | `admin`      | ROLE_ADMIN + ROLE_USER          | Dashboard KPI complet |
-| `manager` | `manager`    | ROLE_PROJET_MANAGER + ROLE_USER | Dashboard KPI complet |
-| `dev`     | `dev`        | ROLE_DEVELOPER + ROLE_USER      | Page d'accueil simple |
+| `manager` | `user`       | ROLE_PROJET_MANAGER + ROLE_USER | Dashboard KPI complet |
+| `dev`     | `user`       | ROLE_DEVELOPER + ROLE_USER      | Page d'accueil simple |
 | `user`    | `user`       | ROLE_USER                       | Page d'accueil simple |
 
 > **Note** : Le dashboard KPI s'affiche uniquement pour `ROLE_ADMIN` et `ROLE_PROJET_MANAGER`. Les autres rôles voient une page d'accueil basique avec un message de bienvenue.

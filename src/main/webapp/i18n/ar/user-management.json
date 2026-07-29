@@ -5,7 +5,13 @@
       "refreshListLabel": "تحديث القائمة",
       "createLabel": "إنشاء مستخدم جديد",
       "createOrEditLabel": "إنشاء أو تعديل مستخدم",
-      "notFound": "لم يتم العثور على مستخدم"
+      "notFound": "لم يتم العثور على مستخدم",
+      "stats": {
+        "total": "الإجمالي",
+        "admins": "المدراء",
+        "managers": "المسؤولون",
+        "developers": "المطورون"
+      }
     },
     "created": "تم إنشاء مستخدم جديد بالمعرف {{ param }}",
     "updated": "تم تحديث المستخدم بالمعرف {{ param }}",
@@ -51,6 +57,18 @@
     "createdBy": "أنشئ بواسطة",
     "createdDate": "تاريخ الإنشاء",
     "lastModifiedBy": "آخر تعديل بواسطة",
-    "lastModifiedDate": "تاريخ آخر تعديل"
+    "lastModifiedDate": "تاريخ آخر تعديل",
+    "adminTasks": {
+      "title": "جميع المهام",
+      "refresh": "تحديث",
+      "noTasks": "لم يتم العثور على مهام",
+      "id": "المعرف",
+      "taskTitle": "العنوان",
+      "project": "المشروع",
+      "status": "الحالة",
+      "priority": "الأولوية",
+      "assignee": "المُعيَّن له",
+      "createdAt": "تاريخ الإنشاء"
+    }
   }
 }

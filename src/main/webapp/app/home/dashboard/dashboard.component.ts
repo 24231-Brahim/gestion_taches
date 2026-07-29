@@ -49,12 +49,10 @@ export interface DashboardKpis {
       }
       <div class="kpi-grid">
         <jhi-kpi-card label="{{ 'dashboard.kpi.totalProjects' | translate }}" [value]="totalProjects()" icon="folder" />
-        <jhi-kpi-card label="{{ 'dashboard.kpi.activeProjects' | translate }}" [value]="activeProjects()" icon="rocket" />
         <jhi-kpi-card label="{{ 'dashboard.kpi.totalTasks' | translate }}" [value]="totalTasks()" icon="tasks" />
         <jhi-kpi-card label="{{ 'dashboard.kpi.completedTasks' | translate }}" [value]="completedTasks()" icon="check-circle" />
         <jhi-kpi-card label="{{ 'dashboard.kpi.overdueTasks' | translate }}" [value]="overdueTasks()" icon="exclamation-circle" />
         <jhi-kpi-card label="{{ 'dashboard.kpi.teamMembers' | translate }}" [value]="teamMembers()" icon="users" />
-        <jhi-kpi-card label="{{ 'dashboard.kpi.totalTimeSpent' | translate }}" [value]="totalTimeSpent()" icon="clock" unit="s" />
       </div>
       <jhi-dashboard-quick-actions />
       <jhi-dashboard-charts [taskDistribution]="taskDistribution()" [projectProgress]="projectProgress()" />

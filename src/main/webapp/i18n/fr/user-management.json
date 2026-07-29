@@ -5,7 +5,13 @@
       "refreshListLabel": "Actualiser la liste",
       "createLabel": "Créer un nouvel utilisateur",
       "createOrEditLabel": "Créer ou éditer un utilisateur",
-      "notFound": "Aucun utilisateur trouvé"
+      "notFound": "Aucun utilisateur trouvé",
+      "stats": {
+        "total": "Total",
+        "admins": "Administrateurs",
+        "managers": "Gestionnaires",
+        "developers": "Développeurs"
+      }
     },
     "created": "L'utilisateur {{ param }} a été créé.",
     "updated": "L'utilisateur {{ param }} a été mis à jour.",
@@ -51,6 +57,22 @@
     "createdBy": "Créé par",
     "createdDate": "Créé le",
     "lastModifiedBy": "Modifié par",
-    "lastModifiedDate": "Modifié le"
+    "lastModifiedDate": "Modifié le",
+    "adminTasks": {
+      "title": "Toutes les tâches",
+      "refresh": "Actualiser",
+      "noTasks": "Aucune tâche trouvée",
+      "id": "ID",
+      "taskTitle": "Titre",
+      "project": "Projet",
+      "status": "Statut",
+      "priority": "Priorité",
+      "assignee": "Assigné à",
+      "createdAt": "Créé le",
+      "searchPlaceholder": "Rechercher par titre de tâche...",
+      "allStatuses": "Tous les statuts",
+      "allPriorities": "Toutes les priorités",
+      "resetFilters": "Réinitialiser"
+    }
   }
 }

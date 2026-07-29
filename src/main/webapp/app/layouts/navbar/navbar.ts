@@ -10,6 +10,7 @@ import { environment } from 'environments/environment';
 import { AccountService } from 'app/core/auth/account.service';
 
 import { NotificationService } from 'app/core/util/notification.service';
+import { SearchService } from 'app/layouts/search/search.service';
 
 import { TranslateDirective } from 'app/shared/language';
 
@@ -35,6 +36,7 @@ export default class Navbar implements OnDestroy {
   readonly version: string;
   readonly account = inject(AccountService).account;
   readonly notificationService = inject(NotificationService);
+  private readonly searchService = inject(SearchService);
 
   private readonly router = inject(Router);
 
@@ -60,6 +62,10 @@ export default class Navbar implements OnDestroy {
 
   collapseNavbar(): void {
     this.isNavbarCollapsed.set(true);
+  }
+
+  openSearch(): void {
+    this.searchService.open();
   }
 
   markNotificationRead(notification: any): void {

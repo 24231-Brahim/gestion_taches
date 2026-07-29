@@ -133,8 +133,22 @@ export class TaskAttachmentList implements OnInit {
     });
   }
 
-  downloadUrl(attachment: IAttachment): string {
-    return `/api/attachments/download/${attachment.id}`;
+  downloadUrl(_attachment: IAttachment): string {
+    return '';
+  }
+
+  downloadAttachment(attachment: IAttachment): void {
+    this.http.get(this.appConfig.getEndpointFor(`api/attachments/download/${attachment.id}`), { responseType: 'blob' }).subscribe({
+      next: blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = attachment.fileName ?? 'download';
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => this.alertService.addAlert({ type: 'danger', translationKey: 'error.general' }),
+    });
   }
 
   onFileDrop(event: DragEvent): void {

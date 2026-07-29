@@ -1,0 +1,33 @@
+.error-page {
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 100vh;
+}
+
+.error-container {
+  text-align: center;
+}
+
+.error-logo {
+  width: 20rem;
+  max-width: 80vw;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+.error-code {
+  font-size: 6rem;
+  font-weight: 700;
+  color: #e74c3c;
+  line-height: 1;
+  font-family: var(--font-mono);
+}
+
+.error-message {
+  font-size: 1.5rem;
+  color: #666;
+  margin-top: 0.5rem;
+}

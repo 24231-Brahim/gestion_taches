@@ -23,7 +23,7 @@
       <div class="col-md-3">
         <div class="card text-center">
           <div class="card-body">
-            <h5 class="card-title text-muted">Total</h5>
+            <h5 class="card-title text-muted" jhiTranslate="userManagement.home.stats.total">Total</h5>
             <h3>{{ stats()!.totalUsers }}</h3>
           </div>
         </div>
@@ -31,7 +31,7 @@
       <div class="col-md-3">
         <div class="card text-center border-primary">
           <div class="card-body">
-            <h5 class="card-title text-primary">Admins</h5>
+            <h5 class="card-title text-primary" jhiTranslate="userManagement.home.stats.admins">Admins</h5>
             <h3 class="text-primary">{{ stats()!.usersByRole['ROLE_ADMIN'] ?? 0 }}</h3>
           </div>
         </div>
@@ -39,7 +39,7 @@
       <div class="col-md-3">
         <div class="card text-center border-info">
           <div class="card-body">
-            <h5 class="card-title text-info">Managers</h5>
+            <h5 class="card-title text-info" jhiTranslate="userManagement.home.stats.managers">Managers</h5>
             <h3 class="text-info">{{ stats()!.usersByRole['ROLE_PROJET_MANAGER'] ?? 0 }}</h3>
           </div>
         </div>
@@ -47,7 +47,7 @@
       <div class="col-md-3">
         <div class="card text-center border-success">
           <div class="card-body">
-            <h5 class="card-title text-success">Développeurs</h5>
+            <h5 class="card-title text-success" jhiTranslate="userManagement.home.stats.developers">Développeurs</h5>
             <h3 class="text-success">{{ stats()!.usersByRole['ROLE_DEVELOPER'] ?? 0 }}</h3>
           </div>
         </div>

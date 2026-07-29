@@ -330,6 +330,29 @@ export class EpicDetail {
     };
   });
 
+  readonly timelineProgress = computed(() => {
+    const ep = this.epic();
+    if (!ep?.startDate || !ep?.endDate) {
+      return 0;
+    }
+    const start = ep.startDate.valueOf();
+    const end = ep.endDate.valueOf();
+    const now = dayjs().valueOf();
+
+    if (end <= start) {
+      return 100;
+    }
+    if (now <= start) {
+      return 0;
+    }
+    if (now >= end) {
+      return 100;
+    }
+
+    const elapsed = now - start;
+    const total = end - start;
+    return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
+  });
   readonly uniqueSprints = computed(() => {
     const seen = new Map<number, { id: number; name: string }>();
     for (const t of this.tasks()) {
