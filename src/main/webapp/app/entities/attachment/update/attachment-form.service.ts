@@ -35,7 +35,7 @@ type AttachmentFormGroupContent = {
   fileName: FormControl<AttachmentFormRawValue['fileName']>;
   filePath: FormControl<AttachmentFormRawValue['filePath']>;
   uploadedAt: FormControl<AttachmentFormRawValue['uploadedAt']>;
-  issue: FormControl<AttachmentFormRawValue['issue']>;
+  task: FormControl<AttachmentFormRawValue['task']>;
 };
 
 export type AttachmentFormGroup = FormGroup<AttachmentFormGroupContent>;
@@ -64,7 +64,7 @@ export class AttachmentFormService {
       uploadedAt: new FormControl(attachmentRawValue.uploadedAt, {
         validators: [Validators.required],
       }),
-      issue: new FormControl(attachmentRawValue.issue, {
+      task: new FormControl(attachmentRawValue.task, {
         validators: [Validators.required],
       }),
     });

@@ -100,13 +100,17 @@ export class ActionHistory implements OnInit {
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
-        tap(() => this.load()),
+        tap(() => {
+          this.actionHistoryService.refresh();
+          this.load();
+        }),
       )
       .subscribe();
   }
 
   load(): void {
     this.queryBackend();
+    this.actionHistoryService.refresh();
   }
 
   navigateToWithComponentValues(event: SortState): void {

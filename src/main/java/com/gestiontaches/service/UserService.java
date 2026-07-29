@@ -186,6 +186,25 @@ public class UserService {
             .map(Optional::get)
             .map(user -> {
                 this.clearUserCaches(user);
+                boolean wasAdmin = user
+                    .getAuthorities()
+                    .stream()
+                    .anyMatch(a -> AuthoritiesConstants.ADMIN.equals(a.getName()));
+                boolean willBeAdmin = userDTO.getAuthorities() != null && userDTO.getAuthorities().contains(AuthoritiesConstants.ADMIN);
+                if (wasAdmin && !willBeAdmin) {
+                    long adminCount = userRepository
+                        .findAllByAuthorityNames(List.of(AuthoritiesConstants.ADMIN))
+                        .stream()
+                        .filter(User::isActivated)
+                        .count();
+                    if (adminCount <= 1) {
+                        throw new LastAdminException();
+                    }
+                }
+                String currentUserLogin = SecurityUtils.getCurrentUserLogin().orElse(null);
+                if (user.getLogin().equals(currentUserLogin) && !willBeAdmin) {
+                    throw new LastAdminException();
+                }
                 user.setLogin(userDTO.getLogin().toLowerCase());
                 user.setFirstName(userDTO.getFirstName());
                 user.setLastName(userDTO.getLastName());
@@ -197,13 +216,15 @@ public class UserService {
                 user.setLangKey(userDTO.getLangKey());
                 Set<Authority> managedAuthorities = user.getAuthorities();
                 managedAuthorities.clear();
-                userDTO
-                    .getAuthorities()
-                    .stream()
-                    .map(authorityRepository::findById)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .forEach(managedAuthorities::add);
+                if (userDTO.getAuthorities() != null) {
+                    userDTO
+                        .getAuthorities()
+                        .stream()
+                        .map(authorityRepository::findById)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .forEach(managedAuthorities::add);
+                }
                 userRepository.save(user);
                 this.clearUserCaches(user);
                 LOG.debug("Changed Information for User: {}", user);
@@ -213,7 +234,21 @@ public class UserService {
     }
 
     public void deleteUser(String login) {
+        String currentUserLogin = SecurityUtils.getCurrentUserLogin().orElse(null);
+        if (login.equals(currentUserLogin)) {
+            throw new CannotDeleteOwnAccountException();
+        }
         userRepository.findOneByLogin(login).ifPresent(user -> {
+            boolean isAdmin = user
+                .getAuthorities()
+                .stream()
+                .anyMatch(a -> AuthoritiesConstants.ADMIN.equals(a.getName()));
+            if (isAdmin) {
+                long adminCount = userRepository.findAllActivatedByAuthorityNames(List.of(AuthoritiesConstants.ADMIN)).size();
+                if (adminCount <= 1) {
+                    throw new LastAdminException();
+                }
+            }
             userRepository.delete(user);
             this.clearUserCaches(user);
             LOG.debug("Deleted User: {}", user);

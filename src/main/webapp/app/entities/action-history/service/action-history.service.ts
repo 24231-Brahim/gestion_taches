@@ -43,6 +43,10 @@ export class ActionHistoriesService {
   protected readonly applicationConfigService = inject(ApplicationConfigService);
   protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/action-histories');
 
+  refresh(): void {
+    this.actionHistoriesResource.reload();
+  }
+
   protected convertValueFromServer(restActionHistory: RestActionHistory): IActionHistory {
     return {
       ...restActionHistory,

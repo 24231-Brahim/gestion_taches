@@ -1,22 +1,31 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import dayjs from 'dayjs/esm';
+import { filter, tap } from 'rxjs/operators';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
+
+import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
-import { IssueService } from 'app/entities/issue/service/issue.service';
-import { IIssue } from 'app/entities/issue/issue.model';
+import { ITEM_SAVED_EVENT } from 'app/config/navigation.constants';
+import { TaskService } from 'app/entities/task/service/task.service';
+import { ITask } from 'app/entities/task/task.model';
+import { ProjectRole } from 'app/entities/enumerations/project-role.model';
 import { FormatMediumDatePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
+import { IProject } from 'app/entities/project/project.model';
+import { ProjectService } from 'app/entities/project/service/project.service';
 import { SprintActiveBoard } from '../active-board/sprint-active-board';
 import { SprintBacklogPlanning } from '../backlog-planning/sprint-backlog-planning';
 import { SprintBurndownChart } from '../burndown/sprint-burndown-chart';
-import { SprintService } from '../service/sprint.service';
+import { SprintService, VelocityReport } from '../service/sprint.service';
 import { ISprint } from '../sprint.model';
+import { SprintFormModal } from '../update/sprint-form-modal';
 
 type Tab = 'board' | 'planning' | 'burndown';
 
@@ -44,14 +53,13 @@ type Tab = 'board' | 'planning' | 'burndown';
         align-items: center;
         gap: 16px;
       }
-      .sprint-selector {
+      select.sprint-selector {
         min-width: 280px;
-      }
-      .sprint-selector select {
         background: var(--color-surface-container, #1b2025);
-        border: 2px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-sm);
         color: var(--color-text, #dfe3ea);
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.9rem;
         padding: 8px 12px;
       }
@@ -61,7 +69,7 @@ type Tab = 'board' | 'planning' | 'burndown';
         align-items: center;
       }
       .sprint-name {
-        font-family: 'Audiowide', monospace;
+        font-family: var(--font-inter);
         font-size: 1.4rem;
         color: var(--color-text, #dfe3ea);
         margin: 0;
@@ -69,7 +77,7 @@ type Tab = 'board' | 'planning' | 'burndown';
       .sprint-meta {
         color: var(--color-text-muted, #6a8fac);
         font-size: 0.85rem;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
       }
       .sprint-goal {
         color: var(--color-text, #dfe3ea);
@@ -79,33 +87,35 @@ type Tab = 'board' | 'planning' | 'burndown';
       .status-badge {
         display: inline-block;
         padding: 2px 10px;
-        border: 2px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: 9999px;
         font-size: 0.75rem;
-        font-family: 'JetBrains Mono', monospace;
-        text-transform: uppercase;
+        font-family: var(--font-inter);
+        text-transform: none;
         background: var(--color-surface-container, #1b2025);
+        font-weight: 600;
       }
       .tab-bar {
         display: flex;
         gap: 0;
-        border-bottom: 3px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
         margin-bottom: 20px;
       }
       .tab-item {
         padding: 10px 24px;
         cursor: pointer;
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
         font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+        text-transform: none;
+        letter-spacing: 0;
         border: none;
         background: transparent;
         color: var(--color-text-muted, #6a8fac);
-        border-bottom: 3px solid transparent;
-        margin-bottom: -3px;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
         transition:
-          color 0.15s,
-          border-color 0.15s;
+          color var(--transition-fast),
+          border-color var(--transition-fast);
       }
       .tab-item:hover {
         color: var(--color-text, #dfe3ea);
@@ -118,7 +128,96 @@ type Tab = 'board' | 'planning' | 'burndown';
         text-align: center;
         padding: 60px 20px;
         color: var(--color-text-muted, #6a8fac);
-        font-family: 'JetBrains Mono', monospace;
+        font-family: var(--font-inter);
+      }
+      .velocity-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1050;
+      }
+      .velocity-modal {
+        background: var(--color-surface-container, #1b2025);
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        max-width: 420px;
+        width: 90%;
+        box-shadow: var(--shadow-lg);
+      }
+      .velocity-modal h3 {
+        font-family: var(--font-inter);
+        color: var(--color-primary, #97cbff);
+        margin-bottom: 16px;
+        font-weight: 600;
+      }
+      .velocity-stat {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        font-family: var(--font-inter);
+        font-size: 0.9rem;
+        color: var(--color-text, #dfe3ea);
+      }
+      .velocity-stat-value {
+        font-weight: 600;
+        color: var(--color-primary, #97cbff);
+      }
+      .tooltip-wrapper {
+        position: relative;
+      }
+      .tooltip-wrapper[title] {
+        cursor: not-allowed;
+      }
+      .btn-disabled {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+      .sprint-progress-wrapper {
+        margin-bottom: 20px;
+        padding: 12px 16px;
+        border: 1px solid var(--color-outline-variant, #2a3038);
+        border-radius: var(--radius-lg);
+        background: var(--color-surface-container, #1b2025);
+        box-shadow: var(--shadow-sm);
+      }
+      .sprint-progress-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+      .sprint-progress-label {
+        font-family: var(--font-inter);
+        font-size: 0.8rem;
+        color: var(--color-text-muted, #6a8fac);
+        text-transform: none;
+      }
+      .sprint-progress-value {
+        font-family: var(--font-inter);
+        font-size: 0.85rem;
+        color: var(--color-primary, #97cbff);
+        font-weight: 600;
+      }
+      .sprint-progress-bar {
+        width: 100%;
+        height: 6px;
+        background: var(--color-surface-container-high, #262d36);
+        border-radius: 9999px;
+        overflow: hidden;
+      }
+      .sprint-progress-fill {
+        height: 100%;
+        background: var(--color-status-done, #4caf50);
+        border-radius: 9999px;
+        transition: width 0.3s ease;
       }
       @media (max-width: 768px) {
         .sprint-page {
@@ -128,8 +227,9 @@ type Tab = 'board' | 'planning' | 'burndown';
           flex-direction: column;
           align-items: stretch;
         }
-        .sprint-selector {
+        select.sprint-selector {
           min-width: 0;
+          width: 100%;
         }
         .tab-item {
           padding: 8px 12px;
@@ -151,18 +251,19 @@ type Tab = 'board' | 'planning' | 'burndown';
   ],
 })
 export class Sprint implements OnInit {
+  readonly currentProjectKey = signal<string | null>(null);
+  readonly currentProject = signal<IProject | null>(null);
+  readonly projectKey = computed(() => this.currentProjectKey());
+
   readonly activeTab = signal<Tab>('board');
   readonly isSaving = signal(false);
   readonly selectedSprintId = signal<number | null>(null);
-
-  protected readonly sprintService = inject(SprintService);
-  protected readonly issueService = inject(IssueService);
-  protected readonly alertService = inject(AlertService);
-  protected readonly translateService = inject(TranslateService);
+  readonly showVelocityModal = signal(false);
+  readonly velocityReport = signal<VelocityReport | null>(null);
 
   readonly sprints = signal<ISprint[]>([]);
-  readonly issues = signal<IIssue[]>([]);
-  readonly projectIssues = signal<IIssue[]>([]);
+  readonly tasks = signal<ITask[]>([]);
+  readonly projectTasks = signal<ITask[]>([]);
 
   readonly selectedSprint = computed(() => {
     const id = this.selectedSprintId();
@@ -172,16 +273,68 @@ export class Sprint implements OnInit {
     return this.sprints().find(s => s.id === id) ?? null;
   });
 
-  constructor() {
-    this.issueService.issuesParams.set(undefined);
-  }
+  readonly userProjectRole = computed<ProjectRole | null>(() => {
+    const account = this.accountService.account();
+    if (!account) {
+      return null;
+    }
+    if (account.authorities.includes('ROLE_ADMIN')) {
+      return ProjectRole.OWNER;
+    }
+    return null;
+  });
 
-  ngOnInit(): void {
-    this.sprintService.sprintsParams.set({
-      size: 100,
-      sort: 'startDate,desc',
-    });
-  }
+  readonly canManageSprints = computed(() => {
+    const role = this.userProjectRole();
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
+  });
+
+  readonly hasActiveSprint = computed(() => this.sprints().some(s => s.status === 'ACTIVE'));
+
+  readonly canStartSprint = computed(() => {
+    const sp = this.selectedSprint();
+    if (!sp || sp.status !== 'PLANNED') {
+      return false;
+    }
+    return !this.hasActiveSprint();
+  });
+
+  readonly canCloseSprint = computed(() => this.selectedSprint()?.status === 'ACTIVE');
+
+  readonly daysLeft = computed(() => {
+    const sp = this.selectedSprint();
+    if (!sp?.endDate) {
+      return 0;
+    }
+    const now = dayjs();
+    const end = dayjs(sp.endDate);
+    return Math.max(0, end.diff(now, 'day'));
+  });
+
+  readonly totalTasksCount = computed(() => this.tasks().length);
+
+  readonly doneTasksCount = computed(() => this.tasks().filter(t => t.status === 'DONE').length);
+
+  readonly sprintProgress = computed(() => {
+    const total = this.totalTasksCount();
+    if (total === 0) {
+      return 0;
+    }
+    return Math.round((this.doneTasksCount() / total) * 100);
+  });
+
+  readonly totalStoryPoints = computed(() => 0);
+
+  readonly doneStoryPoints = computed(() => 0);
+
+  protected readonly activatedRoute = inject(ActivatedRoute);
+  protected readonly projectService = inject(ProjectService);
+  protected readonly sprintService = inject(SprintService);
+  protected readonly taskService = inject(TaskService);
+  protected readonly alertService = inject(AlertService);
+  protected readonly translateService = inject(TranslateService);
+  protected readonly accountService = inject(AccountService);
+  protected modalService = inject(NgbModal);
 
   private sprintsEffect = effect(() => {
     const raw = this.sprintService.sprints();
@@ -194,21 +347,68 @@ export class Sprint implements OnInit {
     }
   });
 
-  private issuesEffect = effect(() => {
-    const raw = this.issueService.issues();
-    if (raw && raw.length > 0) {
-      this.issues.set(raw.filter(i => i.sprint?.id === this.selectedSprintId()) as IIssue[]);
-      this.projectIssues.set(raw as IIssue[]);
-    } else if (raw && raw.length === 0 && this.issueService.issuesResource.hasValue()) {
-      this.issues.set([]);
-      this.projectIssues.set([]);
+  private sprintSelectionEffect = effect(() => {
+    const id = this.selectedSprintId();
+    const sp = this.sprints().find(s => s.id === id);
+    if (sp?.project?.id) {
+      this.taskService.tasksParams.set({
+        'projectId.equals': sp.project.id,
+        size: 500,
+      });
     }
   });
 
-  onSprintSelect(): void {
-    const sp = this.selectedSprint();
+  private issuesEffect = effect(() => {
+    const raw = this.taskService.tasks();
+    if (raw && raw.length > 0) {
+      this.tasks.set(raw.filter(i => i.sprint?.id === this.selectedSprintId()));
+      this.projectTasks.set(raw);
+    } else if (raw?.length === 0 && this.taskService.tasksResource.hasValue()) {
+      this.tasks.set([]);
+      this.projectTasks.set([]);
+    }
+  });
+
+  ngOnInit(): void {
+    const parentParamMap = this.activatedRoute.parent?.paramMap ?? this.activatedRoute.paramMap;
+    parentParamMap.subscribe(params => {
+      const key = params.get('key');
+      if (key) {
+        this.currentProjectKey.set(key);
+        this.projectService.findByKey(key).subscribe({
+          next: project => {
+            this.currentProject.set(project);
+            this.sprintService.sprintsParams.set({
+              size: 100,
+              sort: 'startDate,desc',
+              'projectId.equals': project.id,
+            });
+            this.sprintService.refresh();
+          },
+          error: () => {
+            this.sprintService.sprintsParams.set({
+              size: 100,
+              sort: 'startDate,desc',
+            });
+            this.sprintService.refresh();
+          },
+        });
+      } else {
+        this.sprintService.sprintsParams.set({
+          size: 100,
+          sort: 'startDate,desc',
+        });
+        this.sprintService.refresh();
+      }
+    });
+  }
+
+  onSprintChange(value: string | number): void {
+    const id = typeof value === 'string' ? Number(value) : value;
+    this.selectedSprintId.set(id);
+    const sp = this.sprints().find(s => s.id === id);
     if (sp?.project?.id) {
-      this.issueService.issuesParams.set({
+      this.taskService.tasksParams.set({
         'projectId.equals': sp.project.id,
         size: 500,
       });
@@ -216,19 +416,12 @@ export class Sprint implements OnInit {
   }
 
   private refreshIssues(): void {
-    const sp = this.selectedSprint();
-    if (sp?.project?.id) {
-      this.issueService.issuesParams.set({
-        'projectId.equals': sp.project.id,
-        size: 500,
-        t: Date.now(),
-      });
-    }
+    this.taskService.refresh();
   }
 
-  onStatusChange(event: { issueId: number; status: string }): void {
+  onStatusChange(event: { taskId: number; status: string }): void {
     this.isSaving.set(true);
-    this.issueService.partialUpdate({ id: event.issueId, status: event.status as any }).subscribe({
+    this.taskService.partialUpdate({ id: event.taskId, status: event.status as any }).subscribe({
       next: () => {
         this.isSaving.set(false);
         this.refreshIssues();
@@ -241,9 +434,9 @@ export class Sprint implements OnInit {
     });
   }
 
-  onAssignToSprint(event: { issueId: number; sprintId: number }): void {
+  onAssignToSprint(event: { taskId: number; sprintId: number }): void {
     this.isSaving.set(true);
-    this.issueService.partialUpdate({ id: event.issueId, sprint: { id: event.sprintId } as any }).subscribe({
+    this.taskService.partialUpdate({ id: event.taskId, sprint: { id: event.sprintId } }).subscribe({
       next: () => {
         this.isSaving.set(false);
         this.refreshIssues();
@@ -256,9 +449,9 @@ export class Sprint implements OnInit {
     });
   }
 
-  onRemoveFromSprint(issueId: number): void {
+  onRemoveFromSprint(taskId: number): void {
     this.isSaving.set(true);
-    this.issueService.partialUpdate({ id: issueId, sprint: null as any }).subscribe({
+    this.taskService.partialUpdate({ id: taskId, sprint: null }).subscribe({
       next: () => {
         this.isSaving.set(false);
         this.refreshIssues();
@@ -277,10 +470,12 @@ export class Sprint implements OnInit {
       return;
     }
     this.isSaving.set(true);
-    this.sprintService.partialUpdate({ id: sp.id, status: 'ACTIVE' }).subscribe({
-      next: () => {
+    this.sprintService.startSprint(sp.id).subscribe({
+      next: updated => {
         this.isSaving.set(false);
-        Object.assign(sp, { status: 'ACTIVE' });
+        this.sprints.update(list => list.map(s => (s.id === updated.id ? { ...s, ...updated } : s)));
+        this.refreshIssues();
+        this.sprintService.refresh();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -296,10 +491,14 @@ export class Sprint implements OnInit {
       return;
     }
     this.isSaving.set(true);
-    this.sprintService.partialUpdate({ id: sp.id, status: 'COMPLETED' }).subscribe({
-      next: () => {
+    this.sprintService.closeSprint(sp.id).subscribe({
+      next: report => {
         this.isSaving.set(false);
-        Object.assign(sp, { status: 'COMPLETED' });
+        this.sprints.update(list => list.map(s => (s.id === sp.id ? { ...s, status: 'COMPLETED' } : s)));
+        this.velocityReport.set(report);
+        this.showVelocityModal.set(true);
+        this.refreshIssues();
+        this.sprintService.refresh();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -309,26 +508,12 @@ export class Sprint implements OnInit {
     });
   }
 
-  onReopenSprint(): void {
-    const sp = this.selectedSprint();
-    if (!sp) {
-      return;
-    }
-    this.isSaving.set(true);
-    this.sprintService.partialUpdate({ id: sp.id, status: 'ACTIVE' }).subscribe({
-      next: () => {
-        this.isSaving.set(false);
-        Object.assign(sp, { status: 'ACTIVE' });
-      },
-      error: (err: HttpErrorResponse) => {
-        this.isSaving.set(false);
-        const message = err.error?.detail ?? err.message ?? this.translateService.instant('error.general');
-        this.alertService.addAlert({ type: 'danger', message });
-      },
-    });
+  closeVelocityModal(): void {
+    this.showVelocityModal.set(false);
+    this.velocityReport.set(null);
   }
 
-  onSelectIssue(_issue: IIssue): void {
+  onSelectTask(_issue: ITask): void {
     // no-op for now
   }
 
@@ -336,17 +521,30 @@ export class Sprint implements OnInit {
     this.activeTab.set(tab);
   }
 
-  get canManage(): boolean {
-    return true;
+  openCreateSprintModal(): void {
+    const modalRef = this.modalService.open(SprintFormModal, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.projectKey = this.currentProjectKey() ?? undefined;
+    modalRef.closed
+      .pipe(
+        filter(reason => reason === ITEM_SAVED_EVENT),
+        tap(() => {
+          this.sprintService.refresh();
+        }),
+      )
+      .subscribe();
   }
 
-  readonly daysLeft = computed(() => {
-    const sp = this.selectedSprint();
-    if (!sp?.endDate) {
-      return 0;
-    }
-    const now = dayjs();
-    const end = dayjs(sp.endDate);
-    return Math.max(0, end.diff(now, 'day'));
-  });
+  openEditSprintModal(sprint: ISprint): void {
+    const modalRef = this.modalService.open(SprintFormModal, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.sprint = sprint;
+    modalRef.componentInstance.projectKey = this.currentProjectKey() ?? undefined;
+    modalRef.closed
+      .pipe(
+        filter(reason => reason === ITEM_SAVED_EVENT),
+        tap(() => {
+          this.sprintService.refresh();
+        }),
+      )
+      .subscribe();
+  }
 }

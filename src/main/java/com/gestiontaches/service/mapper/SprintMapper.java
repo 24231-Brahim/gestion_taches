@@ -18,5 +18,6 @@ public interface SprintMapper extends EntityMapper<SprintDTO, Sprint> {
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
     @Mapping(target = "name", source = "name")
+    @Mapping(target = "key", source = "key")
     ProjectDTO toDtoProjectName(Project project);
 }

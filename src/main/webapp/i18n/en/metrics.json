@@ -5,11 +5,23 @@
     "updating": "Updating...",
     "jvm": {
       "title": "JVM Metrics",
+      "system": {
+        "title": "System",
+        "uptime": "Uptime",
+        "startTime": "Start time",
+        "processCpuUsage": "Process CPU usage",
+        "systemCpuUsage": "System CPU usage",
+        "systemCpuCount": "System CPU count",
+        "loadAverage": "System 1m Load average",
+        "processFilesMax": "Process files max",
+        "processFilesOpen": "Process files open"
+      },
       "memory": {
         "title": "Memory",
         "total": "Total Memory",
         "heap": "Heap Memory",
-        "nonheap": "Non-Heap Memory"
+        "nonheap": "Non-Heap Memory",
+        "committed": "Committed"
       },
       "threads": {
         "title": "Threads",
@@ -18,6 +30,8 @@
         "timedwaiting": "Timed waiting",
         "waiting": "Waiting",
         "blocked": "Blocked",
+        "total": "Total",
+        "expand": "Expand",
         "dump": {
           "title": "Threads dump",
           "id": "Id: ",
@@ -28,7 +42,8 @@
           "lockname": "Lock name",
           "stacktrace": "Stacktrace",
           "show": "Show Stacktrace",
-          "hide": "Hide Stacktrace"
+          "hide": "Hide Stacktrace",
+          "caption": "Threads dump:"
         }
       },
       "gc": {
@@ -36,7 +51,9 @@
         "marksweepcount": "Mark Sweep count",
         "marksweeptime": "Mark Sweep time",
         "scavengecount": "Scavenge count",
-        "scavengetime": "Scavenge time"
+        "scavengetime": "Scavenge time",
+        "classesLoaded": "Classes loaded",
+        "classesUnloaded": "Classes unloaded"
       },
       "http": {
         "title": "HTTP requests (time in millisecond)",
@@ -47,7 +64,9 @@
           "count": "Count",
           "mean": "Mean",
           "average": "Average",
-          "max": "Max"
+          "max": "Max",
+          "method": "Method",
+          "url": "Endpoint url"
         },
         "code": {
           "ok": "Ok",
@@ -96,7 +115,10 @@
       "p50": "p50",
       "p75": "p75",
       "p95": "p95",
-      "p99": "p99"
+      "p99": "p99",
+      "acquire": "Acquire",
+      "creation": "Creation",
+      "usageLabel": "Usage"
     }
   }
 }

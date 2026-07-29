@@ -68,8 +68,8 @@ public class Project implements Serializable {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "project")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "commentses", "attachmentses", "histories", "sprint", "epic", "project" }, allowSetters = true)
-    private Set<Issue> issueses = new HashSet<>();
+    @JsonIgnoreProperties(value = { "comments", "attachments", "sprint", "epic", "project" }, allowSetters = true)
+    private Set<Task> tasks = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -244,34 +244,34 @@ public class Project implements Serializable {
         return this;
     }
 
-    public Set<Issue> getIssueses() {
-        return this.issueses;
+    public Set<Task> getTasks() {
+        return this.tasks;
     }
 
-    public void setIssueses(Set<Issue> issues) {
-        if (this.issueses != null) {
-            this.issueses.forEach(i -> i.setProject(null));
+    public void setTasks(Set<Task> tasks) {
+        if (this.tasks != null) {
+            this.tasks.forEach(i -> i.setProject(null));
         }
-        if (issues != null) {
-            issues.forEach(i -> i.setProject(this));
+        if (tasks != null) {
+            tasks.forEach(i -> i.setProject(this));
         }
-        this.issueses = issues;
+        this.tasks = tasks;
     }
 
-    public Project issueses(Set<Issue> issues) {
-        this.setIssueses(issues);
+    public Project tasks(Set<Task> tasks) {
+        this.setTasks(tasks);
         return this;
     }
 
-    public Project addIssues(Issue issue) {
-        this.issueses.add(issue);
-        issue.setProject(this);
+    public Project addTask(Task task) {
+        this.tasks.add(task);
+        task.setProject(this);
         return this;
     }
 
-    public Project removeIssues(Issue issue) {
-        this.issueses.remove(issue);
-        issue.setProject(null);
+    public Project removeTask(Task task) {
+        this.tasks.remove(task);
+        task.setProject(null);
         return this;
     }
 

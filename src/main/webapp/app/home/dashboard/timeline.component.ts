@@ -6,6 +6,7 @@ interface TimelineItem {
   id: number;
   title: string;
   status: string;
+  statusCode: string;
   date: string;
   color: string;
 }
@@ -17,7 +18,7 @@ interface TimelineItem {
   imports: [TranslateModule],
   template: `
     <div class="timeline-card">
-      <h3 class="timeline-title" jhiTranslate="dashboard.timeline.title">RECENT ACTIVITY</h3>
+      <h3 class="timeline-title">{{ 'dashboard.timeline.title' | translate }}</h3>
       <div class="timeline-body">
         @if (activities().length > 0) {
           <div class="timeline-items">
@@ -26,13 +27,13 @@ interface TimelineItem {
                 <div class="timeline-marker" [style.background]="a.color"></div>
                 <div class="timeline-content">
                   <span class="tl-title">{{ a.title }}</span>
-                  <span class="tl-meta">{{ a.status }} — {{ a.date }}</span>
+                  <span class="tl-meta">{{ 'gestionTachesApp.TaskStatus.' + a.statusCode | translate }} — {{ a.date }}</span>
                 </div>
               </div>
             }
           </div>
         } @else {
-          <p class="text-muted" jhiTranslate="dashboard.noData">No data</p>
+          <p class="text-muted">{{ 'dashboard.noData' | translate }}</p>
         }
       </div>
     </div>
@@ -41,18 +42,20 @@ interface TimelineItem {
     `
       .timeline-card {
         background: var(--color-surface-container);
-        border: 3px solid var(--color-primary);
-        box-shadow: var(--shadow-brutal);
+        border: 1px solid var(--color-outline-variant);
+        box-shadow: var(--shadow-sm);
         padding: var(--stack-md);
+        border-radius: var(--radius-lg);
       }
       .timeline-title {
-        font-family: var(--font-display);
+        font-family: var(--font-inter);
+        font-weight: 600;
         font-size: var(--headline-md);
-        letter-spacing: 0.04em;
-        color: var(--color-primary);
+        letter-spacing: 0;
+        color: var(--color-on-surface);
         margin-bottom: var(--stack-md);
         padding-bottom: var(--stack-sm);
-        border-bottom: 3px solid var(--color-primary);
+        border-bottom: 1px solid var(--color-outline-variant);
       }
       .timeline-body {
         min-height: 100px;
@@ -65,7 +68,7 @@ interface TimelineItem {
         display: flex;
         gap: var(--stack-sm);
         padding: var(--stack-sm) 0;
-        border-left: 3px solid var(--color-outline);
+        border-left: 1px solid var(--color-outline-variant);
         padding-left: var(--stack-md);
         position: relative;
       }
@@ -75,8 +78,8 @@ interface TimelineItem {
         top: var(--stack-sm);
         width: 12px;
         height: 12px;
-        border: 2px solid var(--color-outline);
-        transform: rotate(45deg);
+        border: none;
+        border-radius: 9999px;
       }
       .timeline-content {
         display: flex;
@@ -84,18 +87,18 @@ interface TimelineItem {
         gap: 2px;
       }
       .tl-title {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-sm);
-        text-transform: uppercase;
+        text-transform: none;
         color: var(--color-on-surface);
       }
       .tl-meta {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-xs);
         color: var(--color-muted);
       }
       .text-muted {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-sm);
         color: var(--color-muted);
       }
@@ -103,23 +106,36 @@ interface TimelineItem {
   ],
 })
 export class DashboardTimelineComponent {
-  readonly issues = input.required<any[]>();
+  readonly tasks = input.required<any[]>();
 
   readonly activities = computed<TimelineItem[]>(() => {
     const colors = ['#22c55e', '#25a7fd', '#f59e0b', '#a855f7', '#52d6fd'];
-    const sorted = [...this.issues()]
+    const sorted = [...this.tasks()]
       .sort((a, b) => {
         const da = a.updatedAt ?? a.createdAt ?? '';
         const db = b.updatedAt ?? b.createdAt ?? '';
         return db.localeCompare(da);
       })
       .slice(0, 10);
-    return sorted.map((issue, i) => ({
-      id: issue.id,
-      title: issue.title ?? 'Untitled',
-      status: issue.status ?? 'N/A',
-      date: issue.updatedAt ?? issue.createdAt ?? '—',
-      color: colors[i % colors.length],
-    }));
+    return sorted.map((task, i) => {
+      const dateStr = task.updatedAt ?? task.createdAt ?? '';
+      let formattedDate = '—';
+      if (dateStr) {
+        try {
+          const d = new Date(dateStr);
+          formattedDate = d.toLocaleDateString('ar', { day: '2-digit', month: 'short', year: 'numeric' });
+        } catch {
+          formattedDate = dateStr;
+        }
+      }
+      return {
+        id: task.id,
+        title: task.title ?? 'Untitled',
+        status: task.status ?? 'N/A',
+        statusCode: task.status ?? '',
+        date: formattedDate,
+        color: colors[i % colors.length],
+      };
+    });
   });
 }

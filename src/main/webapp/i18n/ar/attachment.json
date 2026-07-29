@@ -1,0 +1,31 @@
+{
+  "gestionTachesApp": {
+    "attachment": {
+      "home": {
+        "title": "المرفقات",
+        "refreshListLabel": "تحديث القائمة",
+        "createLabel": "إنشاء مرفق جديد",
+        "createOrEditLabel": "إنشاء أو تعديل مرفق",
+        "notFound": "لم يتم العثور على مرفقات"
+      },
+      "created": "تم إنشاء مرفق جديد بالمعرف {{ param }}",
+      "updated": "تم تحديث المرفق بالمعرف {{ param }}",
+      "deleted": "تم حذف المرفق بالمعرف {{ param }}",
+      "delete": {
+        "question": "هل أنت متأكد أنك تريد حذف المرفق {{ id }}؟"
+      },
+      "detail": {
+        "title": "المرفق"
+      },
+      "id": "المعرف",
+      "fileName": "اسم الملف",
+      "filePath": "مسار الملف",
+      "uploadedAt": "تاريخ الرفع",
+      "task": "المهمة",
+      "form": {
+        "dropzone": "اسحب الملفات هنا أو انقر للتصفح",
+        "browse": "تصفح"
+      }
+    }
+  }
+}

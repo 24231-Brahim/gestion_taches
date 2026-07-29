@@ -39,8 +39,8 @@ public class Comment implements Serializable {
 
     @ManyToOne(optional = false)
     @NotNull
-    @JsonIgnoreProperties(value = { "commentses", "attachmentses", "histories", "sprint", "epic", "project" }, allowSetters = true)
-    private Issue issue;
+    @JsonIgnoreProperties(value = { "comments", "attachments", "sprint", "epic", "project" }, allowSetters = true)
+    private Task task;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User author;
@@ -86,16 +86,16 @@ public class Comment implements Serializable {
         this.createdAt = createdAt;
     }
 
-    public Issue getIssue() {
-        return this.issue;
+    public Task getTask() {
+        return this.task;
     }
 
-    public void setIssue(Issue issue) {
-        this.issue = issue;
+    public void setTask(Task task) {
+        this.task = task;
     }
 
-    public Comment issue(Issue issue) {
-        this.setIssue(issue);
+    public Comment task(Task task) {
+        this.setTask(task);
         return this;
     }
 

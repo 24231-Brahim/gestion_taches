@@ -10,7 +10,7 @@ import { RouterLink } from '@angular/router';
   template: `
     <div class="lists-grid">
       <div class="list-card">
-        <h3 class="list-title" jhiTranslate="dashboard.lists.recentProjects">RECENT PROJECTS</h3>
+        <h3 class="list-title">{{ 'dashboard.lists.recentProjects' | translate }}</h3>
         <div class="list-body">
           @if (recentProjects().length > 0) {
             <div class="list-items">
@@ -22,25 +22,27 @@ import { RouterLink } from '@angular/router';
               }
             </div>
           } @else {
-            <p class="text-muted" jhiTranslate="dashboard.noData">No data</p>
+            <p class="text-muted">{{ 'dashboard.noData' | translate }}</p>
           }
         </div>
       </div>
 
       <div class="list-card">
-        <h3 class="list-title" jhiTranslate="dashboard.lists.recentTasks">RECENT TASKS</h3>
+        <h3 class="list-title">{{ 'dashboard.lists.recentTasks' | translate }}</h3>
         <div class="list-body">
           @if (recentTasks().length > 0) {
             <div class="list-items">
               @for (t of recentTasks(); track t.id) {
-                <a [routerLink]="['/issue', t.id, 'view']" class="list-item">
+                <a [routerLink]="['/project', t.project?.key, 'task', t.id, 'view']" class="list-item">
                   <span class="item-name">{{ t.title }}</span>
-                  <span class="item-meta" [style.color]="statusColor(t.status!)">{{ t.status }}</span>
+                  <span class="item-meta" [style.color]="statusColor(t.status!)">{{
+                    'gestionTachesApp.TaskStatus.' + t.status | translate
+                  }}</span>
                 </a>
               }
             </div>
           } @else {
-            <p class="text-muted" jhiTranslate="dashboard.noData">No data</p>
+            <p class="text-muted">{{ 'dashboard.noData' | translate }}</p>
           }
         </div>
       </div>
@@ -55,18 +57,20 @@ import { RouterLink } from '@angular/router';
       }
       .list-card {
         background: var(--color-surface-container);
-        border: 3px solid var(--color-primary);
-        box-shadow: var(--shadow-brutal);
+        border: 1px solid var(--color-outline-variant);
+        box-shadow: var(--shadow-sm);
         padding: var(--stack-md);
+        border-radius: var(--radius-lg);
       }
       .list-title {
-        font-family: var(--font-display);
+        font-family: var(--font-inter);
+        font-weight: 600;
         font-size: var(--headline-md);
-        letter-spacing: 0.04em;
-        color: var(--color-primary);
+        letter-spacing: 0;
+        color: var(--color-on-surface);
         margin-bottom: var(--stack-md);
         padding-bottom: var(--stack-sm);
-        border-bottom: 3px solid var(--color-primary);
+        border-bottom: 1px solid var(--color-outline-variant);
       }
       .list-body {
         min-height: 100px;
@@ -91,30 +95,30 @@ import { RouterLink } from '@angular/router';
         border-color: var(--color-outline);
       }
       .item-name {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-sm);
-        text-transform: uppercase;
+        text-transform: none;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
       }
       .item-key {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: none;
         flex-shrink: 0;
         color: var(--color-primary);
         font-weight: 700;
       }
       .item-meta {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-xs);
-        text-transform: uppercase;
+        text-transform: none;
         flex-shrink: 0;
         font-weight: 700;
       }
       .text-muted {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-sm);
         color: var(--color-muted);
       }
@@ -131,7 +135,7 @@ export class DashboardListsComponent {
       IN_PROGRESS: 'var(--color-info)',
       IN_REVIEW: '#a855f7',
       TODO: '#f59e0b',
-      BACKLOG: 'var(--color-muted)',
+      NEW: 'var(--color-muted)',
       CANCELLED: 'var(--color-danger)',
     };
     return map[status] ?? 'var(--color-on-surface)';

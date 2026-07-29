@@ -98,13 +98,17 @@ export class Comment implements OnInit {
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
-        tap(() => this.load()),
+        tap(() => {
+          this.commentService.refresh();
+          this.load();
+        }),
       )
       .subscribe();
   }
 
   load(): void {
     this.queryBackend();
+    this.commentService.refresh();
   }
 
   navigateToWithComponentValues(event: SortState): void {

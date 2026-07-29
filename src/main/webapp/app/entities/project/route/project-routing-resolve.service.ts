@@ -1,8 +1,7 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { ActivatedRouteSnapshot, Router } from '@angular/router';
+import { ActivatedRouteSnapshot } from '@angular/router';
 
-import { EMPTY, Observable, catchError, of } from 'rxjs';
+import { Observable, catchError, of } from 'rxjs';
 
 import { IProject } from '../project.model';
 import { ProjectService } from '../service/project.service';
@@ -10,18 +9,8 @@ import { ProjectService } from '../service/project.service';
 const projectResolve = (route: ActivatedRouteSnapshot): Observable<null | IProject> => {
   const { key } = route.params;
   if (key) {
-    const router = inject(Router);
     const service = inject(ProjectService);
-    return service.findByKey(key).pipe(
-      catchError((error: HttpErrorResponse) => {
-        if (error.status === 404) {
-          router.navigate(['404']);
-        } else {
-          router.navigate(['error']);
-        }
-        return EMPTY;
-      }),
-    );
+    return service.findByKey(key).pipe(catchError(() => of(null)));
   }
 
   return of(null);

@@ -15,16 +15,15 @@
 
 logging:
   level:
-    ROOT: DEBUG
+    ROOT: INFO
     tech.jhipster: DEBUG
-    org.hibernate.SQL: DEBUG
+    org.hibernate.SQL: INFO
     com.gestiontaches: DEBUG
 
 spring:
   devtools:
     restart:
       enabled: true
-      additional-exclude: static/**,.h2.server.properties
     livereload:
       enabled: false # we use Webpack dev server + BrowserSync for livereload
   docker:
@@ -36,15 +35,19 @@ spring:
     serialization:
       indent-output: true
   datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:h2:file:./target/h2db/db/gestionTaches;DB_CLOSE_DELAY=-1
+    url: jdbc:postgresql://localhost:5432/gestion_taches
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password:
     hikari:
-      poolName: Hikari
       auto-commit: false
-  h2:
-    console:
-      # JHipster uses a custom h2-console initializer
-      enabled: true
+      maximumPoolSize: 15
+      minimumIdle: 5
+      connectionTimeout: 30000
+      idleTimeout: 600000
+      maxLifetime: 1800000
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
   liquibase:
     contexts: dev
   mail:

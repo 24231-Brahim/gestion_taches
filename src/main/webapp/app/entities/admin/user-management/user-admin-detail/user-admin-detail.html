@@ -1,0 +1,213 @@
+<div class="user-admin-detail">
+  <div class="detail-header">
+    <button class="btn-back" (click)="previousState()">
+      <fa-icon icon="arrow-left" />
+      <span jhiTranslate="entity.action.back">Retour</span>
+    </button>
+    <h2 jhiTranslate="userManagement.adminDetail.title">Détail utilisateur</h2>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <fa-icon icon="spinner" [animation]="'spin'" />
+      <span jhiTranslate="userManagement.adminDetail.loading">Chargement...</span>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="error-state">
+      <fa-icon icon="triangle-exclamation" />
+      <span jhiTranslate="{{ error() }}">Erreur lors du chargement</span>
+    </div>
+  }
+
+  @if (userDetail(); as user) {
+    <!-- User Info Card -->
+    <section class="card user-info-card">
+      <div class="card-header">
+        <h3 jhiTranslate="userManagement.adminDetail.userInfo">Informations utilisateur</h3>
+      </div>
+      <div class="card-body">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label" jhiTranslate="userManagement.login">Login</span>
+            <span class="info-value mono">{{ user.login }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" jhiTranslate="userManagement.firstName">Prénom</span>
+            <span class="info-value">{{ user.firstName || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" jhiTranslate="userManagement.lastName">Nom</span>
+            <span class="info-value">{{ user.lastName || '-' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" jhiTranslate="userManagement.email">Email</span>
+            <span class="info-value">{{ user.email }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" jhiTranslate="userManagement.adminDetail.status">Statut</span>
+            <span class="info-value">
+              @if (user.activated) {
+                <span class="badge badge-success" jhiTranslate="userManagement.activated">Activé</span>
+              } @else {
+                <span class="badge badge-danger" jhiTranslate="userManagement.deactivated">Désactivé</span>
+              }
+            </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" jhiTranslate="userManagement.profiles">Droits</span>
+            <span class="info-value">
+              @for (authority of user.authorities; track $index) {
+                <span class="badge badge-primary">{{ authority }}</span>
+              }
+            </span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" jhiTranslate="userManagement.createdDate">Créé le</span>
+            <span class="info-value mono">{{ user.createdDate | date: 'dd/MM/yy HH:mm' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label" jhiTranslate="userManagement.createdBy">Créé par</span>
+            <span class="info-value">{{ user.createdBy || '-' }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tasks Section -->
+    <section class="card">
+      <div class="card-header">
+        <h3>
+          <fa-icon icon="list-check" />
+          <span jhiTranslate="userManagement.adminDetail.tasks">Tâches assignées</span>
+          <span class="count-badge">{{ user.tasks?.length || 0 }}</span>
+        </h3>
+      </div>
+      <div class="card-body">
+        @if (user.tasks && user.tasks.length > 0) {
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th jhiTranslate="userManagement.adminDetail.taskKey">Clé</th>
+                  <th jhiTranslate="userManagement.adminDetail.taskTitle">Titre</th>
+                  <th jhiTranslate="userManagement.adminDetail.taskStatus">Statut</th>
+                  <th jhiTranslate="userManagement.adminDetail.taskPriority">Priorité</th>
+                  <th jhiTranslate="userManagement.adminDetail.taskProject">Projet</th>
+                  <th jhiTranslate="userManagement.adminDetail.taskSprint">Sprint</th>
+                  <th jhiTranslate="userManagement.adminDetail.taskEpic">Epic</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (task of user.tasks; track task.id) {
+                  <tr>
+                    <td class="mono">{{ user.login | uppercase }}-{{ task.id }}</td>
+                    <td>{{ task.title }}</td>
+                    <td>
+                      <span class="badge" [ngClass]="'badge-status-' + task.status?.toLowerCase()">
+                        {{ task.status }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="badge" [ngClass]="'badge-priority-' + task.priority?.toLowerCase()">
+                        {{ task.priority }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="mono">{{ task.projectKey }}</span> {{ task.projectName }}
+                    </td>
+                    <td>{{ task.sprintName || '-' }}</td>
+                    <td>{{ task.epicTitle || '-' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="empty-state">
+            <span jhiTranslate="userManagement.adminDetail.noTasks">Aucune tâche assignée</span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section class="card">
+      <div class="card-header">
+        <h3>
+          <fa-icon icon="folder-open" />
+          <span jhiTranslate="userManagement.adminDetail.projects">Projets</span>
+          <span class="count-badge">{{ user.projects?.length || 0 }}</span>
+        </h3>
+      </div>
+      <div class="card-body">
+        @if (user.projects && user.projects.length > 0) {
+          <div class="projects-grid">
+            @for (project of user.projects; track project.projectId) {
+              <div class="project-card">
+                <div class="project-header">
+                  <span class="project-key mono">{{ project.projectKey }}</span>
+                  <span class="badge badge-role">{{ project.role }}</span>
+                </div>
+                <div class="project-name">{{ project.projectName }}</div>
+                <div class="project-meta">
+                  <span jhiTranslate="userManagement.adminDetail.joinedAt">Rejoint le</span>
+                  {{ project.joinedAt | date: 'dd/MM/yy' }}
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <span jhiTranslate="userManagement.adminDetail.noProjects">Aucun projet</span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Activity Section -->
+    <section class="card">
+      <div class="card-header">
+        <h3>
+          <fa-icon icon="clock-rotate-left" />
+          <span jhiTranslate="userManagement.adminDetail.activity">Activité récente</span>
+          <span class="count-badge">{{ user.recentActivity?.length || 0 }}</span>
+        </h3>
+      </div>
+      <div class="card-body">
+        @if (user.recentActivity && user.recentActivity.length > 0) {
+          <div class="activity-timeline">
+            @for (entry of user.recentActivity; track entry.id) {
+              <div class="activity-entry">
+                <div class="activity-dot"></div>
+                <div class="activity-content">
+                  <div class="activity-action">
+                    <span class="mono">{{ entry.taskTitle }}</span>
+                    <span class="activity-verb">{{ entry.action }}</span>
+                  </div>
+                  @if (entry.oldValue || entry.newValue) {
+                    <div class="activity-changes">
+                      @if (entry.oldValue) {
+                        <span class="old-value">{{ entry.oldValue }}</span>
+                        <fa-icon icon="arrow-right" />
+                      }
+                      @if (entry.newValue) {
+                        <span class="new-value">{{ entry.newValue }}</span>
+                      }
+                    </div>
+                  }
+                  <div class="activity-date mono">{{ entry.createdAt | date: 'dd/MM/yy HH:mm' }}</div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <span jhiTranslate="userManagement.adminDetail.noActivity">Aucune activité récente</span>
+          </div>
+        }
+      </div>
+    </section>
+  }
+</div>

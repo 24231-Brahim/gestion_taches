@@ -1,0 +1,76 @@
+{
+  "gestionTachesApp": {
+    "sprint": {
+      "home": {
+        "title": "السبرنتات",
+        "refreshListLabel": "تحديث القائمة",
+        "createLabel": "إنشاء سبرنت جديد",
+        "createOrEditLabel": "إنشاء أو تعديل سبرنت",
+        "notFound": "لم يتم العثور على سبرنتات"
+      },
+      "created": "تم إنشاء سبرنت جديد بالمعرف {{ param }}",
+      "updated": "تم تحديث السبرنت بالمعرف {{ param }}",
+      "deleted": "تم حذف السبرنت بالمعرف {{ param }}",
+      "delete": {
+        "question": "هل أنت متأكد أنك تريد حذف السبرنت {{ id }}؟"
+      },
+      "detail": {
+        "title": "السبرنت"
+      },
+      "id": "المعرف",
+      "name": "الاسم",
+      "goal": "الهدف",
+      "startDate": "تاريخ البداية",
+      "endDate": "تاريخ النهاية",
+      "status": "الحالة",
+      "project": "المشروع",
+      "board": {
+        "tab": "لوحة المهام",
+        "emptyColumn": "لا توجد مهام",
+        "filter": {
+          "assignee": "المُعيَّن",
+          "type": "النوع",
+          "priority": "الأولوية",
+          "all": "الكل",
+          "reset": "إعادة تعيين المرشحات"
+        }
+      },
+      "planning": {
+        "tab": "التخطيط",
+        "backlog": "قائمة المهام",
+        "sprint": "السبرنت",
+        "noBacklog": "جميع المهام مُعيَّنة لسبرنت",
+        "noIssues": "لا توجد مهام في هذا السبرنت",
+        "searchPlaceholder": "البحث عن مهام..."
+      },
+      "burndown": {
+        "tab": "مخطط الحرق",
+        "total": "الإجمالي",
+        "done": "المكتملة",
+        "remaining": "المتبقية",
+        "velocity": "السرعة",
+        "days": "الأيام",
+        "issues": "المهام"
+      },
+      "action": {
+        "start": "بدء السبرنت",
+        "complete": "إتمام السبرنت",
+        "reopen": "إعادة فتح السبرنت"
+      },
+      "tooltip": {
+        "activeSprintExists": "يوجد سبرنت نشط بالفعل لهذا المشروع",
+        "notManager": "يجب أن تكون مالكًا أو مديرًا لهذا الإجراء"
+      },
+      "velocity": {
+        "title": "تقرير السرعة",
+        "planned": "المهام المخططة",
+        "completed": "المهام المكتملة",
+        "carriedOver": "المهام المنقولة",
+        "percentage": "النسبة المئوية"
+      },
+      "progress": {
+        "label": "تقدم السبرنت"
+      }
+    }
+  }
+}

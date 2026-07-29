@@ -112,8 +112,8 @@ public class AttachmentService {
     }
 
     @Transactional(readOnly = true)
-    public List<AttachmentDTO> findByIssueId(Long issueId) {
-        LOG.debug("Request to get Attachments for Issue : {}", issueId);
-        return attachmentRepository.findByIssueIdOrderByUploadedAtDesc(issueId).stream().map(attachmentMapper::toDto).toList();
+    public List<AttachmentDTO> findByTaskId(Long taskId) {
+        LOG.debug("Request to get Attachments for Task : {}", taskId);
+        return attachmentRepository.findByTaskIdOrderByUploadedAtDesc(taskId).stream().map(attachmentMapper::toDto).toList();
     }
 }

@@ -58,11 +58,7 @@ export class Authority implements OnInit {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
       .pipe(
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
-        tap(() => {
-          if (this.authorities().length === 0) {
-            this.load();
-          }
-        }),
+        tap(() => this.load()),
       )
       .subscribe();
   }
@@ -74,13 +70,17 @@ export class Authority implements OnInit {
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
-        tap(() => this.load()),
+        tap(() => {
+          this.authorityService.refresh();
+          this.load();
+        }),
       )
       .subscribe();
   }
 
   load(): void {
     this.queryBackend();
+    this.authorityService.refresh();
   }
 
   navigateToWithComponentValues(event: SortState): void {

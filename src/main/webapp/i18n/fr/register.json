@@ -1,6 +1,8 @@
 {
   "register": {
     "title": "Création de compte utilisateur",
+    "welcomeBack": "Créer votre compte",
+    "welcomeDescription": "Inscrivez-vous pour commencer à organiser, suivre et gérer vos tâches efficacement.",
     "form": {
       "button": "Enregistrement"
     },

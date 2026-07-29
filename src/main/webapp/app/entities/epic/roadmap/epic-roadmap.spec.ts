@@ -110,18 +110,18 @@ describe('EpicRoadmap', () => {
   });
 
   it('getEpicDates should format start-end dates', () => {
-    const result = comp.getEpicDates(mockEpics[1]!);
+    const result = comp.getEpicDates(mockEpics[1]);
     expect(result).toContain('Jun 1');
     expect(result).toContain('Jun 30');
   });
 
   it('getEpicDates should return createdAt when no start/end dates', () => {
-    const result = comp.getEpicDates(mockEpics[0]!);
+    const result = comp.getEpicDates(mockEpics[0]);
     expect(result).toContain('Jun');
   });
 
   it('getEpicDates should return empty for entity with no dates', () => {
-    const result = comp.getEpicDates({ ...sampleWithRequiredData, createdAt: undefined, startDate: undefined, endDate: undefined } as any);
+    const result = comp.getEpicDates({ ...sampleWithRequiredData, createdAt: undefined, startDate: undefined, endDate: undefined });
     expect(result).toBe('');
   });
 
@@ -148,7 +148,7 @@ describe('EpicRoadmap', () => {
   it('trackId should forward to epicService', () => {
     const entity = { id: 42 };
     vitest.spyOn(epicServiceMock, 'getEpicIdentifier');
-    comp.trackId(entity as any);
+    comp.trackId(entity);
     expect(epicServiceMock.getEpicIdentifier).toHaveBeenCalledWith(entity);
   });
 });

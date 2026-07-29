@@ -4,7 +4,7 @@
 
     <div class="d-flex justify-content-end">
       <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
-        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <fa-icon icon="arrows-rotate" [animation]="isLoading() ? 'spin' : undefined" />
         <span jhiTranslate="gestionTachesApp.actionHistory.home.refreshListLabel">Actualiser la liste</span>
       </button>
 
@@ -68,9 +68,9 @@
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
-            <th scope="col" jhiSortBy="issue.id">
+            <th scope="col" jhiSortBy="task.id">
               <div class="d-flex">
-                <span jhiTranslate="gestionTachesApp.actionHistory.issue">Issue</span>
+                <span jhiTranslate="gestionTachesApp.actionHistory.task">Task</span>
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
@@ -86,9 +86,9 @@
               <td>{{ actionHistory.newValue }}</td>
               <td>{{ actionHistory.createdAt | formatMediumDatetime }}</td>
               <td>
-                @if (actionHistory.issue) {
+                @if (actionHistory.task) {
                   <div>
-                    <a [routerLink]="['/issue', actionHistory.issue.id, 'view']">{{ actionHistory.issue.id }}</a>
+                    <a [routerLink]="['/task', actionHistory.task.id, 'view']">{{ actionHistory.task.id }}</a>
                   </div>
                 }
               </td>
@@ -100,12 +100,12 @@
                   </a>
 
                   <a [routerLink]="['/action-history', actionHistory.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                    <fa-icon icon="pencil-alt" />
+                    <fa-icon icon="pencil" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
                   </a>
 
                   <button type="submit" (click)="delete(actionHistory)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                    <fa-icon icon="times" />
+                    <fa-icon icon="xmark" />
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
                   </button>
                 </div>

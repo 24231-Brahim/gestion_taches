@@ -112,8 +112,8 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public List<CommentDTO> findByIssueId(Long issueId) {
-        LOG.debug("Request to get Comments for Issue : {}", issueId);
-        return commentRepository.findByIssueIdOrderByCreatedAtDesc(issueId).stream().map(commentMapper::toDto).toList();
+    public List<CommentDTO> findByTaskId(Long taskId) {
+        LOG.debug("Request to get Comments for Task : {}", taskId);
+        return commentRepository.findByTaskIdOrderByCreatedAtDesc(taskId).stream().map(commentMapper::toDto).toList();
     }
 }

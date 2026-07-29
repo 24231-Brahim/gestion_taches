@@ -1,0 +1,12 @@
+{
+  "gestionTachesApp": {
+    "Priority": {
+      "null": "",
+      "LOWEST": "منخفضة جدًا",
+      "LOW": "منخفضة",
+      "MEDIUM": "متوسطة",
+      "HIGH": "عالية",
+      "HIGHEST": "عالية جدًا"
+    }
+  }
+}

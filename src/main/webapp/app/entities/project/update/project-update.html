@@ -8,13 +8,6 @@
       <div>
         <jhi-alert-error />
 
-        @if (editForm.controls.id.value !== null) {
-          <div class="mb-3">
-            <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
-            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
-          </div>
-        }
-
         @let nameRef = editForm.get('name')!;
         <div class="mb-3">
           <label class="form-label" for="field_name" jhiTranslate="gestionTachesApp.project.name">Name</label>
@@ -98,7 +91,7 @@
           [disabled]="editForm.invalid || isSaving()"
           class="btn btn-primary"
         >
-          <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
+          <fa-icon icon="floppy-disk" />&nbsp;<span jhiTranslate="entity.action.save">Sauvegarder</span>
         </button>
       </div>
     </form>

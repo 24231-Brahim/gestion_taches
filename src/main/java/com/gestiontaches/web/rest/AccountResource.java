@@ -4,6 +4,7 @@ import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.SecurityUtils;
 import com.gestiontaches.service.MailService;
+import com.gestiontaches.service.NotificationService;
 import com.gestiontaches.service.UserService;
 import com.gestiontaches.service.dto.AdminUserDTO;
 import com.gestiontaches.service.dto.PasswordChangeDTO;
@@ -40,10 +41,18 @@ public class AccountResource {
 
     private final MailService mailService;
 
-    public AccountResource(UserRepository userRepository, UserService userService, MailService mailService) {
+    private final NotificationService notificationService;
+
+    public AccountResource(
+        UserRepository userRepository,
+        UserService userService,
+        MailService mailService,
+        NotificationService notificationService
+    ) {
         this.userRepository = userRepository;
         this.userService = userService;
         this.mailService = mailService;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -62,6 +71,7 @@ public class AccountResource {
         }
         User user = userService.registerUser(managedUserVM, managedUserVM.getPassword());
         mailService.sendActivationEmail(user);
+        notificationService.notifyAdminsOfNewUser(user);
     }
 
     /**

@@ -2,26 +2,26 @@
   "gestionTachesApp": {
     "attachment": {
       "home": {
-        "title": "Attachments",
+        "title": "Pièces jointes",
         "refreshListLabel": "Actualiser la liste",
-        "createLabel": "Créer un nouveau Attachment",
-        "createOrEditLabel": "Créer ou éditer un Attachment",
-        "notFound": "Aucun Attachment trouvé"
+        "createLabel": "Créer une nouvelle pièce jointe",
+        "createOrEditLabel": "Créer ou éditer une pièce jointe",
+        "notFound": "Aucune pièce jointe trouvée"
       },
-      "created": "Un nouveau Attachment a été créé avec l'identifiant {{ param }}",
-      "updated": "Le Attachment avec l'identifiant {{ param }} a été mis à jour",
-      "deleted": "Le Attachment avec l'identifiant {{ param }} a été supprimé",
+      "created": "Une nouvelle pièce jointe a été créée avec l'identifiant {{ param }}",
+      "updated": "La pièce jointe avec l'identifiant {{ param }} a été mise à jour",
+      "deleted": "La pièce jointe avec l'identifiant {{ param }} a été supprimée",
       "delete": {
-        "question": "Êtes-vous certain de vouloir supprimer le Attachment {{ id }} ?"
+        "question": "Êtes-vous certain de vouloir supprimer la pièce jointe {{ id }} ?"
       },
       "detail": {
-        "title": "Attachment"
+        "title": "Pièce jointe"
       },
       "id": "ID",
       "fileName": "Nom du fichier",
       "filePath": "Chemin du fichier",
       "uploadedAt": "Uploadé le",
-      "issue": "Issue",
+      "task": "Tâche",
       "form": {
         "dropzone": "Déposez les fichiers ici ou cliquez pour parcourir",
         "browse": "Parcourir"

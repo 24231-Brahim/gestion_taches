@@ -1,0 +1,85 @@
+<div>
+  <h2 id="page-heading" class="page-heading" data-cy="AdminTasksHeading">
+    <span jhiTranslate="userManagement.adminTasks.title">Toutes les tâches</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="loadAll()" [disabled]="isLoading()">
+        <fa-icon icon="arrows-rotate" [animation]="isLoading() ? 'spin' : undefined" />
+        <span jhiTranslate="userManagement.adminTasks.refresh">Actualiser</span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error />
+  <jhi-alert />
+
+  @if (tasks().length === 0 && !isLoading()) {
+    <div class="alert alert-warning" jhiTranslate="userManagement.adminTasks.noTasks">Aucune tâche trouvée</div>
+  } @else {
+    <div class="table-responsive">
+      <table class="table" aria-describedby="admin-tasks-heading">
+        <thead>
+          <tr>
+            <th scope="col" jhiTranslate="userManagement.adminTasks.id">ID</th>
+            <th scope="col" jhiTranslate="userManagement.adminTasks.taskTitle">Titre</th>
+            <th scope="col" jhiTranslate="userManagement.adminTasks.project">Projet</th>
+            <th scope="col" jhiTranslate="userManagement.adminTasks.status">Statut</th>
+            <th scope="col" jhiTranslate="userManagement.adminTasks.priority">Priorité</th>
+            <th scope="col" jhiTranslate="userManagement.adminTasks.assignee">Assigné à</th>
+            <th scope="col" jhiTranslate="userManagement.adminTasks.createdAt">Créé le</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (task of tasks(); track task.id) {
+            <tr>
+              <td>{{ task.id }}</td>
+              <td>
+                @if (task.project?.key) {
+                  <a [routerLink]="['/project', task.project!.key, 'task', task.id, 'view']">{{ task.title }}</a>
+                } @else {
+                  {{ task.title }}
+                }
+              </td>
+              <td>
+                @if (task.project?.key) {
+                  <a [routerLink]="['/project', task.project!.key, 'view']">
+                    <span class="badge bg-secondary">{{ task.project!.key }}</span>
+                  </a>
+                }
+              </td>
+              <td>
+                <span class="badge" [style.background-color]="getStatusColor(task.status)">
+                  {{ 'gestionTachesApp.TaskStatus.' + task.status | translate }}
+                </span>
+              </td>
+              <td>
+                <span [style.color]="getPriorityColor(task.priority)">
+                  {{ 'gestionTachesApp.Priority.' + task.priority | translate }}
+                </span>
+              </td>
+              <td>{{ task.assignee?.login ?? '—' }}</td>
+              <td>{{ task.createdAt?.toDate() | date: 'dd/MM/yy HH:mm' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [(page)]="page"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="transition()"
+        />
+      </div>
+    </div>
+  }
+</div>

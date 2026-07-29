@@ -1,0 +1,43 @@
+<div class="tab-section">
+  <h4 class="tab-section-title">
+    <fa-icon icon="paperclip" class="me-2" />
+    <span jhiTranslate="gestionTachesApp.task.detail.attachments">Attachments</span>
+    <span class="badge bg-secondary ms-2">{{ attachments().length }}</span>
+  </h4>
+
+  <div
+    class="attachment-drop-zone"
+    [class.drag-over]="isDragOver()"
+    (drop)="onFileDrop($event)"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave()"
+    (click)="fileInput.click()"
+  >
+    <fa-icon icon="cloud-arrow-up" />
+    <span jhiTranslate="gestionTachesApp.task.detail.attachments.dropzone">Drop a file here or click to browse</span>
+    <input #fileInput type="file" class="d-none" (change)="onFileSelected($event)" />
+  </div>
+
+  @if (isLoading()) {
+    <div class="text-center p-3">
+      <fa-icon icon="arrows-rotate" animation="spin" />
+    </div>
+  } @else {
+    @if (attachments().length === 0) {
+      <p class="text-muted" jhiTranslate="gestionTachesApp.task.detail.noAttachments">No attachments yet.</p>
+    } @else {
+      <div class="attachments-list">
+        @for (attachment of attachments(); track attachment.id) {
+          <div class="attachment-item">
+            <fa-icon icon="file" class="me-2" />
+            <a class="attachment-name" (click)="downloadAttachment(attachment)">{{ attachment.fileName }}</a>
+            <span class="attachment-date text-muted">{{ attachment.uploadedAt | formatMediumDatetime }}</span>
+            <button class="btn btn-sm btn-outline-danger ms-2" (click)="deleteAttachment(attachment.id)">
+              <fa-icon icon="trash" />
+            </button>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

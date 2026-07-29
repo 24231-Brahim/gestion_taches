@@ -11,5 +11,5 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
-    List<Comment> findByIssueIdOrderByCreatedAtDesc(Long issueId);
+    List<Comment> findByTaskIdOrderByCreatedAtDesc(Long taskId);
 }

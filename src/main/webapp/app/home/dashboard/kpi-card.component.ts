@@ -37,12 +37,13 @@ export interface KpiData {
     `
       .kpi-card {
         background: var(--color-surface-container);
-        border: 3px solid var(--color-primary);
-        box-shadow: var(--shadow-brutal);
+        border: 1px solid var(--color-outline-variant);
+        box-shadow: var(--shadow-sm);
         padding: var(--stack-md);
         display: flex;
         flex-direction: column;
         gap: var(--stack-sm);
+        border-radius: var(--radius-lg);
       }
       .kpi-header {
         display: flex;
@@ -50,10 +51,10 @@ export interface KpiData {
         align-items: center;
       }
       .kpi-label {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-xs);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
+        text-transform: none;
+        letter-spacing: 0;
         color: var(--color-muted);
       }
       .kpi-icon {
@@ -61,14 +62,14 @@ export interface KpiData {
         font-size: var(--text-lg);
       }
       .kpi-value {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-4xl);
         font-weight: 700;
         color: var(--color-on-surface);
         line-height: 1;
       }
       .kpi-trend {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-sm);
         display: flex;
         align-items: center;
@@ -81,7 +82,7 @@ export interface KpiData {
         color: var(--color-danger);
       }
       .kpi-unit {
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-xs);
         color: var(--color-muted);
       }

@@ -1,6 +1,7 @@
 package com.gestiontaches.service;
 
 import com.gestiontaches.domain.Epic;
+import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.repository.EpicRepository;
 import com.gestiontaches.service.dto.EpicDTO;
 import com.gestiontaches.service.mapper.EpicMapper;
@@ -25,9 +26,12 @@ public class EpicService {
 
     private final EpicMapper epicMapper;
 
-    public EpicService(EpicRepository epicRepository, EpicMapper epicMapper) {
+    private final ProjectPermissionService projectPermissionService;
+
+    public EpicService(EpicRepository epicRepository, EpicMapper epicMapper, ProjectPermissionService projectPermissionService) {
         this.epicRepository = epicRepository;
         this.epicMapper = epicMapper;
+        this.projectPermissionService = projectPermissionService;
     }
 
     /**
@@ -38,6 +42,9 @@ public class EpicService {
      */
     public EpicDTO save(EpicDTO epicDTO) {
         LOG.debug("Request to save Epic : {}", epicDTO);
+        if (epicDTO.getProject() != null && epicDTO.getProject().getId() != null) {
+            projectPermissionService.requireProjectRole(epicDTO.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
+        }
         Epic epic = epicMapper.toEntity(epicDTO);
         epic = epicRepository.save(epic);
         return epicMapper.toDto(epic);
@@ -51,6 +58,9 @@ public class EpicService {
      */
     public EpicDTO update(EpicDTO epicDTO) {
         LOG.debug("Request to update Epic : {}", epicDTO);
+        if (epicDTO.getProject() != null && epicDTO.getProject().getId() != null) {
+            projectPermissionService.requireProjectRole(epicDTO.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
+        }
         Epic epic = epicMapper.toEntity(epicDTO);
         epic = epicRepository.save(epic);
         return epicMapper.toDto(epic);
@@ -68,6 +78,7 @@ public class EpicService {
         return epicRepository
             .findById(epicDTO.getId())
             .map(existingEpic -> {
+                projectPermissionService.requireProjectRole(existingEpic.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
                 epicMapper.partialUpdate(existingEpic, epicDTO);
 
                 return existingEpic;
@@ -104,6 +115,8 @@ public class EpicService {
      */
     public void delete(Long id) {
         LOG.debug("Request to delete Epic : {}", id);
+        Epic epic = epicRepository.findById(id).orElseThrow(() -> new RuntimeException("Epic not found"));
+        projectPermissionService.requireProjectRole(epic.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
         epicRepository.deleteById(id);
     }
 }

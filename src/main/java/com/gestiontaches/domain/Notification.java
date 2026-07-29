@@ -1,5 +1,6 @@
 package com.gestiontaches.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serial;
@@ -26,15 +27,16 @@ public class Notification implements Serializable {
     @Column(name = "message", nullable = false)
     private String message;
 
-    @Column(name = "issue_id")
-    private Long issueId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = { "comments", "attachments", "sprint", "epic", "project" }, allowSetters = true)
+    private Task task;
 
-    @Column(name = "issue_title")
-    private String issueTitle;
+    @Column(name = "task_title")
+    private String taskTitle;
 
-    @NotNull
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties(value = { "authorities" }, allowSetters = true)
+    private User user;
 
     @NotNull
     @Column(name = "is_read", nullable = false)
@@ -70,42 +72,42 @@ public class Notification implements Serializable {
         return this;
     }
 
-    public Long getIssueId() {
-        return issueId;
+    public Task getTask() {
+        return task;
     }
 
-    public void setIssueId(Long issueId) {
-        this.issueId = issueId;
+    public void setTask(Task task) {
+        this.task = task;
     }
 
-    public Notification issueId(Long issueId) {
-        this.setIssueId(issueId);
+    public Notification task(Task task) {
+        this.setTask(task);
         return this;
     }
 
-    public String getIssueTitle() {
-        return issueTitle;
+    public String getTaskTitle() {
+        return taskTitle;
     }
 
-    public void setIssueTitle(String issueTitle) {
-        this.issueTitle = issueTitle;
+    public void setTaskTitle(String taskTitle) {
+        this.taskTitle = taskTitle;
     }
 
-    public Notification issueTitle(String issueTitle) {
-        this.setIssueTitle(issueTitle);
+    public Notification taskTitle(String taskTitle) {
+        this.setTaskTitle(taskTitle);
         return this;
     }
 
-    public Long getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
-    public Notification userId(Long userId) {
-        this.setUserId(userId);
+    public Notification user(User user) {
+        this.setUser(user);
         return this;
     }
 
@@ -156,13 +158,9 @@ public class Notification implements Serializable {
             ", message='" +
             getMessage() +
             "'" +
-            ", issueId=" +
-            getIssueId() +
-            ", issueTitle='" +
-            getIssueTitle() +
+            ", taskTitle='" +
+            getTaskTitle() +
             "'" +
-            ", userId=" +
-            getUserId() +
             ", isRead=" +
             getIsRead() +
             ", createdAt='" +

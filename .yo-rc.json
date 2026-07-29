@@ -9,7 +9,7 @@
     "creationTimestamp": 1782293534447,
     "databaseType": "sql",
     "defaultCommand": "app",
-    "devDatabaseType": "h2Disk",
+    "devDatabaseType": "postgresql",
     "enableHibernateCache": true,
     "enableTranslation": true,
     "entities": ["Project", "Sprint", "Epic", "Issue", "Comment", "Attachment", "ActionHistory"],

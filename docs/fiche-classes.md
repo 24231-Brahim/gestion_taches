@@ -2,28 +2,35 @@
 
 ## 1. Diagramme de Classes (Class Diagram)
 
-Ce diagramme modélise la structure statique du système : les entités métier (User, Project, Issue, etc.), leurs attributs, leurs types (enumérations) et les associations qui les relient (propriétaire, membres, sprint, epic, commentaires, etc.).
+Ce diagramme modélise la structure statique du système : les entités métier (User, Project, Task, etc.), leurs attributs, leurs types (enumérations) et les associations qui les relient (propriétaire, membres, sprint, epic, commentaires, etc.).
 
 ```mermaid
-
 classDiagram
     class User {
         +Long id
         +String login
+        +String passwordHash
         +String firstName
         +String lastName
         +String email
-        +String password
+        +String imageUrl
+        +Boolean activated
+        +String langKey
+        +String activationKey
+        +String resetKey
+        +Instant resetDate
+        +Instant createdDate
     }
 
-    class Role {
-        +Long id
+    class Authority {
         +String name
-        +String description
+    }
+
+    class UserAuthority {
+        <<join table>>
     }
 
     class Project {
-        +Long id
         +String name
         +String description
         +String project_key
@@ -31,8 +38,8 @@ classDiagram
     }
 
     class ProjectMember {
-        +Long id
-        +LocalDate joined_at
+        +ProjectRole role
+        +Instant joinedAt
     }
 
     class Sprint {
@@ -74,8 +81,16 @@ classDiagram
         +Instant uploadedAt
     }
 
+    class TaskHistory {
+        +String action
+        +String oldValue
+        +String newValue
+        +Instant createdAt
+    }
+
     class Notification {
         +String message
+        +String taskTitle
         +Boolean isRead
         +Instant createdAt
     }
@@ -99,10 +114,18 @@ classDiagram
     class TaskStatus {
         <<enumeration>>
         NEW
+        TODO
         IN_PROGRESS
-        READY_FOR_TEST
+        IN_REVIEW
         DONE
-        NEEDS_INFO
+        CANCELLED
+    }
+
+    class ProjectRole {
+        <<enumeration>>
+        OWNER
+        MANAGER
+        MEMBER
     }
 
     class Priority {
@@ -114,465 +137,376 @@ classDiagram
         HIGHEST
     }
 
-    %% =========================
-    %% Relations
-    %% =========================
-
-    %% Un utilisateur possède un seul rôle
-    Role "1" <-- "*" User : role
-
-    %% Un utilisateur peut être propriétaire de plusieurs projets
-    User "1" --> "*" Project : owner
-
-    %% Notifications
-    User "1" --> "*" Notification : reçoit
-
-    %% Membres des projets
-    Project "1" --> "*" ProjectMember : contient
-    ProjectMember "*" --> "1" User : membre
-
-    %% Sprints, Epics et Tasks
+    User "1" --> "*" Project : possède (owner)
+    Project "1" --> "*" ProjectMember : contient (members)
+    ProjectMember "*" --> "1" User : référence
+    ProjectMember --> ProjectRole
     Project "1" --> "*" Sprint : contient
     Project "1" --> "*" Epic : contient
     Project "1" --> "*" Task : contient
-
-    Sprint "1" --> "0..*" Task : regroupe
-    Epic "1" --> "0..*" Task : catégorise
-
-    %% Affectation et création des tâches
-    User "1" --> "*" Task : assignee
-    User "1" --> "*" Task : createdBy
-
-    %% Commentaires
-    User "1" --> "*" Comment : author
+    Sprint "1" --> "*" Task : regroupe
+    Epic "1" --> "*" Task : catégorise
     Task "1" --> "*" Comment : reçoit
-
-    %% Pièces jointes
     Task "1" --> "*" Attachment : contient
-
-    %% Énumérations
+    Task "1" --> "*" TaskHistory : trace
+    Task "1" --> "*" Notification : déclenche
+    User "1" --> "*" Task : assigné (assignee)
+    User "1" --> "*" Task : crée (createdBy)
+    User "1" --> "*" Comment : écrit (author)
+    User "1" --> "*" TaskHistory : effectue
+    User "1" --> "*" Notification : reçoit
+    User "1" --> "*" UserAuthority : possède
+    Authority "1" --> "*" UserAuthority : associé à
+    UserAuthority --> User
+    UserAuthority --> Authority
     Sprint --> SprintStatus
     Epic --> EpicStatus
     Task --> TaskStatus
     Epic --> Priority
     Task --> Priority
-
 ```
 
 ---
-
-## 2. Diagramme de Cas d'Utilisation (Use Case Diagram)
+## 2. Diagramme Entité-Relation
 
 ```mermaid
-graph LR
+erDiagram
+    USER {
+        Long id PK
+        String login
+        String passwordHash
+        String firstName
+        String lastName
+        String email
+        String imageUrl
+        Boolean activated
+        String langKey
+        String activationKey
+        String resetKey
+        Instant resetDate
+        Instant createdDate
+    }
 
-User[Utilisateur]
-Admin[Admin]
-PM[Chef de Projet]
-Dev[Développeur]
+    AUTHORITY {
+        String name PK
+    }
 
-User --> Admin
-User --> PM
-User --> Dev
+    USER_AUTHORITY {
+        Long user_id FK
+        String authority_name FK
+    }
 
-subgraph System["Système de Gestion de Projet"]
+    PROJECT {
+        Long id PK
+        String name
+        String description
+        String project_key
+        Instant createdAt
+        Long owner_id FK
+    }
 
-UC1["S'authentifier"]
-UC2["Consulter le tableau de bord"]
-UC3["Consulter les notifications"]
+    PROJECT_MEMBER {
+        Long id PK
+        String role
+        Instant joinedAt
+        Long project_id FK
+        Long user_id FK
+    }
 
-UC4["Gérer les projets"]
-UC5["Gérer les membres"]
-UC6["Gérer les sprints"]
-UC7["Gérer les epics"]
-UC8["Gérer les issues"]
+    SPRINT {
+        Long id PK
+        String name
+        String goal
+        LocalDate startDate
+        LocalDate endDate
+        String status
+        Long project_id FK
+    }
 
-UC9["Consulter le backlog"]
-UC10["Utiliser le tableau Kanban"]
-UC11["Consulter la Roadmap"]
-UC12["Consulter le Burndown Chart"]
+    EPIC {
+        Long id PK
+        String title
+        String description
+        String status
+        String priority
+        Instant createdAt
+        Instant updatedAt
+        LocalDate startDate
+        LocalDate endDate
+        Long project_id FK
+    }
 
-UC13["Commenter une issue"]
-UC14["Ajouter une pièce jointe"]
+    TASK {
+        Long id PK
+        String title
+        String description
+        String status
+        String priority
+        Instant createdAt
+        Instant updatedAt
+        Long project_id FK
+        Long sprint_id FK
+        Long epic_id FK
+        Long assignee_id FK
+        Long createdBy_id FK
+    }
 
-UC15["Administrer le système"]
+    COMMENT {
+        Long id PK
+        String content
+        Instant createdAt
+        Long task_id FK
+        Long author_id FK
+    }
 
-end
+    ATTACHMENT {
+        Long id PK
+        String fileName
+        String filePath
+        Instant uploadedAt
+        Long task_id FK
+    }
 
-User --> UC1
-User --> UC2
-User --> UC3
+    TASK_HISTORY {
+        Long id PK
+        String action
+        String oldValue
+        String newValue
+        Instant createdAt
+        Long task_id FK
+        Long user_id FK
+    }
 
-Admin --> UC4
-Admin --> UC5
-Admin --> UC6
-Admin --> UC7
-Admin --> UC8
-Admin --> UC15
+    NOTIFICATION {
+        Long id PK
+        String message
+        String taskTitle
+        Boolean isRead
+        Instant createdAt
+        Long task_id FK
+        Long user_id FK
+    }
 
-PM --> UC4
-PM --> UC5
-PM --> UC6
-PM --> UC7
-PM --> UC8
-PM --> UC9
-PM --> UC10
-PM --> UC11
-PM --> UC12
-PM --> UC13
-PM --> UC14
-
-Dev --> UC8
-Dev --> UC9
-Dev --> UC10
-Dev --> UC11
-Dev --> UC12
-Dev --> UC13
-Dev --> UC14
+    USER ||--o{ PROJECT : "possède (owner)"
+    USER ||--o{ PROJECT_MEMBER : "référence"
+    PROJECT ||--o{ PROJECT_MEMBER : "contient"
+    PROJECT ||--o{ SPRINT : "contient"
+    PROJECT ||--o{ EPIC : "contient"
+    PROJECT ||--o{ TASK : "contient"
+    SPRINT ||--o{ TASK : "regroupe"
+    EPIC ||--o{ TASK : "catégorise"
+    TASK ||--o{ COMMENT : "reçoit"
+    TASK ||--o{ ATTACHMENT : "contient"
+    TASK ||--o{ TASK_HISTORY : "trace"
+    TASK ||--o{ NOTIFICATION : "déclenche"
+    USER ||--o{ TASK : "assigné (assignee)"
+    USER ||--o{ TASK : "crée (createdBy)"
+    USER ||--o{ COMMENT : "écrit (author)"
+    USER ||--o{ TASK_HISTORY : "effectue"
+    USER ||--o{ NOTIFICATION : "reçoit"
+    USER ||--o{ USER_AUTHORITY : "possède"
+    AUTHORITY ||--o{ USER_AUTHORITY : "associé à"
 ```
-### Description des Cas d'Utilisation
+---
 
-| Code | Nom | Acteurs | Description |
-|------|-----|---------|-------------|
-| UC1 | Gérer les projets | Admin, PM | Créer, modifier, supprimer un projet |
-| UC2 | Gérer les membres | Admin, PM | Ajouter/retirer un membre, changer son rôle |
-| UC3 | Gérer les sprints | Admin, PM | Créer, démarrer, compléter un sprint |
-| UC4 | Gérer les epics | Admin, PM | Créer, modifier, supprimer un epic |
-| UC5 | Gérer les issues | Admin, PM, DEV | CRUD + assignation + changement de statut |
-| UC6 | Tableau Kanban | PM, DEV | Visualiser et glisser-déposer les issues |
-| UC7 | Roadmap Epic | PM, DEV | Vue d'ensemble des epics avec progression |
-| UC8 | Burndown Chart | PM, DEV | Graphique d'avancement du sprint |
-| UC9 | Commenter une issue | PM, DEV, U | Ajouter/modifier/supprimer un commentaire |
-| UC10 | Joindre un fichier | PM, DEV | Uploader un fichier sur une issue |
-| UC11 | Dashboard | U | Voir les KPI, graphiques et activités récentes |
-| UC12 | Notifications | U | Recevoir et consulter les notifications |
-| UC13 | Administration | Admin | Gérer les utilisateurs, rôles, configuration |
-| UC14 | Authentification | Tous | Se connecter / se déconnecter (JWT) |
-| UC15 | Inscription | U | Créer un compte |
+## Rôle de Chaque Table et Structure de la Base de Données
+
+### `jhi_user`
+
+Table gérée par JHipster. Contient les comptes utilisateurs avec authentification.
+
+| Colonne | Type | Contraintes |
+|---------|------|-------------|
+| `id` | `bigint` | PRIMARY KEY |
+| `login` | `varchar(50)` | UNIQUE, NOT NULL |
+| `password_hash` | `varchar(60)` | NOT NULL (BCrypt) |
+| `first_name` | `varchar(50)` | |
+| `last_name` | `varchar(50)` | |
+| `email` | `varchar(191)` | UNIQUE |
+| `image_url` | `varchar(256)` | |
+| `activated` | `boolean` | NOT NULL, default `false` |
+| `lang_key` | `varchar(10)` | |
+| `activation_key` | `varchar(20)` | |
+| `reset_key` | `varchar(20)` | |
+| `reset_date` | `timestamp` | |
+| `created_by` | `varchar(50)` | NOT NULL |
+| `created_date` | `timestamp` | |
+| `last_modified_by` | `varchar(50)` | |
+| `last_modified_date` | `timestamp` | |
+
+### `jhi_authority`
+
+Table des rôles/autorités. Le nom du rôle sert de clé primaire.
+
+| Colonne | Type | Contraintes |
+|---------|------|-------------|
+| `name` | `varchar(50)` | PRIMARY KEY |
+
+### `jhi_user_authority`
+
+Table de jointure entre utilisateurs et rôles (ManyToMany).
+
+| Colonne | Type | Contraintes |
+|---------|------|-------------|
+| `user_id` | `bigint` | FK → `jhi_user(id)` |
+| `authority_name` | `varchar(50)` | FK → `jhi_authority(name)` |
+| | | PRIMARY KEY composite (`user_id`, `authority_name`) |
+
+### `project`
+
+Table racine du système. Représente un projet. Contient les sprints, epics et tâches. Un `project_key` unique sert d'identifiant court (ex. `PROJ`). Chaque projet a un propriétaire (`owner_id` → `jhi_user`) et une équipe via la table `project_member`.
+
+| Colonne | Type | Contraintes |
+|---------|------|-------------|
+| `id` | `bigint` | PRIMARY KEY |
+| `name` | `varchar(100)` | NOT NULL |
+| `description` | `varchar(500)` | |
+| `project_key` | `varchar(10)` | NOT NULL, UNIQUE |
+| `created_at` | `datetime` | NOT NULL |
+| `owner_id` | `bigint` | FK → `jhi_user(id)` |
+
+### `project_member`
+
+Table de jointure enrichie entre Project et User. Remplace l'ancienne table de jointure `project_members`. Chaque entrée possède un identifiant, un rôle (`ProjectRole` : `OWNER`, `MANAGER`, `MEMBER`) et une date d'ajout. Contrainte d'unicité sur `(project_id, user_id)`.
+
+| Colonne | Type | Contraintes |
+|---------|------|-------------|
+| `id` | `bigint` | PRIMARY KEY |
+| `project_id` | `bigint` | FK → `project(id)`, NOT NULL |
+| `user_id` | `bigint` | FK → `jhi_user(id)`, NOT NULL |
+| `role` | `varchar(50)` | NOT NULL (`OWNER`/`MANAGER`/`MEMBER`) |
+| `joined_at` | `datetime(6)` | NOT NULL |
+| | | UNIQUE(`project_id`, `user_id`) |
+
+### `sprint`
+
+Itération de développement dans un projet. Regroupe un ensemble de tâches à réaliser sur une période donnée. Peut être PLANNED, ACTIVE, COMPLETED ou CANCELLED.
+
+| Colonne | Type | Contraintes |
+|---------|------|-------------|
+| `id` | `bigint` | PRIMARY KEY |
+| `name` | `varchar(100)` | NOT NULL |
+| `goal` | `varchar(500)` | |
+| `start_date` | `date` | |
+| `end_date` | `date` | |
+| `status` | `varchar(255)` | NOT NULL (`PLANNED`/`ACTIVE`/`COMPLETED`/`CANCELLED`) |
+| `project_id` | `bigint` | FK → `project(id)`, NOT NULL |
+
+### `epic`
+
+Regroupement logique de tâches correspondant à une fonctionnalité transverse de grande envergure. Permet de suivre un objectif métier à travers plusieurs sprints.
+
+| Colonne | Type | Contraintes |
+|---------|------|-------------|
+| `id` | `bigint` | PRIMARY KEY |
+| `title` | `varchar(200)` | NOT NULL |
+| `description` | `varchar(1000)` | |
+| `status` | `varchar(255)` | NOT NULL (`TODO`/`IN_PROGRESS`/`DONE`/`CANCELLED`) |
+| `priority` | `varchar(255)` | NOT NULL (`LOWEST`/`LOW`/`MEDIUM`/`HIGH`/`HIGHEST`) |
+| `created_at` | `datetime` | NOT NULL |
+| `updated_at` | `datetime` | |
+| `start_date` | `date` | |
+| `end_date` | `date` | |
+| `project_id` | `bigint` | FK → `project(id)`, NOT NULL |
+
+### `task`
+
+Unité de travail atomique. Suit un cycle de vie complet (NEW → TODO → IN_PROGRESS → IN_REVIEW → DONE). Liée à un projet (obligatoire), un sprint (optionnel) et/ou un epic (optionnel). Possède un assignee et un créateur.
+
+| Colonne | Type | Contraintes |
+|---------|------|-------------|
+| `id` | `bigint` | PRIMARY KEY |
+| `title` | `varchar(200)` | NOT NULL |
+| `description` | `varchar(5000)` | |
+| `status` | `varchar(255)` | NOT NULL (`NEW`/`TODO`/`IN_PROGRESS`/`IN_REVIEW`/`DONE`/`CANCELLED`) |
+| `priority` | `varchar(255)` | NOT NULL (`LOWEST`/`LOW`/`MEDIUM`/`HIGH`/`HIGHEST`) |
+| `created_at` | `datetime` | NOT NULL |
+| `updated_at` | `datetime` | |
+| `sprint_id` | `bigint` | FK → `sprint(id)` |
+| `epic_id` | `bigint` | FK → `epic(id)` |
+| `project_id` | `bigint` | FK → `project(id)`, NOT NULL |
+| `assignee_id` | `bigint` | FK → `jhi_user(id)` |
+| `created_by_id` | `bigint` | FK → `jhi_user(id)` |
+
+### `comment`
+
+Commentaire texte attaché à une tâche. Possède un auteur (`author_id` → `jhi_user`). Permet la discussion et le suivi collaboratif.
+
+| Colonne | Type | Contraintes |
+|---------|------|-------------|
+| `id` | `bigint` | PRIMARY KEY |
+| `content` | `varchar(2000)` | NOT NULL |
+| `created_at` | `datetime` | NOT NULL |
+| `task_id` | `bigint` | FK → `task(id)`, NOT NULL |
+| `author_id` | `bigint` | FK → `jhi_user(id)` |
+
+### `attachment`
+
+Fichier joint à une tâche (capture d'écran, document, etc.). Stocke le chemin du fichier et son nom original.
+
+| Colonne | Type | Contraintes |
+|---------|------|-------------|
+| `id` | `bigint` | PRIMARY KEY |
+| `file_name` | `varchar(255)` | NOT NULL |
+| `file_path` | `varchar(1000)` | NOT NULL |
+| `uploaded_at` | `datetime` | NOT NULL |
+| `task_id` | `bigint` | FK → `task(id)`, NOT NULL |
+
+### `task_history`
+
+Trace d'audit détaillant chaque modification d'une tâche. Enregistre l'action effectuée, l'ancienne et la nouvelle valeur, ainsi que l'utilisateur ayant effectué la modification.
+
+| Colonne | Type | Contraintes |
+|---------|------|-------------|
+| `id` | `bigint` | PRIMARY KEY |
+| `action` | `varchar(100)` | NOT NULL |
+| `old_value` | `varchar(500)` | |
+| `new_value` | `varchar(500)` | |
+| `created_at` | `datetime` | NOT NULL |
+| `task_id` | `bigint` | FK → `task(id)`, NOT NULL |
+| `user_id` | `bigint` | FK → `jhi_user(id)`, NOT NULL |
+
+### `notification`
+
+Notification in-app pour informer un utilisateur (ex: assignation à une tâche). Contient un message, une référence vers la tâche et un statut de lecture.
+
+| Colonne | Type | Contraintes |
+|---------|------|-------------|
+| `id` | `bigint` | PRIMARY KEY, auto-increment |
+| `message` | `varchar(500)` | NOT NULL |
+| `task_id` | `bigint` | FK → `task(id)` |
+| `task_title` | `varchar(200)` | |
+| `user_id` | `bigint` | FK → `jhi_user(id)`, NOT NULL |
+| `is_read` | `boolean` | NOT NULL, default `false` |
+| `created_at` | `datetime(6)` | NOT NULL |
 
 ---
 
-## 3. Diagramme de Séquence (Sequence Diagram)
+## Énumérations
 
-Ce diagramme montre les interactions temporelles entre les acteurs et les composants du système pour des scénarios clés : assignation d'une issue, création d'un projet et changement de statut via le tableau Kanban.
-
-### 3.1 Assignation d'une issue
-
-```mermaid
-sequenceDiagram
-    actor DEV as Développeur
-    participant Front as Frontend Angular
-    participant API as IssueResource
-    participant Service as IssueService
-    participant Notif as NotificationService
-    participant DB as Base de Données
-    actor Assignee as Utilisateur assigné
-
-    DEV->>Front: Glisser-déposer / Clique "Assigner"
-    Front->>API: PATCH /api/issues/{id}/assign { userId }
-    API->>API: Vérifier rôle (DEV ou PM)
-    API->>Service: assign(issueId, user)
-    Service->>DB: findById(issueId)
-    Service->>DB: save(issue avec assignee)
-    Service-->>API: IssueDTO
-    API->>Notif: save(notification)
-    Notif->>DB: INSERT notification
-    API-->>Front: 200 OK + IssueDTO
-    Front-->>DEV: Mise à jour de l'interface
-    Note over Notif,Assignee: L'utilisateur assigné reçoit la notification
-```
-
-### 3.2 Création d'un projet
-
-```mermaid
-sequenceDiagram
-    actor PM as Project Manager
-    participant Front as Frontend Angular
-    participant API as ProjectResource
-    participant Service as ProjectService
-    participant DB as Base de Données
-
-    PM->>Front: Remplir formulaire projet
-    Front->>Front: Validation des champs
-    Front->>API: POST /api/projects
-    API->>API: Vérifier rôle (ADMIN ou PM)
-    API->>Service: save(projectDTO)
-    Service->>Service: Récupérer utilisateur courant
-    Service->>Service: Définir comme owner
-    Service->>DB: INSERT project
-    DB-->>Service: Project
-    Service-->>API: ProjectDTO
-    API-->>Front: 201 Created
-    Front-->>PM: Projet créé, redirection
-```
-
-### 3.3 Changement de statut d'une issue (Drag & Drop Kanban)
-
-```mermaid
-sequenceDiagram
-    actor DEV as Développeur
-    participant Front as Kanban Board
-    participant API as IssueResource
-    participant Service as IssueService
-    participant DB as Base de Données
-
-    DEV->>Front: Glisser une issue vers "IN_PROGRESS"
-    Front->>Front: dragIssueId = issue.id
-    Front->>Front: onDrop(targetStatus = "IN_PROGRESS")
-    Front->>API: PATCH /api/issues/{id} { status: "IN_PROGRESS" }
-    API->>API: Vérifier rôle
-    API->>Service: partialUpdate(issueDTO)
-    Service->>DB: findById(id)
-    Service->>DB: save(issue modifié)
-    DB-->>Service: Issue mis à jour
-    Service-->>API: IssueDTO
-    API-->>Front: 200 OK
-    Front->>Front: issue.status = "IN_PROGRESS"
-    Front-->>DEV: Carte déplacée visuellement
-```
+| Enum | Valeurs | Utilisée par |
+|------|---------|-------------|
+| `SprintStatus` | `PLANNED`, `ACTIVE`, `COMPLETED`, `CANCELLED` | Sprint |
+| `EpicStatus` | `TODO`, `IN_PROGRESS`, `DONE`, `CANCELLED` | Epic |
+| `TaskStatus` | `NEW`, `TODO`, `IN_PROGRESS`, `IN_REVIEW`, `DONE`, `CANCELLED` | Task |
+| `Priority` | `LOWEST`, `LOW`, `MEDIUM`, `HIGH`, `HIGHEST` | Task, Epic |
+| `ProjectRole` | `OWNER`, `MANAGER`, `MEMBER` | ProjectMember |
 
 ---
 
+## Dépendances entre Tables
 
-## 8. Diagramme de Paquetages (Package Diagram)
-
-Ce diagramme illustre la structure des paquetages du projet : l'organisation du backend (domain, repository, service, web.rest, config, security, aop) et du frontend (entities, core, shared, layouts, home, admin), avec leurs dépendances.
-
-```mermaid
-flowchart TD
-    subgraph Backend[com.gestiontaches]
-        subgraph domain[domain]
-            enumeration[enumeration/]
-            Project
-            Sprint
-            Epic
-            Issue
-            Comment
-            Attachment
-            ActionHistory
-            Notification
-            ProjectMember
-            User
-        end
-        subgraph repository[repository]
-            ProjectRepository
-            SprintRepository
-            EpicRepository
-            IssueRepository
-            CommentRepository
-            AttachmentRepository
-            ActionHistoryRepository
-            NotificationRepository
-            ProjectMemberRepository
-            UserRepository
-        end
-        subgraph service[service]
-            direction TB
-            dto[dto/]
-            mapper[mapper/]
-            criteria[criteria/]
-        end
-        subgraph web[web.rest]
-            resources[REST Resources]
-            errors[errors/]
-        end
-        subgraph config[config]
-            SecurityConfiguration
-            CacheConfiguration
-            LiquibaseConfiguration
-            JacksonConfiguration
-        end
-        subgraph security[security]
-            jwt[JWT]
-            AuthoritiesConstants
-            SecurityUtils
-        end
-        subgraph aop[aop.logging]
-            LoggingAspect
-        end
-    end
-
-    subgraph Frontend[src/main/webapp/app]
-        subgraph FE_entities[entities/]
-            issue[issue/]
-            sprint[sprint/]
-            epic[epic/]
-            project[project/]
-            comment[comment/]
-            attachment[attachment/]
-            action_history[action-history/]
-        end
-        subgraph FE_core[core/]
-            auth[auth/]
-            interceptor[interceptor/]
-            util[util/]
-        end
-        subgraph FE_shared[shared/]
-            alert[alert/]
-            date[date/]
-            filter[filter/]
-            sort[sort/]
-            language[language/]
-        end
-        subgraph FE_layouts[layouts/]
-            main[main/]
-            navbar[navbar/]
-            sidebar[sidebar/]
-        end
-        subgraph FE_home[home/]
-            dashboard[dashboard/]
-        end
-        subgraph FE_admin[admin/]
-            user_management[user-management/]
-            health[health/]
-            metrics[metrics/]
-            logs[logs/]
-        end
-    end
-```
-
-### Dépendances entre Paquetages
-
-| Paquetage | Dépend de |
-|-----------|-----------|
-| `web.rest` | `service`, `security`, `repository` |
-| `service` | `repository`, `domain`, `service.dto`, `service.mapper` |
-| `service.dto` | `domain` |
-| `service.mapper` | `domain`, `service.dto` |
-| `repository` | `domain` |
-| `config` | `security`, `domain` |
-| `entities/` (frontend) | `core/util`, `shared/` |
-| `home/dashboard` | `core/config`, `entities/` |
-
----
-
-## 9. Diagramme d'Objets (Object Diagram)
-
-Ce diagramme présente un snapshot concret d'instances du système à un moment donné : un projet "Site Web" avec ses sprints, epics, issues, commentaires et utilisateurs, illustrant les relations entre objets réels.
-
-### Exemple d'instances en cours d'exécution
-
-```mermaid
-classDiagram
-    class projet1 {
-        id = 1
-        name = "Site Web"
-        key = "SITE"
-        createdAt = 2026-06-01
-    }
-
-    class sprint1 {
-        id = 1
-        name = "Sprint 1"
-        status = ACTIVE
-        startDate = 2026-06-15
-        endDate = 2026-06-28
-    }
-
-    class sprint2 {
-        id = 2
-        name = "Sprint 2"
-        status = PLANNED
-        startDate = 2026-06-29
-        endDate = 2026-07-12
-    }
-
-    class epic1 {
-        id = 1
-        title = "Authentification"
-        status = IN_PROGRESS
-        priority = HIGH
-    }
-
-    class issue1 {
-        id = 101
-        title = "Page de connexion"
-        type = STORY
-        status = DONE
-        priority = HIGH
-    }
-
-    class issue2 {
-        id = 102
-        title = "Bouton "Mot de passe oublié""
-        type = TASK
-        status = IN_PROGRESS
-        priority = MEDIUM
-    }
-
-    class issue3 {
-        id = 103
-        title = "Erreur 500 sur login"
-        type = BUG
-        status = TODO
-        priority = HIGHEST
-    }
-
-    class comment1 {
-        content = "J'ai corrigé le style du bouton"
-    }
-
-    class user1 {
-        login = "alice"
-        role = "PROJET_MANAGER"
-    }
-
-    class user2 {
-        login = "bob"
-        role = "DEVELOPER"
-    }
-
-    projet1 --> sprint1
-    projet1 --> sprint2
-    projet1 --> epic1
-    projet1 --> issue1
-    projet1 --> issue2
-    projet1 --> issue3
-    sprint1 --> issue1
-    sprint1 --> issue2
-    epic1 --> issue1
-    epic1 --> issue2
-    user1 --> projet1 : owner
-    issue1 --> user2 : assignee
-    issue1 --> comment1
-    user2 --> comment1 : author
-```
-
----
-
-## 10. Diagramme de Communication (Communication Diagram)
-
-Ce diagramme montre les interactions entre les objets et acteurs lors de la création d'un commentaire sur une issue, en mettant l'accent sur l'ordre des messages échangés (de l'ouverture de l'issue jusqu'à l'affichage du commentaire).
-
-### Création d'un commentaire sur une issue
-
-```mermaid
-sequenceDiagram
-    actor User as Utilisateur
-    participant D as IssueDetail
-    participant F as Formulaire
-    participant CS as CommentService
-    participant API as CommentResource
-    participant SVC as CommentService
-    participant US as UserService
-    participant REP as CommentRepository
-    participant DB as Database
-
-    User->>D: 1: Ouvre l'issue
-    User->>F: 2: Saisit le texte
-    F->>CS: 3: submit()
-    CS->>API: 4: POST /api/comments
-    API->>API: 5: Vérifier propriété
-    API->>SVC: 6: save()
-    SVC->>US: 7: findUser()
-    SVC->>REP: 8: save()
-    REP->>DB: 9: INSERT
-    DB-->>REP: 10: Comment
-    REP-->>SVC: 11: CommentDTO
-    SVC-->>API: 12: Response
-    API-->>CS: 13: 201 Created
-    CS-->>D: 14: Mettre à jour liste
-    D-->>User: 15: Afficher commentaire
-```
-
----
+| Table | Dépend de | Est utilisé par |
+|-------|-----------|-----------------|
+| jhi_user | — | Project (owner), ProjectMember, Task (assignee, createdBy), Comment (author), TaskHistory (user), Notification (user) |
+| jhi_authority | — | jhi_user_authority |
+| jhi_user_authority | jhi_user, jhi_authority | — |
+| project | jhi_user (owner) | Sprint, Epic, Task, ProjectMember |
+| project_member | project, jhi_user | — |
+| sprint | project | Task |
+| epic | project | Task |
+| task | project, sprint, epic, jhi_user (assignee, createdBy) | Comment, Attachment, TaskHistory, Notification |
+| comment | task, jhi_user (author) | — |
+| attachment | task | — |
+| task_history | task, jhi_user (user) | — |
+| notification | task, jhi_user (user) | — |

@@ -1,0 +1,38 @@
+{
+  "name": "GroupMessage",
+  "fields": [
+    {
+      "fieldName": "content",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMinlength": 1,
+      "fieldValidateRulesMaxlength": 5000
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "Instant"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipName": "sender",
+      "otherEntityName": "user",
+      "relationshipType": "many-to-one",
+      "otherEntityField": "login"
+    },
+    {
+      "relationshipName": "recipient",
+      "otherEntityName": "user",
+      "relationshipType": "many-to-one",
+      "otherEntityField": "login"
+    },
+    {
+      "relationshipName": "project",
+      "otherEntityName": "project",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "changelog": "20260723000000_added_entity_GroupMessage.xml",
+  "entityTableName": "group_message",
+  "pagination": "no"
+}

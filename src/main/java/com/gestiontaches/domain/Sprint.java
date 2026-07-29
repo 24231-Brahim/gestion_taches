@@ -50,7 +50,7 @@ public class Sprint implements Serializable {
 
     @ManyToOne(optional = false)
     @NotNull
-    @JsonIgnoreProperties(value = { "sprintses", "epicses", "issueses" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "sprintses", "epicses", "tasks" }, allowSetters = true)
     private Project project;
 
     // jhipster-needle-entity-add-field - JHipster will add fields here

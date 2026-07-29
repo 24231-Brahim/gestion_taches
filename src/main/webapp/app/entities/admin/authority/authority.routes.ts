@@ -25,6 +25,17 @@ const authorityRoute: Routes = [
     canActivate: [UserRouteAccessService],
   },
   {
+    path: ':name/edit',
+    loadComponent: () => import('./update/authority-update').then(m => m.AuthorityUpdate),
+    resolve: {
+      authority: AuthorityResolve,
+    },
+    data: {
+      authorities: ['ROLE_ADMIN'],
+    },
+    canActivate: [UserRouteAccessService],
+  },
+  {
     path: 'new',
     loadComponent: () => import('./update/authority-update').then(m => m.AuthorityUpdate),
     resolve: {

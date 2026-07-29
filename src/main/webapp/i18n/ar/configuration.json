@@ -1,0 +1,16 @@
+{
+  "configuration": {
+    "title": "الإعدادات",
+    "readonly": "إعدادات للقراءة فقط. للتعديل، عدّل ملفات application.yml.",
+    "filter": "مرشح (بالبادئة)",
+    "spring": {
+      "title": "إعدادات Spring"
+    },
+    "table": {
+      "prefix": "البادئة",
+      "properties": "الخصائص",
+      "property": "الخاصية",
+      "value": "القيمة"
+    }
+  }
+}

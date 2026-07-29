@@ -7,8 +7,11 @@
         "createLabel": "Create a new Epic",
         "createOrEditLabel": "Create or edit a Epic",
         "notFound": "No Epics found",
+        "tableLabel": "Epics",
         "roadmap": "Epic Roadmap",
-        "details": "Epic Details"
+        "details": "Epic Details",
+        "roadmapStart": "Start",
+        "roadmapEnd": "End"
       },
       "created": "A new Epic is created with identifier {{ param }}",
       "updated": "A Epic is updated with identifier {{ param }}",
@@ -28,7 +31,52 @@
       "updatedAt": "Updated At",
       "startDate": "Start Date",
       "endDate": "End Date",
-      "project": "Project"
+      "project": "Project",
+      "detail": {
+        "progress": "Progress",
+        "totalTasks": "Total",
+        "doneTasks": "Done",
+        "inProgressTasks": "In Progress",
+        "todoTasks": "To Do",
+        "sprints": "Sprints",
+        "team": "Team",
+        "noTasks": "No tasks for this epic",
+        "taskTable": {
+          "title": "Title",
+          "status": "Status",
+          "priority": "Priority",
+          "assignee": "Assignee",
+          "sprint": "Sprint"
+        }
+      },
+      "tab": {
+        "tasks": "Tasks",
+        "kanban": "Kanban",
+        "burndown": "Burndown",
+        "timeline": "Timeline"
+      },
+      "burndown": {
+        "total": "Total Tasks",
+        "done": "Done",
+        "remaining": "Remaining",
+        "time": "Time",
+        "tasks": "Tasks"
+      },
+      "validation": {
+        "endDateAfterStartDate": "End date must be after start date."
+      },
+      "filter": {
+        "allStatuses": "All Statuses",
+        "allPriorities": "All Priorities",
+        "allProjects": "All Projects",
+        "defaultSort": "Default sort",
+        "sortPriorityAsc": "Priority ↑",
+        "sortPriorityDesc": "Priority ↓",
+        "sortDateAsc": "Date ↑",
+        "sortDateDesc": "Date ↓",
+        "sortStatusAsc": "Status ↑",
+        "sortStatusDesc": "Status ↓"
+      }
     }
   }
 }

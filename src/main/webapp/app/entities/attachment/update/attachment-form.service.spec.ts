@@ -23,7 +23,7 @@ describe('Attachment Form Service', () => {
             fileName: expect.any(Object),
             filePath: expect.any(Object),
             uploadedAt: expect.any(Object),
-            issue: expect.any(Object),
+            task: expect.any(Object),
           }),
         );
       });
@@ -37,7 +37,7 @@ describe('Attachment Form Service', () => {
             fileName: expect.any(Object),
             filePath: expect.any(Object),
             uploadedAt: expect.any(Object),
-            issue: expect.any(Object),
+            task: expect.any(Object),
           }),
         );
       });

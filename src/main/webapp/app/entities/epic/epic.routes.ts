@@ -15,6 +15,14 @@ const epicRoute: Routes = [
     canActivate: [UserRouteAccessService],
   },
   {
+    path: 'table',
+    loadComponent: () => import('./list/epic').then(m => m.Epic),
+    data: {
+      defaultSort: `id,${ASC}`,
+    },
+    canActivate: [UserRouteAccessService],
+  },
+  {
     path: ':id/view',
     loadComponent: () => import('./detail/epic-detail').then(m => m.EpicDetail),
     resolve: {

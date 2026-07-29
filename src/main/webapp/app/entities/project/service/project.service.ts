@@ -7,6 +7,7 @@ import { Observable, map } from 'rxjs';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
+import { ProjectRole } from 'app/entities/enumerations/project-role.model';
 import { IProject, IProjectMember, NewProject } from '../project.model';
 
 export type PartialUpdateProject = Partial<IProject> & Pick<IProject, 'id'>;
@@ -42,6 +43,10 @@ export class ProjectsService {
   );
   protected readonly applicationConfigService = inject(ApplicationConfigService);
   protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/projects');
+
+  refresh(): void {
+    this.projectsResource.reload();
+  }
 
   protected convertValueFromServer(restProject: RestProject): IProject {
     return {
@@ -98,7 +103,15 @@ export class ProjectService extends ProjectsService {
   }
 
   getMembers(id: number): Observable<IProjectMember[]> {
-    return this.http.get<IProjectMember[]>(`${this.resourceUrl}/${encodeURIComponent(id)}/members`);
+    return this.http
+      .get<IProjectMember[]>(`${this.resourceUrl}/${encodeURIComponent(id)}/members`)
+      .pipe(map(members => members.map(m => this.convertMemberFromServer(m))));
+  }
+
+  getMyRoles(): Observable<IProjectMember[]> {
+    return this.http
+      .get<IProjectMember[]>(`${this.resourceUrl}/my-roles`)
+      .pipe(map(members => members.map(m => this.convertMemberFromServer(m))));
   }
 
   addMember(projectId: number, userId: number): Observable<undefined> {
@@ -109,7 +122,7 @@ export class ProjectService extends ProjectsService {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`);
   }
 
-  updateMemberRole(projectId: number, userId: number, role: string): Observable<undefined> {
+  updateMemberRole(projectId: number, userId: number, role: ProjectRole | string): Observable<undefined> {
     return this.http.patch<undefined>(`${this.resourceUrl}/${encodeURIComponent(projectId)}/members/${encodeURIComponent(userId)}`, {
       role,
     });
@@ -156,5 +169,12 @@ export class ProjectService extends ProjectsService {
 
   protected convertResponseArrayFromServer(res: RestProject[]): IProject[] {
     return res.map(item => this.convertValueFromServer(item));
+  }
+
+  protected convertMemberFromServer(member: IProjectMember): IProjectMember {
+    return {
+      ...member,
+      joinedAt: member.joinedAt ? dayjs(member.joinedAt) : null,
+    };
   }
 }

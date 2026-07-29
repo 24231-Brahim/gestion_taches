@@ -33,11 +33,11 @@
           <dd>
             <span>{{ actionHistoryRef.createdAt | formatMediumDatetime }}</span>
           </dd>
-          <dt><span jhiTranslate="gestionTachesApp.actionHistory.issue">Issue</span></dt>
+          <dt><span jhiTranslate="gestionTachesApp.actionHistory.task">Task</span></dt>
           <dd>
-            @if (actionHistory()!.issue) {
+            @if (actionHistory()!.task) {
               <div>
-                <a [routerLink]="['/issue', actionHistory()!.issue?.id, 'view']">{{ actionHistoryRef.issue?.id }}</a>
+                <a [routerLink]="['/task', actionHistory()!.task!.id, 'view']">{{ actionHistoryRef.task!.id }}</a>
               </div>
             }
           </dd>
@@ -48,7 +48,7 @@
         </button>
 
         <button type="button" [routerLink]="['/action-history', actionHistoryRef.id, 'edit']" class="btn btn-primary">
-          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+          <fa-icon icon="pencil" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
         </button>
       </div>
     }

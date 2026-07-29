@@ -1,11 +1,12 @@
 import dayjs from 'dayjs/esm';
+import { ProjectRole } from 'app/entities/enumerations/project-role.model';
 
 export interface IProjectMember {
   id: number;
   projectId?: number | null;
   userId?: number | null;
   userLogin?: string | null;
-  role?: string | null;
+  role?: ProjectRole | null;
   joinedAt?: dayjs.Dayjs | null;
 }
 

@@ -1,0 +1,52 @@
+{
+  "gestionTachesApp": {
+    "task": {
+      "home": {
+        "title": "Tâches",
+        "refreshListLabel": "Actualiser la liste",
+        "createLabel": "Créer une nouvelle Tâche",
+        "createOrEditLabel": "Créer ou éditer une Tâche",
+        "notFound": "Aucune Tâche trouvée",
+        "backlog": "Backlog",
+        "board": "Tableau",
+        "search": "Rechercher des tâches..."
+      },
+      "created": "Une nouvelle Tâche a été créée avec l'identifiant {{ param }}",
+      "updated": "La Tâche avec l'identifiant {{ param }} a été mise à jour",
+      "deleted": "La Tâche avec l'identifiant {{ param }} a été supprimée",
+      "delete": {
+        "question": "Êtes-vous certain de vouloir supprimer la Tâche {{ id }} ?"
+      },
+      "detail": {
+        "title": "Tâche",
+        "comments": "Commentaires",
+        "noComments": "Aucun commentaire pour le moment.",
+        "history": "Historique",
+        "noHistory": "Aucun historique pour le moment.",
+        "tab": {
+          "details": "Détails",
+          "comments": "Commentaires",
+          "attachments": "Pièces jointes",
+          "history": "Historique"
+        }
+      },
+      "id": "ID",
+      "title": "Titre",
+      "description": "Description",
+      "type": "Type",
+      "status": "Statut",
+      "priority": "Priorité",
+      "createdAt": "Créée le",
+      "updatedAt": "Mis à jour le",
+      "comments": "Commentaires",
+      "attachments": "Pièces jointes",
+      "history": "Historique",
+      "sprint": "Sprint",
+      "epic": "Epic",
+      "project": "Projet",
+      "assignee": "Assigné",
+      "createdBy": "Créé par",
+      "system": "Système"
+    }
+  }
+}

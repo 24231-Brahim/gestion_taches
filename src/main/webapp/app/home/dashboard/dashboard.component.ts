@@ -9,6 +9,20 @@ import { DashboardListsComponent } from './lists.component';
 import { DashboardTimelineComponent } from './timeline.component';
 import { DashboardQuickActionsComponent } from './quick-actions.component';
 
+export interface DashboardKpis {
+  totalProjects: number;
+  activeProjects: number;
+  totalTasks: number;
+  completedTasks: number;
+  overdueTasks: number;
+  teamMembers: number;
+  totalTimeSpentSeconds: number;
+  timeSpentByUser: Array<{ login: string; totalSeconds: number }>;
+  timeSpentByProject: Array<{ projectName: string; totalSeconds: number }>;
+  projectProgress: Array<{ projectId: number; projectName: string; totalTasks: number; doneTasks: number }>;
+  taskDistribution: Array<{ status: string; count: number }>;
+}
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-dashboard',
@@ -25,27 +39,51 @@ import { DashboardQuickActionsComponent } from './quick-actions.component';
     <div class="dashboard">
       @if (error()) {
         <div class="error-banner">
-          <span jhiTranslate="dashboard.error">Failed to load dashboard data</span>
+          <span>{{ 'dashboard.error' | translate }}</span>
         </div>
       }
       @if (loading()) {
         <div class="loading-banner">
-          <span jhiTranslate="dashboard.loading">Loading dashboard data...</span>
+          <span>{{ 'dashboard.loading' | translate }}</span>
         </div>
       }
       <div class="kpi-grid">
         <jhi-kpi-card label="{{ 'dashboard.kpi.totalProjects' | translate }}" [value]="totalProjects()" icon="folder" />
-        <jhi-kpi-card label="{{ 'dashboard.kpi.activeProjects' | translate }}" [value]="activeProjects()" icon="rocket" />
         <jhi-kpi-card label="{{ 'dashboard.kpi.totalTasks' | translate }}" [value]="totalTasks()" icon="tasks" />
         <jhi-kpi-card label="{{ 'dashboard.kpi.completedTasks' | translate }}" [value]="completedTasks()" icon="check-circle" />
         <jhi-kpi-card label="{{ 'dashboard.kpi.overdueTasks' | translate }}" [value]="overdueTasks()" icon="exclamation-circle" />
         <jhi-kpi-card label="{{ 'dashboard.kpi.teamMembers' | translate }}" [value]="teamMembers()" icon="users" />
       </div>
       <jhi-dashboard-quick-actions />
-      <jhi-dashboard-charts [issues]="issues()" [projects]="projects()" />
+      <jhi-dashboard-charts [taskDistribution]="taskDistribution()" [projectProgress]="projectProgress()" />
+      @if (timeSpentByUser().length > 0) {
+        <div class="time-tracking-section">
+          <h4>{{ 'dashboard.timeTracking.title' | translate }}</h4>
+          <div class="time-tracking-grid">
+            <div class="time-tracking-card">
+              <h5>{{ 'dashboard.timeTracking.byUser' | translate }}</h5>
+              @for (item of timeSpentByUser(); track item.login) {
+                <div class="time-tracking-row">
+                  <span class="user-name">{{ item.login }}</span>
+                  <span class="time-value">{{ formatTime(item.totalSeconds) }}</span>
+                </div>
+              }
+            </div>
+            <div class="time-tracking-card">
+              <h5>{{ 'dashboard.timeTracking.byProject' | translate }}</h5>
+              @for (item of timeSpentByProject(); track item.projectName) {
+                <div class="time-tracking-row">
+                  <span class="project-name">{{ item.projectName }}</span>
+                  <span class="time-value">{{ formatTime(item.totalSeconds) }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
       <jhi-dashboard-lists [recentProjects]="recentProjects()" [recentTasks]="recentTasks()" />
       <div class="bottom-grid">
-        <jhi-dashboard-timeline [issues]="issues()" />
+        <jhi-dashboard-timeline [tasks]="recentTasks()" />
       </div>
     </div>
   `,
@@ -71,16 +109,18 @@ import { DashboardQuickActionsComponent } from './quick-actions.component';
         background: var(--color-danger);
         color: white;
         padding: var(--stack-md);
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-sm);
-        border: 3px solid var(--color-outline);
+        border: 1px solid var(--color-outline);
+        border-radius: var(--radius-md);
       }
       .loading-banner {
         background: var(--color-surface-container-high);
         padding: var(--stack-md);
-        font-family: var(--font-mono);
+        font-family: var(--font-inter);
         font-size: var(--text-sm);
-        border: 3px solid var(--color-primary);
+        border: 1px solid var(--color-primary);
+        border-radius: var(--radius-md);
         animation: pulse 1.5s ease-in-out infinite;
       }
       @keyframes pulse {
@@ -92,63 +132,98 @@ import { DashboardQuickActionsComponent } from './quick-actions.component';
           opacity: 0.5;
         }
       }
+      .time-tracking-section {
+        display: flex;
+        flex-direction: column;
+        gap: var(--stack-md);
+      }
+      .time-tracking-section h4 {
+        font-family: var(--font-inter);
+        font-size: var(--text-lg);
+        font-weight: 600;
+        color: var(--color-text);
+        margin: 0;
+      }
+      .time-tracking-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--stack-md);
+      }
+      .time-tracking-card {
+        border: 1px solid var(--color-outline-variant);
+        border-radius: var(--radius-lg);
+        padding: var(--stack-md);
+        background: var(--color-surface-container);
+      }
+      .time-tracking-card h5 {
+        font-family: var(--font-inter);
+        font-size: var(--text-sm);
+        font-weight: 600;
+        color: var(--color-text-muted);
+        margin: 0 0 var(--stack-sm) 0;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .time-tracking-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px solid var(--color-outline-variant);
+      }
+      .time-tracking-row:last-child {
+        border-bottom: none;
+      }
+      .user-name,
+      .project-name {
+        font-family: var(--font-inter);
+        font-size: var(--text-sm);
+        color: var(--color-text);
+      }
+      .time-value {
+        font-family: var(--font-jetbrains);
+        font-size: var(--text-sm);
+        font-weight: 500;
+        color: var(--color-primary);
+      }
     `,
   ],
 })
 export class DashboardComponent {
-  readonly projects = computed<any[]>(() => this.projectsResource.value() ?? []);
-  readonly issues = computed<any[]>(() => this.issuesResource.value() ?? []);
-  readonly totalProjects = computed(() => this.projects().length);
-  readonly activeProjects = computed(() => {
-    const active = new Set<number>();
-    for (const issue of this.issues()) {
-      if (issue.status === 'IN_PROGRESS' && issue.project?.id) {
-        active.add(issue.project.id);
-      }
-    }
-    return active.size;
-  });
-  readonly totalTasks = computed(() => this.issues().length);
-  readonly completedTasks = computed(() => this.doneCountResource.value() ?? 0);
-  readonly overdueTasks = computed(() => this.issues().filter(i => i.status !== 'DONE' && i.status !== 'CANCELLED').length);
-  readonly teamMembers = computed(() => this.memberCountResource.value() ?? 0);
-  readonly loading = computed(
-    () =>
-      this.projectsResource.isLoading() ||
-      this.issuesResource.isLoading() ||
-      this.doneCountResource.isLoading() ||
-      this.memberCountResource.isLoading(),
-  );
-  readonly error = computed(
-    () =>
-      this.projectsResource.error() ?? this.issuesResource.error() ?? this.doneCountResource.error() ?? this.memberCountResource.error(),
-  );
-  readonly recentProjects = computed(() =>
-    [...this.projects()].sort((a, b) => (b.createdAt ?? '').localeCompare(a.createdAt ?? '')).slice(0, 5),
-  );
-  readonly recentTasks = computed(() => {
-    const sorted = [...this.issues()].sort((a, b) => {
-      const da = b.updatedAt ?? b.createdAt ?? '';
-      const db = a.updatedAt ?? a.createdAt ?? '';
-      return da.localeCompare(db);
-    });
-    return sorted.slice(0, 8);
-  });
+  readonly totalProjects = computed(() => this.kpisResource.value()?.totalProjects ?? 0);
+  readonly activeProjects = computed(() => this.kpisResource.value()?.activeProjects ?? 0);
+  readonly totalTasks = computed(() => this.kpisResource.value()?.totalTasks ?? 0);
+  readonly completedTasks = computed(() => this.kpisResource.value()?.completedTasks ?? 0);
+  readonly overdueTasks = computed(() => this.kpisResource.value()?.overdueTasks ?? 0);
+  readonly teamMembers = computed(() => this.kpisResource.value()?.teamMembers ?? 0);
+  readonly totalTimeSpent = computed(() => this.kpisResource.value()?.totalTimeSpentSeconds ?? 0);
+  readonly timeSpentByUser = computed(() => this.kpisResource.value()?.timeSpentByUser ?? []);
+  readonly timeSpentByProject = computed(() => this.kpisResource.value()?.timeSpentByProject ?? []);
+  readonly taskDistribution = computed(() => this.kpisResource.value()?.taskDistribution ?? []);
+  readonly projectProgress = computed(() => this.kpisResource.value()?.projectProgress ?? []);
+  readonly recentProjects = computed<any[]>(() => this.projectsResource.value() ?? []);
+  readonly recentTasks = computed<any[]>(() => this.tasksResource.value() ?? []);
+  readonly loading = computed(() => this.kpisResource.isLoading() || this.projectsResource.isLoading() || this.tasksResource.isLoading());
+  readonly error = computed(() => this.kpisResource.error() ?? this.projectsResource.error() ?? this.tasksResource.error());
 
   private readonly applicationConfigService = inject(ApplicationConfigService);
+  private readonly kpisResource = httpResource<DashboardKpis>(() => ({
+    url: this.applicationConfigService.getEndpointFor('api/dashboard/kpis'),
+  }));
   private readonly projectsResource = httpResource<any[]>(() => ({
     url: this.applicationConfigService.getEndpointFor('api/projects'),
-    params: new HttpParams().set('page', '0').set('size', '500'),
+    params: new HttpParams().set('page', '0').set('size', '5').set('sort', 'createdAt,desc'),
   }));
-  private readonly issuesResource = httpResource<any[]>(() => ({
-    url: this.applicationConfigService.getEndpointFor('api/issues'),
-    params: new HttpParams().set('page', '0').set('size', '500'),
+  private readonly tasksResource = httpResource<any[]>(() => ({
+    url: this.applicationConfigService.getEndpointFor('api/tasks'),
+    params: new HttpParams().set('page', '0').set('size', '10').set('sort', 'updatedAt,desc'),
   }));
-  private readonly doneCountResource = httpResource<number>(() => ({
-    url: this.applicationConfigService.getEndpointFor('api/issues/count'),
-    params: new HttpParams().set('status.equals', 'DONE'),
-  }));
-  private readonly memberCountResource = httpResource<number>(() => ({
-    url: this.applicationConfigService.getEndpointFor('api/projects/members/count'),
-  }));
+
+  formatTime(seconds: number): string {
+    if (seconds < 60) return `${seconds}s`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return `${h}h ${m}m`;
+  }
 }

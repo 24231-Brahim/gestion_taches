@@ -7,8 +7,11 @@
         "createLabel": "Créer un nouveau Epic",
         "createOrEditLabel": "Créer ou éditer un Epic",
         "notFound": "Aucun Epic trouvé",
+        "tableLabel": "Epics",
         "roadmap": "Roadmap Epic",
-        "details": "Détails Epic"
+        "details": "Détails Epic",
+        "roadmapStart": "Début",
+        "roadmapEnd": "Fin"
       },
       "created": "Un nouveau Epic a été créé avec l'identifiant {{ param }}",
       "updated": "Le Epic avec l'identifiant {{ param }} a été mis à jour",
@@ -20,15 +23,60 @@
         "title": "Epic"
       },
       "id": "ID",
-      "title": "Title",
+      "title": "Titre",
       "description": "Description",
-      "status": "Status",
-      "priority": "Priority",
+      "status": "Statut",
+      "priority": "Priorité",
       "createdAt": "Créé le",
       "updatedAt": "Mis à jour le",
       "startDate": "Date de début",
       "endDate": "Date de fin",
-      "project": "Projet"
+      "project": "Projet",
+      "detail": {
+        "progress": "Progression",
+        "totalTasks": "Total",
+        "doneTasks": "Terminées",
+        "inProgressTasks": "En cours",
+        "todoTasks": "À faire",
+        "sprints": "Sprints",
+        "team": "Équipe",
+        "noTasks": "Aucune tâche pour cet epic",
+        "taskTable": {
+          "title": "Titre",
+          "status": "Statut",
+          "priority": "Priorité",
+          "assignee": "Assigné",
+          "sprint": "Sprint"
+        }
+      },
+      "tab": {
+        "tasks": "Tâches",
+        "kanban": "Kanban",
+        "burndown": "Burndown",
+        "timeline": "Timeline"
+      },
+      "burndown": {
+        "total": "Total Tâches",
+        "done": "Fait",
+        "remaining": "Restant",
+        "time": "Temps",
+        "tasks": "Tâches"
+      },
+      "validation": {
+        "endDateAfterStartDate": "La date de fin doit être postérieure à la date de début."
+      },
+      "filter": {
+        "allStatuses": "Tous les statuts",
+        "allPriorities": "Toutes les priorités",
+        "allProjects": "Tous les projets",
+        "defaultSort": "Tri par défaut",
+        "sortPriorityAsc": "Priorité ↑",
+        "sortPriorityDesc": "Priorité ↓",
+        "sortDateAsc": "Date ↑",
+        "sortDateDesc": "Date ↓",
+        "sortStatusAsc": "Statut ↑",
+        "sortStatusDesc": "Statut ↓"
+      }
     }
   }
 }

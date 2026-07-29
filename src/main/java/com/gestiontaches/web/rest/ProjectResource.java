@@ -82,7 +82,15 @@ public class ProjectResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.USER +
+            "')"
+    )
     public ResponseEntity<ProjectDTO> updateProject(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody ProjectDTO projectDTO
@@ -117,7 +125,15 @@ public class ProjectResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.USER +
+            "')"
+    )
     public ResponseEntity<ProjectDTO> partialUpdateProject(
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody ProjectDTO projectDTO
@@ -169,6 +185,19 @@ public class ProjectResource {
     }
 
     /**
+     * {@code GET  /projects/my-roles} : get the current user's memberships across all projects.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the set of ProjectMemberDTO in body.
+     */
+    @GetMapping("/my-roles")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Set<ProjectMemberDTO>> getCurrentUserMemberships() {
+        LOG.debug("REST request to get current user memberships");
+        Set<ProjectMemberDTO> memberships = projectService.getCurrentUserMemberships();
+        return ResponseEntity.ok(memberships);
+    }
+
+    /**
      * {@code GET  /projects/:id} : get the "id" project.
      *
      * @param id the id of the projectDTO to retrieve.
@@ -201,7 +230,15 @@ public class ProjectResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.USER +
+            "')"
+    )
     public ResponseEntity<Void> deleteProject(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Project : {}", id);
         projectService.delete(id);
@@ -217,7 +254,15 @@ public class ProjectResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of members in body.
      */
     @GetMapping("/{id}/members")
-    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.USER +
+            "')"
+    )
     public ResponseEntity<Set<ProjectMemberDTO>> getProjectMembers(@PathVariable("id") Long id) {
         LOG.debug("REST request to get members of Project : {}", id);
         Set<ProjectMemberDTO> members = projectService.getMembers(id);
@@ -232,7 +277,15 @@ public class ProjectResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)}.
      */
     @PostMapping("/{id}/members/{userId}")
-    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.USER +
+            "')"
+    )
     public ResponseEntity<Void> addProjectMember(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         LOG.debug("REST request to add user {} to Project {}", userId, id);
         projectService.addMember(id, userId);
@@ -249,7 +302,15 @@ public class ProjectResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}/members/{userId}")
-    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.USER +
+            "')"
+    )
     public ResponseEntity<Void> removeProjectMember(@PathVariable("id") Long id, @PathVariable("userId") Long userId) {
         LOG.debug("REST request to remove user {} from Project {}", userId, id);
         projectService.removeMember(id, userId);
@@ -267,7 +328,15 @@ public class ProjectResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)}.
      */
     @PatchMapping("/{id}/members/{userId}")
-    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.USER +
+            "')"
+    )
     public ResponseEntity<Void> updateProjectMemberRole(
         @PathVariable("id") Long id,
         @PathVariable("userId") Long userId,

@@ -37,7 +37,7 @@ type ActionHistoryFormGroupContent = {
   oldValue: FormControl<ActionHistoryFormRawValue['oldValue']>;
   newValue: FormControl<ActionHistoryFormRawValue['newValue']>;
   createdAt: FormControl<ActionHistoryFormRawValue['createdAt']>;
-  issue: FormControl<ActionHistoryFormRawValue['issue']>;
+  task: FormControl<ActionHistoryFormRawValue['task']>;
 };
 
 export type ActionHistoryFormGroup = FormGroup<ActionHistoryFormGroupContent>;
@@ -72,7 +72,7 @@ export class ActionHistoryFormService {
       createdAt: new FormControl(actionHistoryRawValue.createdAt, {
         validators: [Validators.required],
       }),
-      issue: new FormControl(actionHistoryRawValue.issue, {
+      task: new FormControl(actionHistoryRawValue.task, {
         validators: [Validators.required],
       }),
     });

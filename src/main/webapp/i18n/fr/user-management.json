@@ -4,7 +4,14 @@
       "title": "Utilisateurs",
       "refreshListLabel": "Actualiser la liste",
       "createLabel": "Créer un nouvel utilisateur",
-      "createOrEditLabel": "Créer ou éditer un utilisateur"
+      "createOrEditLabel": "Créer ou éditer un utilisateur",
+      "notFound": "Aucun utilisateur trouvé",
+      "stats": {
+        "total": "Total",
+        "admins": "Administrateurs",
+        "managers": "Gestionnaires",
+        "developers": "Développeurs"
+      }
     },
     "created": "L'utilisateur {{ param }} a été créé.",
     "updated": "L'utilisateur {{ param }} a été mis à jour.",
@@ -15,10 +22,34 @@
     "detail": {
       "title": "Utilisateur"
     },
+    "adminDetail": {
+      "title": "Détail utilisateur",
+      "shortLabel": "Détail admin",
+      "loading": "Chargement...",
+      "loadError": "Erreur lors du chargement des détails",
+      "userInfo": "Informations utilisateur",
+      "status": "Statut",
+      "tasks": "Tâches assignées",
+      "taskKey": "Clé",
+      "taskTitle": "Titre",
+      "taskStatus": "Statut",
+      "taskPriority": "Priorité",
+      "taskProject": "Projet",
+      "taskSprint": "Sprint",
+      "taskEpic": "Epic",
+      "noTasks": "Aucune tâche assignée",
+      "projects": "Projets",
+      "joinedAt": "Rejoint le",
+      "noProjects": "Aucun projet",
+      "activity": "Activité récente",
+      "noActivity": "Aucune activité récente"
+    },
+    "id": "ID",
     "login": "Login",
     "firstName": "Prénom",
     "lastName": "Nom",
     "email": "Email",
+    "imageUrl": "Image",
     "activated": "Activé",
     "deactivated": "Désactivé",
     "profiles": "Droits",
@@ -26,6 +57,22 @@
     "createdBy": "Créé par",
     "createdDate": "Créé le",
     "lastModifiedBy": "Modifié par",
-    "lastModifiedDate": "Modifié le"
+    "lastModifiedDate": "Modifié le",
+    "adminTasks": {
+      "title": "Toutes les tâches",
+      "refresh": "Actualiser",
+      "noTasks": "Aucune tâche trouvée",
+      "id": "ID",
+      "taskTitle": "Titre",
+      "project": "Projet",
+      "status": "Statut",
+      "priority": "Priorité",
+      "assignee": "Assigné à",
+      "createdAt": "Créé le",
+      "searchPlaceholder": "Rechercher par titre de tâche...",
+      "allStatuses": "Tous les statuts",
+      "allPriorities": "Toutes les priorités",
+      "resetFilters": "Réinitialiser"
+    }
   }
 }

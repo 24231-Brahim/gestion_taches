@@ -26,11 +26,18 @@
       "totalTasks": "Total Tasks",
       "completedTasks": "Completed",
       "overdueTasks": "Overdue Tasks",
-      "teamMembers": "Team Members"
+      "teamMembers": "Team Members",
+      "totalTimeSpent": "Total Time Spent"
+    },
+    "timeTracking": {
+      "title": "TIME TRACKING",
+      "byUser": "By User",
+      "byProject": "By Project"
     },
     "charts": {
       "projectProgress": "PROJECT PROGRESS",
-      "taskDistribution": "TASK DISTRIBUTION"
+      "taskDistribution": "TASK DISTRIBUTION",
+      "total": "TOTAL"
     },
     "lists": {
       "recentProjects": "RECENT PROJECTS",
@@ -42,9 +49,9 @@
     "quickActions": {
       "title": "QUICK ACTIONS",
       "newProject": "New Project",
-      "newIssue": "New Issue",
       "viewProjects": "View Projects",
-      "viewIssues": "View Issues"
+      "newTask": "New Task",
+      "viewTasks": "View Tasks"
     }
   }
 }

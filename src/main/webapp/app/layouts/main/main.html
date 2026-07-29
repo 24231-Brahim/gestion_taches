@@ -1,15 +1,39 @@
-<jhi-page-ribbon />
+<!-- <jhi-page-ribbon /> -->
 
 <div class="app-shell">
-  <router-outlet name="navbar" />
+  @if (!appReady()) {
+    <div class="app-loading d-flex align-items-center justify-content-center" style="height: 100vh">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden" jhiTranslate="global.loading">Loading...</span>
+      </div>
+    </div>
+  } @else {
+    @if (!isErrorPage()) {
+      @if (account() !== null) {
+        <router-outlet name="navbar" />
+      }
+    }
 
-  <div class="app-body">
-    <jhi-sidebar />
+    <div class="app-body" [class.app-body-no-nav]="account() === null" [class.app-body-error]="isErrorPage()">
+      @if (!isErrorPage()) {
+        @if (account() !== null) {
+          <jhi-sidebar />
+        }
+      }
 
-    <main class="app-content">
-      <router-outlet />
-    </main>
-  </div>
+      <main class="app-content" [class.app-content-full]="account() === null || isErrorPage()">
+        @if (!isErrorPage()) {
+          <jhi-breadcrumb />
+        }
+        <router-outlet />
+      </main>
+    </div>
 
-  <jhi-bottom-nav />
+    @if (!isErrorPage()) {
+      @if (account() !== null) {
+        <jhi-bottom-nav />
+        <jhi-search-dialog />
+      }
+    }
+  }
 </div>

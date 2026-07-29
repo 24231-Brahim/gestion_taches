@@ -17,11 +17,10 @@ public class CommentDTO implements Serializable {
     @Size(min = 1, max = 2000)
     private String content;
 
-    @NotNull
     private Instant createdAt;
 
     @NotNull
-    private IssueDTO issue;
+    private TaskDTO task;
 
     private UserDTO author;
 
@@ -49,12 +48,12 @@ public class CommentDTO implements Serializable {
         this.createdAt = createdAt;
     }
 
-    public IssueDTO getIssue() {
-        return issue;
+    public TaskDTO getTask() {
+        return task;
     }
 
-    public void setIssue(IssueDTO issue) {
-        this.issue = issue;
+    public void setTask(TaskDTO task) {
+        this.task = task;
     }
 
     public UserDTO getAuthor() {
@@ -93,7 +92,7 @@ public class CommentDTO implements Serializable {
             "id=" + getId() +
             ", content='" + getContent() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
-            ", issue=" + getIssue() +
+            ", task=" + getTask() +
             "}";
     }
 }

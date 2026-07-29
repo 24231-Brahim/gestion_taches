@@ -1,16 +1,17 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subscription, combineLatest, filter, tap } from 'rxjs';
+import { Subscription, combineLatest, tap } from 'rxjs';
 
-import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
+import { AccountService } from 'app/core/auth/account.service';
+import { CsvDownloadService } from 'app/shared/csv/csv-download.service';
+import { DEFAULT_SORT_DATA, ITEM_SAVED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
@@ -18,8 +19,8 @@ import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
-import { ProjectDeleteDialog } from '../delete/project-delete-dialog';
 import { IProject } from '../project.model';
+import { ProjectFormModal } from '../update/project-form-modal';
 import { ProjectService } from '../service/project.service';
 
 @Component({
@@ -37,9 +38,6 @@ import { ProjectService } from '../service/project.service';
     TranslateDirective,
     TranslateModule,
     FormatMediumDatetimePipe,
-    NgbDropdown,
-    NgbDropdownMenu,
-    NgbDropdownToggle,
     NgbPagination,
     ItemCount,
   ],
@@ -55,12 +53,19 @@ export class Project implements OnInit {
   readonly page = signal(1);
   readonly error = signal<string | null>(null);
 
+  private readonly csvDownloadService = inject(CsvDownloadService);
   readonly router = inject(Router);
   readonly projectService = inject(ProjectService);
   readonly isLoading = this.projectService.projectsResource.isLoading;
   readonly activatedRoute = inject(ActivatedRoute);
   readonly sortService = inject(SortService);
-  readonly modalService = inject(NgbModal);
+  private readonly accountService = inject(AccountService);
+  protected modalService = inject(NgbModal);
+
+  readonly isAdmin = computed(() => {
+    const account = this.accountService.account();
+    return !!account?.authorities?.includes('ROLE_ADMIN');
+  });
 
   constructor() {
     effect(() => {
@@ -74,11 +79,15 @@ export class Project implements OnInit {
     });
     effect(() => {
       const err = this.projectService.projectsResource.error();
-      this.error.set(err ? 'Erreur lors du chargement des projets' : null);
+      this.error.set(err ? 'error.projects.loadFailed' : null);
     });
   }
 
   trackId = (item: IProject): number => this.projectService.getProjectIdentifier(item);
+
+  exportCsv(): void {
+    this.csvDownloadService.download('api/export/csv/projects', 'projects.csv');
+  }
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
@@ -89,20 +98,23 @@ export class Project implements OnInit {
       .subscribe();
   }
 
-  delete(project: IProject): void {
-    const modalRef = this.modalService.open(ProjectDeleteDialog, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.project = project;
-    // unsubscribe not needed because closed completes on modal close
-    modalRef.closed
-      .pipe(
-        filter(reason => reason === ITEM_DELETED_EVENT),
-        tap(() => this.load()),
-      )
-      .subscribe();
-  }
-
   load(): void {
     this.queryBackend();
+    this.projectService.refresh();
+  }
+
+  openCreateProjectModal(): void {
+    const modalRef = this.modalService.open(ProjectFormModal, { size: 'lg', backdrop: 'static' });
+    modalRef.closed
+      .pipe(
+        tap(reason => {
+          if (reason === ITEM_SAVED_EVENT) {
+            this.projectService.refresh();
+            this.load();
+          }
+        }),
+      )
+      .subscribe();
   }
 
   navigateToWithComponentValues(event: SortState): void {

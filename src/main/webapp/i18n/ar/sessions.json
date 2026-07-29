@@ -1,0 +1,15 @@
+{
+  "sessions": {
+    "title": "الجلسات النشطة لـ [<strong>{{username}}</strong>]",
+    "table": {
+      "ipaddress": "عنوان IP",
+      "useragent": "وكيل المستخدم",
+      "date": "التاريخ",
+      "button": "إلغاء الصلاحية"
+    },
+    "messages": {
+      "success": "<strong>تم إلغاء الجلسة!</strong>",
+      "error": "<strong>حدث خطأ!</strong> تعذر إلغاء الجلسة."
+    }
+  }
+}

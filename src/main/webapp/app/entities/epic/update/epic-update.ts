@@ -1,10 +1,11 @@
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, finalize, map } from 'rxjs';
 
 import { EpicStatus } from 'app/entities/enumerations/epic-status.model';
@@ -27,6 +28,7 @@ import { EpicFormGroup, EpicFormService } from './epic-form.service';
 })
 export class EpicUpdate implements OnInit {
   readonly isSaving = signal(false);
+  readonly isProjectContext = signal(false);
   epic: IEpic | null = null;
   epicStatusValues = Object.keys(EpicStatus);
   priorityValues = Object.keys(Priority);
@@ -39,6 +41,7 @@ export class EpicUpdate implements OnInit {
   protected activatedRoute = inject(ActivatedRoute);
   protected alertService = inject(AlertService);
   protected translateService = inject(TranslateService);
+  protected destroyRef = inject(DestroyRef);
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: EpicFormGroup = this.epicFormService.createEpicFormGroup();
@@ -53,6 +56,18 @@ export class EpicUpdate implements OnInit {
       }
 
       this.loadRelationshipsOptions();
+    });
+
+    this.activatedRoute.parent?.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+      const projectKey = params.get('key');
+      if (projectKey && !this.epic) {
+        this.projectService.findByKey(projectKey).subscribe(project => {
+          if (project) {
+            this.editForm.patchValue({ project });
+            this.isProjectContext.set(true);
+          }
+        });
+      }
     });
   }
 
@@ -78,6 +93,7 @@ export class EpicUpdate implements OnInit {
   }
 
   protected onSaveSuccess(): void {
+    this.epicService.refresh();
     this.previousState();
   }
 

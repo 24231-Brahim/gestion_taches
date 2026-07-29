@@ -1,10 +1,16 @@
 {
   "configuration": {
     "title": "Configuration",
+    "readonly": "Read-only configuration. To modify, edit the application.yml files.",
     "filter": "Filter (by prefix)",
+    "spring": {
+      "title": "Spring configuration"
+    },
     "table": {
       "prefix": "Prefix",
-      "properties": "Properties"
+      "properties": "Properties",
+      "property": "Property",
+      "value": "Value"
     }
   }
 }

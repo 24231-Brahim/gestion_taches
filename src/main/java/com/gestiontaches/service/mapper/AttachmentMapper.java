@@ -1,9 +1,9 @@
 package com.gestiontaches.service.mapper;
 
 import com.gestiontaches.domain.Attachment;
-import com.gestiontaches.domain.Issue;
+import com.gestiontaches.domain.Task;
 import com.gestiontaches.service.dto.AttachmentDTO;
-import com.gestiontaches.service.dto.IssueDTO;
+import com.gestiontaches.service.dto.TaskDTO;
 import org.mapstruct.*;
 
 /**
@@ -11,11 +11,11 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface AttachmentMapper extends EntityMapper<AttachmentDTO, Attachment> {
-    @Mapping(target = "issue", source = "issue", qualifiedByName = "issueId")
+    @Mapping(target = "task", source = "task", qualifiedByName = "taskId")
     AttachmentDTO toDto(Attachment s);
 
-    @Named("issueId")
+    @Named("taskId")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
-    IssueDTO toDtoIssueId(Issue issue);
+    TaskDTO toDtoTaskId(Task task);
 }

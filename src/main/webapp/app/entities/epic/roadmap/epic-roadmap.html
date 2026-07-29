@@ -6,11 +6,19 @@
     </h2>
     <div class="d-flex gap-2 align-items-center">
       <button class="btn btn-info btn-sm" (click)="load()" [disabled]="isLoading()">
-        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+        <fa-icon icon="arrows-rotate" [animation]="isLoading() ? 'spin' : undefined" />
         <span jhiTranslate="gestionTachesApp.epic.home.refreshListLabel"></span>
       </button>
-      <a id="jh-create-entity" data-cy="entityCreateButton" class="btn btn-primary btn-sm" [routerLink]="['/epic/new']">
+      <a
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary btn-sm"
+        [routerLink]="['/project', currentProjectKey(), 'epic', 'new']"
+      >
         <fa-icon icon="plus" /><span jhiTranslate="gestionTachesApp.epic.home.createLabel"></span>
+      </a>
+      <a class="btn btn-outline-primary btn-sm" [routerLink]="['/project', currentProjectKey(), 'epic', 'table']">
+        <fa-icon icon="table" /><span class="ms-1" jhiTranslate="gestionTachesApp.epic.home.tableLabel"></span>
       </a>
     </div>
   </div>
@@ -19,13 +27,31 @@
   <jhi-alert />
 
   <div class="roadmap-toolbar">
-    <div class="d-flex gap-2">
+    <div class="roadmap-filters">
       <select class="form-control form-control-sm" [ngModel]="filterStatus()" (ngModelChange)="filterStatus.set($event)">
-        <option value="">All Statuses</option>
+        <option value="">{{ 'gestionTachesApp.epic.filter.allStatuses' | translate }}</option>
         <option value="TODO">{{ 'gestionTachesApp.EpicStatus.TODO' | translate }}</option>
         <option value="IN_PROGRESS">{{ 'gestionTachesApp.EpicStatus.IN_PROGRESS' | translate }}</option>
         <option value="DONE">{{ 'gestionTachesApp.EpicStatus.DONE' | translate }}</option>
         <option value="CANCELLED">{{ 'gestionTachesApp.EpicStatus.CANCELLED' | translate }}</option>
+      </select>
+      <select class="form-control form-control-sm" [ngModel]="filterPriority()" (ngModelChange)="filterPriority.set($event)">
+        <option value="">{{ 'gestionTachesApp.epic.filter.allPriorities' | translate }}</option>
+        <option value="LOWEST">{{ 'gestionTachesApp.Priority.LOWEST' | translate }}</option>
+        <option value="LOW">{{ 'gestionTachesApp.Priority.LOW' | translate }}</option>
+        <option value="MEDIUM">{{ 'gestionTachesApp.Priority.MEDIUM' | translate }}</option>
+        <option value="HIGH">{{ 'gestionTachesApp.Priority.HIGH' | translate }}</option>
+        <option value="HIGHEST">{{ 'gestionTachesApp.Priority.HIGHEST' | translate }}</option>
+      </select>
+
+      <select class="form-control form-control-sm" [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event)">
+        <option value="">{{ 'gestionTachesApp.epic.filter.defaultSort' | translate }}</option>
+        <option value="priority:asc">{{ 'gestionTachesApp.epic.filter.sortPriorityAsc' | translate }}</option>
+        <option value="priority:desc">{{ 'gestionTachesApp.epic.filter.sortPriorityDesc' | translate }}</option>
+        <option value="createdAt:asc">{{ 'gestionTachesApp.epic.filter.sortDateAsc' | translate }}</option>
+        <option value="createdAt:desc">{{ 'gestionTachesApp.epic.filter.sortDateDesc' | translate }}</option>
+        <option value="status:asc">{{ 'gestionTachesApp.epic.filter.sortStatusAsc' | translate }}</option>
+        <option value="status:desc">{{ 'gestionTachesApp.epic.filter.sortStatusDesc' | translate }}</option>
       </select>
     </div>
     <jhi-filter [filters]="filters" />
@@ -39,8 +65,8 @@
     <div class="roadmap-container">
       <div class="roadmap-timeline-header">
         <div class="roadmap-month-labels">
-          <span class="roadmap-label-start">Start</span>
-          <span class="roadmap-label-end">End</span>
+          <span class="roadmap-label-start" jhiTranslate="gestionTachesApp.epic.roadmapStart">Start</span>
+          <span class="roadmap-label-end" jhiTranslate="gestionTachesApp.epic.roadmapEnd">End</span>
         </div>
       </div>
 
@@ -48,7 +74,7 @@
         @for (epic of epicsWithProgress(); track trackId(epic)) {
           <div class="roadmap-epic-row">
             <div class="roadmap-epic-info">
-              <a [routerLink]="['/epic', epic.id, 'view']" class="roadmap-epic-title">{{ epic.title }}</a>
+              <a [routerLink]="['/project', currentProjectKey(), 'epic', epic.id, 'view']" class="roadmap-epic-title">{{ epic.title }}</a>
               <div class="roadmap-epic-meta">
                 <span class="status-dot" [style.background]="statusColors[epic.status ?? 'TODO']"></span>
                 <span>{{ 'gestionTachesApp.EpicStatus.' + (epic.status ?? 'null') | translate }}</span>
@@ -64,13 +90,13 @@
                   [style.border-radius]="epic.progress >= 100 ? '6px' : '6px 0 0 6px'"
                 >
                   <span class="roadmap-epic-bar-label">
-                    @if (epic.progress > 15) {
+                    @if (epic.progress > 20) {
                       {{ epic.progress }}%
                     }
                   </span>
                 </div>
               </div>
-              <span class="roadmap-pct">{{ epic.progress }}%</span>
+              <span class="roadmap-pct">{{ epic.doneIssues }}/{{ epic.totalIssues }} {{ epic.progress }}%</span>
             </div>
           </div>
         }

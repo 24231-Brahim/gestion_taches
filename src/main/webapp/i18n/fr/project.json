@@ -2,30 +2,35 @@
   "gestionTachesApp": {
     "project": {
       "home": {
-        "title": "Projects",
+        "title": "Projets",
         "refreshListLabel": "Actualiser la liste",
-        "createLabel": "Créer un nouveau Project",
-        "createOrEditLabel": "Créer ou éditer un Project",
-        "notFound": "Aucun Project trouvé"
+        "createLabel": "Créer un nouveau projet",
+        "createOrEditLabel": "Créer ou éditer un projet",
+        "notFound": "Aucun projet trouvé"
       },
-      "created": "Un nouveau Project a été créé avec l'identifiant {{ param }}",
-      "updated": "Le Project avec l'identifiant {{ param }} a été mis à jour",
-      "deleted": "Le Project avec l'identifiant {{ param }} a été supprimé",
+      "created": "Un nouveau projet a été créé avec l'identifiant {{ param }}",
+      "updated": "Le projet avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le projet avec l'identifiant {{ param }} a été supprimé",
       "delete": {
-        "question": "Êtes-vous certain de vouloir supprimer le Project {{ id }} ?"
+        "question": "Êtes-vous certain de vouloir supprimer le projet {{ id }} ?"
       },
       "detail": {
-        "title": "Project"
+        "title": "Projet"
       },
       "id": "ID",
-      "name": "Name",
+      "name": "Nom",
       "description": "Description",
-      "key": "Key",
-      "createdAt": "Created At",
+      "key": "Clé",
+      "createdAt": "Créé le",
       "sprints": "Sprints",
       "epics": "Epics",
-      "issues": "Issues",
+      "tasks": "Tâches",
       "members": "Membres",
+      "tab": {
+        "details": "Détails",
+        "members": "Membres",
+        "discussion": "Discussion"
+      },
       "member": {
         "add": "Ajouter un membre",
         "added": "Membre ajouté au projet",
@@ -33,9 +38,15 @@
         "updated": "Rôle du membre mis à jour",
         "userLogin": "Utilisateur",
         "role": "Rôle",
+        "role": {
+          "OWNER": "PROPRIÉTAIRE",
+          "MANAGER": "GESTIONNAIRE",
+          "MEMBER": "MEMBRE"
+        },
         "joinedAt": "Date d'ajout",
         "selectUser": "Sélectionner un utilisateur",
         "empty": "Aucun membre pour le moment",
+        "adminAccess": "Vous avez un accès administrateur complet à ce projet.",
         "error": {
           "add": "Erreur lors de l'ajout du membre",
           "remove": "Erreur lors du retrait du membre",

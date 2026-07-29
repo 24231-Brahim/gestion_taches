@@ -27,6 +27,10 @@ export class AuthoritiesService {
   readonly authorities = computed(() => (this.authoritiesResource.hasValue() ? this.authoritiesResource.value() : []));
   protected readonly applicationConfigService = inject(ApplicationConfigService);
   protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/authorities');
+
+  refresh(): void {
+    this.authoritiesResource.reload();
+  }
 }
 
 @Injectable({ providedIn: 'root' })
@@ -35,6 +39,10 @@ export class AuthorityService extends AuthoritiesService {
 
   create(authority: NewAuthority): Observable<IAuthority> {
     return this.http.post<IAuthority>(this.resourceUrl, authority);
+  }
+
+  update(authority: IAuthority): Observable<IAuthority> {
+    return this.http.put<IAuthority>(`${this.resourceUrl}/${encodeURIComponent(authority.name)}`, authority);
   }
 
   find(name: string): Observable<IAuthority> {

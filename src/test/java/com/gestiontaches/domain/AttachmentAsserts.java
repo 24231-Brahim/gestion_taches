@@ -61,6 +61,6 @@ public class AttachmentAsserts {
     public static void assertAttachmentUpdatableRelationshipsEquals(Attachment expected, Attachment actual) {
         assertThat(actual)
             .as("Verify Attachment relationships")
-            .satisfies(a -> assertThat(a.getIssue()).as("check issue").isEqualTo(expected.getIssue()));
+            .satisfies(a -> assertThat(a.getTask()).as("check task").isEqualTo(expected.getTask()));
     }
 }
