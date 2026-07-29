@@ -212,7 +212,7 @@
 
 - [ ] Persister l'état collapsed de la sidebar (localStorage)
 - [ ] Corriger les erreurs TS dans `sprint.spec.ts` pour permettre `ng test`
-- [ ] Ajouter une page de liste des notifications complète (avec route dédiée)
+- [x] Ajouter une page de liste des notifications complète (avec route dédiée) → `/notifications`
 - [ ] Tester le flux assignation + notification avec l'UI
 
 ### Règles métier — Ownership Comment

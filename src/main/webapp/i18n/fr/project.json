@@ -2,26 +2,26 @@
   "gestionTachesApp": {
     "project": {
       "home": {
-        "title": "Projects",
+        "title": "Projets",
         "refreshListLabel": "Actualiser la liste",
-        "createLabel": "Créer un nouveau Project",
-        "createOrEditLabel": "Créer ou éditer un Project",
-        "notFound": "Aucun Project trouvé"
+        "createLabel": "Créer un nouveau projet",
+        "createOrEditLabel": "Créer ou éditer un projet",
+        "notFound": "Aucun projet trouvé"
       },
-      "created": "Un nouveau Project a été créé avec l'identifiant {{ param }}",
-      "updated": "Le Project avec l'identifiant {{ param }} a été mis à jour",
-      "deleted": "Le Project avec l'identifiant {{ param }} a été supprimé",
+      "created": "Un nouveau projet a été créé avec l'identifiant {{ param }}",
+      "updated": "Le projet avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le projet avec l'identifiant {{ param }} a été supprimé",
       "delete": {
-        "question": "Êtes-vous certain de vouloir supprimer le Project {{ id }} ?"
+        "question": "Êtes-vous certain de vouloir supprimer le projet {{ id }} ?"
       },
       "detail": {
-        "title": "Project"
+        "title": "Projet"
       },
       "id": "ID",
-      "name": "Name",
+      "name": "Nom",
       "description": "Description",
-      "key": "Key",
-      "createdAt": "Created At",
+      "key": "Clé",
+      "createdAt": "Créé le",
       "sprints": "Sprints",
       "epics": "Epics",
       "tasks": "Tâches",

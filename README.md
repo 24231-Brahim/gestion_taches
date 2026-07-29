@@ -2,25 +2,27 @@
 
 Système de gestion de projet (type Jira) généré avec **JHipster 9.1.0**.
 
-| Technologie      | Choix                       |
-| ---------------- | --------------------------- |
-| Backend          | Spring Boot 4.0.6 (Java 17) |
-| Frontend         | Angular 21.2.14             |
-| Base de données  | PostgreSQL 16               |
-| Build            | Maven                       |
-| Authentification | JWT                         |
+| Technologie      | Choix                        |
+| ---------------- | ---------------------------- |
+| Backend          | Spring Boot 4.0.6 (Java 21)  |
+| Frontend         | Angular 21.2.14              |
+| Base de données  | PostgreSQL 16                |
+| Build            | Maven                        |
+| Authentification | JWT (OAuth2 Resource Server) |
 
 ### Entités
 
-| Entité          | Description                                               |
-| --------------- | --------------------------------------------------------- |
-| **Project**     | Projet racine contenant sprints, epics et tasks           |
-| **Sprint**      | Itération de développement                                |
-| **Epic**        | Fonctionnalité transverse                                 |
-| **Task**        | Unité de travail (Story, Bug, Task, Subtask, Improvement) |
-| **Comment**     | Commentaire sur une tâche                                 |
-| **Attachment**  | Fichier joint à une tâche                                 |
-| **TaskHistory** | Audit des modifications d'une tâche                       |
+| Entité            | Description                                               |
+| ----------------- | --------------------------------------------------------- |
+| **Project**       | Projet racine contenant sprints, epics et tasks           |
+| **Sprint**        | Itération de développement                                |
+| **Epic**          | Fonctionnalité transverse                                 |
+| **Task**          | Unité de travail (Story, Bug, Task, Subtask, Improvement) |
+| **Comment**       | Commentaire sur une tâche (avec auteur)                   |
+| **Attachment**    | Fichier joint à une tâche                                 |
+| **TaskHistory**   | Audit des modifications d'une tâche                       |
+| **Notification**  | Notification in-app (assignation, rappel)                 |
+| **ProjectMember** | Membre d'un projet avec rôle (OWNER/MANAGER/MEMBER)       |
 
 Documentation et aide : [https://www.jhipster.tech/documentation-archive/v9.1.0](https://www.jhipster.tech/documentation-archive/v9.1.0).
 

@@ -5,7 +5,13 @@
       "refreshListLabel": "Refresh list",
       "createLabel": "Create a new user",
       "createOrEditLabel": "Create or edit a user",
-      "notFound": "No user found"
+      "notFound": "No user found",
+      "stats": {
+        "total": "Total",
+        "admins": "Admins",
+        "managers": "Managers",
+        "developers": "Developers"
+      }
     },
     "created": "A new user is created with identifier {{ param }}",
     "updated": "A user is updated with identifier {{ param }}",
@@ -51,6 +57,18 @@
     "createdBy": "Created by",
     "createdDate": "Created date",
     "lastModifiedBy": "Modified by",
-    "lastModifiedDate": "Modified date"
+    "lastModifiedDate": "Modified date",
+    "adminTasks": {
+      "title": "All Tasks",
+      "refresh": "Refresh",
+      "noTasks": "No tasks found",
+      "id": "ID",
+      "taskTitle": "Title",
+      "project": "Project",
+      "status": "Status",
+      "priority": "Priority",
+      "assignee": "Assignee",
+      "createdAt": "Created Date"
+    }
   }
 }

@@ -12,6 +12,7 @@ import { UserManagementService, IUserAdminDetail } from '../service/user-managem
   selector: 'jhi-user-admin-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './user-admin-detail.html',
+  styleUrl: './user-admin-detail.scss',
   imports: [RouterLink, FontAwesomeModule, TranslateDirective, TranslateModule, DatePipe, NgClass, UpperCasePipe],
 })
 export class UserAdminDetail implements OnInit {

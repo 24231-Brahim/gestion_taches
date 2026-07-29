@@ -13,6 +13,12 @@
 
     <div class="topbar-end">
       @if (account() !== null) {
+        <button class="topbar-search-trigger" (click)="openSearch()" [attr.aria-label]="'global.menu.search.placeholder' | translate">
+          <fa-icon icon="search" />
+          <span class="search-label" jhiTranslate="global.menu.search.placeholder">Rechercher</span>
+          <kbd class="search-shortcut">⌘K</kbd>
+        </button>
+
         <div ngbDropdown class="topbar-dropdown" display="dynamic" data-cy="notificationMenu">
           <a class="topbar-icon-btn position-relative" ngbDropdownToggle href="javascript:void(0);" id="notification-menu">
             <fa-icon icon="bell" />

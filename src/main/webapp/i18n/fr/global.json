@@ -11,14 +11,14 @@
       "entities": {
         "main": "Entités",
         "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)",
-        "adminAuthority": "Authority",
-        "project": "Project",
-        "sprint": "Sprint",
-        "epic": "Epic",
-        "task": "Tasks",
-        "comment": "Comment",
-        "attachment": "Attachment",
-        "actionHistory": "Action History"
+        "adminAuthority": "Autorité",
+        "project": "Projets",
+        "sprint": "Sprints",
+        "epic": "Epics",
+        "task": "Tâches",
+        "comment": "Commentaires",
+        "attachment": "Pièces jointes",
+        "actionHistory": "Historique des actions"
       },
       "account": {
         "main": "Compte",

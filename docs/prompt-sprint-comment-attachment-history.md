@@ -32,4 +32,3 @@
 ## 🔜 Restant
 - Tests unitaires Vitest pour les nouveaux composants
 - Tests d'intégration JUnit pour les nouveaux endpoints
-- Mise à jour du TODO.md / NOTE.md

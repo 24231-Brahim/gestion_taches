@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, DOCUMENT, OnInit, Renderer2, RendererFactory2, inject, signal } from '@angular/core';
-import { Router, RouterOutlet } from '@angular/router';
+import { Event, NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 import { LangChangeEvent, TranslateService } from '@ngx-translate/core';
 import dayjs from 'dayjs/esm';
@@ -37,7 +38,20 @@ export default class Main implements OnInit {
     this.renderer = this.rootRenderer.createRenderer(this.htmlElement, null);
   }
 
+  readonly isErrorPage = signal(false);
+
+  private readonly errorRoutes = ['/404', '/error', '/accessdenied'];
+
+  private checkIfErrorPage(): void {
+    this.isErrorPage.set(this.errorRoutes.includes(this.router.url));
+  }
+
   ngOnInit(): void {
+    this.router.events.pipe(filter((event: Event): event is NavigationEnd => event instanceof NavigationEnd)).subscribe(() => {
+      this.checkIfErrorPage();
+    });
+    this.checkIfErrorPage();
+
     this.accountService.identity().subscribe({
       next: () => this.appReady.set(true),
       error: () => this.appReady.set(true),

@@ -1,11 +1,11 @@
 <div>
   <h2 id="page-heading" class="page-heading" data-cy="AdminTasksHeading">
-    <span>Toutes les tâches</span>
+    <span jhiTranslate="userManagement.adminTasks.title">Toutes les tâches</span>
 
     <div class="d-flex justify-content-end">
       <button class="btn btn-info me-2" (click)="loadAll()" [disabled]="isLoading()">
         <fa-icon icon="arrows-rotate" [animation]="isLoading() ? 'spin' : undefined" />
-        <span>Actualiser</span>
+        <span jhiTranslate="userManagement.adminTasks.refresh">Actualiser</span>
       </button>
     </div>
   </h2>
@@ -14,19 +14,19 @@
   <jhi-alert />
 
   @if (tasks().length === 0 && !isLoading()) {
-    <div class="alert alert-warning">Aucune tâche trouvée</div>
+    <div class="alert alert-warning" jhiTranslate="userManagement.adminTasks.noTasks">Aucune tâche trouvée</div>
   } @else {
     <div class="table-responsive">
       <table class="table" aria-describedby="admin-tasks-heading">
         <thead>
           <tr>
-            <th scope="col">ID</th>
-            <th scope="col">Titre</th>
-            <th scope="col">Projet</th>
-            <th scope="col">Statut</th>
-            <th scope="col">Priorité</th>
-            <th scope="col">Assigné à</th>
-            <th scope="col">Créé le</th>
+            <th scope="col" jhiTranslate="userManagement.adminTasks.id">ID</th>
+            <th scope="col" jhiTranslate="userManagement.adminTasks.taskTitle">Titre</th>
+            <th scope="col" jhiTranslate="userManagement.adminTasks.project">Projet</th>
+            <th scope="col" jhiTranslate="userManagement.adminTasks.status">Statut</th>
+            <th scope="col" jhiTranslate="userManagement.adminTasks.priority">Priorité</th>
+            <th scope="col" jhiTranslate="userManagement.adminTasks.assignee">Assigné à</th>
+            <th scope="col" jhiTranslate="userManagement.adminTasks.createdAt">Créé le</th>
           </tr>
         </thead>
         <tbody>
@@ -49,12 +49,12 @@
               </td>
               <td>
                 <span class="badge" [style.background-color]="getStatusColor(task.status)">
-                  {{ getStatusLabel(task.status) }}
+                  {{ 'gestionTachesApp.TaskStatus.' + task.status | translate }}
                 </span>
               </td>
               <td>
                 <span [style.color]="getPriorityColor(task.priority)">
-                  {{ getPriorityLabel(task.priority) }}
+                  {{ 'gestionTachesApp.Priority.' + task.priority | translate }}
                 </span>
               </td>
               <td>{{ task.assignee?.login ?? '—' }}</td>

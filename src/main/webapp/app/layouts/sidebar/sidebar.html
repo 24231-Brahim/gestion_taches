@@ -6,12 +6,6 @@
   </button>
 
   <nav class="sidebar-nav">
-    <button class="sidebar-item sidebar-search-trigger" (click)="openSearch()">
-      <fa-icon icon="search" [fixedWidth]="true" />
-      <span class="sidebar-label" jhiTranslate="global.menu.search.placeholder">Search</span>
-      <kbd class="sidebar-shortcut">⌘K</kbd>
-    </button>
-
     <a class="sidebar-item" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMobile()">
       <fa-icon icon="house" [fixedWidth]="true" />
       <span class="sidebar-label" jhiTranslate="global.menu.home">Accueil</span>
@@ -135,7 +129,7 @@
 
               <a class="sidebar-item sidebar-item-nested" routerLink="/admin/tasks" routerLinkActive="active" (click)="closeMobile()">
                 <fa-icon icon="list-check" [fixedWidth]="true" />
-                <span class="sidebar-label">Toutes les tâches</span>
+                <span class="sidebar-label" jhiTranslate="userManagement.adminTasks.title">Toutes les tâches</span>
               </a>
 
               <a class="sidebar-item sidebar-item-nested" routerLink="/admin/metrics" routerLinkActive="active" (click)="closeMobile()">

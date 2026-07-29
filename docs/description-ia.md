@@ -86,12 +86,20 @@ src/main/webapp/app/
 ### Task
 - Unité de travail atomique.
 - Champs : `id`, `title`, `description`, `status` (NEW/TODO/IN_PROGRESS/IN_REVIEW/DONE/CANCELLED), `priority` (LOWEST/LOW/MEDIUM/HIGH/HIGHEST)
-- Relations : `@ManyToOne Project` (obligatoire), `@ManyToOne Sprint` (optionnel), `@ManyToOne Epic` (optionnel)
+- Relations : `@ManyToOne Project` (obligatoire), `@ManyToOne Sprint` (optionnel), `@ManyToOne Epic` (optionnel),
+  `@ManyToOne User assignee`, `@ManyToOne User createdBy`
+
+### ProjectMember
+- Membre d'une équipe projet avec rôle.
+- Table `project_member` — remplace un `@ManyToMany` entre Project et User.
+- Champs : `id`, `role` (OWNER/MANAGER/MEMBER), `joinedAt`
+- Relations : `@ManyToOne Project`, `@ManyToOne User`
+- Contrainte d'unicité : `(project_id, user_id)`
 
 ### Comment
 - Commentaire texte attaché à une tâche.
 - Champs : `content`, `createdAt`
-- Relation : `@ManyToOne Task`
+- Relations : `@ManyToOne Task`, `@ManyToOne User author`
 
 ### Attachment
 - Fichier joint à une tâche.
@@ -104,9 +112,9 @@ src/main/webapp/app/
 - Relations : `@ManyToOne Task`, `@ManyToOne User`
 
 ### Notification
-- Notification utilisateur.
-- Champs : `id`, `message`, `read` (boolean), `createdAt`
-- Relations : `@ManyToOne Task`, `@ManyToOne User`
+- Notification in-app (assignation, rappel, nouveau user).
+- Champs : `id`, `message`, `taskTitle`, `isRead`, `createdAt`
+- Relations : `@ManyToOne Task`, `@ManyToOne User` (destinataire)
 
 ### User (géré par JHipster)
 - Entité gérée automatiquement par JHipster (table `jhi_user`).
@@ -152,7 +160,9 @@ Mapper (service/mapper/)  ───  DTO (service/dto/)
 | Comment (POST)                | ADMIN, PROJET_MANAGER, DEVELOPER, USER | Tous |
 | Comment (PUT/PATCH/DELETE)    | ADMIN, PROJET_MANAGER, DEVELOPER    | Tous |
 | Attachment, TaskHistory       | ADMIN, PROJET_MANAGER, DEVELOPER    | Tous |
-| UserResource                  | ADMIN uniquement                    | ADMIN |
+| Notification                  | Système uniquement                  | Authentifié (propre) |
+| ProjectMember                 | ADMIN, PROJET_MANAGER               | ADMIN, PROJET_MANAGER |
+| UserResource / Authority      | ADMIN uniquement                    | ADMIN |
 
 ### Authentification JWT
 - Token stocké dans `localStorage` côté Angular.

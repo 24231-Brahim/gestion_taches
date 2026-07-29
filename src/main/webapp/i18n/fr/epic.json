@@ -23,10 +23,10 @@
         "title": "Epic"
       },
       "id": "ID",
-      "title": "Title",
+      "title": "Titre",
       "description": "Description",
-      "status": "Status",
-      "priority": "Priority",
+      "status": "Statut",
+      "priority": "Priorité",
       "createdAt": "Créé le",
       "updatedAt": "Mis à jour le",
       "startDate": "Date de début",

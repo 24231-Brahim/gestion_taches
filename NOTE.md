@@ -383,7 +383,7 @@ Toutes les opérations de modification sur un projet (`delete`, `getMembers`, `a
 ### ❌ Non implémenté (reste à faire)
 
 - **Persistance sidebar** : l'état collapsed n'est pas sauvegardé dans `localStorage`
-- **Page notifications** : aucune page dédiée (seulement le dropdown dans la topbar)
+- **Tests** : Vitest unit tests pour nouveaux composants, JUnit IT pour nouveaux endpoints
 
 ### ✅ Réalisé (après la rédaction initiale)
 
@@ -399,6 +399,7 @@ Toutes les opérations de modification sur un projet (`delete`, `getMembers`, `a
 - **Sprint refactoring** : 3 onglets (Board/Planning/Burndown), `SprintActiveBoard` kanban drag-drop, `SprintBacklogPlanning`, `SprintBurndownChart` SVG.
 - **Comment/Attachment endpoints** : `GET /by-task/{taskId}` pour chaque entité, upload multipart files.
 - **Task drawer** : remplacement des placeholders par `TaskCommentList`, `TaskAttachmentList`, `TaskActivityFeed`.
+- **Page notifications dédiée** : route `/notifications` avec liste paginée, marquage lu, marquage tout lu.
 
 ### Dashboard d'accueil
 
