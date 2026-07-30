@@ -1,216 +1,218 @@
-import { MockInstance, afterEach, beforeEach, describe, expect, it, vitest } from 'vitest';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ComponentFixture, TestBed, inject } from '@angular/core/testing';
+import { afterEach, beforeEach, describe, expect, it, vitest } from 'vitest';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
+import { of, Subject } from 'rxjs';
 
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
-import { faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes } from '@fortawesome/free-solid-svg-icons';
+import {
+  faCheck,
+  faClipboardList,
+  faFolder,
+  faPencil,
+  faPlay,
+  faPlus,
+  faChartLine,
+  faTableColumns,
+  faListCheck,
+} from '@fortawesome/free-solid-svg-icons';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subject, of } from 'rxjs';
 
+import { AccountService } from 'app/core/auth/account.service';
+import { AlertService } from 'app/core/util/alert.service';
+import { TaskService } from 'app/entities/task/service/task.service';
+import { ProjectService } from 'app/entities/project/service/project.service';
 import { SprintService } from '../service/sprint.service';
-import { sampleWithRequiredData } from '../sprint.test-samples';
-
+import { ISprint } from '../sprint.model';
 import { Sprint } from './sprint';
 
 vitest.useFakeTimers();
 
-describe('Sprint Management Component', () => {
-  let httpMock: HttpTestingController;
+describe('Sprint Component', () => {
   let comp: Sprint;
   let fixture: ComponentFixture<Sprint>;
-  let service: SprintService;
-  let routerNavigateSpy: MockInstance;
+  let modalService: NgbModal;
+
+  const mockSprints = signal<ISprint[]>([]);
+  const mockRefresh = vitest.fn();
+
+  const mockSprintService = {
+    sprints: mockSprints,
+    sprintsParams: signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(undefined),
+    refresh: mockRefresh,
+  } as unknown as SprintService;
+
+  const mockTaskService = {
+    tasks: signal([]),
+    tasksParams: signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(undefined),
+    tasksResource: { hasValue: () => false },
+    refresh: vitest.fn(),
+    partialUpdate: vitest.fn().mockReturnValue(of({})),
+  } as unknown as TaskService;
+
+  const mockProjectService = {
+    findByKey: vitest.fn().mockReturnValue(of({ id: 1, key: 'test', name: 'Test Project' })),
+  } as unknown as ProjectService;
+
+  const mockAlertService = {
+    addAlert: vitest.fn(),
+  } as unknown as AlertService;
+
+  const mockAccountService = {
+    account: signal({ authorities: ['ROLE_USER'], login: 'testuser' }),
+  } as unknown as AccountService;
+
+  const parentParamMap = of(convertToParamMap({ key: 'test-key' }));
 
   beforeEach(() => {
+    mockSprints.set([]);
+    mockRefresh.mockClear();
+
     TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot()],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
-        provideHttpClientTesting(),
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            data: of({
-              defaultSort: 'id,asc',
-            }),
-            queryParamMap: of(
-              convertToParamMap({
-                page: '1',
-                size: '1',
-                sort: 'id,desc',
-                'filter[someId.in]': 'dc4279ea-cfb9-11ec-9d64-0242ac120002',
-              }),
-            ),
-            snapshot: {
-              queryParams: {},
-              queryParamMap: convertToParamMap({
-                page: '1',
-                size: '1',
-                sort: 'id,desc',
-                'filter[someId.in]': 'dc4279ea-cfb9-11ec-9d64-0242ac120002',
-              }),
-            },
-          },
-        },
+        { provide: ActivatedRoute, useValue: { parent: { paramMap: parentParamMap }, paramMap: parentParamMap } },
+        { provide: SprintService, useValue: mockSprintService },
+        { provide: TaskService, useValue: mockTaskService },
+        { provide: ProjectService, useValue: mockProjectService },
+        { provide: AlertService, useValue: mockAlertService },
+        { provide: AccountService, useValue: mockAccountService },
       ],
     });
 
     fixture = TestBed.createComponent(Sprint);
     comp = fixture.componentInstance;
-    service = TestBed.inject(SprintService);
-    routerNavigateSpy = vitest.spyOn(comp.router, 'navigate');
+    modalService = TestBed.inject(NgbModal);
 
     const library = TestBed.inject(FaIconLibrary);
-    library.addIcons(faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes);
-    httpMock = TestBed.inject(HttpTestingController);
+    library.addIcons(faCheck, faClipboardList, faFolder, faPencil, faPlay, faPlus, faChartLine, faTableColumns, faListCheck);
+
+    fixture.detectChanges();
   });
 
   afterEach(() => {
     TestBed.resetTestingModule();
-    httpMock.verify();
   });
 
-  it('should call load all on init', async () => {
-    // WHEN
-    TestBed.tick();
-    const req = httpMock.expectOne({ method: 'GET' });
-    req.flush([{ id: 19154 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
-    await vitest.runAllTimersAsync();
-
-    // THEN
-    expect(comp.isLoading()).toEqual(false);
-    expect(comp.sprints()[0]).toEqual(expect.objectContaining({ id: 19154 }));
+  it('should create the component', () => {
+    expect(comp).toBeTruthy();
   });
 
-  it('should cancel previous requests when loading a new page', async () => {
-    // WHEN
-    TestBed.tick();
-    const req = httpMock.expectOne({ method: 'GET' });
-    await vitest.runAllTimersAsync();
-
-    comp.page.set(3);
-    comp.load();
-    await vitest.runAllTimersAsync();
-    const req2 = httpMock.expectOne({ method: 'GET' });
-    req2.flush([{ id: 19154 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
-    await vitest.runAllTimersAsync();
-
-    // THEN
-    expect(req.cancelled).toBeTruthy();
-    expect(comp.isLoading()).toEqual(false);
-    expect(comp.sprints()[0]).toEqual(expect.objectContaining({ id: 19154 }));
+  it('should have board tab as default', () => {
+    expect(comp.activeTab()).toBe('board');
   });
 
-  it('should not fail on resource error state', async () => {
-    // GIVEN - first load triggers an HTTP error
-    TestBed.tick();
-    const errorReq = httpMock.expectOne({ method: 'GET' });
-    errorReq.flush('error', { status: 500, statusText: 'Server Error' });
-    await vitest.runAllTimersAsync();
+  it('should switch tabs', () => {
+    comp.setTab('planning');
+    expect(comp.activeTab()).toBe('planning');
 
-    // THEN - loading state was reset and list is empty
-    expect(comp.isLoading()).toBe(false);
-    expect(comp.sprints()).toEqual([]);
+    comp.setTab('burndown');
+    expect(comp.activeTab()).toBe('burndown');
 
-    // WHEN - second load should still work
-    comp.load();
-    TestBed.tick();
-    const successReq = httpMock.expectOne({ method: 'GET' });
-    successReq.flush([{ id: 19154 }], { headers: { link: '<http://localhost/api/foo?page=1&size=20>; rel="next"' } });
-    await vitest.runAllTimersAsync();
-
-    // THEN - subscription is still alive and second load succeeds
-    expect(comp.sprints()[0]).toEqual(expect.objectContaining({ id: 19154 }));
+    comp.setTab('board');
+    expect(comp.activeTab()).toBe('board');
   });
 
-  describe('trackId', () => {
-    it('should forward to sprintService', () => {
-      const entity = { id: 19154 };
-      vitest.spyOn(service, 'getSprintIdentifier');
-      const id = comp.trackId(entity);
-      expect(service.getSprintIdentifier).toHaveBeenCalledWith(entity);
-      expect(id).toBe(entity.id);
-    });
+  it('should select sprint on change', () => {
+    const sprint: ISprint = { id: 1, name: 'Sprint 1', status: 'ACTIVE' };
+    mockSprints.set([sprint]);
+    fixture.detectChanges();
+
+    comp.onSprintChange(1);
+    expect(comp.selectedSprintId()).toBe(1);
+    expect(comp.selectedSprint()).toEqual(sprint);
   });
 
-  it('should calculate the sort attribute for a non-id attribute', () => {
-    // WHEN
-    comp.navigateToWithComponentValues({ predicate: 'non-existing-column', order: 'asc' });
+  it('should open create sprint modal', () => {
+    const modalOpen = vitest.spyOn(modalService, 'open').mockReturnValue({
+      componentInstance: {},
+      closed: new Subject(),
+    } as any);
 
-    // THEN
-    expect(routerNavigateSpy).toHaveBeenLastCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        queryParams: expect.objectContaining({
-          sort: ['non-existing-column,asc'],
-        }),
-      }),
-    );
+    comp.openCreateSprintModal();
+    expect(modalOpen).toHaveBeenCalled();
   });
 
-  it('should load a page', () => {
-    // WHEN
-    comp.navigateToPage(1);
+  it('should open edit sprint modal', () => {
+    const modalOpen = vitest.spyOn(modalService, 'open').mockReturnValue({
+      componentInstance: {},
+      closed: new Subject(),
+    } as any);
 
-    // THEN
-    expect(routerNavigateSpy).toHaveBeenCalled();
+    const sprint: ISprint = { id: 1, name: 'Sprint 1', status: 'ACTIVE' };
+    comp.openEditSprintModal(sprint);
+    expect(modalOpen).toHaveBeenCalled();
   });
 
-  it('should calculate the sort attribute for an id', () => {
-    // WHEN
-    TestBed.tick();
-    httpMock.expectOne({ method: 'GET' });
+  it('should close velocity report modal', () => {
+    comp.velocityReport.set({ tachesPrevues: 10, tachesTerminees: 8, pourcentage: 80, tachesReportees: 2 });
+    comp.showVelocityModal.set(true);
+    expect(comp.showVelocityModal()).toBe(true);
 
-    // THEN
-    expect(service.sprintsParams()).toMatchObject(expect.objectContaining({ sort: ['id,desc'] }));
+    comp.closeVelocityModal();
+    expect(comp.showVelocityModal()).toBe(false);
+    expect(comp.velocityReport()).toBeNull();
   });
 
-  it('should calculate the filter attribute', () => {
-    // WHEN
-    TestBed.tick();
-    httpMock.expectOne({ method: 'GET' });
+  it('should compute hasActiveSprint correctly', () => {
+    expect(comp.hasActiveSprint()).toBe(false);
 
-    // THEN
-    expect(service.sprintsParams()).toMatchObject(expect.objectContaining({ 'someId.in': ['dc4279ea-cfb9-11ec-9d64-0242ac120002'] }));
+    mockSprints.set([{ id: 1, name: 'Sprint 1', status: 'PLANNED' }]);
+    fixture.detectChanges();
+    expect(comp.hasActiveSprint()).toBe(false);
+
+    mockSprints.set([
+      { id: 1, name: 'Sprint 1', status: 'PLANNED' },
+      { id: 2, name: 'Sprint 2', status: 'ACTIVE' },
+    ]);
+    fixture.detectChanges();
+    expect(comp.hasActiveSprint()).toBe(true);
   });
 
-  describe('delete', () => {
-    let ngbModal: NgbModal;
-    let deleteModalMock: any;
+  it('should compute canStartSprint correctly', () => {
+    expect(comp.canStartSprint()).toBe(false);
 
-    beforeEach(() => {
-      deleteModalMock = { componentInstance: {}, closed: new Subject() };
-      // NgbModal is not a singleton using TestBed.inject.
-      // ngbModal = TestBed.inject(NgbModal);
-      ngbModal = (comp as any).modalService;
-      vitest.spyOn(ngbModal, 'open').mockReturnValue(deleteModalMock);
-    });
+    const plannedSprint: ISprint = { id: 1, name: 'Sprint 1', status: 'PLANNED' };
+    mockSprints.set([plannedSprint]);
+    fixture.detectChanges();
+    comp.onSprintChange(1);
+    fixture.detectChanges();
+    expect(comp.canStartSprint()).toBe(true);
 
-    it('on confirm should call load', inject([], () => {
-      // GIVEN
-      vitest.spyOn(comp, 'load');
+    mockSprints.set([plannedSprint, { id: 2, name: 'Sprint 2', status: 'ACTIVE' }]);
+    comp.onSprintChange(1);
+    fixture.detectChanges();
+    expect(comp.canStartSprint()).toBe(false);
+  });
 
-      // WHEN
-      comp.delete(sampleWithRequiredData);
-      deleteModalMock.closed.next('deleted');
+  it('should compute canCloseSprint correctly', () => {
+    expect(comp.canCloseSprint()).toBe(false);
 
-      // THEN
-      expect(ngbModal.open).toHaveBeenCalled();
-      expect(comp.load).toHaveBeenCalled();
-    }));
+    const activeSprint: ISprint = { id: 1, name: 'Sprint 1', status: 'ACTIVE' };
+    mockSprints.set([activeSprint]);
+    fixture.detectChanges();
+    comp.onSprintChange(1);
+    fixture.detectChanges();
+    expect(comp.canCloseSprint()).toBe(true);
+  });
 
-    it('on dismiss should call load', inject([], () => {
-      // GIVEN
-      vitest.spyOn(comp, 'load');
+  it('should compute sprintProgress correctly', () => {
+    expect(comp.sprintProgress()).toBe(0);
 
-      // WHEN
-      comp.delete(sampleWithRequiredData);
-      deleteModalMock.closed.next();
+    comp.tasks.set([
+      { id: 1, title: 'Task 1', status: 'DONE' },
+      { id: 2, title: 'Task 2', status: 'TODO' },
+    ]);
+    fixture.detectChanges();
+    expect(comp.sprintProgress()).toBe(50);
 
-      // THEN
-      expect(ngbModal.open).toHaveBeenCalled();
-      expect(comp.load).not.toHaveBeenCalled();
-    }));
+    comp.tasks.set([
+      { id: 1, title: 'Task 1', status: 'DONE' },
+      { id: 2, title: 'Task 2', status: 'DONE' },
+    ]);
+    fixture.detectChanges();
+    expect(comp.sprintProgress()).toBe(100);
   });
 });

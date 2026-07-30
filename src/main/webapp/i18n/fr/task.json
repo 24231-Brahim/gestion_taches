@@ -46,7 +46,10 @@
       "project": "Projet",
       "assignee": "Assigné",
       "createdBy": "Créé par",
-      "system": "Système"
+      "system": "Système",
+      "error": {
+        "noProject": "Aucun projet sélectionné"
+      }
     }
   }
 }

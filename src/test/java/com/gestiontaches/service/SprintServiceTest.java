@@ -66,6 +66,9 @@ class SprintServiceTest {
     @Mock
     private TaskMapper taskMapper;
 
+    @Mock
+    private EntityEventSseService entityEventSseService;
+
     @InjectMocks
     private SprintService sprintService;
 
@@ -122,6 +125,11 @@ class SprintServiceTest {
             dto.setId(s.getId());
             dto.setName(s.getName());
             dto.setStatus(s.getStatus());
+            if (s.getProject() != null) {
+                com.gestiontaches.service.dto.ProjectDTO p = new com.gestiontaches.service.dto.ProjectDTO();
+                p.setId(s.getProject().getId());
+                dto.setProject(p);
+            }
             return dto;
         });
 

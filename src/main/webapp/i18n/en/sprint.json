@@ -70,6 +70,16 @@
       },
       "progress": {
         "label": "Sprint Progress"
+      },
+      "table": {
+        "title": "Sprint List",
+        "view": "Table View",
+        "taskCount": "Tasks"
+      },
+      "tasks": {
+        "tab": "Tasks",
+        "title": "Sprint Tasks",
+        "empty": "No tasks in this sprint"
       }
     }
   }

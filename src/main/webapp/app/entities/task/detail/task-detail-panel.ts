@@ -130,7 +130,7 @@ import { IUser } from 'app/entities/user/user.model';
         width: 28px;
         height: 28px;
         border-radius: 50%;
-        background: var(--color-primary-container, #25a7fd);
+        background: var(--color-primary-container, #0099fe);
         color: var(--color-on-primary-container);
         font-size: 0.75rem;
         font-weight: 600;

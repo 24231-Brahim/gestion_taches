@@ -89,7 +89,7 @@ describe('Epic Management Update Component', () => {
       const epic = { id: 5106 };
       vitest.spyOn(epicFormService, 'getEpic').mockReturnValue(epic);
       vitest.spyOn(epicService, 'update').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+
       activatedRoute.data = of({ epic });
       comp.ngOnInit();
 
@@ -101,7 +101,7 @@ describe('Epic Management Update Component', () => {
 
       // THEN
       expect(epicFormService.getEpic).toHaveBeenCalled();
-      expect(comp.previousState).toHaveBeenCalled();
+
       expect(epicService.update).toHaveBeenCalledWith(expect.objectContaining(epic));
       expect(comp.isSaving()).toEqual(false);
     });
@@ -112,7 +112,7 @@ describe('Epic Management Update Component', () => {
       const epic = { id: 5106 };
       vitest.spyOn(epicFormService, 'getEpic').mockReturnValue({ id: null });
       vitest.spyOn(epicService, 'create').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+
       activatedRoute.data = of({ epic: null });
       comp.ngOnInit();
 
@@ -126,7 +126,6 @@ describe('Epic Management Update Component', () => {
       expect(epicFormService.getEpic).toHaveBeenCalled();
       expect(epicService.create).toHaveBeenCalled();
       expect(comp.isSaving()).toEqual(false);
-      expect(comp.previousState).toHaveBeenCalled();
     });
 
     it('should set isSaving to false on error', () => {
@@ -134,7 +133,7 @@ describe('Epic Management Update Component', () => {
       const saveSubject = new Subject<IEpic>();
       const epic = { id: 5106 };
       vitest.spyOn(epicService, 'update').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+
       activatedRoute.data = of({ epic });
       comp.ngOnInit();
 
@@ -146,7 +145,6 @@ describe('Epic Management Update Component', () => {
       // THEN
       expect(epicService.update).toHaveBeenCalled();
       expect(comp.isSaving()).toEqual(false);
-      expect(comp.previousState).not.toHaveBeenCalled();
     });
   });
 

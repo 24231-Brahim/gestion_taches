@@ -5,12 +5,14 @@ import { TestBed } from '@angular/core/testing';
 import { IEpic } from '../epic.model';
 import { sampleWithFullData, sampleWithNewData, sampleWithPartialData, sampleWithRequiredData } from '../epic.test-samples';
 
-import { EpicService, RestEpic } from './epic.service';
+import { EpicService } from './epic.service';
 
-const requireRestSample: RestEpic = {
+const requireRestSample = {
   ...sampleWithRequiredData,
   createdAt: sampleWithRequiredData.createdAt?.toJSON(),
   updatedAt: sampleWithRequiredData.updatedAt?.toJSON(),
+  startDate: sampleWithRequiredData.startDate?.toJSON(),
+  endDate: sampleWithRequiredData.endDate?.toJSON(),
 };
 
 describe('Epic Service', () => {

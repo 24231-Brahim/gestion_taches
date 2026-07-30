@@ -9,7 +9,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { EMAIL_ALREADY_USED_TYPE, LOGIN_ALREADY_USED_TYPE } from 'app/shared/jhipster/error.constants';
 import { StateStorageService } from 'app/core/auth/state-storage.service';
 import { ThemeService } from 'app/core/util/theme.service';
+import { LANGUAGES } from 'app/config/language.constants';
 import { TranslateDirective } from 'app/shared/language';
+import FindLanguageFromKeyPipe from 'app/shared/language/find-language-from-key.pipe';
 import PasswordStrengthBar from '../password/password-strength-bar/password-strength-bar';
 
 import { RegisterService } from './register.service';
@@ -17,7 +19,15 @@ import { RegisterService } from './register.service';
 @Component({
   selector: 'jhi-register',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslateDirective, TranslateModule, RouterLink, ReactiveFormsModule, PasswordStrengthBar, FontAwesomeModule],
+  imports: [
+    TranslateDirective,
+    TranslateModule,
+    RouterLink,
+    ReactiveFormsModule,
+    PasswordStrengthBar,
+    FontAwesomeModule,
+    FindLanguageFromKeyPipe,
+  ],
   templateUrl: './register.html',
   styleUrl: './register.component.scss',
 })
@@ -29,7 +39,9 @@ export default class Register implements AfterViewInit {
   readonly errorEmailExists = signal(false);
   readonly errorUserExists = signal(false);
   readonly success = signal(false);
+  readonly showLangMenu = signal(false);
   readonly themeService = inject(ThemeService);
+  readonly languages = LANGUAGES;
 
   registerForm = new FormGroup({
     login: new FormControl('', {
@@ -62,6 +74,15 @@ export default class Register implements AfterViewInit {
   changeLanguage(lang: string): void {
     this.stateStorageService.storeLocale(lang);
     this.translateService.use(lang);
+    this.showLangMenu.set(false);
+  }
+
+  toggleLangMenu(): void {
+    this.showLangMenu.update(v => !v);
+  }
+
+  closeLangMenu(): void {
+    this.showLangMenu.set(false);
   }
 
   ngAfterViewInit(): void {

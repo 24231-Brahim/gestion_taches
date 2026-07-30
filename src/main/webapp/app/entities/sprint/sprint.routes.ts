@@ -15,6 +15,11 @@ const sprintRoute: Routes = [
     canActivate: [UserRouteAccessService],
   },
   {
+    path: 'table',
+    loadComponent: () => import('./table/sprint-table').then(m => m.SprintTable),
+    canActivate: [UserRouteAccessService],
+  },
+  {
     path: ':id/view',
     loadComponent: () => import('./detail/sprint-detail').then(m => m.SprintDetail),
     resolve: {

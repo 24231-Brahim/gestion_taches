@@ -12,10 +12,13 @@ import com.gestiontaches.repository.TaskTransitionRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
+import com.gestiontaches.service.dto.EntityChangeEvent;
+import com.gestiontaches.service.dto.EntityEventType;
 import com.gestiontaches.service.dto.NotificationDTO;
 import com.gestiontaches.service.dto.TaskDTO;
 import com.gestiontaches.service.mapper.TaskMapper;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +50,8 @@ public class TaskService {
 
     private final TaskTransitionRepository taskTransitionRepository;
 
+    private final EntityEventSseService entityEventSseService;
+
     public TaskService(
         TaskRepository taskRepository,
         TaskMapper taskMapper,
@@ -54,7 +59,8 @@ public class TaskService {
         ProjectMemberRepository projectMemberRepository,
         ProjectPermissionService projectPermissionService,
         NotificationService notificationService,
-        TaskTransitionRepository taskTransitionRepository
+        TaskTransitionRepository taskTransitionRepository,
+        EntityEventSseService entityEventSseService
     ) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
@@ -63,6 +69,7 @@ public class TaskService {
         this.projectPermissionService = projectPermissionService;
         this.notificationService = notificationService;
         this.taskTransitionRepository = taskTransitionRepository;
+        this.entityEventSseService = entityEventSseService;
     }
 
     /**
@@ -98,7 +105,11 @@ public class TaskService {
         if (taskDTO.getId() != null && task.getStatus() != null && oldStatus != null && oldStatus != task.getStatus()) {
             recordTransition(task, oldStatus, task.getStatus());
         }
-        return taskMapper.toDto(task);
+        TaskDTO result = taskMapper.toDto(task);
+        Long projectId = result.getProject() != null ? result.getProject().getId() : null;
+        String eventType = taskDTO.getId() != null ? EntityEventType.UPDATED : EntityEventType.CREATED;
+        entityEventSseService.sendEvent(new EntityChangeEvent(EntityEventType.ENTITY_TASK, eventType, result.getId(), projectId));
+        return result;
     }
 
     /**
@@ -115,16 +126,23 @@ public class TaskService {
         validateSprintEpicBelongToProject(taskDTO);
         Task existingTask = taskRepository.findById(taskDTO.getId()).orElse(null);
         TaskStatus oldStatus = existingTask != null ? existingTask.getStatus() : null;
+        User oldAssignee = existingTask != null ? existingTask.getAssignee() : null;
         Task task = taskMapper.toEntity(taskDTO);
         if (task.getUpdatedAt() == null) {
             task.setUpdatedAt(java.time.Instant.now());
         }
         task = taskRepository.save(task);
         notifyStatusChangeIfNeeded(existingTask, task, oldStatus);
+        notifyAssigneeChange(existingTask, task, oldAssignee);
         if (existingTask != null && task.getStatus() != null && oldStatus != null && oldStatus != task.getStatus()) {
             recordTransition(task, oldStatus, task.getStatus());
         }
-        return taskMapper.toDto(task);
+        TaskDTO result = taskMapper.toDto(task);
+        Long projectId = result.getProject() != null ? result.getProject().getId() : null;
+        entityEventSseService.sendEvent(
+            new EntityChangeEvent(EntityEventType.ENTITY_TASK, EntityEventType.UPDATED, result.getId(), projectId)
+        );
+        return result;
     }
 
     /**
@@ -143,15 +161,24 @@ public class TaskService {
             .findById(taskDTO.getId())
             .map(existingTask -> {
                 TaskStatus oldStatus = existingTask.getStatus();
+                User oldAssignee = existingTask.getAssignee();
                 taskMapper.partialUpdate(existingTask, taskDTO);
                 if (taskDTO.getUpdatedAt() == null) {
                     existingTask.setUpdatedAt(java.time.Instant.now());
                 }
                 Task savedTask = taskRepository.save(existingTask);
                 notifyStatusChangeIfNeeded(existingTask, savedTask, oldStatus);
+                notifyAssigneeChange(existingTask, savedTask, oldAssignee);
                 return savedTask;
             })
-            .map(taskMapper::toDto);
+            .map(taskMapper::toDto)
+            .map(dto -> {
+                Long projectId = dto.getProject() != null ? dto.getProject().getId() : null;
+                entityEventSseService.sendEvent(
+                    new EntityChangeEvent(EntityEventType.ENTITY_TASK, EntityEventType.UPDATED, dto.getId(), projectId)
+                );
+                return dto;
+            });
     }
 
     private void checkTaskUpdatePermission(Long taskId) {
@@ -250,6 +277,28 @@ public class TaskService {
         }
     }
 
+    private void notifyAssigneeChange(Task existingTask, Task savedTask, User oldAssignee) {
+        if (savedTask.getAssignee() == null || savedTask.getCreatedBy() == null) {
+            return;
+        }
+        Long newAssigneeId = savedTask.getAssignee().getId();
+        Long oldAssigneeId = oldAssignee != null ? oldAssignee.getId() : null;
+        if (Objects.equals(newAssigneeId, oldAssigneeId)) {
+            return;
+        }
+        String currentLogin = SecurityUtils.getCurrentUserLogin().orElse("System");
+        NotificationDTO notification = new NotificationDTO();
+        notification.setMessage(
+            currentLogin + " vous a assign\u00e9 \u00e0 la t\u00e2che #" + savedTask.getId() + " : " + savedTask.getTitle()
+        );
+        notification.setTaskId(savedTask.getId());
+        notification.setTaskTitle(savedTask.getTitle());
+        notification.setUserId(newAssigneeId);
+        notification.setIsRead(false);
+        notification.setCreatedAt(Instant.now());
+        notificationService.save(notification);
+    }
+
     private void validateSprintEpicBelongToProject(TaskDTO taskDTO) {
         Long projectId = taskDTO.getProject() != null ? taskDTO.getProject().getId() : null;
         if (projectId == null) {
@@ -321,7 +370,11 @@ public class TaskService {
             }
         }
         task = taskRepository.save(task);
-        return taskMapper.toDto(task);
+        TaskDTO result = taskMapper.toDto(task);
+        entityEventSseService.sendEvent(
+            new EntityChangeEvent(EntityEventType.ENTITY_TASK, EntityEventType.CREATED, result.getId(), projectId)
+        );
+        return result;
     }
 
     /**
@@ -331,12 +384,13 @@ public class TaskService {
      */
     public void delete(Long id) {
         LOG.debug("Request to delete Task : {}", id);
-        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
-            taskRepository.deleteById(id);
-            return;
-        }
         Task task = taskRepository.findById(id).orElseThrow(() -> new RuntimeException("Task not found"));
         Long projectId = task.getProject().getId();
+        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+            taskRepository.deleteById(id);
+            entityEventSseService.sendEvent(new EntityChangeEvent(EntityEventType.ENTITY_TASK, EntityEventType.DELETED, id, projectId));
+            return;
+        }
         Long currentUserId = SecurityUtils.getCurrentUserId().orElseGet(() -> {
             String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
             return userRepository
@@ -347,10 +401,12 @@ public class TaskService {
         ProjectRole role = projectPermissionService.getCurrentUserRole(projectId);
         if (role == ProjectRole.OWNER || role == ProjectRole.MANAGER) {
             taskRepository.deleteById(id);
+            entityEventSseService.sendEvent(new EntityChangeEvent(EntityEventType.ENTITY_TASK, EntityEventType.DELETED, id, projectId));
             return;
         }
         if (role == ProjectRole.MEMBER && task.getCreatedBy() != null && task.getCreatedBy().getId().equals(currentUserId)) {
             taskRepository.deleteById(id);
+            entityEventSseService.sendEvent(new EntityChangeEvent(EntityEventType.ENTITY_TASK, EntityEventType.DELETED, id, projectId));
             return;
         }
         throw new RuntimeException("Access denied: you can only delete your own tasks");
@@ -377,6 +433,13 @@ public class TaskService {
                 return taskRepository.save(task);
             })
             .map(taskMapper::toDto)
+            .map(dto -> {
+                Long pid = dto.getProject() != null ? dto.getProject().getId() : null;
+                entityEventSseService.sendEvent(
+                    new EntityChangeEvent(EntityEventType.ENTITY_TASK, EntityEventType.UPDATED, dto.getId(), pid)
+                );
+                return dto;
+            })
             .orElseThrow(() -> new RuntimeException("Task not found with id " + taskId));
     }
 }

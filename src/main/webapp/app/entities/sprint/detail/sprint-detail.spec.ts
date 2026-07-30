@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vitest } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -47,14 +47,6 @@ describe('Sprint Management Detail Component', () => {
 
       // THEN
       expect(instance.sprint()).toEqual(expect.objectContaining({ id: 19154 }));
-    });
-  });
-
-  describe('PreviousState', () => {
-    it('should navigate to previous state', () => {
-      vitest.spyOn(globalThis.history, 'back');
-      comp.previousState();
-      expect(globalThis.history.back).toHaveBeenCalled();
     });
   });
 });

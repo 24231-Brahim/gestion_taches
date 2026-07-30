@@ -41,7 +41,7 @@ import { ISprint } from '../sprint.model';
         margin-top: 4px;
       }
       .planning-card-sp {
-        background: var(--color-primary-container, #25a7fd);
+        background: var(--color-primary-container, #0099fe);
         color: var(--color-on-primary-container);
         font-size: 0.65rem;
         font-weight: 600;

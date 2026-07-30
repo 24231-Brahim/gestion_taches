@@ -58,7 +58,7 @@ COLORS — kept as originally defined (Dark theme = default, "Void" palette):
 ```css
 :root[data-theme="dark"] {
   --color-primary: #97cbff;
-  --color-primary-container: #25a7fd;
+  --color-primary-container: #0099fe;
   --color-secondary: #52d6fd;
   --color-secondary-container: #01afd4;
   --color-tertiary: #a5cbea;
@@ -99,7 +99,7 @@ COLORS — kept as originally defined (Dark theme = default, "Void" palette):
   --color-surface-container-high: #e9edf3;
   --color-border: #dde3ec;
   --color-primary: #0077cc;
-  --color-primary-container: #25a7fd;
+  --color-primary-container: #0099fe;
   --color-text: #0a0a0f;
   --color-muted: #5b7286;
   --color-success: #16a34a;
@@ -388,7 +388,7 @@ Depth communicated through **soft, layered shadows** rather than hard offsets or
 ### Kanban Board Columns
 
 - Column header: thin colored top accent (2px), per status:
-  - Backlog: `#25a7fd`
+  - Backlog: `#0099fe`
   - Selected: `#fbbf24`
   - In Progress: `#f97316`
   - Review: `#a855f7`

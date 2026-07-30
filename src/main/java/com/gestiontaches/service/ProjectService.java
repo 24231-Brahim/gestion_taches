@@ -9,6 +9,8 @@ import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
+import com.gestiontaches.service.dto.EntityChangeEvent;
+import com.gestiontaches.service.dto.EntityEventType;
 import com.gestiontaches.service.dto.ProjectDTO;
 import com.gestiontaches.service.dto.ProjectMemberDTO;
 import com.gestiontaches.service.mapper.ProjectMapper;
@@ -46,13 +48,16 @@ public class ProjectService {
 
     private final ProjectPermissionService projectPermissionService;
 
+    private final EntityEventSseService entityEventSseService;
+
     public ProjectService(
         ProjectRepository projectRepository,
         ProjectMapper projectMapper,
         UserRepository userRepository,
         ProjectMemberRepository projectMemberRepository,
         ProjectMemberMapper projectMemberMapper,
-        ProjectPermissionService projectPermissionService
+        ProjectPermissionService projectPermissionService,
+        EntityEventSseService entityEventSseService
     ) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
@@ -60,6 +65,7 @@ public class ProjectService {
         this.projectMemberRepository = projectMemberRepository;
         this.projectMemberMapper = projectMemberMapper;
         this.projectPermissionService = projectPermissionService;
+        this.entityEventSseService = entityEventSseService;
     }
 
     /**
@@ -77,7 +83,14 @@ public class ProjectService {
         project = projectRepository.save(project);
         ProjectMember member = new ProjectMember().project(project).user(owner).role(ProjectRole.OWNER).joinedAt(Instant.now());
         projectMemberRepository.save(member);
-        return projectMapper.toDto(project);
+        ProjectDTO result = projectMapper.toDto(project);
+        entityEventSseService.sendEvent(
+            new EntityChangeEvent(EntityEventType.ENTITY_PROJECT, EntityEventType.CREATED, result.getId(), result.getId())
+        );
+        entityEventSseService.sendEvent(
+            new EntityChangeEvent(EntityEventType.ENTITY_PROJECT_MEMBER, EntityEventType.CREATED, member.getId(), result.getId())
+        );
+        return result;
     }
 
     /**
@@ -97,6 +110,12 @@ public class ProjectService {
             })
             .map(projectRepository::save)
             .map(projectMapper::toDto)
+            .map(dto -> {
+                entityEventSseService.sendEvent(
+                    new EntityChangeEvent(EntityEventType.ENTITY_PROJECT, EntityEventType.UPDATED, dto.getId(), dto.getId())
+                );
+                return dto;
+            })
             .orElseThrow(() -> new RuntimeException("Project not found"));
     }
 
@@ -118,7 +137,13 @@ public class ProjectService {
                 return existingProject;
             })
             .map(projectRepository::save)
-            .map(projectMapper::toDto);
+            .map(projectMapper::toDto)
+            .map(dto -> {
+                entityEventSseService.sendEvent(
+                    new EntityChangeEvent(EntityEventType.ENTITY_PROJECT, EntityEventType.UPDATED, dto.getId(), dto.getId())
+                );
+                return dto;
+            });
     }
 
     /**
@@ -168,11 +193,12 @@ public class ProjectService {
         LOG.debug("Request to delete Project : {}", id);
         projectPermissionService.requireProjectRole(id, ProjectRole.OWNER);
         projectRepository.deleteById(id);
+        entityEventSseService.sendEvent(new EntityChangeEvent(EntityEventType.ENTITY_PROJECT, EntityEventType.DELETED, id, id));
     }
 
     public Set<ProjectMemberDTO> getMembers(Long projectId) {
         LOG.debug("Request to get members of Project : {}", projectId);
-        projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER);
+        projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER, ProjectRole.MEMBER);
         List<ProjectMember> members = projectMemberRepository.findByProjectId(projectId);
         return members.stream().map(projectMemberMapper::toDto).collect(Collectors.toSet());
     }
@@ -186,7 +212,10 @@ public class ProjectService {
             throw new RuntimeException("User is already a member of this project");
         }
         ProjectMember member = new ProjectMember().project(project).user(user).role(ProjectRole.MEMBER).joinedAt(Instant.now());
-        projectMemberRepository.save(member);
+        member = projectMemberRepository.save(member);
+        entityEventSseService.sendEvent(
+            new EntityChangeEvent(EntityEventType.ENTITY_PROJECT_MEMBER, EntityEventType.CREATED, member.getId(), projectId)
+        );
     }
 
     public void removeMember(Long projectId, Long userId) {
@@ -205,7 +234,11 @@ public class ProjectService {
                 throw new RuntimeException("Cannot remove the last owner of the project");
             }
         }
+        Long memberId = member.getId();
         projectMemberRepository.delete(member);
+        entityEventSseService.sendEvent(
+            new EntityChangeEvent(EntityEventType.ENTITY_PROJECT_MEMBER, EntityEventType.DELETED, memberId, projectId)
+        );
     }
 
     public void updateMemberRole(Long projectId, Long userId, ProjectMemberDTO memberDTO) {
@@ -222,6 +255,9 @@ public class ProjectService {
         }
         member.setRole(memberDTO.getRole());
         projectMemberRepository.save(member);
+        entityEventSseService.sendEvent(
+            new EntityChangeEvent(EntityEventType.ENTITY_PROJECT_MEMBER, EntityEventType.UPDATED, member.getId(), projectId)
+        );
     }
 
     public long getTotalMemberCount() {

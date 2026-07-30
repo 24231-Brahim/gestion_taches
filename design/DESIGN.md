@@ -18,7 +18,7 @@ colors:
   surface-tint: '#97cbff'
   primary: '#97cbff'
   on-primary: '#003353'
-  primary-container: '#25a7fd'
+  primary-container: '#0099fe'
   on-primary-container: '#003a5d'
   inverse-primary: '#00639b'
   secondary: '#52d6fd'

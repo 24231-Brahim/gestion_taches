@@ -60,7 +60,17 @@
     "messages": {
       "viewAllNotifications": "Voir tout",
       "markAllAsRead": "Tout marquer comme lu",
+      "markAsRead": "Marquer comme lu",
       "noNotifications": "Aucune notification",
+      "notificationDetail": {
+        "message": "Message",
+        "date": "Date",
+        "status": "Statut",
+        "read": "Lu",
+        "unread": "Non lu",
+        "task": "Tâche",
+        "viewTask": "Voir la tâche"
+      },
       "info": {
         "authenticated": {
           "prefix": "Si vous voulez vous ",

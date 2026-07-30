@@ -68,7 +68,11 @@
       "status": "Status",
       "priority": "Priority",
       "assignee": "Assignee",
-      "createdAt": "Created Date"
+      "createdAt": "Created Date",
+      "searchPlaceholder": "Search by task title...",
+      "allStatuses": "All statuses",
+      "allPriorities": "All priorities",
+      "resetFilters": "Reset filters"
     }
   }
 }

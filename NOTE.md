@@ -48,7 +48,7 @@ Deux blocs CSS :
   --color-bg: #0f1419;
   --color-text: #dfe3ea;
   --color-primary: #97cbff;
-  --color-primary-container: #25a7fd;
+  --color-primary-container: #0099fe;
   --shadow-brutal: 4px 4px 0 var(--color-primary);
   --color-surface: #0f1419;
   --color-surface-container: #1b2025;

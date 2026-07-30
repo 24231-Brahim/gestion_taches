@@ -199,7 +199,7 @@ export class DashboardChartsComponent {
 
   readonly chartTaskDistribution = computed<ChartTaskStatusCount[]>(() => {
     const statuses = ['NEW', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE', 'CANCELLED'];
-    const colors = ['#6a8fac', '#f59e0b', '#25a7fd', '#a855f7', '#22c55e', '#ef4444'];
+    const colors = ['#6a8fac', '#f59e0b', '#0099fe', '#a855f7', '#22c55e', '#ef4444'];
     const input = this.taskDistribution();
     return input
       .filter(d => d.count > 0)
@@ -230,7 +230,7 @@ export class DashboardChartsComponent {
   });
 
   readonly chartProjectProgress = computed<ChartProjectProgress[]>(() => {
-    const colors = ['#22c55e', '#25a7fd', '#f59e0b', '#a855f7', '#52d6fd', '#ef4444', '#ec4899', '#8b5cf6', '#0ea5e9', '#84cc16'];
+    const colors = ['#22c55e', '#0099fe', '#f59e0b', '#a855f7', '#52d6fd', '#ef4444', '#ec4899', '#8b5cf6', '#0ea5e9', '#84cc16'];
     return this.projectProgress()
       .map((p, i) => ({
         name: p.projectName,

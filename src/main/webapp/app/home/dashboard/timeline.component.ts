@@ -109,7 +109,7 @@ export class DashboardTimelineComponent {
   readonly tasks = input.required<any[]>();
 
   readonly activities = computed<TimelineItem[]>(() => {
-    const colors = ['#22c55e', '#25a7fd', '#f59e0b', '#a855f7', '#52d6fd'];
+    const colors = ['#22c55e', '#0099fe', '#f59e0b', '#a855f7', '#52d6fd'];
     const sorted = [...this.tasks()]
       .sort((a, b) => {
         const da = a.updatedAt ?? a.createdAt ?? '';

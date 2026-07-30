@@ -70,6 +70,16 @@
       },
       "progress": {
         "label": "Progression du Sprint"
+      },
+      "table": {
+        "title": "Liste des Sprints",
+        "view": "Vue tableau",
+        "taskCount": "Tâches"
+      },
+      "tasks": {
+        "tab": "Tâches",
+        "title": "Tâches du Sprint",
+        "empty": "Aucune tâche dans ce sprint"
       }
     }
   }

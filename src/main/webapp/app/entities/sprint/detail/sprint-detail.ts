@@ -1,25 +1,32 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, input, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 
 import dayjs from 'dayjs/esm';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { filter, tap } from 'rxjs';
+import { EntityEventService, EntityType } from 'app/core/util/entity-event.service';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
 import { FormatMediumDatePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
+import { ITEM_DELETED_EVENT, ITEM_SAVED_EVENT } from 'app/config/navigation.constants';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
+import { TaskDeleteDialog } from 'app/entities/task/delete/task-delete-dialog';
 import { TaskService } from 'app/entities/task/service/task.service';
 import { ITask } from 'app/entities/task/task.model';
+import { TaskFormModal } from 'app/entities/task/update/task-form-modal';
 import { SprintActiveBoard } from '../active-board/sprint-active-board';
 import { SprintBacklogPlanning } from '../backlog-planning/sprint-backlog-planning';
 import { SprintBurndownChart } from '../burndown/sprint-burndown-chart';
 import { SprintService, VelocityReport } from '../service/sprint.service';
 import { ISprint } from '../sprint.model';
 
-type Tab = 'board' | 'planning' | 'burndown';
+type Tab = 'board' | 'planning' | 'burndown' | 'tasks';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -293,6 +300,9 @@ export class SprintDetail {
   protected readonly alertService = inject(AlertService);
   protected readonly translateService = inject(TranslateService);
   protected readonly accountService = inject(AccountService);
+  protected readonly modalService = inject(NgbModal);
+  protected readonly entityEventService = inject(EntityEventService);
+  protected readonly destroyRef = inject(DestroyRef);
 
   private readonly _currentSprint = signal<ISprint | null>(null);
 
@@ -320,6 +330,13 @@ export class SprintDetail {
       });
     }
   });
+
+  constructor() {
+    this.entityEventService
+      .onEntityType(EntityType.TASK)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.refreshIssues());
+  }
 
   onSelectTask(_issue: ITask): void {
     // no-op for now
@@ -430,5 +447,50 @@ export class SprintDetail {
 
   setTab(tab: Tab): void {
     this.activeTab.set(tab);
+  }
+
+  openCreateTaskModal(): void {
+    const sp = this._currentSprint();
+    if (!sp?.project?.key) {
+      return;
+    }
+    const modalRef = this.modalService.open(TaskFormModal, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.projectKey = sp.project.key;
+    modalRef.closed
+      .pipe(
+        tap(reason => {
+          if (reason === ITEM_SAVED_EVENT) {
+            this.refreshIssues();
+          }
+        }),
+      )
+      .subscribe();
+  }
+
+  openEditTaskModal(task: ITask): void {
+    const sp = this._currentSprint();
+    const modalRef = this.modalService.open(TaskFormModal, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.task = task;
+    modalRef.componentInstance.projectKey = sp?.project?.key;
+    modalRef.closed
+      .pipe(
+        tap(reason => {
+          if (reason === ITEM_SAVED_EVENT) {
+            this.refreshIssues();
+          }
+        }),
+      )
+      .subscribe();
+  }
+
+  deleteTask(task: ITask): void {
+    const modalRef = this.modalService.open(TaskDeleteDialog, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.task = task;
+    modalRef.closed
+      .pipe(
+        filter(reason => reason === ITEM_DELETED_EVENT),
+        tap(() => this.refreshIssues()),
+      )
+      .subscribe();
   }
 }

@@ -1,0 +1,58 @@
+<div class="sprint-table-page">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="page-title mb-0">
+      <span jhiTranslate="gestionTachesApp.sprint.table.title">Sprint Table</span>
+      @if (currentProject(); as proj) {
+        <small class="text-muted ms-2">— {{ proj.name }}</small>
+      }
+    </h2>
+    <a [routerLink]="['/project', currentProjectKey(), 'sprint']" class="btn btn-outline-primary btn-sm">
+      <fa-icon icon="arrow-left" /> {{ 'entity.action.back' | translate }}
+    </a>
+  </div>
+
+  @if (sprints().length === 0) {
+    <div class="alert alert-warning">
+      <span jhiTranslate="gestionTachesApp.sprint.home.notFound">No sprints found</span>
+    </div>
+  } @else {
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th jhiTranslate="gestionTachesApp.sprint.name">Name</th>
+            <th jhiTranslate="gestionTachesApp.sprint.goal">Goal</th>
+            <th jhiTranslate="gestionTachesApp.sprint.startDate">Start Date</th>
+            <th jhiTranslate="gestionTachesApp.sprint.endDate">End Date</th>
+            <th jhiTranslate="gestionTachesApp.sprint.status">Status</th>
+            <th jhiTranslate="gestionTachesApp.sprint.table.taskCount">Tasks</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (sprint of sprints(); track sprint.id) {
+            <tr>
+              <td>
+                <a [routerLink]="['/project', currentProjectKey(), 'sprint', sprint.id, 'view']">{{ sprint.name }}</a>
+              </td>
+              <td>{{ sprint.goal }}</td>
+              <td>{{ sprint.startDate | formatMediumDate }}</td>
+              <td>{{ sprint.endDate | formatMediumDate }}</td>
+              <td>
+                <span class="badge border-primary">
+                  {{ 'gestionTachesApp.SprintStatus.' + (sprint.status ?? 'PLANNED') | translate }}
+                </span>
+              </td>
+              <td>{{ getTaskCount(sprint.id) }}</td>
+              <td>
+                <a [routerLink]="['/project', currentProjectKey(), 'sprint', sprint.id, 'view']" class="btn btn-sm btn-primary">
+                  <fa-icon icon="eye" />
+                </a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

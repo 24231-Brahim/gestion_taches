@@ -1,8 +1,11 @@
 package com.gestiontaches.service;
 
 import com.gestiontaches.domain.Epic;
+import com.gestiontaches.domain.enumeration.EpicStatus;
 import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.repository.EpicRepository;
+import com.gestiontaches.service.dto.EntityChangeEvent;
+import com.gestiontaches.service.dto.EntityEventType;
 import com.gestiontaches.service.dto.EpicDTO;
 import com.gestiontaches.service.mapper.EpicMapper;
 import java.util.Optional;
@@ -28,10 +31,18 @@ public class EpicService {
 
     private final ProjectPermissionService projectPermissionService;
 
-    public EpicService(EpicRepository epicRepository, EpicMapper epicMapper, ProjectPermissionService projectPermissionService) {
+    private final EntityEventSseService entityEventSseService;
+
+    public EpicService(
+        EpicRepository epicRepository,
+        EpicMapper epicMapper,
+        ProjectPermissionService projectPermissionService,
+        EntityEventSseService entityEventSseService
+    ) {
         this.epicRepository = epicRepository;
         this.epicMapper = epicMapper;
         this.projectPermissionService = projectPermissionService;
+        this.entityEventSseService = entityEventSseService;
     }
 
     /**
@@ -45,9 +56,16 @@ public class EpicService {
         if (epicDTO.getProject() != null && epicDTO.getProject().getId() != null) {
             projectPermissionService.requireProjectRole(epicDTO.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
         }
+        if (epicDTO.getStatus() == null) {
+            epicDTO.setStatus(EpicStatus.TODO);
+        }
         Epic epic = epicMapper.toEntity(epicDTO);
         epic = epicRepository.save(epic);
-        return epicMapper.toDto(epic);
+        EpicDTO result = epicMapper.toDto(epic);
+        Long projectId = result.getProject() != null ? result.getProject().getId() : null;
+        String eventType = epicDTO.getId() != null ? EntityEventType.UPDATED : EntityEventType.CREATED;
+        entityEventSseService.sendEvent(new EntityChangeEvent(EntityEventType.ENTITY_EPIC, eventType, result.getId(), projectId));
+        return result;
     }
 
     /**
@@ -61,9 +79,15 @@ public class EpicService {
         if (epicDTO.getProject() != null && epicDTO.getProject().getId() != null) {
             projectPermissionService.requireProjectRole(epicDTO.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
         }
+        validateEpicStatusTransition(epicDTO);
         Epic epic = epicMapper.toEntity(epicDTO);
         epic = epicRepository.save(epic);
-        return epicMapper.toDto(epic);
+        EpicDTO result = epicMapper.toDto(epic);
+        Long projectId = result.getProject() != null ? result.getProject().getId() : null;
+        entityEventSseService.sendEvent(
+            new EntityChangeEvent(EntityEventType.ENTITY_EPIC, EntityEventType.UPDATED, result.getId(), projectId)
+        );
+        return result;
     }
 
     /**
@@ -79,12 +103,47 @@ public class EpicService {
             .findById(epicDTO.getId())
             .map(existingEpic -> {
                 projectPermissionService.requireProjectRole(existingEpic.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
+                EpicStatus oldStatus = existingEpic.getStatus();
                 epicMapper.partialUpdate(existingEpic, epicDTO);
-
+                if (epicDTO.getStatus() != null && oldStatus != epicDTO.getStatus()) {
+                    validateEpicStatusTransition(epicDTO);
+                    existingEpic.setStatus(epicDTO.getStatus());
+                } else {
+                    existingEpic.setStatus(oldStatus);
+                }
                 return existingEpic;
             })
             .map(epicRepository::save)
-            .map(epicMapper::toDto);
+            .map(epicMapper::toDto)
+            .map(dto -> {
+                Long pid = dto.getProject() != null ? dto.getProject().getId() : null;
+                entityEventSseService.sendEvent(
+                    new EntityChangeEvent(EntityEventType.ENTITY_EPIC, EntityEventType.UPDATED, dto.getId(), pid)
+                );
+                return dto;
+            });
+    }
+
+    private void validateEpicStatusTransition(EpicDTO epicDTO) {
+        if (epicDTO.getId() == null) {
+            return;
+        }
+        Epic existing = epicRepository.findById(epicDTO.getId()).orElse(null);
+        if (existing == null || existing.getStatus() == epicDTO.getStatus()) {
+            return;
+        }
+        EpicStatus current = existing.getStatus();
+        EpicStatus next = epicDTO.getStatus();
+
+        if (current == EpicStatus.DONE || current == EpicStatus.CANCELLED) {
+            throw new RuntimeException("Cannot change status of a " + current + " epic");
+        }
+        if (current == EpicStatus.TODO && next != EpicStatus.IN_PROGRESS) {
+            throw new RuntimeException("A TODO epic can only transition to IN_PROGRESS");
+        }
+        if (current == EpicStatus.IN_PROGRESS && next != EpicStatus.DONE && next != EpicStatus.CANCELLED) {
+            throw new RuntimeException("An IN_PROGRESS epic can only transition to DONE or CANCELLED");
+        }
     }
 
     /**
@@ -117,6 +176,8 @@ public class EpicService {
         LOG.debug("Request to delete Epic : {}", id);
         Epic epic = epicRepository.findById(id).orElseThrow(() -> new RuntimeException("Epic not found"));
         projectPermissionService.requireProjectRole(epic.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
+        Long projectId = epic.getProject().getId();
         epicRepository.deleteById(id);
+        entityEventSseService.sendEvent(new EntityChangeEvent(EntityEventType.ENTITY_EPIC, EntityEventType.DELETED, id, projectId));
     }
 }

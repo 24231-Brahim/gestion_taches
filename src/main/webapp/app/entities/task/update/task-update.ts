@@ -89,6 +89,12 @@ export class TaskUpdate implements OnInit {
       this.task = task;
       if (task) {
         this.updateForm(task);
+        const projectId = task.project?.id;
+        if (projectId) {
+          this.loadProjectScopedOptions(projectId);
+          this.loadProjectMembers(projectId);
+          return;
+        }
       }
 
       this.loadRelationshipsOptions();
@@ -133,9 +139,15 @@ export class TaskUpdate implements OnInit {
 
   save(): void {
     this.isSaving.set(true);
+    const project = this.editForm.get('project')?.value as IProject | null;
+    if (!project?.id) {
+      this.alertService.addAlert({ type: 'danger', translationKey: 'gestionTachesApp.task.error.noProject' });
+      this.isSaving.set(false);
+      return;
+    }
     const task = this.taskFormService.getTask(this.editForm);
     if (task.id === null) {
-      this.subscribeToSaveResponse(this.taskService.create(task));
+      this.subscribeToSaveResponse(this.taskService.createForProject(project.id, task));
     } else {
       this.subscribeToSaveResponse(this.taskService.update(task));
     }

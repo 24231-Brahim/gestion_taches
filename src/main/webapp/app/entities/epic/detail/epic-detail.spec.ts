@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vitest } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
@@ -47,14 +47,6 @@ describe('Epic Management Detail Component', () => {
 
       // THEN
       expect(instance.epic()).toEqual(expect.objectContaining({ id: 5106 }));
-    });
-  });
-
-  describe('PreviousState', () => {
-    it('should navigate to previous state', () => {
-      vitest.spyOn(globalThis.history, 'back');
-      comp.previousState();
-      expect(globalThis.history.back).toHaveBeenCalled();
     });
   });
 });
