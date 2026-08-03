@@ -14,6 +14,7 @@ export interface ITask {
   priority?: keyof typeof Priority | null;
   createdAt?: dayjs.Dayjs | null;
   updatedAt?: dayjs.Dayjs | null;
+  storyPoints?: number | null;
   sprint?: Pick<ISprint, 'id' | 'name'> | null;
   epic?: Pick<IEpic, 'id' | 'title'> | null;
   project?: Pick<IProject, 'id' | 'name' | 'key'> | null;

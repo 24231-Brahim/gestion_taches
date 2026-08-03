@@ -280,7 +280,7 @@ class SprintServiceTest {
 
         Task cancelledTask = new Task();
         cancelledTask.setId(601L);
-        cancelledTask.setStatus(TaskStatus.CANCELLED);
+        cancelledTask.setStatus(TaskStatus.DONE);
 
         when(taskRepository.findBySprintId(10L)).thenReturn(List.of(doneTask, cancelledTask));
         when(sprintRepository.save(any(Sprint.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -325,7 +325,7 @@ class SprintServiceTest {
 
         Task todoTask = new Task();
         todoTask.setId(701L);
-        todoTask.setStatus(TaskStatus.TODO);
+        todoTask.setStatus(TaskStatus.NEW);
 
         when(taskRepository.findBySprintId(10L)).thenReturn(List.of(doneTask, todoTask));
 

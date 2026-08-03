@@ -11,7 +11,7 @@
   @for (att of attachments(); track att.id) {
     <div class="attachment-item">
       <fa-icon icon="paperclip" />
-      <a class="attachment-name" (click)="downloadAttachment(att)">{{ att.fileName }}</a>
+      <a class="attachment-name" [href]="downloadUrl(att)">{{ att.fileName }}</a>
       <span class="attachment-date">{{ att.uploadedAt | formatMediumDatetime }}</span>
       @if (canModify(att)) {
         <button class="btn btn-sm btn-danger" (click)="deleteAttachment(att.id)">

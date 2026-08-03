@@ -61,8 +61,8 @@ import { EpicBurndownData, EpicService } from '../service/epic.service';
 })
 export class EpicBurndownChart {
   readonly epic = input<IEpic | null>(null);
-  readonly totalTasks = input<number>(0);
-  readonly doneTasks = input<number>(0);
+  readonly totalStoryPoints = input<number>(0);
+  readonly doneStoryPoints = input<number>(0);
 
   private readonly epicService = inject(EpicService);
   readonly burndownData = signal<EpicBurndownData | null>(null);
@@ -82,7 +82,7 @@ export class EpicBurndownChart {
     if (!data || data.dates.length === 0) {
       return [];
     }
-    const total = this.totalTasks();
+    const total = this.totalStoryPoints();
     return data.dates.map((_, i) => ({
       x: 40 + (i / Math.max(1, data.dates.length - 1)) * 250,
       y: 40 + (data.ideal[i] / Math.max(1, total)) * 120,
@@ -94,7 +94,7 @@ export class EpicBurndownChart {
     if (!data || data.dates.length === 0) {
       return [];
     }
-    const total = this.totalTasks();
+    const total = this.totalStoryPoints();
     return data.dates.map((_, i) => ({
       x: 40 + (i / Math.max(1, data.dates.length - 1)) * 250,
       y: 40 + (data.actual[i] / Math.max(1, total)) * 120,

@@ -150,14 +150,14 @@ public class EpicService {
         if (tasks.isEmpty()) {
             return;
         }
-        boolean allDone = tasks.stream().allMatch(t -> t.getStatus() == TaskStatus.DONE || t.getStatus() == TaskStatus.CANCELLED);
+        boolean allDone = tasks.stream().allMatch(t -> t.getStatus() == TaskStatus.DONE);
         EpicStatus newStatus;
         if (allDone) {
             newStatus = EpicStatus.DONE;
         } else {
             boolean anyActive = tasks
                 .stream()
-                .anyMatch(t -> t.getStatus() == TaskStatus.IN_PROGRESS || t.getStatus() == TaskStatus.IN_REVIEW);
+                .anyMatch(t -> t.getStatus() == TaskStatus.IN_PROGRESS || t.getStatus() == TaskStatus.READY_FOR_TEST);
             newStatus = anyActive ? EpicStatus.IN_PROGRESS : EpicStatus.TODO;
         }
         if (newStatus != epic.getStatus()) {

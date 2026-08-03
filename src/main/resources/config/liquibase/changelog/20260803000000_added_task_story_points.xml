@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="20260803000000-1" author="brahim">
+        <comment>Re-add story_points column to task (removed by a superseded changelog during a merge)</comment>
+        <sql dbms="postgresql">
+            ALTER TABLE task ADD COLUMN IF NOT EXISTS story_points integer;
+        </sql>
+        <sql dbms="h2">
+            ALTER TABLE task ADD COLUMN IF NOT EXISTS story_points integer;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

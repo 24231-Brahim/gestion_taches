@@ -57,6 +57,9 @@ public class Task implements Serializable {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
+    @Column(name = "story_points")
+    private Integer storyPoints;
+
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "task")
     @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "task" }, allowSetters = true)
@@ -177,6 +180,19 @@ public class Task implements Serializable {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Integer getStoryPoints() {
+        return this.storyPoints;
+    }
+
+    public Task storyPoints(Integer storyPoints) {
+        this.setStoryPoints(storyPoints);
+        return this;
+    }
+
+    public void setStoryPoints(Integer storyPoints) {
+        this.storyPoints = storyPoints;
     }
 
     public Set<Comment> getComments() {
@@ -336,6 +352,7 @@ public class Task implements Serializable {
             ", priority='" + getPriority() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
+            ", storyPoints=" + getStoryPoints() +
             ", assignee='" + (getAssignee() != null ? getAssignee().getLogin() : "null") + "'" +
             ", createdBy='" + (getCreatedBy() != null ? getCreatedBy().getLogin() : "null") + "'" +
             "}";

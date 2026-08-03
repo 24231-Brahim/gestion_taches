@@ -172,12 +172,7 @@
         <jhi-task-kanban-board [tasks]="tasks()" />
       }
       @case ('burndown') {
-        <jhi-epic-burndown-chart
-          [totalTasks]="epicStats().totalTasks"
-          [doneTasks]="epicStats().doneTasks"
-          [totalStoryPoints]="epicStats().totalStoryPoints"
-          [doneStoryPoints]="epicStats().doneStoryPoints"
-        />
+        <jhi-epic-burndown-chart [totalStoryPoints]="epicStats().totalStoryPoints" [doneStoryPoints]="epicStats().doneStoryPoints" />
       }
       @case ('timeline') {
         <div class="timeline-container">

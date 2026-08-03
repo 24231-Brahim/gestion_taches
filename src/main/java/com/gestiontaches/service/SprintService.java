@@ -264,7 +264,7 @@ public class SprintService {
         if (tasks.isEmpty()) {
             return;
         }
-        boolean allDone = tasks.stream().allMatch(t -> t.getStatus() == TaskStatus.DONE || t.getStatus() == TaskStatus.CANCELLED);
+        boolean allDone = tasks.stream().allMatch(t -> t.getStatus() == TaskStatus.DONE);
         if (allDone) {
             sprint.setStatus(SprintStatus.COMPLETED);
             sprintRepository.save(sprint);

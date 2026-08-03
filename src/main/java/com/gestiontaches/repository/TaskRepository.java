@@ -52,6 +52,8 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
 
     List<Task> findBySprintId(Long sprintId);
 
+    List<Task> findByEpicId(Long epicId);
+
     List<Task> findBySprintIdAndStatus(Long sprintId, TaskStatus status);
 
     List<Task> findByProjectIdAndSprintIsNull(Long projectId);
@@ -79,6 +81,21 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
 
     long countByAssigneeIdAndStatusNotInAndCreatedAtBefore(Long assigneeId, Collection<TaskStatus> statuses, Instant before);
 
+    @Query(
+        "SELECT t FROM Task t WHERE t.status NOT IN (com.gestiontaches.domain.enumeration.TaskStatus.DONE) AND ((t.sprint IS NOT NULL AND t.sprint.endDate < :today) OR (t.sprint IS NULL AND t.createdAt < :cutoff))"
+    )
+    List<Task> findOverdueTasks(@Param("today") java.time.LocalDate today, @Param("cutoff") java.time.Instant cutoff);
+
     @Query("SELECT t.status, COUNT(t) FROM Task t WHERE t.assignee.id = :assigneeId GROUP BY t.status")
     List<Object[]> countTasksGroupByStatusForAssignee(@Param("assigneeId") Long assigneeId);
+
+    @Query(
+        "select t from Task t left join fetch t.sprint left join fetch t.epic left join fetch t.project left join fetch t.assignee left join fetch t.createdBy where t.assignee.login = :login"
+    )
+    List<Task> findByAssigneeLoginWithToOneRelationships(@Param("login") String login);
+
+    @Query(
+        "SELECT t FROM Task t LEFT JOIN FETCH t.sprint LEFT JOIN FETCH t.epic LEFT JOIN FETCH t.project LEFT JOIN FETCH t.assignee LEFT JOIN FETCH t.createdBy WHERE t.project.id IN :projectIds AND (LOWER(t.title) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(t.description) LIKE LOWER(CONCAT('%', :query, '%')))"
+    )
+    List<Task> searchByQuery(@Param("query") String query, @Param("projectIds") Collection<Long> projectIds);
 }

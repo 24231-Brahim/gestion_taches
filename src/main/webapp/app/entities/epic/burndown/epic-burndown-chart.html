@@ -2,15 +2,15 @@
   <div class="burndown-stats">
     <div class="stat-card">
       <span class="stat-label">{{ 'gestionTachesApp.epic.burndown.total' | translate }}</span>
-      <span class="stat-value">{{ totalTasks() }}</span>
+      <span class="stat-value">{{ totalStoryPoints() }}</span>
     </div>
     <div class="stat-card">
       <span class="stat-label">{{ 'gestionTachesApp.epic.burndown.done' | translate }}</span>
-      <span class="stat-value done">{{ doneTasks() }}</span>
+      <span class="stat-value done">{{ doneStoryPoints() }}</span>
     </div>
     <div class="stat-card">
       <span class="stat-label">{{ 'gestionTachesApp.epic.burndown.remaining' | translate }}</span>
-      <span class="stat-value remaining">{{ totalTasks() - doneTasks() }}</span>
+      <span class="stat-value remaining">{{ totalStoryPoints() - doneStoryPoints() }}</span>
     </div>
   </div>
 

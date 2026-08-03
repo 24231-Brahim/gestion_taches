@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 
 import dayjs from 'dayjs/esm';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -11,15 +12,18 @@ import { AlertService } from 'app/core/util/alert.service';
 import { FormatMediumDatePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
+import { ITEM_DELETED_EVENT } from 'app/config/navigation.constants';
 import { TaskService } from 'app/entities/task/service/task.service';
 import { ITask } from 'app/entities/task/task.model';
+import { TaskDeleteDialog } from 'app/entities/task/delete/task-delete-dialog';
 import { SprintActiveBoard } from '../active-board/sprint-active-board';
 import { SprintBacklogPlanning } from '../backlog-planning/sprint-backlog-planning';
 import { SprintBurndownChart } from '../burndown/sprint-burndown-chart';
 import { SprintService, VelocityReport } from '../service/sprint.service';
+import { SprintTimeline } from '../timeline/sprint-timeline';
 import { ISprint } from '../sprint.model';
 
-type Tab = 'board' | 'planning' | 'burndown';
+type Tab = 'board' | 'planning' | 'tasks' | 'timeline';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -215,6 +219,7 @@ type Tab = 'board' | 'planning' | 'burndown';
     SprintActiveBoard,
     SprintBacklogPlanning,
     SprintBurndownChart,
+    SprintTimeline,
   ],
 })
 export class SprintDetail {
@@ -298,6 +303,8 @@ export class SprintDetail {
   protected readonly alertService = inject(AlertService);
   protected readonly translateService = inject(TranslateService);
   protected readonly accountService = inject(AccountService);
+  protected readonly router = inject(Router);
+  private readonly modalService = inject(NgbModal);
 
   private readonly _currentSprint = signal<ISprint | null>(null);
 
@@ -328,6 +335,24 @@ export class SprintDetail {
 
   onSelectTask(_task: ITask): void {
     // no-op for now
+  }
+
+  openCreateTaskModal(): void {
+    this.router.navigate(['/project', this.projectKey(), 'task', 'new']);
+  }
+
+  openEditTaskModal(task: ITask): void {
+    this.router.navigate(['/project', this.projectKey(), 'task', task.id, 'edit']);
+  }
+
+  deleteTask(task: ITask): void {
+    const modalRef = this.modalService.open(TaskDeleteDialog, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.task = task;
+    modalRef.closed.subscribe(reason => {
+      if (reason === ITEM_DELETED_EVENT) {
+        this.refreshTasks();
+      }
+    });
   }
 
   private refreshTasks(): void {

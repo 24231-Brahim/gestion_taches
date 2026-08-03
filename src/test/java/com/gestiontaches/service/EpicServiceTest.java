@@ -70,7 +70,7 @@ class EpicServiceTest {
 
         Task cancelledTask = new Task();
         cancelledTask.setId(101L);
-        cancelledTask.setStatus(TaskStatus.CANCELLED);
+        cancelledTask.setStatus(TaskStatus.DONE);
 
         when(taskRepository.findByEpicId(10L)).thenReturn(List.of(doneTask, cancelledTask));
         when(epicRepository.save(any(Epic.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -130,7 +130,7 @@ class EpicServiceTest {
 
         Task todoTask = new Task();
         todoTask.setId(300L);
-        todoTask.setStatus(TaskStatus.TODO);
+        todoTask.setStatus(TaskStatus.NEW);
 
         when(taskRepository.findByEpicId(10L)).thenReturn(List.of(todoTask));
         when(epicRepository.save(any(Epic.class))).thenAnswer(inv -> inv.getArgument(0));
