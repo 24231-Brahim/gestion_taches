@@ -15,9 +15,6 @@ import {
 import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
 
-// Polyfill DragEvent for jsdom
-(globalThis as any).DragEvent = (globalThis as any).Event;
-
 import { TaskStatus } from 'app/entities/enumerations/task-status.model';
 import { TaskService } from '../service/task.service';
 import { AlertService } from 'app/core/util/alert.service';
@@ -33,7 +30,7 @@ describe('TaskKanbanBoard', () => {
   let translateServiceMock: { instant: ReturnType<typeof vitest.fn> };
 
   const mockTasks: ITask[] = [
-    { ...sampleWithRequiredData, status: 'TODO' },
+    { ...sampleWithRequiredData, status: 'NEEDS_INFO' },
     { ...sampleWithPartialData, status: 'IN_PROGRESS' },
     { ...sampleWithFullData, status: 'DONE' },
   ];
@@ -72,11 +69,11 @@ describe('TaskKanbanBoard', () => {
     fixture.detectChanges();
     const cols = comp.getColumns();
     expect(cols.length).toBe(Object.keys(TaskStatus).length);
-    expect(cols.find(c => c.status === 'TODO')!.tasks.length).toBe(1);
+    expect(cols.find(c => c.status === 'NEEDS_INFO')!.tasks.length).toBe(1);
     expect(cols.find(c => c.status === 'IN_PROGRESS')!.tasks.length).toBe(1);
     expect(cols.find(c => c.status === 'DONE')!.tasks.length).toBe(1);
     expect(cols.find(c => c.status === 'NEW')!.tasks.length).toBe(0);
-    expect(cols.find(c => c.status === 'CANCELLED')!.tasks.length).toBe(0);
+    expect(cols.find(c => c.status === 'READY_FOR_TEST')!.tasks.length).toBe(0);
   });
 
   it('onDragStart should set dragTaskId', () => {
@@ -93,7 +90,7 @@ describe('TaskKanbanBoard', () => {
   });
 
   it('onDragLeave should reset dragOverStatus', () => {
-    comp.dragOverStatus = 'TODO';
+    comp.dragOverStatus = 'NEEDS_INFO';
     comp.onDragLeave();
     expect(comp.dragOverStatus).toBeNull();
   });
@@ -113,7 +110,7 @@ describe('TaskKanbanBoard', () => {
     fixture.componentRef.setInput('tasks', mockTasks);
     fixture.detectChanges();
     comp.dragTaskId = mockTasks[0].id;
-    comp.onDrop(new DragEvent('drop'), 'TODO');
+    comp.onDrop(new DragEvent('drop'), 'NEEDS_INFO');
     expect(taskServiceMock.partialUpdate).not.toHaveBeenCalled();
   });
 
@@ -134,7 +131,7 @@ describe('TaskKanbanBoard', () => {
 
   it('onDragEnd should reset drag state', () => {
     comp.dragTaskId = 42;
-    comp.dragOverStatus = 'TODO';
+    comp.dragOverStatus = 'NEEDS_INFO';
     comp.onDragEnd();
     expect(comp.dragTaskId).toBeNull();
     expect(comp.dragOverStatus).toBeNull();

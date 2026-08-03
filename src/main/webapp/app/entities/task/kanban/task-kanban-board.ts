@@ -5,9 +5,10 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { TaskStatus } from 'app/entities/enumerations/task-status.model';
+import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
 import { TranslateDirective } from 'app/shared/language';
-import { ISSUE_TYPE_COLORS, ISSUE_TYPE_ICONS, PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES } from '../task-helper';
+import { PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES } from '../task-helper';
 import { ITask } from '../task.model';
 import { TaskService } from '../service/task.service';
 
@@ -33,7 +34,7 @@ interface KanbanColumn {
         flex: 1;
         min-width: 220px;
         max-width: 300px;
-        background: var(--color-surface-container, #1b2025);
+        background: var(--color-surface-container-low, #1b2025);
         border-radius: var(--radius-lg);
         border: 1px solid var(--color-outline-variant, #2a3038);
         transition: border-color 0.2s;
@@ -43,24 +44,22 @@ interface KanbanColumn {
       }
       .kanban-column-header {
         padding: 12px;
-        border-top: 2px solid;
         border-radius: var(--radius-lg) var(--radius-lg) 0 0;
         display: flex;
         align-items: center;
         justify-content: space-between;
       }
       .kanban-column-title {
-        font-family: var(--font-inter);
+        font-family: var(--font-display);
         font-size: 0.75rem;
-        text-transform: uppercase;
+        text-transform: none;
         letter-spacing: 0;
-        color: var(--color-text, #dfe3ea);
-        font-weight: 600;
+        font-weight: 700;
       }
       .kanban-column-count {
-        background: var(--color-surface-container-high, #262d36);
-        color: var(--color-text-muted, #6a8fac);
-        border-radius: 9999px;
+        background: rgb(0 0 0 / 8%);
+        color: inherit;
+        border-radius: var(--radius-pill, 9999px);
         padding: 1px 8px;
         font-size: 0.75rem;
         font-family: var(--font-inter);
@@ -74,7 +73,7 @@ interface KanbanColumn {
         border-radius: 0 0 var(--radius-lg) var(--radius-lg);
       }
       .kanban-card {
-        background: var(--color-surface-container, #1b2025);
+        background: var(--color-surface, #1b2025);
         border: 1px solid var(--color-outline-variant, #2a3038);
         border-radius: var(--radius-lg);
         padding: 10px;
@@ -90,6 +89,14 @@ interface KanbanColumn {
       }
       .kanban-card-dragging {
         opacity: 0.5;
+      }
+      .kanban-card-not-draggable {
+        cursor: default;
+        opacity: 0.75;
+      }
+      .kanban-card-not-draggable:hover {
+        transform: none;
+        box-shadow: var(--shadow-sm);
       }
       .kanban-card-top {
         display: flex;
@@ -111,6 +118,17 @@ interface KanbanColumn {
         margin-bottom: 8px;
         word-break: break-word;
       }
+      .kanban-card-project-tag {
+        display: inline-block;
+        font-family: var(--font-display);
+        font-size: 0.65rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: var(--radius-pill, 9999px);
+        background: var(--color-tag-blue-bg, var(--color-primary-fixed));
+        color: var(--color-tag-blue-fg, var(--color-primary));
+        margin-bottom: 8px;
+      }
       .kanban-card-footer {
         display: flex;
         align-items: center;
@@ -120,8 +138,8 @@ interface KanbanColumn {
         width: 22px;
         height: 22px;
         border-radius: 50%;
-        background: var(--color-primary-container, #0099fe);
-        color: var(--color-on-primary-container);
+        background: var(--color-primary-container, #25a7fd);
+        color: var(--color-on-primary-container, #fff);
         font-size: 0.65rem;
         font-weight: 600;
         display: flex;
@@ -135,11 +153,10 @@ interface KanbanColumn {
 })
 export class TaskKanbanBoard {
   readonly tasks = input<ITask[]>([]);
+  readonly showProjectTag = input<boolean>(false);
   readonly selectTask = output<ITask>();
   readonly taskStatusChanged = output<{ taskId: number; status: string }>();
 
-  readonly typeColors = ISSUE_TYPE_COLORS;
-  readonly typeIcons = ISSUE_TYPE_ICONS;
   readonly priorityColors = PRIORITY_COLORS;
   readonly priorityIcons = PRIORITY_ICONS;
   readonly statusBadges = STATUS_BADGES;
@@ -155,6 +172,7 @@ export class TaskKanbanBoard {
   protected readonly taskService = inject(TaskService);
   protected readonly alertService = inject(AlertService);
   protected readonly translateService = inject(TranslateService);
+  protected readonly accountService = inject(AccountService);
 
   getColumns(): KanbanColumn[] {
     return this.columns.map(col => ({
@@ -163,7 +181,25 @@ export class TaskKanbanBoard {
     }));
   }
 
-  onDragStart(task: ITask): void {
+  // A card may only be dragged (status changed) by ADMIN/PROJET_MANAGER or the task's own
+  // assignee — matches TaskService.checkTaskUpdatePermission(). Other members still see the card
+  // (read-only, for context) but it renders non-draggable.
+  canDrag(task: ITask): boolean {
+    const account = this.accountService.account();
+    if (!account) {
+      return false;
+    }
+    if (account.authorities?.includes('ROLE_ADMIN') || account.authorities?.includes('ROLE_PROJET_MANAGER')) {
+      return true;
+    }
+    return account.login === task.assignee?.login;
+  }
+
+  onDragStart(task: ITask, event: DragEvent): void {
+    if (!this.canDrag(task)) {
+      event.preventDefault();
+      return;
+    }
     this.dragTaskId = task.id;
   }
 
@@ -183,7 +219,7 @@ export class TaskKanbanBoard {
       return;
     }
     const task = this.tasks().find(i => i.id === this.dragTaskId);
-    if (!task || task.status === targetStatus) {
+    if (!task || task.status === targetStatus || !this.canDrag(task)) {
       this.dragTaskId = null;
       return;
     }

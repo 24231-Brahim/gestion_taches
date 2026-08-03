@@ -2,18 +2,17 @@ import { HttpHeaders } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Data, ParamMap, Router } from '@angular/router';
+import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subscription, combineLatest, from, of, switchMap, tap } from 'rxjs';
+import { Subscription, combineLatest, of, switchMap, tap } from 'rxjs';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { CsvDownloadService } from 'app/shared/csv/csv-download.service';
-import { EntityEventService, EntityType } from 'app/core/util/entity-event.service';
-import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, ITEM_SAVED_EVENT, SORT } from 'app/config/navigation.constants';
+import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { AccountService } from 'app/core/auth/account.service';
 import { Alert } from 'app/shared/alert/alert';
@@ -29,9 +28,8 @@ import { IProject } from 'app/entities/project/project.model';
 import { ProjectService } from 'app/entities/project/service/project.service';
 import { TaskDeleteDialog } from '../delete/task-delete-dialog';
 import { TaskDetailPanel } from '../detail/task-detail-panel';
-import { TaskFormModal } from '../update/task-form-modal';
 import { TaskKanbanBoard } from '../kanban/task-kanban-board';
-import { ISSUE_TYPE_COLORS, ISSUE_TYPE_ICONS, PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES, ViewMode } from '../task-helper';
+import { PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES, ViewMode } from '../task-helper';
 import { ITask } from '../task.model';
 import { TaskService } from '../service/task.service';
 
@@ -90,16 +88,15 @@ import { TaskService } from '../service/task.service';
       }
       .view-mode-tabs .btn-active {
         background: var(--color-primary, #97cbff);
-        color: var(--color-on-primary-container);
+        color: #000;
       }
       .status-badge {
         display: inline-block;
         padding: 2px 10px;
-        border-radius: 9999px;
+        border-radius: var(--radius-pill, 9999px);
         font-size: 0.75rem;
-        color: var(--color-on-primary-container);
         font-weight: 600;
-        font-family: var(--font-inter);
+        font-family: var(--font-display);
       }
       .task-row {
         cursor: pointer;
@@ -119,8 +116,8 @@ import { TaskService } from '../service/task.service';
         width: 24px;
         height: 24px;
         border-radius: 50%;
-        background: var(--color-primary-container, #0099fe);
-        color: var(--color-on-primary-container);
+        background: var(--color-primary-container, #25a7fd);
+        color: #000;
         font-size: 0.65rem;
         font-weight: 600;
         display: inline-flex;
@@ -131,6 +128,7 @@ import { TaskService } from '../service/task.service';
     `,
   ],
   imports: [
+    RouterLink,
     FormsModule,
     FontAwesomeModule,
     AlertError,
@@ -156,7 +154,6 @@ export class Task implements OnInit {
   readonly totalItems = signal(0);
   readonly page = signal(1);
   readonly searchQuery = signal('');
-  readonly debouncedSearchQuery = signal('');
 
   readonly currentProjectKey = signal<string | null>(null);
   readonly currentProject = signal<IProject | null>(null);
@@ -168,7 +165,7 @@ export class Task implements OnInit {
   private readonly csvDownloadService = inject(CsvDownloadService);
 
   filteredTasks = computed(() => {
-    const q = this.debouncedSearchQuery().toLowerCase();
+    const q = this.searchQuery().toLowerCase();
     if (!q) {
       return this.tasks();
     }
@@ -179,8 +176,6 @@ export class Task implements OnInit {
   readonly router = inject(Router);
   readonly taskService = inject(TaskService);
   readonly isLoading = this.taskService.tasksResource.isLoading;
-  readonly typeColors = ISSUE_TYPE_COLORS;
-  readonly typeIcons = ISSUE_TYPE_ICONS;
   readonly priorityColors = PRIORITY_COLORS;
   readonly priorityIcons = PRIORITY_ICONS;
   readonly statusBadges = STATUS_BADGES;
@@ -194,7 +189,6 @@ export class Task implements OnInit {
   protected readonly projectService = inject(ProjectService);
 
   protected readonly destroyRef = inject(DestroyRef);
-  protected readonly entityEventService = inject(EntityEventService);
 
   constructor() {
     effect(() => {
@@ -214,21 +208,28 @@ export class Task implements OnInit {
         });
       }
     });
-    effect(() => {
-      const value = this.searchQuery();
-      const handle = window.setTimeout(() => this.debouncedSearchQuery.set(value), 300);
-      return () => window.clearTimeout(handle);
-    });
   }
 
+  // This pencil icon routes to the full CRUD form (sprint/epic/project/assignee included), which
+  // is management-only (matches the route guard on /task/:id/edit and TaskService.delete()'s
+  // requireProjectRole(OWNER, MANAGER)). An assignee edits their own task's status/description/
+  // priority inline via the row click → task-detail-panel drawer instead, not through this link.
   canEditTask(task: ITask): boolean {
     const role = this.userProjectRoles().get(task.project?.id ?? -1);
-    if (!role) return false;
-    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER || task.createdBy?.login === this.currentUserLogin();
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
   }
 
   canDeleteTask(task: ITask): boolean {
     return this.canEditTask(task);
+  }
+
+  canCreateTask(): boolean {
+    const project = this.currentProject();
+    if (!project) {
+      return false;
+    }
+    const role = this.userProjectRoles().get(project.id);
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
   }
 
   exportCsv(): void {
@@ -254,9 +255,11 @@ export class Task implements OnInit {
           const key = params.get('key');
           if (key) {
             this.currentProjectKey.set(key);
-            return from(this.projectService.findByKey(key).pipe(tap(project => this.currentProject.set(project))));
+            return this.projectService.findByKey(key).pipe(tap(project => this.currentProject.set(project)));
           }
-          return of([]);
+          this.currentProjectKey.set(null);
+          this.currentProject.set(null);
+          return of(null);
         }),
         switchMap(() => combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])),
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
@@ -264,10 +267,6 @@ export class Task implements OnInit {
       )
       .subscribe();
     this.loadUserProjectRoles();
-    this.entityEventService
-      .onEntityType(EntityType.TASK)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.load());
   }
 
   loadUserProjectRoles(): void {
@@ -289,37 +288,6 @@ export class Task implements OnInit {
       .pipe(
         tap(reason => {
           if (reason === ITEM_DELETED_EVENT) {
-            this.taskService.refresh();
-            this.load();
-          }
-        }),
-      )
-      .subscribe();
-  }
-
-  openCreateTaskModal(): void {
-    const modalRef = this.modalService.open(TaskFormModal, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.projectKey = this.currentProjectKey() ?? undefined;
-    modalRef.closed
-      .pipe(
-        tap(reason => {
-          if (reason === ITEM_SAVED_EVENT) {
-            this.taskService.refresh();
-            this.load();
-          }
-        }),
-      )
-      .subscribe();
-  }
-
-  openEditTaskModal(task: ITask): void {
-    const modalRef = this.modalService.open(TaskFormModal, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.task = task;
-    modalRef.componentInstance.projectKey = this.currentProjectKey() ?? undefined;
-    modalRef.closed
-      .pipe(
-        tap(reason => {
-          if (reason === ITEM_SAVED_EVENT) {
             this.taskService.refresh();
             this.load();
           }
@@ -369,6 +337,9 @@ export class Task implements OnInit {
     this.page.set(+(page ?? 1));
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
     this.filters.initializeFromParams(params);
+    if (params.get('view') === 'kanban') {
+      this.viewMode.set('kanban');
+    }
   }
 
   protected fillComponentAttributesFromResponseBody(data: ITask[]): ITask[] {

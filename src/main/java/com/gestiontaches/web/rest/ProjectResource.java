@@ -3,6 +3,7 @@ package com.gestiontaches.web.rest;
 import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.ProjectService;
+import com.gestiontaches.service.dto.ProjectCardStatsDTO;
 import com.gestiontaches.service.dto.ProjectDTO;
 import com.gestiontaches.service.dto.ProjectMemberDTO;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
@@ -149,11 +150,27 @@ public class ProjectResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of Projects in body.
      */
     @GetMapping("")
-    public ResponseEntity<List<ProjectDTO>> getAllProjects(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
+    public ResponseEntity<List<ProjectDTO>> getAllProjects(
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable,
+        @RequestParam(name = "scope", required = false, defaultValue = "all") String scope
+    ) {
         LOG.debug("REST request to get a page of Projects");
-        Page<ProjectDTO> page = projectService.findAll(pageable);
+        Page<ProjectDTO> page = projectService.findAll(pageable, "mine".equalsIgnoreCase(scope));
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
+    /**
+     * {@code GET  /projects/progress} : get task-progress and active-sprint stats for every
+     * project visible to the current user, for the Projects card grid.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of stats in body.
+     */
+    @GetMapping("/progress")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<ProjectCardStatsDTO>> getProjectCardStats() {
+        LOG.debug("REST request to get project card stats");
+        return ResponseEntity.ok(projectService.getProjectCardStats());
     }
 
     /**
@@ -243,6 +260,8 @@ public class ProjectResource {
             AuthoritiesConstants.ADMIN +
             "', '" +
             AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
             "', '" +
             AuthoritiesConstants.USER +
             "')"

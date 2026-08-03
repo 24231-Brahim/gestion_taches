@@ -88,6 +88,13 @@ classDiagram
         +Instant createdAt
     }
 
+    class TaskTransition {
+        +String fromStatus
+        +String toStatus
+        +Long timeSpentInSeconds
+        +Instant createdAt
+    }
+
     class Notification {
         +String message
         +String taskTitle
@@ -114,11 +121,10 @@ classDiagram
     class TaskStatus {
         <<enumeration>>
         NEW
-        TODO
         IN_PROGRESS
-        IN_REVIEW
+        READY_FOR_TEST
         DONE
-        CANCELLED
+        NEEDS_INFO
     }
 
     class ProjectRole {
@@ -149,11 +155,13 @@ classDiagram
     Task "1" --> "*" Comment : reçoit
     Task "1" --> "*" Attachment : contient
     Task "1" --> "*" TaskHistory : trace
+    Task "1" --> "*" TaskTransition : trace
     Task "1" --> "*" Notification : déclenche
     User "1" --> "*" Task : assigné (assignee)
     User "1" --> "*" Task : crée (createdBy)
     User "1" --> "*" Comment : écrit (author)
     User "1" --> "*" TaskHistory : effectue
+    User "1" --> "*" TaskTransition : effectue
     User "1" --> "*" Notification : reçoit
     User "1" --> "*" UserAuthority : possède
     Authority "1" --> "*" UserAuthority : associé à
@@ -277,6 +285,16 @@ erDiagram
         Long user_id FK
     }
 
+    TASK_TRANSITION {
+        Long id PK
+        String fromStatus
+        String toStatus
+        Long timeSpentInSeconds
+        Instant createdAt
+        Long task_id FK
+        Long user_id FK
+    }
+
     NOTIFICATION {
         Long id PK
         String message
@@ -298,11 +316,13 @@ erDiagram
     TASK ||--o{ COMMENT : "reçoit"
     TASK ||--o{ ATTACHMENT : "contient"
     TASK ||--o{ TASK_HISTORY : "trace"
+    TASK ||--o{ TASK_TRANSITION : "trace"
     TASK ||--o{ NOTIFICATION : "déclenche"
     USER ||--o{ TASK : "assigné (assignee)"
     USER ||--o{ TASK : "crée (createdBy)"
     USER ||--o{ COMMENT : "écrit (author)"
     USER ||--o{ TASK_HISTORY : "effectue"
+    USER ||--o{ TASK_TRANSITION : "effectue"
     USER ||--o{ NOTIFICATION : "reçoit"
     USER ||--o{ USER_AUTHORITY : "possède"
     AUTHORITY ||--o{ USER_AUTHORITY : "associé à"
@@ -411,14 +431,14 @@ Regroupement logique de tâches correspondant à une fonctionnalité transverse 
 
 ### `task`
 
-Unité de travail atomique. Suit un cycle de vie complet (NEW → TODO → IN_PROGRESS → IN_REVIEW → DONE). Liée à un projet (obligatoire), un sprint (optionnel) et/ou un epic (optionnel). Possède un assignee et un créateur.
+Unité de travail atomique. Suit un cycle de vie complet (NEW → IN_PROGRESS → READY_FOR_TEST → DONE, avec NEEDS_INFO en cas de blocage). Liée à un projet (obligatoire), un sprint (optionnel) et/ou un epic (optionnel). Possède un assignee et un créateur.
 
 | Colonne | Type | Contraintes |
 |---------|------|-------------|
 | `id` | `bigint` | PRIMARY KEY |
 | `title` | `varchar(200)` | NOT NULL |
 | `description` | `varchar(5000)` | |
-| `status` | `varchar(255)` | NOT NULL (`NEW`/`TODO`/`IN_PROGRESS`/`IN_REVIEW`/`DONE`/`CANCELLED`) |
+| `status` | `varchar(255)` | NOT NULL (`NEW`/`IN_PROGRESS`/`READY_FOR_TEST`/`DONE`/`NEEDS_INFO`) |
 | `priority` | `varchar(255)` | NOT NULL (`LOWEST`/`LOW`/`MEDIUM`/`HIGH`/`HIGHEST`) |
 | `created_at` | `datetime` | NOT NULL |
 | `updated_at` | `datetime` | |
@@ -466,6 +486,20 @@ Trace d'audit détaillant chaque modification d'une tâche. Enregistre l'action 
 | `task_id` | `bigint` | FK → `task(id)`, NOT NULL |
 | `user_id` | `bigint` | FK → `jhi_user(id)`, NOT NULL |
 
+### `task_transition`
+
+Trace chaque changement de statut d'une tâche (`fromStatus` → `toStatus`), avec le temps passé dans le statut précédent et l'utilisateur à l'origine du changement.
+
+| Colonne | Type | Contraintes |
+|---------|------|-------------|
+| `id` | `bigint` | PRIMARY KEY |
+| `from_status` | `varchar(50)` | |
+| `to_status` | `varchar(50)` | NOT NULL |
+| `time_spent_in_seconds` | `bigint` | |
+| `created_at` | `datetime` | NOT NULL |
+| `task_id` | `bigint` | FK → `task(id)`, NOT NULL |
+| `user_id` | `bigint` | FK → `jhi_user(id)` |
+
 ### `notification`
 
 Notification in-app pour informer un utilisateur (ex: assignation à une tâche). Contient un message, une référence vers la tâche et un statut de lecture.
@@ -488,7 +522,7 @@ Notification in-app pour informer un utilisateur (ex: assignation à une tâche)
 |------|---------|-------------|
 | `SprintStatus` | `PLANNED`, `ACTIVE`, `COMPLETED`, `CANCELLED` | Sprint |
 | `EpicStatus` | `TODO`, `IN_PROGRESS`, `DONE`, `CANCELLED` | Epic |
-| `TaskStatus` | `NEW`, `TODO`, `IN_PROGRESS`, `IN_REVIEW`, `DONE`, `CANCELLED` | Task |
+| `TaskStatus` | `NEW`, `IN_PROGRESS`, `READY_FOR_TEST`, `DONE`, `NEEDS_INFO` | Task |
 | `Priority` | `LOWEST`, `LOW`, `MEDIUM`, `HIGH`, `HIGHEST` | Task, Epic |
 | `ProjectRole` | `OWNER`, `MANAGER`, `MEMBER` | ProjectMember |
 
@@ -498,15 +532,16 @@ Notification in-app pour informer un utilisateur (ex: assignation à une tâche)
 
 | Table | Dépend de | Est utilisé par |
 |-------|-----------|-----------------|
-| jhi_user | — | Project (owner), ProjectMember, Task (assignee, createdBy), Comment (author), TaskHistory (user), Notification (user) |
+| jhi_user | — | Project (owner), ProjectMember, Task (assignee, createdBy), Comment (author), TaskHistory (user), TaskTransition (user), Notification (user) |
 | jhi_authority | — | jhi_user_authority |
 | jhi_user_authority | jhi_user, jhi_authority | — |
 | project | jhi_user (owner) | Sprint, Epic, Task, ProjectMember |
 | project_member | project, jhi_user | — |
 | sprint | project | Task |
 | epic | project | Task |
-| task | project, sprint, epic, jhi_user (assignee, createdBy) | Comment, Attachment, TaskHistory, Notification |
+| task | project, sprint, epic, jhi_user (assignee, createdBy) | Comment, Attachment, TaskHistory, TaskTransition, Notification |
 | comment | task, jhi_user (author) | — |
 | attachment | task | — |
 | task_history | task, jhi_user (user) | — |
+| task_transition | task, jhi_user (user) | — |
 | notification | task, jhi_user (user) | — |

@@ -2,11 +2,10 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 
-interface TimelineItem {
+export interface TimelineItem {
   id: number;
   title: string;
   status: string;
-  statusCode: string;
   date: string;
   color: string;
 }
@@ -18,7 +17,7 @@ interface TimelineItem {
   imports: [TranslateModule],
   template: `
     <div class="timeline-card">
-      <h3 class="timeline-title">{{ 'dashboard.timeline.title' | translate }}</h3>
+      <h3 class="timeline-title" jhiTranslate="dashboard.timeline.title">RECENT ACTIVITY</h3>
       <div class="timeline-body">
         @if (activities().length > 0) {
           <div class="timeline-items">
@@ -27,13 +26,13 @@ interface TimelineItem {
                 <div class="timeline-marker" [style.background]="a.color"></div>
                 <div class="timeline-content">
                   <span class="tl-title">{{ a.title }}</span>
-                  <span class="tl-meta">{{ 'gestionTachesApp.TaskStatus.' + a.statusCode | translate }} — {{ a.date }}</span>
+                  <span class="tl-meta">{{ a.status }} — {{ a.date }}</span>
                 </div>
               </div>
             }
           </div>
         } @else {
-          <p class="text-muted">{{ 'dashboard.noData' | translate }}</p>
+          <p class="text-muted" jhiTranslate="dashboard.noData">No data</p>
         }
       </div>
     </div>
@@ -106,10 +105,17 @@ interface TimelineItem {
   ],
 })
 export class DashboardTimelineComponent {
-  readonly tasks = input.required<any[]>();
+  readonly tasks = input<any[]>([]);
+  // When set, used verbatim instead of deriving a feed from `tasks` — for callers (like the
+  // developer dashboard) that already have a real activity feed (e.g. TaskHistory entries).
+  readonly activitiesOverride = input<TimelineItem[] | null>(null);
 
   readonly activities = computed<TimelineItem[]>(() => {
-    const colors = ['#22c55e', '#0099fe', '#f59e0b', '#a855f7', '#52d6fd'];
+    const override = this.activitiesOverride();
+    if (override) {
+      return override;
+    }
+    const colors = ['#22c55e', '#25a7fd', '#f59e0b', '#a855f7', '#52d6fd'];
     const sorted = [...this.tasks()]
       .sort((a, b) => {
         const da = a.updatedAt ?? a.createdAt ?? '';
@@ -117,25 +123,12 @@ export class DashboardTimelineComponent {
         return db.localeCompare(da);
       })
       .slice(0, 10);
-    return sorted.map((task, i) => {
-      const dateStr = task.updatedAt ?? task.createdAt ?? '';
-      let formattedDate = '—';
-      if (dateStr) {
-        try {
-          const d = new Date(dateStr);
-          formattedDate = d.toLocaleDateString('ar', { day: '2-digit', month: 'short', year: 'numeric' });
-        } catch {
-          formattedDate = dateStr;
-        }
-      }
-      return {
-        id: task.id,
-        title: task.title ?? 'Untitled',
-        status: task.status ?? 'N/A',
-        statusCode: task.status ?? '',
-        date: formattedDate,
-        color: colors[i % colors.length],
-      };
-    });
+    return sorted.map((task, i) => ({
+      id: task.id,
+      title: task.title ?? 'Untitled',
+      status: task.status ?? 'N/A',
+      date: task.updatedAt ?? task.createdAt ?? '—',
+      color: colors[i % colors.length],
+    }));
   });
 }

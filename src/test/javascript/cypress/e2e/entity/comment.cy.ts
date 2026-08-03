@@ -18,7 +18,7 @@ describe('Comment e2e test', () => {
   // const commentSample = {"content":"fourbe broum","createdAt":"2026-06-24T00:17:47.683Z"};
 
   let comment;
-  // let issue;
+  // let task;
 
   before(() => {
     cy.credentials().then(credentials => {
@@ -35,10 +35,10 @@ describe('Comment e2e test', () => {
     // create an instance at the required relationship entity:
     cy.authenticatedRequest({
       method: 'POST',
-      url: '/api/issues',
-      body: {"title":"multiplier","description":"commis de manière à vaincre","type":"BUG","status":"CANCELLED","priority":"LOWEST","createdAt":"2026-06-23T11:51:45.653Z","updatedAt":"2026-06-23T14:36:59.395Z"},
+      url: '/api/tasks',
+      body: {"title":"multiplier","description":"commis de manière à vaincre","status":"CANCELLED","priority":"LOWEST","createdAt":"2026-06-23T11:51:45.653Z","updatedAt":"2026-06-23T14:36:59.395Z"},
     }).then(({ body }) => {
-      issue = body;
+      task = body;
     });
   });
    */
@@ -52,9 +52,9 @@ describe('Comment e2e test', () => {
   /* Disabled due to incompatibility
   beforeEach(() => {
     // Simulate relationships api for better performance and reproducibility.
-    cy.intercept('GET', '/api/issues', {
+    cy.intercept('GET', '/api/tasks', {
       statusCode: 200,
-      body: [issue],
+      body: [task],
     });
 
   });
@@ -73,12 +73,12 @@ describe('Comment e2e test', () => {
 
   /* Disabled due to incompatibility
   afterEach(() => {
-    if (issue) {
+    if (task) {
       cy.authenticatedRequest({
         method: 'DELETE',
-        url: `/api/issues/${issue.id}`,
+        url: `/api/tasks/${task.id}`,
       }).then(() => {
-        issue = undefined;
+        task = undefined;
       });
     }
   });
@@ -131,7 +131,7 @@ describe('Comment e2e test', () => {
           url: '/api/comments',
           body: {
             ...commentSample,
-            issue: issue,
+            task: task,
           },
         }).then(({ body }) => {
           comment = body;
@@ -233,7 +233,7 @@ describe('Comment e2e test', () => {
       cy.get(`[data-cy="createdAt"]`).blur();
       cy.get(`[data-cy="createdAt"]`).should('have.value', '2026-06-24T00:20');
 
-      cy.get(`[data-cy="issue"]`).select(1);
+      cy.get(`[data-cy="task"]`).select(1);
 
       cy.get(entityCreateSaveButtonSelector).click();
 

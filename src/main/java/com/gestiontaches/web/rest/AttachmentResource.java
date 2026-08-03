@@ -1,25 +1,22 @@
 package com.gestiontaches.web.rest;
 
 import com.gestiontaches.domain.Attachment;
-import com.gestiontaches.domain.Task;
 import com.gestiontaches.repository.AttachmentRepository;
 import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.AttachmentService;
 import com.gestiontaches.service.dto.AttachmentDTO;
 import com.gestiontaches.service.dto.TaskDTO;
-import com.gestiontaches.service.mapper.TaskMapper;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -60,7 +57,6 @@ public class AttachmentResource {
     private final AttachmentService attachmentService;
     private final AttachmentRepository attachmentRepository;
     private final TaskRepository taskRepository;
-    private final TaskMapper taskMapper;
 
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
@@ -68,13 +64,11 @@ public class AttachmentResource {
     public AttachmentResource(
         AttachmentService attachmentService,
         AttachmentRepository attachmentRepository,
-        TaskRepository taskRepository,
-        TaskMapper taskMapper
+        TaskRepository taskRepository
     ) {
         this.attachmentService = attachmentService;
         this.attachmentRepository = attachmentRepository;
         this.taskRepository = taskRepository;
-        this.taskMapper = taskMapper;
     }
 
     /**
@@ -92,16 +86,14 @@ public class AttachmentResource {
             AuthoritiesConstants.PROJET_MANAGER +
             "', '" +
             AuthoritiesConstants.DEVELOPER +
-            "', '" +
-            AuthoritiesConstants.USER +
             "')"
     )
     public ResponseEntity<AttachmentDTO> uploadAttachment(@RequestParam("file") MultipartFile file, @RequestParam("taskId") Long taskId)
         throws URISyntaxException, IOException {
         LOG.debug("REST request to upload Attachment for Task : {}", taskId);
-        Task task = taskRepository
-            .findById(taskId)
-            .orElseThrow(() -> new BadRequestAlertException("Task not found", ENTITY_NAME, "idnotfound"));
+        if (!taskRepository.existsById(taskId)) {
+            throw new BadRequestAlertException("Task not found", ENTITY_NAME, "idnotfound");
+        }
         String originalName = file.getOriginalFilename();
         if (originalName == null || originalName.isBlank()) {
             throw new BadRequestAlertException("File name is required", ENTITY_NAME, "filenamerequired");
@@ -110,25 +102,21 @@ public class AttachmentResource {
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
         Files.createDirectories(uploadPath);
         Path filePath = uploadPath.resolve(storedName);
-        try (InputStream inputStream = file.getInputStream()) {
-            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-        }
-        Attachment attachment = new Attachment();
-        attachment.setFileName(originalName);
-        attachment.setFilePath(storedName);
-        attachment.setUploadedAt(Instant.now());
-        attachment.setTask(task);
-        attachment = attachmentRepository.save(attachment);
+        file.transferTo(filePath.toFile());
         AttachmentDTO attachmentDTO = new AttachmentDTO();
-        attachmentDTO.setId(attachment.getId());
-        attachmentDTO.setFileName(attachment.getFileName());
-        attachmentDTO.setFilePath(attachment.getFilePath());
-        attachmentDTO.setUploadedAt(attachment.getUploadedAt());
-        TaskDTO taskDTO = new TaskDTO();
-        taskDTO.setId(task.getId());
-        attachmentDTO.setTask(taskDTO);
-        return ResponseEntity.created(new URI("/api/attachments/" + attachment.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, attachment.getId().toString()))
+        attachmentDTO.setFileName(originalName);
+        attachmentDTO.setFilePath(storedName);
+        attachmentDTO.setUploadedAt(Instant.now());
+        // Only the id is needed — AttachmentService.save() re-fetches the Task itself. Mapping the
+        // full Task (including lazy sprint/epic/assignee associations) here throws
+        // LazyInitializationException outside of an active session on this non-transactional
+        // multipart endpoint.
+        TaskDTO taskRef = new TaskDTO();
+        taskRef.setId(taskId);
+        attachmentDTO.setTask(taskRef);
+        attachmentDTO = attachmentService.save(attachmentDTO);
+        return ResponseEntity.created(new URI("/api/attachments/" + attachmentDTO.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, attachmentDTO.getId().toString()))
             .body(attachmentDTO);
     }
 

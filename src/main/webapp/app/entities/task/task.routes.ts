@@ -28,6 +28,7 @@ const taskRoute: Routes = [
     resolve: {
       task: TaskResolve,
     },
+    data: { authorities: ['ROLE_ADMIN', 'ROLE_PROJET_MANAGER'] },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -36,6 +37,10 @@ const taskRoute: Routes = [
     resolve: {
       task: TaskResolve,
     },
+    // The full CRUD form exposes sprint/epic/project/assignee reassignment — management-only.
+    // A DEVELOPER edits their own assigned task's status/description/priority inline via the
+    // Kanban drawer / task-detail-panel (PATCH), never through this page.
+    data: { authorities: ['ROLE_ADMIN', 'ROLE_PROJET_MANAGER'] },
     canActivate: [UserRouteAccessService],
   },
 ];

@@ -1,7 +1,13 @@
 package com.gestiontaches.service;
 
 import com.gestiontaches.domain.Attachment;
+import com.gestiontaches.domain.Task;
+import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.AttachmentRepository;
+import com.gestiontaches.repository.TaskRepository;
+import com.gestiontaches.repository.UserRepository;
+import com.gestiontaches.security.AuthoritiesConstants;
+import com.gestiontaches.security.SecurityUtils;
 import com.gestiontaches.service.dto.AttachmentDTO;
 import com.gestiontaches.service.mapper.AttachmentMapper;
 import java.util.List;
@@ -10,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,9 +33,24 @@ public class AttachmentService {
 
     private final AttachmentMapper attachmentMapper;
 
-    public AttachmentService(AttachmentRepository attachmentRepository, AttachmentMapper attachmentMapper) {
+    private final UserRepository userRepository;
+
+    private final TaskRepository taskRepository;
+
+    private final ProjectPermissionService projectPermissionService;
+
+    public AttachmentService(
+        AttachmentRepository attachmentRepository,
+        AttachmentMapper attachmentMapper,
+        UserRepository userRepository,
+        TaskRepository taskRepository,
+        ProjectPermissionService projectPermissionService
+    ) {
         this.attachmentRepository = attachmentRepository;
         this.attachmentMapper = attachmentMapper;
+        this.userRepository = userRepository;
+        this.taskRepository = taskRepository;
+        this.projectPermissionService = projectPermissionService;
     }
 
     /**
@@ -39,7 +61,13 @@ public class AttachmentService {
      */
     public AttachmentDTO save(AttachmentDTO attachmentDTO) {
         LOG.debug("Request to save Attachment : {}", attachmentDTO);
+        Task task = taskRepository.findById(attachmentDTO.getTask().getId()).orElseThrow(() -> new RuntimeException("Task not found"));
+        // Same rule as comments: uploading requires at least view access to the task's project
+        // (membership, or ADMIN/PROJET_MANAGER) — not just any authenticated account.
+        projectPermissionService.requireProjectAccess(task.getProject().getId());
         Attachment attachment = attachmentMapper.toEntity(attachmentDTO);
+        attachment.setTask(task);
+        attachment.setUploadedBy(getCurrentUser());
         attachment = attachmentRepository.save(attachment);
         return attachmentMapper.toDto(attachment);
     }
@@ -52,9 +80,19 @@ public class AttachmentService {
      */
     public AttachmentDTO update(AttachmentDTO attachmentDTO) {
         LOG.debug("Request to update Attachment : {}", attachmentDTO);
-        Attachment attachment = attachmentMapper.toEntity(attachmentDTO);
-        attachment = attachmentRepository.save(attachment);
-        return attachmentMapper.toDto(attachment);
+        return attachmentRepository
+            .findById(attachmentDTO.getId())
+            .map(existingAttachment -> {
+                checkCanModifyAttachment(existingAttachment);
+                User uploadedBy = existingAttachment.getUploadedBy();
+                Task task = existingAttachment.getTask();
+                attachmentMapper.partialUpdate(existingAttachment, attachmentDTO);
+                preserveOwnedFields(existingAttachment, uploadedBy, task);
+                return existingAttachment;
+            })
+            .map(attachmentRepository::save)
+            .map(attachmentMapper::toDto)
+            .orElseThrow(() -> new RuntimeException("Attachment not found"));
     }
 
     /**
@@ -69,7 +107,11 @@ public class AttachmentService {
         return attachmentRepository
             .findById(attachmentDTO.getId())
             .map(existingAttachment -> {
+                checkCanModifyAttachment(existingAttachment);
+                User uploadedBy = existingAttachment.getUploadedBy();
+                Task task = existingAttachment.getTask();
                 attachmentMapper.partialUpdate(existingAttachment, attachmentDTO);
+                preserveOwnedFields(existingAttachment, uploadedBy, task);
 
                 return existingAttachment;
             })
@@ -108,12 +150,38 @@ public class AttachmentService {
      */
     public void delete(Long id) {
         LOG.debug("Request to delete Attachment : {}", id);
-        attachmentRepository.deleteById(id);
+        Attachment attachment = attachmentRepository.findById(id).orElseThrow(() -> new RuntimeException("Attachment not found"));
+        checkCanModifyAttachment(attachment);
+        attachmentRepository.delete(attachment);
     }
 
     @Transactional(readOnly = true)
     public List<AttachmentDTO> findByTaskId(Long taskId) {
         LOG.debug("Request to get Attachments for Task : {}", taskId);
         return attachmentRepository.findByTaskIdOrderByUploadedAtDesc(taskId).stream().map(attachmentMapper::toDto).toList();
+    }
+
+    private void checkCanModifyAttachment(Attachment attachment) {
+        if (SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN, AuthoritiesConstants.PROJET_MANAGER)) {
+            return;
+        }
+
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
+        User uploadedBy = attachment.getUploadedBy();
+        if (uploadedBy == null || !login.equals(uploadedBy.getLogin())) {
+            throw new AccessDeniedException("User can only modify own attachments");
+        }
+    }
+
+    private void preserveOwnedFields(Attachment attachment, User uploadedBy, Task task) {
+        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.DEVELOPER)) {
+            attachment.setUploadedBy(uploadedBy);
+            attachment.setTask(task);
+        }
+    }
+
+    private User getCurrentUser() {
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
+        return userRepository.findOneByLogin(login).orElseThrow(() -> new RuntimeException("User not found: " + login));
     }
 }

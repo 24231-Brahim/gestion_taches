@@ -1,7 +1,6 @@
 package com.gestiontaches.service.dto;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
@@ -13,11 +12,6 @@ import java.util.Objects;
 public class TaskHistoryDTO implements Serializable {
 
     private Long id;
-
-    @NotNull
-    private TaskDTO task;
-
-    private UserDTO user;
 
     @NotNull
     @Size(max = 100)
@@ -32,28 +26,17 @@ public class TaskHistoryDTO implements Serializable {
     @NotNull
     private Instant createdAt;
 
+    @NotNull
+    private TaskDTO task;
+
+    private UserDTO user;
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public TaskDTO getTask() {
-        return task;
-    }
-
-    public void setTask(TaskDTO task) {
-        this.task = task;
-    }
-
-    public UserDTO getUser() {
-        return user;
-    }
-
-    public void setUser(UserDTO user) {
-        this.user = user;
     }
 
     public String getAction() {
@@ -86,6 +69,22 @@ public class TaskHistoryDTO implements Serializable {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public TaskDTO getTask() {
+        return task;
+    }
+
+    public void setTask(TaskDTO task) {
+        this.task = task;
+    }
+
+    public UserDTO getUser() {
+        return user;
+    }
+
+    public void setUser(UserDTO user) {
+        this.user = user;
     }
 
     @Override

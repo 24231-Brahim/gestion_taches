@@ -23,9 +23,11 @@
         </div>
       </div>
       <div class="d-flex gap-2">
-        <a [routerLink]="['/project', currentProjectKey(), 'epic', ep.id, 'edit']" class="btn btn-outline-primary btn-sm">
-          <fa-icon icon="pencil" /> {{ 'entity.action.edit' | translate }}
-        </a>
+        @if (canManageEpics()) {
+          <a [routerLink]="['/project', currentProjectKey(), 'epic', ep.id, 'edit']" class="btn btn-outline-primary btn-sm">
+            <fa-icon icon="pencil-alt" /> {{ 'entity.action.edit' | translate }}
+          </a>
+        }
         <a [routerLink]="['/project', currentProjectKey(), 'epic']" class="btn btn-ghost btn-sm">
           <fa-icon icon="arrow-left" />
         </a>
@@ -59,6 +61,12 @@
         <span class="stat-label">{{ 'gestionTachesApp.epic.detail.todoTasks' | translate }}</span>
         <span class="stat-value todo">{{ epicStats().todoTasks }}</span>
       </div>
+      @if (epicStats().totalStoryPoints > 0) {
+        <div class="stat-card">
+          <span class="stat-label">{{ 'gestionTachesApp.epic.detail.storyPoints' | translate }}</span>
+          <span class="stat-value points">{{ epicStats().doneStoryPoints }} / {{ epicStats().totalStoryPoints }}</span>
+        </div>
+      }
     </div>
 
     @if (uniqueSprints().length > 0) {
@@ -89,7 +97,10 @@
         <fa-icon icon="list" class="me-1" /> {{ 'gestionTachesApp.epic.tab.tasks' | translate }}
       </button>
       <button class="tab-item" [class.active]="activeTab() === 'kanban'" (click)="setTab('kanban')">
-        <fa-icon icon="table-columns" class="me-1" /> {{ 'gestionTachesApp.epic.tab.kanban' | translate }}
+        <fa-icon icon="columns" class="me-1" /> {{ 'gestionTachesApp.epic.tab.kanban' | translate }}
+      </button>
+      <button class="tab-item" [class.active]="activeTab() === 'burndown'" (click)="setTab('burndown')">
+        <fa-icon icon="chart-line" class="me-1" /> {{ 'gestionTachesApp.epic.tab.burndown' | translate }}
       </button>
       <button class="tab-item" [class.active]="activeTab() === 'timeline'" (click)="setTab('timeline')">
         <fa-icon icon="clock" class="me-1" /> {{ 'gestionTachesApp.epic.tab.timeline' | translate }}
@@ -110,6 +121,7 @@
                 <th>{{ 'gestionTachesApp.epic.detail.taskTable.status' | translate }}</th>
                 <th>{{ 'gestionTachesApp.epic.detail.taskTable.priority' | translate }}</th>
                 <th>{{ 'gestionTachesApp.epic.detail.taskTable.assignee' | translate }}</th>
+                <th>{{ 'gestionTachesApp.epic.detail.taskTable.storyPoints' | translate }}</th>
                 <th>{{ 'gestionTachesApp.epic.detail.taskTable.sprint' | translate }}</th>
               </tr>
             </thead>
@@ -117,11 +129,6 @@
               @for (task of tasks(); track task.id) {
                 <tr>
                   <td>
-                    <fa-icon
-                      [icon]="typeIcons[task.type ?? 'STORY']"
-                      [style.color]="typeColors[task.type ?? 'STORY']"
-                      class="task-type-icon"
-                    />
                     {{ task.title }}
                   </td>
                   <td>
@@ -138,6 +145,11 @@
                     @if (task.assignee?.login) {
                       <span class="assignee-initials me-1">{{ getInitials(task.assignee?.login) }}</span>
                       {{ task.assignee?.login }}
+                    }
+                  </td>
+                  <td>
+                    @if (task.storyPoints) {
+                      <span class="sp-badge">{{ task.storyPoints }}</span>
                     }
                   </td>
                   <td>
@@ -159,20 +171,23 @@
       @case ('kanban') {
         <jhi-task-kanban-board [tasks]="tasks()" />
       }
+      @case ('burndown') {
+        <jhi-epic-burndown-chart
+          [totalTasks]="epicStats().totalTasks"
+          [doneTasks]="epicStats().doneTasks"
+          [totalStoryPoints]="epicStats().totalStoryPoints"
+          [doneStoryPoints]="epicStats().doneStoryPoints"
+        />
+      }
       @case ('timeline') {
         <div class="timeline-container">
           <div class="timeline-bar">
-            <div class="timeline-fill" [style.width.%]="timelineProgress()"></div>
+            <div class="timeline-fill" [style.width.%]="epicStats().progress"></div>
             @if (ep.startDate) {
               <span class="timeline-marker" style="left: 0%">{{ ep.startDate.format('MMM D') }}</span>
             }
             @if (ep.endDate) {
-              <span class="timeline-marker" style="right: 0; left: auto; transform: translateX(50%)">{{
-                ep.endDate.format(
-                  'MMM
-        D'
-                )
-              }}</span>
+              <span class="timeline-marker" style="right: 0; left: auto; transform: translateX(50%)">{{ ep.endDate.format('MMM D') }}</span>
             }
           </div>
           <div class="d-flex flex-column gap-2">
@@ -181,11 +196,13 @@
                 class="d-flex align-items-center gap-2 p-2"
                 style="border: 2px solid var(--color-outline-variant); background: var(--color-surface-container)"
               >
-                <fa-icon [icon]="typeIcons[task.type ?? 'STORY']" [style.color]="typeColors[task.type ?? 'STORY']" />
                 <span style="flex: 1; font-size: 0.85rem">{{ task.title }}</span>
                 <span class="status-badge" [style.border-color]="getStatusColor(task.status)" style="font-size: 0.65rem">{{
                   'gestionTachesApp.TaskStatus.' + (task.status ?? 'NEW') | translate
                 }}</span>
+                @if (task.storyPoints) {
+                  <span class="sp-badge">{{ task.storyPoints }}</span>
+                }
                 <span class="assignee-initials">{{ getInitials(task.assignee?.login) }}</span>
               </div>
             }

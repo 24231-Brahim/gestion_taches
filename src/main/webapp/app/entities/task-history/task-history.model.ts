@@ -11,5 +11,3 @@ export interface ITaskHistory {
   task?: Pick<ITask, 'id'> | null;
   user?: { id: number; login: string } | null;
 }
-
-export type NewTaskHistory = Omit<ITaskHistory, 'id'> & { id: null };

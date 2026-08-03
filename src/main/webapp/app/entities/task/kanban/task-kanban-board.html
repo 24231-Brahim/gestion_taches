@@ -7,7 +7,11 @@
       (dragleave)="onDragLeave()"
       (drop)="onDrop($event, col.status)"
     >
-      <div class="kanban-column-header" [style.border-top-color]="statusBadges[col.status]?.color">
+      <div
+        class="kanban-column-header"
+        [style.background-color]="statusBadges[col.status]?.bg"
+        [style.color]="statusBadges[col.status]?.color"
+      >
         <span class="kanban-column-title">{{ 'gestionTachesApp.TaskStatus.' + col.status | translate }}</span>
         <span class="kanban-column-count">{{ col.tasks.length }}</span>
       </div>
@@ -15,17 +19,13 @@
         @for (task of col.tasks; track task.id) {
           <div
             class="kanban-card"
-            draggable="true"
-            (dragstart)="onDragStart(task)"
+            [class.kanban-card-not-draggable]="!canDrag(task)"
+            [attr.draggable]="canDrag(task)"
+            (dragstart)="onDragStart(task, $event)"
             (click)="onTaskClick(task)"
             [class.kanban-card-dragging]="dragTaskId === task.id"
           >
             <div class="kanban-card-top">
-              <fa-icon
-                [icon]="typeIcons[task.type ?? 'STORY']"
-                [style.color]="typeColors[task.type ?? 'STORY']"
-                [title]="'gestionTachesApp.TaskType.' + (task.type ?? 'null') | translate"
-              />
               <fa-icon
                 [icon]="priorityIcons[task.priority ?? 'MEDIUM']"
                 [style.color]="priorityColors[task.priority ?? 'MEDIUM']"
@@ -34,6 +34,9 @@
               <span class="kanban-card-id">#{{ task.id }}</span>
             </div>
             <div class="kanban-card-title">{{ task.title }}</div>
+            @if (showProjectTag() && task.project?.key) {
+              <div class="kanban-card-project-tag">{{ task.project?.key }}</div>
+            }
             <div class="kanban-card-footer">
               <span class="assignee-initials">{{ getInitials(task.assignee?.login) }}</span>
             </div>

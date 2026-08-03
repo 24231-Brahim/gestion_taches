@@ -129,16 +129,17 @@ export default class Sidebar implements OnDestroy {
     while (route.firstChild) {
       route = route.firstChild;
     }
-    const key = route.snapshot.params['key'] ?? this.findKeyInAncestors(this.activatedRoute);
-    this.currentProjectKey.set(key ?? null);
+    this.currentProjectKey.set(this.findKeyInAncestors(route));
   }
 
-  private findKeyInAncestors(route: ActivatedRoute): string | null {
-    if (route.snapshot.params['key']) {
-      return route.snapshot.params['key'] as string;
-    }
-    if (route.parent) {
-      return this.findKeyInAncestors(route.parent);
+  // The ':key' param lives on whichever ancestor segment matched '/project/:key/...' —
+  // walk up from the deepest matched route (not down from the root) to find it.
+  private findKeyInAncestors(route: ActivatedRoute | null): string | null {
+    for (let current: ActivatedRoute | null = route; current; current = current.parent) {
+      const key = current.snapshot.params['key'];
+      if (key) {
+        return key as string;
+      }
     }
     return null;
   }

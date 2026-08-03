@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } fro
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
+import dayjs from 'dayjs/esm';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
@@ -97,18 +98,25 @@ export class TaskAttachmentList implements OnInit {
   protected readonly http = inject(HttpClient);
   protected readonly attachmentService = inject(AttachmentService);
   protected readonly accountService = inject(AccountService);
-  protected readonly alertService = inject(AlertService);
   protected readonly appConfig = inject(ApplicationConfigService);
+  protected readonly alertService = inject(AlertService);
 
   ngOnInit(): void {
     this.loadAttachments();
   }
 
   loadAttachments(): void {
-    this.http.get<IAttachment[]>(this.appConfig.getEndpointFor(`api/attachments/by-task/${this.taskId()}`)).subscribe({
-      next: attachments => this.attachments.set(attachments),
-      error: () => this.alertService.addAlert({ type: 'danger', translationKey: 'error.general' }),
-    });
+    this.http
+      .get<
+        (Omit<IAttachment, 'uploadedAt'> & { uploadedAt?: string | null })[]
+      >(this.appConfig.getEndpointFor(`api/attachments/by-task/${this.taskId()}`))
+      .subscribe({
+        // Same fix as comments: the REST payload's uploadedAt is a plain ISO string, but
+        // formatMediumDatetime requires a real dayjs instance and throws otherwise.
+        next: attachments =>
+          this.attachments.set(attachments.map(a => ({ ...a, uploadedAt: a.uploadedAt ? dayjs(a.uploadedAt) : undefined }))),
+        error: () => this.alertService.addAlert({ type: 'danger', translationKey: 'error.general' }),
+      });
   }
 
   uploadAttachment(file: File): void {
@@ -133,22 +141,8 @@ export class TaskAttachmentList implements OnInit {
     });
   }
 
-  downloadUrl(_attachment: IAttachment): string {
-    return '';
-  }
-
-  downloadAttachment(attachment: IAttachment): void {
-    this.http.get(this.appConfig.getEndpointFor(`api/attachments/download/${attachment.id}`), { responseType: 'blob' }).subscribe({
-      next: blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = attachment.fileName ?? 'download';
-        a.click();
-        window.URL.revokeObjectURL(url);
-      },
-      error: () => this.alertService.addAlert({ type: 'danger', translationKey: 'error.general' }),
-    });
+  downloadUrl(attachment: IAttachment): string {
+    return `/api/attachments/download/${attachment.id}`;
   }
 
   onFileDrop(event: DragEvent): void {
@@ -168,6 +162,13 @@ export class TaskAttachmentList implements OnInit {
     }
   }
 
-  protected readonly isAdminOrManagerOrDev = () =>
-    this.accountService.hasAnyAuthority(['ROLE_ADMIN', 'ROLE_PROJET_MANAGER', 'ROLE_DEVELOPER']);
+  isUploader(attachment: IAttachment): boolean {
+    return this.accountService.account()?.login === attachment.uploadedBy?.login;
+  }
+
+  canModify(attachment: IAttachment): boolean {
+    // Moderation bypass is ADMIN/PROJET_MANAGER only — a DEVELOPER may only delete their own
+    // uploads, never anyone else's (matches the backend's checkCanModifyAttachment).
+    return this.accountService.hasAnyAuthority(['ROLE_ADMIN', 'ROLE_PROJET_MANAGER']) || this.isUploader(attachment);
+  }
 }

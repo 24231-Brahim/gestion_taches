@@ -29,7 +29,6 @@
         "emptyColumn": "No tasks",
         "filter": {
           "assignee": "Assignee",
-          "type": "Type",
           "priority": "Priority",
           "all": "All",
           "reset": "Reset filters"
@@ -50,7 +49,7 @@
         "remaining": "Remaining",
         "velocity": "Velocity",
         "days": "Days",
-        "issues": "Tasks"
+        "tasks": "Tasks"
       },
       "action": {
         "start": "Start Sprint",

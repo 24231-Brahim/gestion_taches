@@ -4,20 +4,22 @@ import com.gestiontaches.domain.Project;
 import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.domain.enumeration.ProjectRole;
+import com.gestiontaches.domain.enumeration.SprintStatus;
 import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.ProjectRepository;
+import com.gestiontaches.repository.SprintRepository;
+import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
-import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
-import com.gestiontaches.service.dto.EntityChangeEvent;
-import com.gestiontaches.service.dto.EntityEventType;
+import com.gestiontaches.service.dto.ProjectCardStatsDTO;
 import com.gestiontaches.service.dto.ProjectDTO;
 import com.gestiontaches.service.dto.ProjectMemberDTO;
 import com.gestiontaches.service.mapper.ProjectMapper;
 import com.gestiontaches.service.mapper.ProjectMemberMapper;
-import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,7 +51,9 @@ public class ProjectService {
 
     private final ProjectPermissionService projectPermissionService;
 
-    private final EntityEventSseService entityEventSseService;
+    private final TaskRepository taskRepository;
+
+    private final SprintRepository sprintRepository;
 
     public ProjectService(
         ProjectRepository projectRepository,
@@ -59,7 +62,8 @@ public class ProjectService {
         ProjectMemberRepository projectMemberRepository,
         ProjectMemberMapper projectMemberMapper,
         ProjectPermissionService projectPermissionService,
-        EntityEventSseService entityEventSseService
+        TaskRepository taskRepository,
+        SprintRepository sprintRepository
     ) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
@@ -67,7 +71,8 @@ public class ProjectService {
         this.projectMemberRepository = projectMemberRepository;
         this.projectMemberMapper = projectMemberMapper;
         this.projectPermissionService = projectPermissionService;
-        this.entityEventSseService = entityEventSseService;
+        this.taskRepository = taskRepository;
+        this.sprintRepository = sprintRepository;
     }
 
     /**
@@ -79,24 +84,13 @@ public class ProjectService {
     public ProjectDTO save(ProjectDTO projectDTO) {
         LOG.debug("Request to save Project : {}", projectDTO);
         Project project = projectMapper.toEntity(projectDTO);
-        String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
-            new BadRequestAlertException("Current user not found", "project", "usernotfound")
-        );
-        User owner = userRepository
-            .findOneByLogin(currentLogin)
-            .orElseThrow(() -> new BadRequestAlertException("User not found: " + currentLogin, "project", "usernotfound"));
+        String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
+        User owner = userRepository.findOneByLogin(currentLogin).orElseThrow(() -> new RuntimeException("User not found: " + currentLogin));
         project.setOwner(owner);
         project = projectRepository.save(project);
         ProjectMember member = new ProjectMember().project(project).user(owner).role(ProjectRole.OWNER).joinedAt(Instant.now());
         projectMemberRepository.save(member);
-        ProjectDTO result = projectMapper.toDto(project);
-        entityEventSseService.sendEvent(
-            new EntityChangeEvent(EntityEventType.ENTITY_PROJECT, EntityEventType.CREATED, result.getId(), result.getId())
-        );
-        entityEventSseService.sendEvent(
-            new EntityChangeEvent(EntityEventType.ENTITY_PROJECT_MEMBER, EntityEventType.CREATED, member.getId(), result.getId())
-        );
-        return result;
+        return projectMapper.toDto(project);
     }
 
     /**
@@ -108,13 +102,6 @@ public class ProjectService {
     public ProjectDTO update(ProjectDTO projectDTO) {
         LOG.debug("Request to update Project : {}", projectDTO);
         projectPermissionService.requireProjectRole(projectDTO.getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
-        if (projectDTO.getKey() != null) {
-            projectRepository.findByKey(projectDTO.getKey()).ifPresent(other -> {
-                if (!other.getId().equals(projectDTO.getId())) {
-                    throw new BadRequestAlertException("Project key already exists", "project", "keyexists");
-                }
-            });
-        }
         return projectRepository
             .findById(projectDTO.getId())
             .map(existingProject -> {
@@ -123,13 +110,7 @@ public class ProjectService {
             })
             .map(projectRepository::save)
             .map(projectMapper::toDto)
-            .map(dto -> {
-                entityEventSseService.sendEvent(
-                    new EntityChangeEvent(EntityEventType.ENTITY_PROJECT, EntityEventType.UPDATED, dto.getId(), dto.getId())
-                );
-                return dto;
-            })
-            .orElseThrow(() -> new BadRequestAlertException("Project not found", "project", "idnotfound"));
+            .orElseThrow(() -> new RuntimeException("Project not found"));
     }
 
     /**
@@ -141,13 +122,6 @@ public class ProjectService {
     public Optional<ProjectDTO> partialUpdate(ProjectDTO projectDTO) {
         LOG.debug("Request to partially update Project : {}", projectDTO);
         projectPermissionService.requireProjectRole(projectDTO.getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
-        if (projectDTO.getKey() != null) {
-            projectRepository.findByKey(projectDTO.getKey()).ifPresent(other -> {
-                if (!other.getId().equals(projectDTO.getId())) {
-                    throw new BadRequestAlertException("Project key already exists", "project", "keyexists");
-                }
-            });
-        }
 
         return projectRepository
             .findById(projectDTO.getId())
@@ -157,31 +131,66 @@ public class ProjectService {
                 return existingProject;
             })
             .map(projectRepository::save)
-            .map(projectMapper::toDto)
-            .map(dto -> {
-                entityEventSseService.sendEvent(
-                    new EntityChangeEvent(EntityEventType.ENTITY_PROJECT, EntityEventType.UPDATED, dto.getId(), dto.getId())
-                );
-                return dto;
-            });
+            .map(projectMapper::toDto);
     }
 
     /**
      * Get all the projects.
      *
      * @param pageable the pagination information.
+     * @param mineOnly when true, always scope to the current user's own/member projects even if
+     *                 they hold ADMIN/PROJET_MANAGER authority (the "Mes projets" toggle).
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Page<ProjectDTO> findAll(Pageable pageable) {
+    public Page<ProjectDTO> findAll(Pageable pageable, boolean mineOnly) {
         LOG.debug("Request to get all Projects");
-        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+        if (!mineOnly && projectPermissionService.hasGlobalProjectAccess()) {
             return projectRepository.findAll(pageable).map(projectMapper::toDto);
         }
-        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
-            new BadRequestAlertException("Current user not found", "project", "usernotfound")
-        );
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
         return projectRepository.findByOwnerLoginOrMemberLogin(login, pageable).map(projectMapper::toDto);
+    }
+
+    /**
+     * Get task-progress and active-sprint stats for every project visible to the current user,
+     * for rendering the Projects card grid without one round-trip per card.
+     *
+     * @return the list of per-project stats.
+     */
+    @Transactional(readOnly = true)
+    public List<ProjectCardStatsDTO> getProjectCardStats() {
+        List<Project> visibleProjects;
+        if (projectPermissionService.hasGlobalProjectAccess()) {
+            visibleProjects = projectRepository.findAll();
+        } else {
+            String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
+            visibleProjects = projectRepository.findByOwnerLoginOrMemberLogin(login, Pageable.unpaged()).getContent();
+        }
+
+        Map<Long, long[]> taskCountsByProjectId = new HashMap<>();
+        for (Object[] row : taskRepository.countTasksGroupByProject()) {
+            Long projectId = ((Number) row[0]).longValue();
+            long total = ((Number) row[2]).longValue();
+            long done = ((Number) row[3]).longValue();
+            taskCountsByProjectId.put(projectId, new long[] { total, done });
+        }
+
+        return visibleProjects
+            .stream()
+            .map(project -> {
+                ProjectCardStatsDTO dto = new ProjectCardStatsDTO();
+                dto.setProjectId(project.getId());
+                long[] counts = taskCountsByProjectId.getOrDefault(project.getId(), new long[] { 0, 0 });
+                dto.setTotalTasks(counts[0]);
+                dto.setDoneTasks(counts[1]);
+                sprintRepository.findByProjectIdAndStatus(project.getId(), SprintStatus.ACTIVE).ifPresent(sprint -> {
+                    dto.setActiveSprintId(sprint.getId());
+                    dto.setActiveSprintName(sprint.getName());
+                });
+                return dto;
+            })
+            .toList();
     }
 
     /**
@@ -193,12 +202,10 @@ public class ProjectService {
     @Transactional(readOnly = true)
     public Optional<ProjectDTO> findOne(Long id) {
         LOG.debug("Request to get Project : {}", id);
-        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+        if (projectPermissionService.hasGlobalProjectAccess()) {
             return projectRepository.findById(id).map(projectMapper::toDto);
         }
-        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
-            new BadRequestAlertException("Current user not found", "project", "usernotfound")
-        );
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
         return projectRepository.findByIdAndOwnerLoginOrMemberLogin(id, login).map(projectMapper::toDto);
     }
 
@@ -217,12 +224,14 @@ public class ProjectService {
         LOG.debug("Request to delete Project : {}", id);
         projectPermissionService.requireProjectRole(id, ProjectRole.OWNER);
         projectRepository.deleteById(id);
-        entityEventSseService.sendEvent(new EntityChangeEvent(EntityEventType.ENTITY_PROJECT, EntityEventType.DELETED, id, id));
     }
 
     public Set<ProjectMemberDTO> getMembers(Long projectId) {
         LOG.debug("Request to get members of Project : {}", projectId);
-        projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER, ProjectRole.MEMBER);
+        // Viewing the member list is a read operation available to any project member (any role),
+        // not just OWNER/MANAGER — those stricter roles are still required to add/remove/re-role
+        // members (see addMember/removeMember/updateMemberRole below).
+        projectPermissionService.requireProjectAccess(projectId);
         List<ProjectMember> members = projectMemberRepository.findByProjectId(projectId);
         return members.stream().map(projectMemberMapper::toDto).collect(Collectors.toSet());
     }
@@ -230,20 +239,13 @@ public class ProjectService {
     public void addMember(Long projectId, Long userId) {
         LOG.debug("Request to add user {} to Project {}", userId, projectId);
         projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER);
-        Project project = projectRepository
-            .findById(projectId)
-            .orElseThrow(() -> new BadRequestAlertException("Project not found", "project", "idnotfound"));
-        User user = userRepository
-            .findById(userId)
-            .orElseThrow(() -> new BadRequestAlertException("User not found", "projectMember", "usernotfound"));
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new RuntimeException("Project not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         if (projectMemberRepository.findByProjectIdAndUserId(projectId, userId).isPresent()) {
-            throw new BadRequestAlertException("User is already a member of this project", "projectMember", "memberexists");
+            throw new RuntimeException("User is already a member of this project");
         }
         ProjectMember member = new ProjectMember().project(project).user(user).role(ProjectRole.MEMBER).joinedAt(Instant.now());
-        member = projectMemberRepository.save(member);
-        entityEventSseService.sendEvent(
-            new EntityChangeEvent(EntityEventType.ENTITY_PROJECT_MEMBER, EntityEventType.CREATED, member.getId(), projectId)
-        );
+        projectMemberRepository.save(member);
     }
 
     public void removeMember(Long projectId, Long userId) {
@@ -251,22 +253,18 @@ public class ProjectService {
         projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER);
         ProjectMember member = projectMemberRepository
             .findByProjectIdAndUserId(projectId, userId)
-            .orElseThrow(() -> new BadRequestAlertException("Member not found", "projectMember", "idnotfound"));
+            .orElseThrow(() -> new RuntimeException("Member not found"));
         ProjectRole currentRole = projectPermissionService.getCurrentUserRole(projectId);
         if (currentRole == ProjectRole.MANAGER && member.getRole() == ProjectRole.OWNER) {
-            throw new AccessDeniedException("Access denied: managers cannot remove the project owner");
+            throw new RuntimeException("Access denied: managers cannot remove the project owner");
         }
         if (member.getRole() == ProjectRole.OWNER) {
             long ownerCount = projectMemberRepository.countByProjectIdAndRole(projectId, ProjectRole.OWNER);
             if (ownerCount <= 1) {
-                throw new BadRequestAlertException("Cannot remove the last owner of the project", "projectMember", "lastowner");
+                throw new RuntimeException("Cannot remove the last owner of the project");
             }
         }
-        Long memberId = member.getId();
         projectMemberRepository.delete(member);
-        entityEventSseService.sendEvent(
-            new EntityChangeEvent(EntityEventType.ENTITY_PROJECT_MEMBER, EntityEventType.DELETED, memberId, projectId)
-        );
     }
 
     public void updateMemberRole(Long projectId, Long userId, ProjectMemberDTO memberDTO) {
@@ -274,18 +272,15 @@ public class ProjectService {
         projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER);
         ProjectMember member = projectMemberRepository
             .findByProjectIdAndUserId(projectId, userId)
-            .orElseThrow(() -> new BadRequestAlertException("Member not found", "projectMember", "idnotfound"));
+            .orElseThrow(() -> new RuntimeException("Member not found"));
         if (member.getRole() == ProjectRole.OWNER && memberDTO.getRole() != ProjectRole.OWNER) {
             long ownerCount = projectMemberRepository.countByProjectIdAndRole(projectId, ProjectRole.OWNER);
             if (ownerCount <= 1) {
-                throw new BadRequestAlertException("Cannot change role of the last owner of the project", "projectMember", "lastowner");
+                throw new RuntimeException("Cannot change role of the last owner of the project");
             }
         }
         member.setRole(memberDTO.getRole());
         projectMemberRepository.save(member);
-        entityEventSseService.sendEvent(
-            new EntityChangeEvent(EntityEventType.ENTITY_PROJECT_MEMBER, EntityEventType.UPDATED, member.getId(), projectId)
-        );
     }
 
     public long getTotalMemberCount() {
@@ -296,16 +291,12 @@ public class ProjectService {
     @Transactional(readOnly = true)
     public Set<ProjectMemberDTO> getCurrentUserMemberships() {
         LOG.debug("Request to get current user memberships");
-        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
-            new BadRequestAlertException("Current user not found", "project", "usernotfound")
-        );
-        User user = userRepository
-            .findOneByLogin(login)
-            .orElseThrow(() -> new BadRequestAlertException("User not found", "project", "usernotfound"));
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
+        User user = userRepository.findOneByLogin(login).orElseThrow(() -> new RuntimeException("User not found"));
         List<ProjectMember> members = projectMemberRepository.findByUserId(user.getId());
         Set<ProjectMemberDTO> memberships = members.stream().map(projectMemberMapper::toDto).collect(Collectors.toSet());
 
-        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+        if (projectPermissionService.hasGlobalProjectAccess()) {
             Set<Long> memberProjectIds = memberships.stream().map(ProjectMemberDTO::getProjectId).collect(Collectors.toSet());
             List<Project> allProjects = projectRepository.findAll();
             for (Project project : allProjects) {

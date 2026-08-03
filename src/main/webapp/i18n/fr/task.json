@@ -21,6 +21,8 @@
         "title": "Tâche",
         "comments": "Commentaires",
         "noComments": "Aucun commentaire pour le moment.",
+        "attachments": "Pièces jointes",
+        "noAttachments": "Aucune pièce jointe pour le moment.",
         "history": "Historique",
         "noHistory": "Aucun historique pour le moment.",
         "tab": {
@@ -31,25 +33,22 @@
         }
       },
       "id": "ID",
-      "title": "Titre",
+      "title": "Title",
       "description": "Description",
-      "type": "Type",
-      "status": "Statut",
-      "priority": "Priorité",
-      "createdAt": "Créée le",
-      "updatedAt": "Mis à jour le",
-      "comments": "Commentaires",
-      "attachments": "Pièces jointes",
-      "history": "Historique",
+      "status": "Status",
+      "priority": "Priority",
+      "storyPoints": "Story Points",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "comments": "Comments",
+      "attachments": "Attachments",
+      "history": "History",
       "sprint": "Sprint",
       "epic": "Epic",
-      "project": "Projet",
+      "project": "Project",
       "assignee": "Assigné",
       "createdBy": "Créé par",
-      "system": "Système",
-      "error": {
-        "noProject": "Aucun projet sélectionné"
-      }
+      "system": "Système"
     }
   }
 }

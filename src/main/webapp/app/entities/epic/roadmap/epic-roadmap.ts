@@ -7,15 +7,17 @@ import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/rou
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 import { KeyValuePipe } from '@angular/common';
-import { combineLatest, from, of, switchMap, tap } from 'rxjs';
+import { Observable, Subscription, combineLatest, of, switchMap, tap } from 'rxjs';
 
 import { DEFAULT_SORT_DATA, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { IProject } from 'app/entities/project/project.model';
 import { ProjectService } from 'app/entities/project/service/project.service';
+import { ProjectRole } from 'app/entities/enumerations/project-role.model';
+import { AccountService } from 'app/core/auth/account.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
-import { FilterOptions, IFilterOption, IFilterOptions } from 'app/shared/filter';
+import { Filter, FilterOptions, IFilterOption, IFilterOptions } from 'app/shared/filter';
 import FilterComponent from 'app/shared/filter/filter';
 import { TranslateDirective } from 'app/shared/language';
 import { SortService, type SortState, sortStateSignal } from 'app/shared/sort';
@@ -61,14 +63,10 @@ const STATUS_COLORS: Record<string, string> = {
         margin-bottom: 20px;
         flex-wrap: wrap;
       }
-      .roadmap-filters {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-      .roadmap-filters select {
+      .roadmap-toolbar select.form-control {
         width: auto;
+        min-width: 160px;
+        flex: 0 1 auto;
       }
       .roadmap-container {
         background: var(--color-surface-container, #1b2025);
@@ -167,7 +165,7 @@ const STATUS_COLORS: Record<string, string> = {
       .roadmap-epic-bar-label {
         font-size: 0.65rem;
         font-weight: 600;
-        color: var(--color-on-primary-container);
+        color: #000;
         font-family: var(--font-inter);
       }
       .roadmap-pct {
@@ -225,19 +223,25 @@ const STATUS_COLORS: Record<string, string> = {
   ],
 })
 export class EpicRoadmap implements OnInit {
+  subscription: Subscription | null = null;
   readonly epics = signal<IEpic[]>([]);
   readonly allTasks = signal<ITask[]>([]);
   readonly filterStatus = signal<string>('');
+  readonly filterProject = signal<string>('');
   readonly filterPriority = signal<string>('');
   readonly sortBy = signal<string>('');
 
   filteredEpics = computed(() => {
     let list = this.epics();
     const statusFilter = this.filterStatus();
+    const projectFilter = this.filterProject();
     const priorityFilter = this.filterPriority();
     const sortField = this.sortBy();
     if (statusFilter) {
       list = list.filter(e => e.status === statusFilter);
+    }
+    if (projectFilter) {
+      list = list.filter(e => e.project?.name === projectFilter || e.project?.id?.toString() === projectFilter);
     }
     if (priorityFilter) {
       list = list.filter(e => e.priority === priorityFilter);
@@ -277,8 +281,35 @@ export class EpicRoadmap implements OnInit {
   readonly totalItems = signal(0);
   readonly page = signal(1);
 
+  protected readonly uniqueProjects = computed(() => {
+    const names = new Set<string>();
+    for (const e of this.epics()) {
+      if (e.project?.name) {
+        names.add(e.project.name);
+      }
+    }
+    return Array.from(names).sort();
+  });
+
   readonly currentProjectKey = signal<string | null>(null);
   readonly currentProject = signal<IProject | null>(null);
+
+  protected readonly accountService = inject(AccountService);
+
+  // Matches the backend's EpicService: creating/editing/deleting an epic requires OWNER/MANAGER
+  // project role, with an implicit bypass for ADMIN/PROJET_MANAGER
+  // (ProjectPermissionService.hasGlobalProjectAccess()).
+  readonly canManageEpics = computed(() => {
+    const account = this.accountService.account();
+    if (!account) {
+      return false;
+    }
+    if (account.authorities.includes('ROLE_ADMIN') || account.authorities.includes('ROLE_PROJET_MANAGER')) {
+      return true;
+    }
+    const role = this.currentProject()?.projectMembers?.find(m => m.userLogin === account.login)?.role;
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
+  });
 
   readonly router = inject(Router);
   readonly epicService = inject(EpicService);
@@ -313,8 +344,7 @@ export class EpicRoadmap implements OnInit {
         if (projectId) {
           this.taskService.tasksParams.set({
             'projectId.equals': projectId,
-            'epicId.specified': true,
-            size: 100,
+            size: 500,
           });
         }
       }
@@ -332,17 +362,8 @@ export class EpicRoadmap implements OnInit {
   trackId = (item: IEpic): number => this.epicService.getEpicIdentifier(item);
 
   ngOnInit(): void {
-    const parentParamMap = this.activatedRoute.parent?.paramMap ?? this.activatedRoute.paramMap;
-    parentParamMap
+    this.subscription = this.resolveProjectContext()
       .pipe(
-        switchMap(params => {
-          const key = params.get('key');
-          if (key) {
-            this.currentProjectKey.set(key);
-            return from(this.projectService.findByKey(key).pipe(tap(project => this.currentProject.set(project))));
-          }
-          return of([]);
-        }),
         switchMap(() => combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])),
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
         tap(() => this.load()),
@@ -409,6 +430,19 @@ export class EpicRoadmap implements OnInit {
       queryObject['projectId.equals'] = this.currentProject()!.id;
     }
     this.epicService.epicsParams.set(queryObject);
+  }
+
+  private resolveProjectContext(): Observable<IProject | null> {
+    let route: ActivatedRoute | null = this.activatedRoute;
+    while (route) {
+      const key = route.snapshot.paramMap.get('key');
+      if (key) {
+        this.currentProjectKey.set(key);
+        return this.projectService.findByKey(key).pipe(tap(project => this.currentProject.set(project)));
+      }
+      route = route.parent;
+    }
+    return of(null);
   }
 
   protected handleNavigation(page: number, sortState: SortState, filterOptions?: IFilterOption[]): void {

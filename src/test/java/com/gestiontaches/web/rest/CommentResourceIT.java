@@ -10,8 +10,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gestiontaches.IntegrationTest;
 import com.gestiontaches.domain.Comment;
+import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.Task;
+import com.gestiontaches.domain.User;
+import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.repository.CommentRepository;
+import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.service.dto.CommentDTO;
 import com.gestiontaches.service.mapper.CommentMapper;
 import jakarta.persistence.EntityManager;
@@ -54,6 +58,9 @@ class CommentResourceIT {
 
     @Autowired
     private CommentRepository commentRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private CommentMapper commentMapper;
@@ -184,28 +191,25 @@ class CommentResourceIT {
 
     @Test
     @Transactional
-    void createCommentWithNullCreatedAt_shouldAutoSet() throws Exception {
+    void createCommentWithoutCreatedAtIsAssignedByServer() throws Exception {
+        // createdAt is server-authoritative (set in CommentService.save()), not client-supplied —
+        // omitting it must still succeed instead of failing bean validation.
         long databaseSizeBeforeCreate = getRepositoryCount();
-        // set createdAt to null
         comment.setCreatedAt(null);
-
-        // Create the Comment - createdAt should be auto-set by the server
         CommentDTO commentDTO = commentMapper.toDto(comment);
+
         var returnedCommentDTO = om.readValue(
             restCommentMockMvc
                 .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(commentDTO)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.createdAt").isNotEmpty())
                 .andReturn()
                 .getResponse()
                 .getContentAsString(),
             CommentDTO.class
         );
 
-        // Validate the Comment in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
         assertThat(returnedCommentDTO.getCreatedAt()).isNotNull();
-
         insertedComment = commentMapper.toEntity(returnedCommentDTO);
     }
 
@@ -467,16 +471,137 @@ class CommentResourceIT {
         assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
     }
 
+    private void makeProjectMember(String login) {
+        User user = userRepository.findOneByLogin(login).orElseThrow();
+        ProjectMember member = new ProjectMember()
+            .project(comment.getTask().getProject())
+            .user(user)
+            .role(ProjectRole.MEMBER)
+            .joinedAt(Instant.now());
+        em.persist(member);
+        em.flush();
+    }
+
     @Test
     @Transactional
     @WithMockUser(authorities = { "ROLE_USER" })
     void createComment_asUser_shouldSucceed() throws Exception {
+        // Commenting requires at least view access to the task's project: make the mock "user"
+        // account (the default @WithMockUser principal) a member of it.
+        makeProjectMember("user");
+
         long databaseSizeBeforeCreate = getRepositoryCount();
         CommentDTO commentDTO = commentMapper.toDto(comment);
         restCommentMockMvc
             .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(commentDTO)))
             .andExpect(status().isCreated());
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "dev", authorities = { "ROLE_DEVELOPER" })
+    void createComment_asDeveloper_shouldSetCurrentUserAsAuthor() throws Exception {
+        makeProjectMember("dev");
+
+        long databaseSizeBeforeCreate = getRepositoryCount();
+        CommentDTO commentDTO = commentMapper.toDto(comment);
+
+        var returnedCommentDTO = om.readValue(
+            restCommentMockMvc
+                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(commentDTO)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(),
+            CommentDTO.class
+        );
+
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        insertedComment = commentMapper.toEntity(returnedCommentDTO);
+        assertThat(getPersistedComment(insertedComment).getAuthor().getLogin()).isEqualTo("dev");
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "dev", authorities = { "ROLE_DEVELOPER" })
+    void putExistingComment_asAuthorDeveloper_shouldSucceed() throws Exception {
+        comment.setAuthor(getUser("dev"));
+        insertedComment = commentRepository.saveAndFlush(comment);
+
+        long databaseSizeBeforeUpdate = getRepositoryCount();
+
+        Comment updatedComment = commentRepository.findById(comment.getId()).orElseThrow();
+        em.detach(updatedComment);
+        updatedComment.content(UPDATED_CONTENT).createdAt(UPDATED_CREATED_AT);
+        CommentDTO commentDTO = commentMapper.toDto(updatedComment);
+
+        restCommentMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, commentDTO.getId()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(commentDTO))
+            )
+            .andExpect(status().isOk());
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertThat(getPersistedComment(comment).getContent()).isEqualTo(UPDATED_CONTENT);
+        assertThat(getPersistedComment(comment).getAuthor().getLogin()).isEqualTo("dev");
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "dev", authorities = { "ROLE_DEVELOPER" })
+    void putExistingComment_asNonAuthorDeveloper_shouldForbid() throws Exception {
+        comment.setAuthor(getUser("user"));
+        insertedComment = commentRepository.saveAndFlush(comment);
+
+        long databaseSizeBeforeUpdate = getRepositoryCount();
+
+        Comment updatedComment = commentRepository.findById(comment.getId()).orElseThrow();
+        em.detach(updatedComment);
+        updatedComment.content(UPDATED_CONTENT).createdAt(UPDATED_CREATED_AT);
+        CommentDTO commentDTO = commentMapper.toDto(updatedComment);
+
+        restCommentMockMvc
+            .perform(
+                put(ENTITY_API_URL_ID, commentDTO.getId()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(commentDTO))
+            )
+            .andExpect(status().isForbidden());
+
+        assertSameRepositoryCount(databaseSizeBeforeUpdate);
+        assertThat(getPersistedComment(comment).getContent()).isEqualTo(DEFAULT_CONTENT);
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "dev", authorities = { "ROLE_DEVELOPER" })
+    void deleteComment_asAuthorDeveloper_shouldSucceed() throws Exception {
+        comment.setAuthor(getUser("dev"));
+        insertedComment = commentRepository.saveAndFlush(comment);
+
+        long databaseSizeBeforeDelete = getRepositoryCount();
+
+        restCommentMockMvc
+            .perform(delete(ENTITY_API_URL_ID, comment.getId()).accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNoContent());
+
+        assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
+        insertedComment = null;
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(username = "dev", authorities = { "ROLE_DEVELOPER" })
+    void deleteComment_asNonAuthorDeveloper_shouldForbid() throws Exception {
+        comment.setAuthor(getUser("user"));
+        insertedComment = commentRepository.saveAndFlush(comment);
+
+        long databaseSizeBeforeDelete = getRepositoryCount();
+
+        restCommentMockMvc
+            .perform(delete(ENTITY_API_URL_ID, comment.getId()).accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isForbidden());
+
+        assertSameRepositoryCount(databaseSizeBeforeDelete);
     }
 
     @Test
@@ -507,6 +632,10 @@ class CommentResourceIT {
 
     protected Comment getPersistedComment(Comment comment) {
         return commentRepository.findById(comment.getId()).orElseThrow();
+    }
+
+    private User getUser(String login) {
+        return userRepository.findOneByLogin(login).orElseThrow();
     }
 
     protected void assertPersistedCommentToMatchAllProperties(Comment expectedComment) {

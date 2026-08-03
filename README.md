@@ -77,23 +77,23 @@ gestion_taches/
 
 Pour le développement, PostgreSQL 16 doit être installé et configuré localement :
 
-| Élément         | Valeur           |
-| --------------- | ---------------- |
-| PostgreSQL      | Version 16       |
-| Base de données | `gestion_taches` |
-| Hôte            | `localhost`      |
-| Port            | `5432`           |
-| Utilisateur     | `postgres`       |
-| Mot de passe    | vide             |
+| Élément         | Valeur          |
+| --------------- | --------------- |
+| PostgreSQL      | Version 16      |
+| Base de données | `gestionTaches` |
+| Hôte            | `localhost`     |
+| Port            | `5432`          |
+| Utilisateur     | `gestionTaches` |
+| Mot de passe    | `gestionTaches` |
 
 Étapes préalables au lancement :
 
 1. Installer PostgreSQL 16.
-2. Créer la base de données `gestion_taches` :
+2. Créer la base de données `gestionTaches` :
    ```sql
-   CREATE DATABASE gestion_taches;
+   CREATE DATABASE "gestionTaches";
    ```
-3. Vérifier que l'utilisateur `postgres` peut se connecter sans mot de passe sur `localhost:5432`.
+3. Vérifier que l'utilisateur `gestionTaches` peut se connecter sur `localhost:5432` (voir `src/main/resources/config/application-dev.yml` pour les identifiants exacts).
    Si l'authentification échoue, vérifier le fichier `pg_hba.conf` et s'assurer que la ligne pour `127.0.0.1/32` utilise la méthode `trust` :
    ```
    host  all  all  127.0.0.1/32  trust

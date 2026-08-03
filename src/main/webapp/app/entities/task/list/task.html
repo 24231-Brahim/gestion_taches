@@ -9,18 +9,25 @@
           <fa-icon icon="list" /><span class="d-none d-md-inline ms-1" jhiTranslate="gestionTachesApp.task.home.backlog">Backlog</span>
         </button>
         <button class="btn btn-sm" [class.btn-active]="viewMode() === 'kanban'" (click)="setViewMode('kanban')">
-          <fa-icon icon="table-columns" /><span class="d-none d-md-inline ms-1" jhiTranslate="gestionTachesApp.task.home.board">Board</span>
+          <fa-icon icon="columns" /><span class="d-none d-md-inline ms-1" jhiTranslate="gestionTachesApp.task.home.board">Board</span>
         </button>
       </div>
       <button class="btn btn-info btn-sm" (click)="load()" [disabled]="isLoading()">
-        <fa-icon icon="arrows-rotate" [animation]="isLoading() ? 'spin' : undefined" />
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
       </button>
       <button class="btn btn-success btn-sm" (click)="exportCsv()">
         <fa-icon icon="download" /><span class="d-none d-md-inline ms-1" jhiTranslate="entity.action.exportCsv">CSV</span>
       </button>
-      <button id="jh-create-entity" data-cy="entityCreateButton" class="btn btn-primary btn-sm" (click)="openCreateTaskModal()">
-        <fa-icon icon="plus" /><span jhiTranslate="gestionTachesApp.task.home.createLabel"></span>
-      </button>
+      @if (canCreateTask()) {
+        <button
+          id="jh-create-entity"
+          data-cy="entityCreateButton"
+          class="btn btn-primary btn-sm"
+          [routerLink]="['/project', currentProjectKey(), 'task', 'new']"
+        >
+          <fa-icon icon="plus" /><span jhiTranslate="gestionTachesApp.task.home.createLabel"></span>
+        </button>
+      }
     </div>
   </div>
 
@@ -29,7 +36,7 @@
 
   <div class="task-toolbar">
     <div class="search-box">
-      <fa-icon icon="magnifying-glass" class="search-icon" />
+      <fa-icon icon="search" class="search-icon" />
       <input
         type="text"
         class="form-control form-control-sm"
@@ -69,7 +76,6 @@
                 <div class="d-flex"><span jhiTranslate="gestionTachesApp.task.epic">Epic</span><fa-icon class="p-1" icon="sort" /></div>
               </th>
               <th scope="col"><span jhiTranslate="gestionTachesApp.task.assignee">Assignee</span></th>
-              <th scope="col"><span jhiTranslate="gestionTachesApp.task.createdBy">Cr\u00e9\u00e9 par</span></th>
               <th scope="col"></th>
             </tr>
           </thead>
@@ -78,7 +84,11 @@
               <tr data-cy="entityTable" class="task-row" (click)="onSelectTask(task)">
                 <td class="task-title-cell">{{ task.title }}</td>
                 <td>
-                  <span class="status-badge" [style.background]="statusBadges[task.status ?? 'NEW']?.color">
+                  <span
+                    class="status-badge"
+                    [style.background]="statusBadges[task.status ?? 'NEW']?.bg"
+                    [style.color]="statusBadges[task.status ?? 'NEW']?.color"
+                  >
                     {{ 'gestionTachesApp.TaskStatus.' + (task.status ?? 'null') | translate }}
                   </span>
                 </td>
@@ -105,21 +115,20 @@
                     <span class="assignee-initials-sm" [title]="task.assignee.login">{{ task.assignee.login }}</span>
                   }
                 </td>
-                <td>
-                  @if (task.createdBy) {
-                    {{ task.createdBy.login }}
-                  }
-                </td>
                 <td class="text-end">
                   <div class="btn-group btn-group-sm" (click)="$event.stopPropagation()">
                     @if (canEditTask(task)) {
-                      <button type="button" (click)="openEditTaskModal(task)" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                        <fa-icon icon="pencil" />
-                      </button>
+                      <a
+                        [routerLink]="['/project', currentProjectKey(), 'task', task.id, 'edit']"
+                        class="btn btn-primary btn-sm"
+                        data-cy="entityEditButton"
+                      >
+                        <fa-icon icon="pencil-alt" />
+                      </a>
                     }
                     @if (canDeleteTask(task)) {
                       <button type="submit" (click)="delete(task)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                        <fa-icon icon="xmark" />
+                        <fa-icon icon="times" />
                       </button>
                     }
                   </div>

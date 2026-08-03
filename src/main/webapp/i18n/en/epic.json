@@ -9,6 +9,7 @@
         "notFound": "No Epics found",
         "tableLabel": "Epics",
         "roadmap": "Epic Roadmap",
+        "tableLabel": "Table view",
         "details": "Epic Details"
       },
       "roadmapStart": "Start",

@@ -47,7 +47,7 @@ import { TranslateDirective } from 'app/shared/language';
         margin-top: 5px;
         flex-shrink: 0;
         background: var(--color-primary, #97cbff);
-        border: 2px solid var(--color-primary-container, #0099fe);
+        border: 2px solid var(--color-primary-container, #25a7fd);
         border-radius: 50%;
       }
       .activity-content {
@@ -90,7 +90,7 @@ export class TaskActivityFeed implements OnInit {
 
   loadHistories(): void {
     this.taskHistoryService.findByTask(this.taskId()).subscribe({
-      next: res => this.histories.set(res.body ?? []),
+      next: histories => this.histories.set(histories),
     });
   }
 }

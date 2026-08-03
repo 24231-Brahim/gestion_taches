@@ -34,8 +34,8 @@ export class TaskHistoryTab {
   private loadHistory(taskId: number): void {
     this.isLoading.set(true);
     this.taskHistoryService.findByTask(taskId).subscribe({
-      next: res => {
-        this.taskHistories.set(res.body ?? []);
+      next: histories => {
+        this.taskHistories.set(histories);
         this.isLoading.set(false);
       },
       error: () => this.isLoading.set(false),

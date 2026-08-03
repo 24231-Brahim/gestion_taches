@@ -84,6 +84,8 @@ public class TaskCriteria implements Serializable, Criteria {
 
     private LongFilter projectId;
 
+    private LongFilter assigneeId;
+
     private Boolean distinct;
 
     public TaskCriteria() {}
@@ -101,6 +103,7 @@ public class TaskCriteria implements Serializable, Criteria {
         this.sprintId = other.optionalSprintId().map(LongFilter::copy).orElse(null);
         this.epicId = other.optionalEpicId().map(LongFilter::copy).orElse(null);
         this.projectId = other.optionalProjectId().map(LongFilter::copy).orElse(null);
+        this.assigneeId = other.optionalAssigneeId().map(LongFilter::copy).orElse(null);
         this.distinct = other.distinct;
     }
 
@@ -337,6 +340,25 @@ public class TaskCriteria implements Serializable, Criteria {
         this.projectId = projectId;
     }
 
+    public LongFilter getAssigneeId() {
+        return assigneeId;
+    }
+
+    public Optional<LongFilter> optionalAssigneeId() {
+        return Optional.ofNullable(assigneeId);
+    }
+
+    public LongFilter assigneeId() {
+        if (assigneeId == null) {
+            setAssigneeId(new LongFilter());
+        }
+        return assigneeId;
+    }
+
+    public void setAssigneeId(LongFilter assigneeId) {
+        this.assigneeId = assigneeId;
+    }
+
     public Boolean getDistinct() {
         return distinct;
     }
@@ -378,6 +400,7 @@ public class TaskCriteria implements Serializable, Criteria {
             Objects.equals(sprintId, that.sprintId) &&
             Objects.equals(epicId, that.epicId) &&
             Objects.equals(projectId, that.projectId) &&
+            Objects.equals(assigneeId, that.assigneeId) &&
             Objects.equals(distinct, that.distinct)
         );
     }
@@ -397,6 +420,7 @@ public class TaskCriteria implements Serializable, Criteria {
             sprintId,
             epicId,
             projectId,
+            assigneeId,
             distinct
         );
     }
@@ -417,6 +441,7 @@ public class TaskCriteria implements Serializable, Criteria {
             optionalSprintId().map(f -> "sprintId=" + f + ", ").orElse("") +
             optionalEpicId().map(f -> "epicId=" + f + ", ").orElse("") +
             optionalProjectId().map(f -> "projectId=" + f + ", ").orElse("") +
+            optionalAssigneeId().map(f -> "assigneeId=" + f + ", ").orElse("") +
             optionalDistinct().map(f -> "distinct=" + f + ", ").orElse("") +
         "}";
     }

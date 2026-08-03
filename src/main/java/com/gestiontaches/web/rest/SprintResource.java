@@ -1,13 +1,11 @@
 package com.gestiontaches.web.rest;
 
 import com.gestiontaches.repository.SprintRepository;
-import com.gestiontaches.repository.TaskRepository;
-import com.gestiontaches.repository.TaskTransitionRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
+import com.gestiontaches.service.ProjectPermissionService;
 import com.gestiontaches.service.SprintQueryService;
 import com.gestiontaches.service.SprintService;
 import com.gestiontaches.service.criteria.SprintCriteria;
-import com.gestiontaches.service.dto.BurndownData;
 import com.gestiontaches.service.dto.SprintDTO;
 import com.gestiontaches.service.dto.TaskDTO;
 import com.gestiontaches.service.dto.VelocityReportDTO;
@@ -16,11 +14,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,9 +23,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -55,22 +50,28 @@ public class SprintResource {
 
     private final SprintQueryService sprintQueryService;
 
-    private final TaskRepository taskRepository;
-
-    private final TaskTransitionRepository taskTransitionRepository;
+    private final ProjectPermissionService projectPermissionService;
 
     public SprintResource(
         SprintService sprintService,
         SprintRepository sprintRepository,
         SprintQueryService sprintQueryService,
-        TaskRepository taskRepository,
-        TaskTransitionRepository taskTransitionRepository
+        ProjectPermissionService projectPermissionService
     ) {
         this.sprintService = sprintService;
         this.sprintRepository = sprintRepository;
         this.sprintQueryService = sprintQueryService;
-        this.taskRepository = taskRepository;
-        this.taskTransitionRepository = taskTransitionRepository;
+        this.projectPermissionService = projectPermissionService;
+    }
+
+    private void requireCriteriaProjectAccess(SprintCriteria criteria) {
+        if (projectPermissionService.hasGlobalProjectAccess()) {
+            return;
+        }
+        if (criteria == null || criteria.getProjectId() == null || criteria.getProjectId().getEquals() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "A projectId filter is required");
+        }
+        projectPermissionService.requireProjectAccess(criteria.getProjectId().getEquals());
     }
 
     @PostMapping("/sprints")
@@ -161,6 +162,7 @@ public class SprintResource {
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
         LOG.debug("REST request to get Sprints by criteria: {}", criteria);
+        requireCriteriaProjectAccess(criteria);
         Page<SprintDTO> page = sprintQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -169,6 +171,7 @@ public class SprintResource {
     @GetMapping("/sprints/count")
     public ResponseEntity<Long> countSprints(SprintCriteria criteria) {
         LOG.debug("REST request to count Sprints by criteria: {}", criteria);
+        requireCriteriaProjectAccess(criteria);
         return ResponseEntity.ok().body(sprintQueryService.countByCriteria(criteria));
     }
 
@@ -176,6 +179,7 @@ public class SprintResource {
     public ResponseEntity<SprintDTO> getSprint(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Sprint : {}", id);
         Optional<SprintDTO> sprintDTO = sprintService.findOne(id);
+        sprintDTO.ifPresent(dto -> projectPermissionService.requireProjectAccess(dto.getProject().getId()));
         return ResponseUtil.wrapOrNotFound(sprintDTO);
     }
 
@@ -234,57 +238,8 @@ public class SprintResource {
     @GetMapping("/projects/{projectId}/backlog")
     public ResponseEntity<List<TaskDTO>> getBacklog(@PathVariable("projectId") Long projectId) {
         LOG.debug("REST request to get backlog for project : {}", projectId);
+        projectPermissionService.requireProjectAccess(projectId);
         List<TaskDTO> tasks = sprintService.getBacklogTasks(projectId);
         return ResponseEntity.ok().body(tasks);
-    }
-
-    @GetMapping("/sprints/{id}/burndown")
-    public ResponseEntity<BurndownData> getBurndown(@PathVariable("id") Long id) {
-        LOG.debug("REST request to get burndown for Sprint : {}", id);
-        SprintDTO sprintDTO = sprintService.findOne(id).orElseThrow(() -> new RuntimeException("Sprint not found"));
-        List<com.gestiontaches.domain.Task> sprintTasks = taskRepository.findBySprintId(id);
-        int totalTasks = sprintTasks.size();
-        if (totalTasks == 0) {
-            LocalDate today = LocalDate.now();
-            return ResponseEntity.ok(new BurndownData(List.of(today.toString()), List.of(0L), List.of(0L)));
-        }
-        List<Object[]> transitions = taskTransitionRepository.findTransitionsBySprintId(id);
-        LocalDate startDate = sprintDTO.getStartDate() != null ? sprintDTO.getStartDate() : LocalDate.now().minusDays(14);
-        LocalDate endDate = sprintDTO.getEndDate() != null ? sprintDTO.getEndDate() : LocalDate.now();
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        List<String> dates = new ArrayList<>();
-        List<Long> ideal = new ArrayList<>();
-        List<Long> actual = new ArrayList<>();
-        long remaining = totalTasks;
-        LocalDate cursor = startDate;
-        LocalDate end = endDate.plusDays(1);
-        int totalDays = Math.max(1, (int) (endDate.toEpochDay() - startDate.toEpochDay()));
-        int dayIndex = 0;
-        int trIdx = 0;
-        while (!cursor.isAfter(end)) {
-            Instant cursorInstant = cursor.atStartOfDay(ZoneId.systemDefault()).toInstant();
-            while (trIdx < transitions.size()) {
-                Instant trTime = (Instant) transitions.get(trIdx)[0];
-                if (trTime.isAfter(cursorInstant)) {
-                    break;
-                }
-                String toStatus = (String) transitions.get(trIdx)[2];
-                if ("DONE".equals(toStatus) || "CANCELLED".equals(toStatus)) {
-                    remaining = Math.max(0, remaining - 1);
-                }
-                trIdx++;
-            }
-            dates.add(cursor.format(fmt));
-            ideal.add((long) Math.max(0, totalTasks - (int) (((long) dayIndex * totalTasks) / totalDays)));
-            actual.add(remaining);
-            cursor = cursor.plusDays(1);
-            dayIndex++;
-        }
-        if (dates.isEmpty()) {
-            dates.add(LocalDate.now().format(fmt));
-            ideal.add((long) totalTasks);
-            actual.add(remaining);
-        }
-        return ResponseEntity.ok(new BurndownData(dates, ideal, actual));
     }
 }

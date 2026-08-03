@@ -6,7 +6,16 @@
         "refreshListLabel": "Refresh list",
         "createLabel": "Create a new Project",
         "createOrEditLabel": "Create or edit a Project",
-        "notFound": "No Projects found"
+        "notFound": "No Projects found",
+        "emptyTitle": "No projects yet",
+        "emptyText": "Create your first project to start organizing sprints, epics and tasks.",
+        "scopeMine": "My projects",
+        "scopeAll": "All projects"
+      },
+      "card": {
+        "noDescription": "No description yet.",
+        "progress": "Progress",
+        "createdAgo": "Created {{ time }}"
       },
       "created": "A new Project is created with identifier {{ param }}",
       "updated": "A Project is updated with identifier {{ param }}",

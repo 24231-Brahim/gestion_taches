@@ -4,7 +4,7 @@
 
     <div class="d-flex justify-content-end">
       <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
-        <fa-icon icon="arrows-rotate" [animation]="isLoading() ? 'spin' : undefined" />
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
         <span jhiTranslate="gestionTachesApp.epic.home.refreshListLabel">Actualiser la liste</span>
       </button>
 
@@ -13,15 +13,17 @@
         <span class="ms-1" jhiTranslate="gestionTachesApp.epic.home.roadmap">Roadmap</span>
       </a>
 
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-epic"
-        (click)="openCreateEpicModal()"
-      >
-        <fa-icon icon="plus" />
-        <span jhiTranslate="gestionTachesApp.epic.home.createLabel">Créer un nouveau Epic</span>
-      </button>
+      @if (canManageEpics()) {
+        <button
+          id="jh-create-entity"
+          data-cy="entityCreateButton"
+          class="btn btn-primary jh-create-entity create-epic"
+          [routerLink]="['/project', currentProjectKey(), 'epic', 'new']"
+        >
+          <fa-icon icon="plus" />
+          <span jhiTranslate="gestionTachesApp.epic.home.createLabel">Créer un nouveau Epic</span>
+        </button>
+      }
     </div>
   </h2>
 
@@ -68,6 +70,20 @@
                 <fa-icon class="p-1" icon="sort" />
               </div>
             </th>
+            <th scope="col" jhiSortBy="createdAt">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.epic.createdAt">Created At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="updatedAt">
+              <div class="d-flex">
+                <span jhiTranslate="gestionTachesApp.epic.updatedAt">Updated At</span>
+
+                <fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
             <th scope="col" jhiSortBy="startDate">
               <div class="d-flex">
                 <span jhiTranslate="gestionTachesApp.epic.startDate">Start Date</span>
@@ -98,6 +114,8 @@
                   {{ 'gestionTachesApp.Priority.' + (epic.priority ?? 'null') | translate }}
                 </span>
               </td>
+              <td>{{ epic.createdAt | formatMediumDatetime }}</td>
+              <td>{{ epic.updatedAt | formatMediumDatetime }}</td>
               <td>{{ epic.startDate | formatMediumDate }}</td>
               <td>
                 @if (epic.project) {
@@ -117,15 +135,21 @@
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
                   </a>
 
-                  <button type="button" (click)="openEditEpicModal(epic)" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                    <fa-icon icon="pencil" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
-                  </button>
+                  @if (canManageEpics()) {
+                    <a
+                      [routerLink]="['/project', currentProjectKey(), 'epic', epic.id, 'edit']"
+                      class="btn btn-primary btn-sm"
+                      data-cy="entityEditButton"
+                    >
+                      <fa-icon icon="pencil-alt" />
+                      <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
+                    </a>
 
-                  <button type="submit" (click)="delete(epic)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                    <fa-icon icon="xmark" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
-                  </button>
+                    <button type="submit" (click)="delete(epic)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                      <fa-icon icon="times" />
+                      <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
+                    </button>
+                  }
                 </div>
               </td>
             </tr>

@@ -1,5 +1,6 @@
 package com.gestiontaches.web.rest;
 
+import com.gestiontaches.repository.TaskHistoryRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.TaskHistoryService;
 import com.gestiontaches.service.dto.TaskHistoryDTO;
@@ -41,8 +42,11 @@ public class TaskHistoryResource {
 
     private final TaskHistoryService taskHistoryService;
 
-    public TaskHistoryResource(TaskHistoryService taskHistoryService) {
+    private final TaskHistoryRepository taskHistoryRepository;
+
+    public TaskHistoryResource(TaskHistoryService taskHistoryService, TaskHistoryRepository taskHistoryRepository) {
         this.taskHistoryService = taskHistoryService;
+        this.taskHistoryRepository = taskHistoryRepository;
     }
 
     /**
@@ -105,12 +109,14 @@ public class TaskHistoryResource {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
-        Optional<TaskHistoryDTO> result = taskHistoryService.partialUpdate(taskHistoryDTO);
+        if (!taskHistoryRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
 
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, taskHistoryDTO.getId().toString())
-        );
+        taskHistoryDTO = taskHistoryService.update(taskHistoryDTO);
+        return ResponseEntity.ok()
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, taskHistoryDTO.getId().toString()))
+            .body(taskHistoryDTO);
     }
 
     /**
@@ -146,6 +152,10 @@ public class TaskHistoryResource {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
+        if (!taskHistoryRepository.existsById(id)) {
+            throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
+        }
+
         Optional<TaskHistoryDTO> result = taskHistoryService.partialUpdate(taskHistoryDTO);
 
         return ResponseUtil.wrapOrNotFound(
@@ -155,31 +165,43 @@ public class TaskHistoryResource {
     }
 
     /**
-     * {@code GET  /task-histories} : get all the taskHistories.
+     * {@code GET  /task-histories/mine} : get the current user's 10 most recent taskHistories,
+     * for the developer dashboard's "recent activity" feed.
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of TaskHistories in body.
+     */
+    @GetMapping("/mine")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<TaskHistoryDTO>> getMyRecentTaskHistories() {
+        LOG.debug("REST request to get recent TaskHistories for current user");
+        return ResponseEntity.ok(taskHistoryService.findRecentForCurrentUser());
+    }
+
+    /**
+     * {@code GET  /task-histories/by-task/:taskId} : get the TaskHistories for a task.
+     *
+     * @param taskId the id of the task.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of TaskHistories in body.
+     */
+    @GetMapping("/by-task/{taskId}")
+    public ResponseEntity<List<TaskHistoryDTO>> getTaskHistoriesByTask(@PathVariable("taskId") Long taskId) {
+        LOG.debug("REST request to get TaskHistories for Task : {}", taskId);
+        List<TaskHistoryDTO> histories = taskHistoryService.findByTaskId(taskId);
+        return ResponseEntity.ok(histories);
+    }
+
+    /**
+     * {@code GET  /task-histories} : get all the TaskHistories.
      *
      * @param pageable the pagination information.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of taskHistories in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of TaskHistories in body.
      */
     @GetMapping("")
-    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "')")
     public ResponseEntity<List<TaskHistoryDTO>> getAllTaskHistories(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
         LOG.debug("REST request to get a page of TaskHistories");
         Page<TaskHistoryDTO> page = taskHistoryService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
-    }
-
-    /**
-     * {@code GET  /task-histories/by-task/:taskId} : get all taskHistories for a given task.
-     *
-     * @param taskId the id of the task.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of taskHistories in body.
-     */
-    @GetMapping("/by-task/{taskId}")
-    public ResponseEntity<List<TaskHistoryDTO>> getTaskHistoriesByTask(@PathVariable("taskId") Long taskId) {
-        LOG.debug("REST request to get TaskHistories for Task : {}", taskId);
-        List<TaskHistoryDTO> taskHistories = taskHistoryService.findByTaskId(taskId);
-        return ResponseEntity.ok(taskHistories);
     }
 
     /**
@@ -202,7 +224,15 @@ public class TaskHistoryResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "')")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
+            "')"
+    )
     public ResponseEntity<Void> deleteTaskHistory(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete TaskHistory : {}", id);
         taskHistoryService.delete(id);

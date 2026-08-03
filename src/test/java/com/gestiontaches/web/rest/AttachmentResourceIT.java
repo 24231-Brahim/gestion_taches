@@ -10,8 +10,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gestiontaches.IntegrationTest;
 import com.gestiontaches.domain.Attachment;
+import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.Task;
+import com.gestiontaches.domain.User;
+import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.repository.AttachmentRepository;
+import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.service.dto.AttachmentDTO;
 import com.gestiontaches.service.mapper.AttachmentMapper;
 import jakarta.persistence.EntityManager;
@@ -63,6 +67,9 @@ class AttachmentResourceIT {
 
     @Autowired
     private EntityManager em;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private MockMvc restAttachmentMockMvc;
@@ -495,6 +502,17 @@ class AttachmentResourceIT {
     @Transactional
     @WithMockUser(authorities = { "ROLE_DEVELOPER" })
     void createAttachment_asDeveloper_shouldSucceed() throws Exception {
+        // Uploading requires at least view access to the task's project: make the mock "user"
+        // account (the default @WithMockUser principal) a member of it.
+        User currentUser = userRepository.findOneByLogin("user").orElseThrow();
+        ProjectMember member = new ProjectMember()
+            .project(attachment.getTask().getProject())
+            .user(currentUser)
+            .role(ProjectRole.MEMBER)
+            .joinedAt(Instant.now());
+        em.persist(member);
+        em.flush();
+
         long databaseSizeBeforeCreate = getRepositoryCount();
         AttachmentDTO attachmentDTO = attachmentMapper.toDto(attachment);
         restAttachmentMockMvc

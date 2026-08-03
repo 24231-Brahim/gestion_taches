@@ -21,6 +21,8 @@
         "title": "Task",
         "comments": "Comments",
         "noComments": "No comments yet.",
+        "attachments": "Attachments",
+        "noAttachments": "No attachments yet.",
         "history": "History",
         "noHistory": "No history yet.",
         "tab": {
@@ -33,7 +35,6 @@
       "id": "ID",
       "title": "Title",
       "description": "Description",
-      "type": "Type",
       "status": "Status",
       "priority": "Priority",
       "createdAt": "Created At",

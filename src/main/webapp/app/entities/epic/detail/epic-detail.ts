@@ -6,21 +6,25 @@ import dayjs from 'dayjs/esm';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
 import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { TaskService } from 'app/entities/task/service/task.service';
 import { ITask } from 'app/entities/task/task.model';
 import { TaskKanbanBoard } from 'app/entities/task/kanban/task-kanban-board';
+import { EpicBurndownChart } from '../burndown/epic-burndown-chart';
 import { IEpic } from '../epic.model';
 
-type Tab = 'tasks' | 'kanban' | 'timeline';
+type Tab = 'tasks' | 'kanban' | 'burndown' | 'timeline';
 
 interface EpicStats {
   totalTasks: number;
   doneTasks: number;
   inProgressTasks: number;
   todoTasks: number;
+  totalStoryPoints: number;
+  doneStoryPoints: number;
   progress: number;
 }
 
@@ -206,15 +210,12 @@ interface EpicStats {
       .task-table tr:hover {
         background: rgba(255, 255, 255, 0.03);
       }
-      .task-type-icon {
-        margin-right: 6px;
-      }
       .assignee-initials {
         width: 22px;
         height: 22px;
         border-radius: 50%;
-        background: var(--color-primary-container, #0099fe);
-        color: var(--color-on-primary-container);
+        background: var(--color-primary-container, #25a7fd);
+        color: #000;
         font-size: 0.65rem;
         font-weight: 600;
         display: inline-flex;
@@ -223,8 +224,8 @@ interface EpicStats {
         font-family: var(--font-mono);
       }
       .sp-badge {
-        background: var(--color-primary-container, #0099fe);
-        color: var(--color-on-primary-container);
+        background: var(--color-primary-container, #25a7fd);
+        color: #000;
         font-size: 0.65rem;
         font-weight: 600;
         padding: 1px 6px;
@@ -298,6 +299,7 @@ interface EpicStats {
     FormatMediumDatePipe,
     FormatMediumDatetimePipe,
     TaskKanbanBoard,
+    EpicBurndownChart,
   ],
 })
 export class EpicDetail {
@@ -312,45 +314,37 @@ export class EpicDetail {
   protected readonly alertService = inject(AlertService);
   protected readonly translateService = inject(TranslateService);
   protected readonly activatedRoute = inject(ActivatedRoute);
+  protected readonly accountService = inject(AccountService);
+
+  // ADMIN/PROJET_MANAGER bypass only — this page doesn't have the project's member list loaded,
+  // so a non-admin OWNER/MANAGER won't see this link either (safe default: never shown to anyone
+  // unauthorized, matches the backend's EpicService which requires OWNER/MANAGER project role).
+  readonly canManageEpics = computed(
+    () =>
+      this.accountService.account()?.authorities?.includes('ROLE_ADMIN') ||
+      this.accountService.account()?.authorities?.includes('ROLE_PROJET_MANAGER') ||
+      false,
+  );
 
   readonly epicStats = computed<EpicStats>(() => {
     const t = this.tasks();
     const total = t.length;
     const done = t.filter(i => i.status === 'DONE').length;
     const inProgress = t.filter(i => i.status === 'IN_PROGRESS').length;
-    const todo = t.filter(i => i.status === 'TODO' || i.status === 'NEW').length;
+    const todo = t.filter(i => i.status === 'NEW').length;
+    const totalSp = t.reduce((s, i) => s + (i.storyPoints ?? 0), 0);
+    const doneSp = t.filter(i => i.status === 'DONE').reduce((s, i) => s + (i.storyPoints ?? 0), 0);
     return {
       totalTasks: total,
       doneTasks: done,
       inProgressTasks: inProgress,
       todoTasks: todo,
+      totalStoryPoints: totalSp,
+      doneStoryPoints: doneSp,
       progress: total > 0 ? Math.round((done / total) * 100) : 0,
     };
   });
 
-  readonly timelineProgress = computed(() => {
-    const ep = this.epic();
-    if (!ep?.startDate || !ep?.endDate) {
-      return 0;
-    }
-    const start = ep.startDate.valueOf();
-    const end = ep.endDate.valueOf();
-    const now = dayjs().valueOf();
-
-    if (end <= start) {
-      return 100;
-    }
-    if (now <= start) {
-      return 0;
-    }
-    if (now >= end) {
-      return 100;
-    }
-
-    const elapsed = now - start;
-    const total = end - start;
-    return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
-  });
   readonly uniqueSprints = computed(() => {
     const seen = new Map<number, { id: number; name: string }>();
     for (const t of this.tasks()) {
@@ -371,29 +365,21 @@ export class EpicDetail {
     return Array.from(logins).sort();
   });
 
-  readonly typeIcons: Record<string, string> = {
-    STORY: 'table-list',
-    BUG: 'bug',
-    TASK: 'circle-check',
-    SUBTASK: 'plus',
-    IMPROVEMENT: 'arrow-up',
-  };
-
-  readonly typeColors: Record<string, string> = {
-    STORY: 'var(--color-story, #4caf50)',
-    BUG: 'var(--color-bug, #f44336)',
-    TASK: 'var(--color-task, #2196f3)',
-    SUBTASK: 'var(--color-subtask, #9e9e9e)',
-    IMPROVEMENT: 'var(--color-improvement, #ff9800)',
-  };
-
   private epicEffect = effect(() => {
     const ep = this.epic();
     if (ep?.id) {
-      this.taskService.tasksParams.set({
+      // projectId is required alongside epicId: TaskResource.requireCriteriaProjectAccess()
+      // rejects any non-admin/PM request with a 403 if it lacks a projectId filter, which was
+      // silently emptying this page's task list for real project members (only ADMIN/PROJET_MANAGER
+      // bypass that check and never saw the bug).
+      const queryObject: Record<string, string | number> = {
         'epicId.equals': ep.id,
-        size: 100,
-      });
+        size: 500,
+      };
+      if (ep.project?.id) {
+        queryObject['projectId.equals'] = ep.project.id;
+      }
+      this.taskService.tasksParams.set(queryObject);
     }
   });
 
@@ -419,11 +405,10 @@ export class EpicDetail {
   getStatusColor(status: string | null | undefined): string {
     const colors: Record<string, string> = {
       NEW: 'var(--color-status-backlog, #9e9e9e)',
-      TODO: 'var(--color-status-todo, #2196f3)',
       IN_PROGRESS: 'var(--color-status-in-progress, #ff9800)',
-      IN_REVIEW: 'var(--color-status-in-review, #9c27b0)',
+      READY_FOR_TEST: 'var(--color-status-in-review, #9c27b0)',
       DONE: 'var(--color-status-done, #4caf50)',
-      CANCELLED: 'var(--color-status-cancelled, #f44336)',
+      NEEDS_INFO: 'var(--color-status-cancelled, #f44336)',
     };
     return colors[status ?? ''] ?? 'var(--color-outline-variant)';
   }

@@ -10,20 +10,19 @@ import {
   entityTableSelector,
 } from '../../support/entity';
 
-describe('Issue e2e test', () => {
-  const issuePageUrl = '/issue';
-  const issuePageUrlPattern = new RegExp('/issue(\\?.*)?$');
+describe('Task e2e test', () => {
+  const taskPageUrl = '/task';
+  const taskPageUrlPattern = new RegExp('/task(\\?.*)?$');
   let username: string;
   let password: string;
-  const issueSample = {
+  const taskSample = {
     title: 'multiple vérifier',
-    type: 'IMPROVEMENT',
     status: 'CANCELLED',
     priority: 'HIGHEST',
     createdAt: '2026-06-24T06:19:11.694Z',
   };
 
-  let issue;
+  let task;
   let project;
 
   before(() => {
@@ -48,9 +47,9 @@ describe('Issue e2e test', () => {
   });
 
   beforeEach(() => {
-    cy.intercept('GET', '/api/issues+(?*|)').as('entitiesRequest');
-    cy.intercept('POST', '/api/issues').as('postEntityRequest');
-    cy.intercept('DELETE', '/api/issues/*').as('deleteEntityRequest');
+    cy.intercept('GET', '/api/tasks+(?*|)').as('entitiesRequest');
+    cy.intercept('POST', '/api/tasks').as('postEntityRequest');
+    cy.intercept('DELETE', '/api/tasks/*').as('deleteEntityRequest');
   });
 
   beforeEach(() => {
@@ -87,12 +86,12 @@ describe('Issue e2e test', () => {
   });
 
   afterEach(() => {
-    if (issue) {
+    if (task) {
       cy.authenticatedRequest({
         method: 'DELETE',
-        url: `/api/issues/${issue.id}`,
+        url: `/api/tasks/${task.id}`,
       }).then(() => {
-        issue = undefined;
+        task = undefined;
       });
     }
   });
@@ -108,9 +107,9 @@ describe('Issue e2e test', () => {
     }
   });
 
-  it('Issues menu should load Issues page', () => {
+  it('Tasks menu should load Tasks page', () => {
     cy.visit('/');
-    cy.clickOnEntityMenuItem('issue');
+    cy.clickOnEntityMenuItem('task');
     cy.wait('@entitiesRequest').then(({ response }) => {
       if (response?.body.length === 0) {
         cy.get(entityTableSelector).should('not.exist');
@@ -118,32 +117,32 @@ describe('Issue e2e test', () => {
         cy.get(entityTableSelector).should('exist');
       }
     });
-    cy.getEntityHeading('Issue').should('exist');
-    cy.url().should('match', issuePageUrlPattern);
+    cy.getEntityHeading('Task').should('exist');
+    cy.url().should('match', taskPageUrlPattern);
   });
 
-  describe('Issue page', () => {
+  describe('Task page', () => {
     it('should have translated page title', () => {
-      cy.visit(issuePageUrl);
-      cy.getEntityHeading('Issue').should('not.contain', 'gestionTachesApp.issue.home.title');
+      cy.visit(taskPageUrl);
+      cy.getEntityHeading('Task').should('not.contain', 'gestionTachesApp.task.home.title');
     });
 
     describe('create button click', () => {
       beforeEach(() => {
-        cy.visit(issuePageUrl);
+        cy.visit(taskPageUrl);
         cy.wait('@entitiesRequest');
       });
 
-      it('should load create Issue page', () => {
+      it('should load create Task page', () => {
         cy.get(entityCreateButtonSelector).click();
-        cy.url().should('match', new RegExp('/issue/new$'));
-        cy.getEntityCreateUpdateHeading('Issue');
+        cy.url().should('match', new RegExp('/task/new$'));
+        cy.getEntityCreateUpdateHeading('Task');
         cy.get(entityCreateSaveButtonSelector).should('exist');
         cy.get(entityCreateCancelButtonSelector).click();
         cy.wait('@entitiesRequest').then(({ response }) => {
           expect(response?.statusCode).to.equal(200);
         });
-        cy.url().should('match', issuePageUrlPattern);
+        cy.url().should('match', taskPageUrlPattern);
       });
     });
 
@@ -151,69 +150,69 @@ describe('Issue e2e test', () => {
       beforeEach(() => {
         cy.authenticatedRequest({
           method: 'POST',
-          url: '/api/issues',
+          url: '/api/tasks',
           body: {
-            ...issueSample,
+            ...taskSample,
             project,
           },
         }).then(({ body }) => {
-          issue = body;
+          task = body;
 
           cy.intercept(
             {
               method: 'GET',
-              url: '/api/issues+(?*|)',
+              url: '/api/tasks+(?*|)',
               times: 1,
             },
             {
               statusCode: 200,
               headers: {
-                link: '<http://localhost/api/issues?page=0&size=20>; rel="last",<http://localhost/api/issues?page=0&size=20>; rel="first"',
+                link: '<http://localhost/api/tasks?page=0&size=20>; rel="last",<http://localhost/api/tasks?page=0&size=20>; rel="first"',
               },
-              body: [issue],
+              body: [task],
             },
           ).as('entitiesRequestInternal');
         });
 
-        cy.visit(issuePageUrl);
+        cy.visit(taskPageUrl);
 
         cy.wait('@entitiesRequestInternal');
       });
 
-      it('detail button click should load details Issue page', () => {
+      it('detail button click should load details Task page', () => {
         cy.get(entityDetailsButtonSelector).first().click();
-        cy.getEntityDetailsHeading('issue');
+        cy.getEntityDetailsHeading('task');
         cy.get(entityDetailsBackButtonSelector).click();
         cy.wait('@entitiesRequest').then(({ response }) => {
           expect(response?.statusCode).to.equal(200);
         });
-        cy.url().should('match', issuePageUrlPattern);
+        cy.url().should('match', taskPageUrlPattern);
       });
 
-      it('edit button click should load edit Issue page and go back', () => {
+      it('edit button click should load edit Task page and go back', () => {
         cy.get(entityEditButtonSelector).first().click();
-        cy.getEntityCreateUpdateHeading('Issue');
+        cy.getEntityCreateUpdateHeading('Task');
         cy.get(entityCreateSaveButtonSelector).should('exist');
         cy.get(entityCreateCancelButtonSelector).click();
         cy.wait('@entitiesRequest').then(({ response }) => {
           expect(response?.statusCode).to.equal(200);
         });
-        cy.url().should('match', issuePageUrlPattern);
+        cy.url().should('match', taskPageUrlPattern);
       });
 
-      it('edit button click should load edit Issue page and save', () => {
+      it('edit button click should load edit Task page and save', () => {
         cy.get(entityEditButtonSelector).first().click();
-        cy.getEntityCreateUpdateHeading('Issue');
+        cy.getEntityCreateUpdateHeading('Task');
         cy.get(entityCreateSaveButtonSelector).click();
         cy.wait('@entitiesRequest').then(({ response }) => {
           expect(response?.statusCode).to.equal(200);
         });
-        cy.url().should('match', issuePageUrlPattern);
+        cy.url().should('match', taskPageUrlPattern);
       });
 
-      it('last delete button click should delete instance of Issue', () => {
+      it('last delete button click should delete instance of Task', () => {
         cy.get(entityDeleteButtonSelector).last().click();
-        cy.getEntityDeleteDialogHeading('issue').should('exist');
+        cy.getEntityDeleteDialogHeading('task').should('exist');
         cy.get(entityConfirmDeleteButtonSelector).click();
         cy.wait('@deleteEntityRequest').then(({ response }) => {
           expect(response?.statusCode).to.equal(204);
@@ -221,28 +220,26 @@ describe('Issue e2e test', () => {
         cy.wait('@entitiesRequest').then(({ response }) => {
           expect(response?.statusCode).to.equal(200);
         });
-        cy.url().should('match', issuePageUrlPattern);
+        cy.url().should('match', taskPageUrlPattern);
 
-        issue = undefined;
+        task = undefined;
       });
     });
   });
 
-  describe('new Issue page', () => {
+  describe('new Task page', () => {
     beforeEach(() => {
-      cy.visit(issuePageUrl);
+      cy.visit(taskPageUrl);
       cy.get(entityCreateButtonSelector).click();
-      cy.getEntityCreateUpdateHeading('Issue');
+      cy.getEntityCreateUpdateHeading('Task');
     });
 
-    it('should create an instance of Issue', () => {
+    it('should create an instance of Task', () => {
       cy.get(`[data-cy="title"]`).type('triste miaou brave');
       cy.get(`[data-cy="title"]`).should('have.value', 'triste miaou brave');
 
       cy.get(`[data-cy="description"]`).type('équipe');
       cy.get(`[data-cy="description"]`).should('have.value', 'équipe');
-
-      cy.get(`[data-cy="type"]`).select('SUBTASK');
 
       cy.get(`[data-cy="status"]`).select('CANCELLED');
 
@@ -262,12 +259,12 @@ describe('Issue e2e test', () => {
 
       cy.wait('@postEntityRequest').then(({ response }) => {
         expect(response?.statusCode).to.equal(201);
-        issue = response.body;
+        task = response.body;
       });
       cy.wait('@entitiesRequest').then(({ response }) => {
         expect(response?.statusCode).to.equal(200);
       });
-      cy.url().should('match', issuePageUrlPattern);
+      cy.url().should('match', taskPageUrlPattern);
     });
   });
 });

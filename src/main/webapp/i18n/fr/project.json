@@ -2,43 +2,39 @@
   "gestionTachesApp": {
     "project": {
       "home": {
-        "title": "Projets",
+        "title": "Projects",
         "refreshListLabel": "Actualiser la liste",
-        "createLabel": "Créer un nouveau projet",
-        "createOrEditLabel": "Créer ou éditer un projet",
-        "notFound": "Aucun projet trouvé"
+        "createLabel": "Créer un nouveau Project",
+        "createOrEditLabel": "Créer ou éditer un Project",
+        "notFound": "Aucun Project trouvé",
+        "emptyTitle": "Aucun projet pour l'instant",
+        "emptyText": "Créez votre premier projet pour commencer à organiser sprints, epics et tâches.",
+        "scopeMine": "Mes projets",
+        "scopeAll": "Tous les projets"
       },
-      "created": "Un nouveau projet a été créé avec l'identifiant {{ param }}",
-      "updated": "Le projet avec l'identifiant {{ param }} a été mis à jour",
-      "deleted": "Le projet avec l'identifiant {{ param }} a été supprimé",
+      "card": {
+        "noDescription": "Pas encore de description.",
+        "progress": "Avancement",
+        "createdAgo": "Créé {{ time }}"
+      },
+      "created": "Un nouveau Project a été créé avec l'identifiant {{ param }}",
+      "updated": "Le Project avec l'identifiant {{ param }} a été mis à jour",
+      "deleted": "Le Project avec l'identifiant {{ param }} a été supprimé",
       "delete": {
-        "question": "Êtes-vous certain de vouloir supprimer le projet {{ id }} ?"
+        "question": "Êtes-vous certain de vouloir supprimer le Project {{ id }} ?"
       },
       "detail": {
-        "title": "Projet"
+        "title": "Project"
       },
       "id": "ID",
-      "name": "Nom",
+      "name": "Name",
       "description": "Description",
-      "key": "Clé",
-      "createdAt": "Créé le",
+      "key": "Key",
+      "createdAt": "Created At",
       "sprints": "Sprints",
       "epics": "Epics",
       "tasks": "Tâches",
       "members": "Membres",
-      "tab": {
-        "details": "Détails",
-        "members": "Membres",
-        "discussion": "Discussion"
-      },
-      "settings": {
-        "title": "Paramètres",
-        "forbidden": "Vous n'avez pas les droits d'accès aux paramètres de ce projet.",
-        "information": "Informations générales",
-        "nameRequired": "Le nom est requis.",
-        "descriptionPlaceholder": "Décrivez le but du projet...",
-        "keyHint": "Identifiant court unique (2-10 caractères)."
-      },
       "member": {
         "add": "Ajouter un membre",
         "added": "Membre ajouté au projet",
@@ -46,11 +42,6 @@
         "updated": "Rôle du membre mis à jour",
         "userLogin": "Utilisateur",
         "role": "Rôle",
-        "role": {
-          "OWNER": "PROPRIÉTAIRE",
-          "MANAGER": "GESTIONNAIRE",
-          "MEMBER": "MEMBRE"
-        },
         "joinedAt": "Date d'ajout",
         "selectUser": "Sélectionner un utilisateur",
         "empty": "Aucun membre pour le moment",

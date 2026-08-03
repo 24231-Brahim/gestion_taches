@@ -18,7 +18,7 @@ describe('Attachment e2e test', () => {
   // const attachmentSample = {"fileName":"là affable afin que","filePath":"un peu","uploadedAt":"2026-06-24T03:02:11.236Z"};
 
   let attachment;
-  // let issue;
+  // let task;
 
   before(() => {
     cy.credentials().then(credentials => {
@@ -35,10 +35,10 @@ describe('Attachment e2e test', () => {
     // create an instance at the required relationship entity:
     cy.authenticatedRequest({
       method: 'POST',
-      url: '/api/issues',
-      body: {"title":"avant dessous","description":"athlète gens","type":"STORY","status":"IN_PROGRESS","priority":"LOWEST","createdAt":"2026-06-23T19:20:42.930Z","updatedAt":"2026-06-23T23:49:00.287Z"},
+      url: '/api/tasks',
+      body: {"title":"avant dessous","description":"athlète gens","status":"IN_PROGRESS","priority":"LOWEST","createdAt":"2026-06-23T19:20:42.930Z","updatedAt":"2026-06-23T23:49:00.287Z"},
     }).then(({ body }) => {
-      issue = body;
+      task = body;
     });
   });
    */
@@ -52,9 +52,9 @@ describe('Attachment e2e test', () => {
   /* Disabled due to incompatibility
   beforeEach(() => {
     // Simulate relationships api for better performance and reproducibility.
-    cy.intercept('GET', '/api/issues', {
+    cy.intercept('GET', '/api/tasks', {
       statusCode: 200,
-      body: [issue],
+      body: [task],
     });
 
   });
@@ -73,12 +73,12 @@ describe('Attachment e2e test', () => {
 
   /* Disabled due to incompatibility
   afterEach(() => {
-    if (issue) {
+    if (task) {
       cy.authenticatedRequest({
         method: 'DELETE',
-        url: `/api/issues/${issue.id}`,
+        url: `/api/tasks/${task.id}`,
       }).then(() => {
-        issue = undefined;
+        task = undefined;
       });
     }
   });
@@ -131,7 +131,7 @@ describe('Attachment e2e test', () => {
           url: '/api/attachments',
           body: {
             ...attachmentSample,
-            issue: issue,
+            task: task,
           },
         }).then(({ body }) => {
           attachment = body;
@@ -236,7 +236,7 @@ describe('Attachment e2e test', () => {
       cy.get(`[data-cy="uploadedAt"]`).blur();
       cy.get(`[data-cy="uploadedAt"]`).should('have.value', '2026-06-24T03:34');
 
-      cy.get(`[data-cy="issue"]`).select(1);
+      cy.get(`[data-cy="task"]`).select(1);
 
       cy.get(entityCreateSaveButtonSelector).click();
 

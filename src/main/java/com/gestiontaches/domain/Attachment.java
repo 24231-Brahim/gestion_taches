@@ -46,6 +46,9 @@ public class Attachment implements Serializable {
     @JsonIgnoreProperties(value = { "comments", "attachments", "sprint", "epic", "project" }, allowSetters = true)
     private Task task;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User uploadedBy;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {
@@ -110,6 +113,19 @@ public class Attachment implements Serializable {
 
     public Attachment task(Task task) {
         this.setTask(task);
+        return this;
+    }
+
+    public User getUploadedBy() {
+        return this.uploadedBy;
+    }
+
+    public void setUploadedBy(User uploadedBy) {
+        this.uploadedBy = uploadedBy;
+    }
+
+    public Attachment uploadedBy(User uploadedBy) {
+        this.setUploadedBy(uploadedBy);
         return this;
     }
 

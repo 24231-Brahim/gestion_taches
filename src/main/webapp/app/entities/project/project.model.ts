@@ -24,3 +24,11 @@ export interface IProject {
 }
 
 export type NewProject = Omit<IProject, 'id'> & { id: null };
+
+export interface IProjectCardStats {
+  projectId: number;
+  totalTasks: number;
+  doneTasks: number;
+  activeSprintId?: number | null;
+  activeSprintName?: string | null;
+}

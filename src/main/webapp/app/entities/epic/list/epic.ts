@@ -1,5 +1,5 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
@@ -8,12 +8,14 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subscription, combineLatest, filter, from, of, switchMap, tap } from 'rxjs';
+import { Subscription, combineLatest, filter, of, switchMap, tap } from 'rxjs';
 
-import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, ITEM_SAVED_EVENT, SORT } from 'app/config/navigation.constants';
+import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { IProject } from 'app/entities/project/project.model';
 import { ProjectService } from 'app/entities/project/service/project.service';
+import { ProjectRole } from 'app/entities/enumerations/project-role.model';
+import { AccountService } from 'app/core/auth/account.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
@@ -21,7 +23,6 @@ import { Filter, FilterOptions, IFilterOption, IFilterOptions } from 'app/shared
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
-import { EpicFormModal } from '../update/epic-form-modal';
 import { EpicDeleteDialog } from '../delete/epic-delete-dialog';
 import { IEpic } from '../epic.model';
 import { EpicService } from '../service/epic.service';
@@ -76,6 +77,22 @@ export class Epic implements OnInit {
   readonly currentProjectKey = signal<string | null>(null);
   readonly currentProject = signal<IProject | null>(null);
 
+  protected readonly accountService = inject(AccountService);
+
+  // Matches the backend's EpicService: create/edit/delete requires OWNER/MANAGER project role,
+  // with an implicit bypass for ADMIN/PROJET_MANAGER.
+  readonly canManageEpics = computed(() => {
+    const account = this.accountService.account();
+    if (!account) {
+      return false;
+    }
+    if (account.authorities.includes('ROLE_ADMIN') || account.authorities.includes('ROLE_PROJET_MANAGER')) {
+      return true;
+    }
+    const role = this.currentProject()?.projectMembers?.find(m => m.userLogin === account.login)?.role;
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
+  });
+
   readonly router = inject(Router);
   protected readonly epicService = inject(EpicService);
   protected readonly projectService = inject(ProjectService);
@@ -121,9 +138,11 @@ export class Epic implements OnInit {
           const key = params.get('key');
           if (key) {
             this.currentProjectKey.set(key);
-            return from(this.projectService.findByKey(key).pipe(tap(project => this.currentProject.set(project))));
+            return this.projectService.findByKey(key).pipe(tap(project => this.currentProject.set(project)));
           }
-          return of([]);
+          this.currentProjectKey.set(null);
+          this.currentProject.set(null);
+          return of(null);
         }),
         switchMap(() => combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])),
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
@@ -139,35 +158,6 @@ export class Epic implements OnInit {
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
-        tap(() => {
-          this.epicService.refresh();
-          this.load();
-        }),
-      )
-      .subscribe();
-  }
-
-  openCreateEpicModal(): void {
-    const modalRef = this.modalService.open(EpicFormModal, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.projectKey = this.currentProjectKey() ?? undefined;
-    modalRef.closed
-      .pipe(
-        filter(reason => reason === ITEM_SAVED_EVENT),
-        tap(() => {
-          this.epicService.refresh();
-          this.load();
-        }),
-      )
-      .subscribe();
-  }
-
-  openEditEpicModal(epic: IEpic): void {
-    const modalRef = this.modalService.open(EpicFormModal, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.epic = epic;
-    modalRef.componentInstance.projectKey = this.currentProjectKey() ?? undefined;
-    modalRef.closed
-      .pipe(
-        filter(reason => reason === ITEM_SAVED_EVENT),
         tap(() => {
           this.epicService.refresh();
           this.load();

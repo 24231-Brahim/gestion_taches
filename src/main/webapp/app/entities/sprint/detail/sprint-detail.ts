@@ -1,32 +1,25 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, input, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import dayjs from 'dayjs/esm';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { filter, tap } from 'rxjs';
-import { EntityEventService, EntityType } from 'app/core/util/entity-event.service';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
 import { FormatMediumDatePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
-import { ITEM_DELETED_EVENT, ITEM_SAVED_EVENT } from 'app/config/navigation.constants';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
-import { TaskDeleteDialog } from 'app/entities/task/delete/task-delete-dialog';
 import { TaskService } from 'app/entities/task/service/task.service';
 import { ITask } from 'app/entities/task/task.model';
-import { TaskFormModal } from 'app/entities/task/update/task-form-modal';
 import { SprintActiveBoard } from '../active-board/sprint-active-board';
 import { SprintBacklogPlanning } from '../backlog-planning/sprint-backlog-planning';
+import { SprintBurndownChart } from '../burndown/sprint-burndown-chart';
 import { SprintService, VelocityReport } from '../service/sprint.service';
-import { SprintTimeline } from '../timeline/sprint-timeline';
 import { ISprint } from '../sprint.model';
 
-type Tab = 'board' | 'planning' | 'tasks' | 'timeline';
+type Tab = 'board' | 'planning' | 'burndown';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -118,7 +111,7 @@ type Tab = 'board' | 'planning' | 'tasks' | 'timeline';
         left: 0;
         width: 100%;
         height: 100%;
-        background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+        background: rgba(0, 0, 0, 0.7);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -221,7 +214,7 @@ type Tab = 'board' | 'planning' | 'tasks' | 'timeline';
     FormatMediumDatePipe,
     SprintActiveBoard,
     SprintBacklogPlanning,
-    SprintTimeline,
+    SprintBurndownChart,
   ],
 })
 export class SprintDetail {
@@ -242,7 +235,8 @@ export class SprintDetail {
     if (!account) {
       return null;
     }
-    if (account.authorities.includes('ROLE_ADMIN')) {
+    // Matches the backend's ProjectPermissionService.hasGlobalProjectAccess().
+    if (account.authorities.includes('ROLE_ADMIN') || account.authorities.includes('ROLE_PROJET_MANAGER')) {
       return ProjectRole.OWNER;
     }
     return null;
@@ -281,9 +275,13 @@ export class SprintDetail {
     return Math.round((this.doneTasksCount() / total) * 100);
   });
 
-  readonly totalStoryPoints = computed(() => 0);
+  readonly totalStoryPoints = computed(() => this.tasks().reduce((sum, t) => sum + (t.storyPoints ?? 0), 0));
 
-  readonly doneStoryPoints = computed(() => 0);
+  readonly doneStoryPoints = computed(() =>
+    this.tasks()
+      .filter(t => t.status === 'DONE')
+      .reduce((sum, t) => sum + (t.storyPoints ?? 0), 0),
+  );
 
   readonly daysLeft = computed(() => {
     const sp = this._currentSprint();
@@ -300,9 +298,6 @@ export class SprintDetail {
   protected readonly alertService = inject(AlertService);
   protected readonly translateService = inject(TranslateService);
   protected readonly accountService = inject(AccountService);
-  protected readonly modalService = inject(NgbModal);
-  protected readonly entityEventService = inject(EntityEventService);
-  protected readonly destroyRef = inject(DestroyRef);
 
   private readonly _currentSprint = signal<ISprint | null>(null);
 
@@ -312,15 +307,11 @@ export class SprintDetail {
 
   private tasksEffect = effect(() => {
     const raw = this.taskService.tasks();
-    const backlog = this.taskService.backlogTasks();
     if (raw && raw.length > 0) {
       this.tasks.set(raw.filter(i => i.sprint?.id === this._currentSprint()?.id));
+      this.projectTasks.set(raw);
     } else if (raw?.length === 0 && this.taskService.tasksResource.hasValue()) {
       this.tasks.set([]);
-    }
-    if (backlog && backlog.length > 0) {
-      this.projectTasks.set(backlog);
-    } else if (backlog?.length === 0 && this.taskService.backlogTasksResource.hasValue()) {
       this.projectTasks.set([]);
     }
   });
@@ -329,23 +320,11 @@ export class SprintDetail {
     const sp = this._currentSprint();
     if (sp?.project?.id) {
       this.taskService.tasksParams.set({
-        'sprintId.equals': sp.id,
-        size: 100,
-      });
-      this.taskService.backlogTasksParams.set({
         'projectId.equals': sp.project.id,
-        'sprintId.specified': false,
-        size: 100,
+        size: 500,
       });
     }
   });
-
-  constructor() {
-    this.entityEventService
-      .onEntityType(EntityType.TASK)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.refreshTasks());
-  }
 
   onSelectTask(_task: ITask): void {
     // no-op for now
@@ -355,14 +334,8 @@ export class SprintDetail {
     const sp = this._currentSprint();
     if (sp?.project?.id) {
       this.taskService.tasksParams.set({
-        'sprintId.equals': sp.id,
-        size: 100,
-        t: Date.now(),
-      });
-      this.taskService.backlogTasksParams.set({
         'projectId.equals': sp.project.id,
-        'sprintId.specified': false,
-        size: 100,
+        size: 500,
         t: Date.now(),
       });
     }
@@ -462,50 +435,5 @@ export class SprintDetail {
 
   setTab(tab: Tab): void {
     this.activeTab.set(tab);
-  }
-
-  openCreateTaskModal(): void {
-    const sp = this._currentSprint();
-    if (!sp?.project?.key) {
-      return;
-    }
-    const modalRef = this.modalService.open(TaskFormModal, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.projectKey = sp.project.key;
-    modalRef.closed
-      .pipe(
-        tap(reason => {
-          if (reason === ITEM_SAVED_EVENT) {
-            this.refreshTasks();
-          }
-        }),
-      )
-      .subscribe();
-  }
-
-  openEditTaskModal(task: ITask): void {
-    const sp = this._currentSprint();
-    const modalRef = this.modalService.open(TaskFormModal, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.task = task;
-    modalRef.componentInstance.projectKey = sp?.project?.key;
-    modalRef.closed
-      .pipe(
-        tap(reason => {
-          if (reason === ITEM_SAVED_EVENT) {
-            this.refreshTasks();
-          }
-        }),
-      )
-      .subscribe();
-  }
-
-  deleteTask(task: ITask): void {
-    const modalRef = this.modalService.open(TaskDeleteDialog, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.task = task;
-    modalRef.closed
-      .pipe(
-        filter(reason => reason === ITEM_DELETED_EVENT),
-        tap(() => this.refreshTasks()),
-      )
-      .subscribe();
   }
 }

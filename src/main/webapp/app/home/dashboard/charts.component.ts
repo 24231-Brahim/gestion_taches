@@ -22,7 +22,7 @@ interface ChartProjectProgress {
   template: `
     <div class="charts-grid">
       <div class="chart-card">
-        <h3 class="chart-title">{{ 'dashboard.charts.projectProgress' | translate }}</h3>
+        <h3 class="chart-title" jhiTranslate="dashboard.charts.projectProgress">PROJECT PROGRESS</h3>
         <div class="chart-body">
           @if (chartProjectProgress().length > 0) {
             <div class="progress-list">
@@ -39,13 +39,13 @@ interface ChartProjectProgress {
               }
             </div>
           } @else {
-            <p class="text-muted">{{ 'dashboard.noData' | translate }}</p>
+            <p class="text-muted" jhiTranslate="dashboard.noData">No data</p>
           }
         </div>
       </div>
 
       <div class="chart-card">
-        <h3 class="chart-title">{{ 'dashboard.charts.taskDistribution' | translate }}</h3>
+        <h3 class="chart-title" jhiTranslate="dashboard.charts.taskDistribution">TASK DISTRIBUTION</h3>
         <div class="chart-body">
           @if (chartTaskDistribution().length > 0) {
             <svg [attr.viewBox]="'0 0 200 200'" class="donut-svg">
@@ -65,21 +65,28 @@ interface ChartProjectProgress {
               <text x="100" y="95" text-anchor="middle" class="donut-center-value" fill="var(--color-on-surface)">
                 {{ totalTasks() }}
               </text>
-              <text x="100" y="115" text-anchor="middle" class="donut-center-label" fill="var(--color-muted)">
-                {{ 'dashboard.charts.total' | translate }}
+              <text
+                x="100"
+                y="115"
+                text-anchor="middle"
+                class="donut-center-label"
+                fill="var(--color-muted)"
+                jhiTranslate="dashboard.charts.total"
+              >
+                TOTAL
               </text>
             </svg>
             <div class="donut-legend">
               @for (slice of chartTaskDistribution(); track slice.label) {
                 <div class="legend-item">
                   <span class="legend-dot" [style.background]="slice.color"></span>
-                  <span class="legend-label">{{ 'gestionTachesApp.TaskStatus.' + slice.label | translate }}</span>
+                  <span class="legend-label">{{ slice.label }}</span>
                   <span class="legend-value">{{ slice.value }}</span>
                 </div>
               }
             </div>
           } @else {
-            <p class="text-muted">{{ 'dashboard.noData' | translate }}</p>
+            <p class="text-muted" jhiTranslate="dashboard.noData">No data</p>
           }
         </div>
       </div>
@@ -93,14 +100,14 @@ interface ChartProjectProgress {
         gap: var(--stack-lg);
       }
       .chart-card {
-        background: var(--color-surface-container);
-        border: 1px solid var(--color-outline-variant);
+        background: var(--color-surface);
+        border: none;
         box-shadow: var(--shadow-sm);
         padding: var(--stack-md);
         border-radius: var(--radius-lg);
       }
       .chart-title {
-        font-family: var(--font-inter);
+        font-family: var(--font-display);
         font-weight: 600;
         font-size: var(--headline-md);
         letter-spacing: 0;
@@ -198,15 +205,15 @@ export class DashboardChartsComponent {
   readonly totalTasks = computed(() => this.taskDistribution().reduce((sum, d) => sum + d.count, 0));
 
   readonly chartTaskDistribution = computed<ChartTaskStatusCount[]>(() => {
-    const statuses = ['NEW', 'TODO', 'IN_PROGRESS', 'IN_REVIEW', 'DONE', 'CANCELLED'];
-    const colors = ['#6a8fac', '#f59e0b', '#0099fe', '#a855f7', '#22c55e', '#ef4444'];
+    const statuses = ['NEW', 'IN_PROGRESS', 'READY_FOR_TEST', 'DONE', 'NEEDS_INFO'];
+    const colors = ['#4c6fff', '#f2994a', '#a855f7', '#1fa971', '#e5484d'];
     const input = this.taskDistribution();
     return input
       .filter(d => d.count > 0)
       .map(d => ({
         label: d.status,
         value: d.count,
-        color: colors[statuses.indexOf(d.status)] ?? '#6a8fac',
+        color: colors[statuses.indexOf(d.status)] ?? '#6b7290',
       }));
   });
 
@@ -230,7 +237,7 @@ export class DashboardChartsComponent {
   });
 
   readonly chartProjectProgress = computed<ChartProjectProgress[]>(() => {
-    const colors = ['#22c55e', '#0099fe', '#f59e0b', '#a855f7', '#52d6fd', '#ef4444', '#ec4899', '#8b5cf6', '#0ea5e9', '#84cc16'];
+    const colors = ['#1fa971', '#4c6fff', '#f2994a', '#a855f7', '#12b8a0', '#e5484d', '#d6339f', '#7c3aed', '#0d9488', '#e0b429'];
     return this.projectProgress()
       .map((p, i) => ({
         name: p.projectName,

@@ -1,0 +1,21 @@
+<div class="my-tasks-page">
+  <h2 class="my-tasks-title" jhiTranslate="gestionTachesApp.myTasks.title">Mes Tâches</h2>
+
+  @if (isLoading()) {
+    <p jhiTranslate="dashboard.loading">Chargement...</p>
+  } @else if (!hasTasks()) {
+    <div class="my-tasks-empty">
+      <fa-icon icon="user-check" class="my-tasks-empty-icon" />
+      <p jhiTranslate="gestionTachesApp.myTasks.empty">Aucune tâche pour l'instant, profitez-en pour souffler !</p>
+    </div>
+  } @else {
+    <jhi-task-kanban-board
+      [tasks]="tasks()"
+      [showProjectTag]="true"
+      (selectTask)="onSelectTask($event)"
+      (taskStatusChanged)="onKanbanStatusChange($event)"
+    />
+  }
+
+  <jhi-task-detail-panel [task]="selectedTask()" [visible]="drawerVisible()" [close]="onCloseDrawer.bind(this)" />
+</div>

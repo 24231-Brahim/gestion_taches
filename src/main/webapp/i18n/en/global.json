@@ -4,9 +4,6 @@
     "browsehappy": "You are using an <strong>outdated</strong> browser. Please <a href=\"https://browsehappy.com/?locale=en\">upgrade your browser</a> to improve your experience.",
     "menu": {
       "home": "Home",
-      "search": {
-        "placeholder": "Search projects, tasks, sprints..."
-      },
       "jhipster-needle-menu-add-element": "JHipster will add additional menu entries here (do not translate!)",
       "entities": {
         "main": "Entities",
@@ -16,8 +13,11 @@
         "sprint": "Sprint",
         "epic": "Epic",
         "task": "Tasks",
+        "kanban": "Kanban",
+        "members": "Members",
         "comment": "Comment",
-        "attachment": "Attachment"
+        "attachment": "Attachment",
+        "actionHistory": "Action History"
       },
       "account": {
         "main": "Account",
@@ -59,17 +59,10 @@
     "messages": {
       "viewAllNotifications": "View all",
       "markAllAsRead": "Mark all as read",
-      "markAsRead": "Mark as read",
       "noNotifications": "No notifications",
-      "notificationDetail": {
-        "message": "Message",
-        "date": "Date",
-        "status": "Status",
-        "read": "Read",
-        "unread": "Unread",
-        "task": "Task",
-        "viewTask": "View task"
-      },
+      "empty": "No description",
+      "notAssigned": "Not assigned",
+      "unassigned": "Unassigned",
       "info": {
         "authenticated": {
           "prefix": "If you want to ",
@@ -110,8 +103,7 @@
     "ribbon": {
       "dev": "Development"
     },
-    "item-count": "Showing {{first}} - {{second}} of {{total}} items.",
-    "loading": "Loading..."
+    "item-count": "Showing {{first}} - {{second}} of {{total}} items."
   },
   "entity": {
     "action": {
@@ -119,15 +111,16 @@
       "addimage": "Add image",
       "back": "Back",
       "cancel": "Cancel",
+      "create": "Create",
       "delete": "Delete",
       "edit": "Edit",
       "open": "Open",
       "exportCsv": "CSV",
       "save": "Save",
       "view": "View",
-      "close": "Close",
       "show": "Show {{otherEntity}}",
-      "related": "Related"
+      "related": "Related",
+      "close": "Close"
     },
     "detail": {
       "field": "Field",
@@ -147,8 +140,7 @@
       "pattern": "This field should follow pattern for {{ pattern }}.",
       "number": "This field should be a number.",
       "datetimelocal": "This field should be a date and time.",
-      "patternLogin": "This field can only contain letters, digits and e-mail addresses.",
-      "dateRange": "End date must be after start date."
+      "patternLogin": "This field can only contain letters, digits and e-mail addresses."
     },
     "filters": {
       "set": "Following filters are set",

@@ -27,6 +27,8 @@ public class AttachmentDTO implements Serializable {
     @NotNull
     private TaskDTO task;
 
+    private UserDTO uploadedBy;
+
     public Long getId() {
         return id;
     }
@@ -67,6 +69,14 @@ public class AttachmentDTO implements Serializable {
         this.task = task;
     }
 
+    public UserDTO getUploadedBy() {
+        return uploadedBy;
+    }
+
+    public void setUploadedBy(UserDTO uploadedBy) {
+        this.uploadedBy = uploadedBy;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -97,6 +107,7 @@ public class AttachmentDTO implements Serializable {
             ", filePath='" + getFilePath() + "'" +
             ", uploadedAt='" + getUploadedAt() + "'" +
             ", task=" + getTask() +
+            ", uploadedBy=" + getUploadedBy() +
             "}";
     }
 }

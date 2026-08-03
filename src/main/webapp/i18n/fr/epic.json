@@ -9,6 +9,7 @@
         "notFound": "Aucun Epic trouvé",
         "tableLabel": "Epics",
         "roadmap": "Roadmap Epic",
+        "tableLabel": "Vue tableau",
         "details": "Détails Epic"
       },
       "roadmapStart": "Début",

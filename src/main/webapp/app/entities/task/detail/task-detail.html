@@ -12,7 +12,7 @@
 
         <div class="tab-bar">
           <button class="tab-item" [class.active]="activeTab() === 'details'" (click)="setTab('details')">
-            <fa-icon icon="circle-info" class="me-1" />
+            <fa-icon icon="info-circle" class="me-1" />
             <span jhiTranslate="gestionTachesApp.task.detail.tab.details">Details</span>
           </button>
           <button class="tab-item" [class.active]="activeTab() === 'comments'" (click)="setTab('comments')">
@@ -24,7 +24,7 @@
             <span jhiTranslate="gestionTachesApp.task.detail.tab.attachments">Attachments</span>
           </button>
           <button class="tab-item" [class.active]="activeTab() === 'history'" (click)="setTab('history')">
-            <fa-icon icon="clock-rotate-left" class="me-1" />
+            <fa-icon icon="history" class="me-1" />
             <span jhiTranslate="gestionTachesApp.task.detail.tab.history">History</span>
           </button>
         </div>
@@ -40,25 +40,16 @@
               <dd>
                 <span>{{ taskRef.description }}</span>
               </dd>
-              <dt><span jhiTranslate="gestionTachesApp.task.type">Type</span></dt>
-              <dd>
-                <span [jhiTranslate]="'gestionTachesApp.TaskType.' + (taskRef.type ?? 'null')">{{
-                  { null: '', STORY: 'STORY', BUG: 'BUG', TASK: 'TASK', SUBTASK: 'SUBTASK', IMPROVEMENT: 'IMPROVEMENT' }[
-                    taskRef.type ?? 'null'
-                  ]
-                }}</span>
-              </dd>
               <dt><span jhiTranslate="gestionTachesApp.task.status">Status</span></dt>
               <dd>
                 <span [jhiTranslate]="'gestionTachesApp.TaskStatus.' + (taskRef.status ?? 'null')">{{
                   {
                     null: '',
                     NEW: 'NEW',
-                    TODO: 'TODO',
                     IN_PROGRESS: 'IN_PROGRESS',
-                    IN_REVIEW: 'IN_REVIEW',
+                    READY_FOR_TEST: 'READY_FOR_TEST',
                     DONE: 'DONE',
-                    CANCELLED: 'CANCELLED',
+                    NEEDS_INFO: 'NEEDS_INFO',
                   }[taskRef.status ?? 'null']
                 }}</span>
               </dd>
@@ -134,7 +125,7 @@
         </button>
 
         <button type="button" [routerLink]="['/project', currentProjectKey(), 'task', taskRef.id, 'edit']" class="btn btn-primary">
-          <fa-icon icon="pencil" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
         </button>
       </div>
     }

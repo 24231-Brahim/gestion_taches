@@ -16,14 +16,14 @@ import { ITask } from '../task.model';
 describe('TaskDetailPanel', () => {
   let fixture: ComponentFixture<TaskDetailPanel>;
   let comp: TaskDetailPanel;
-  let taskServiceMock: { partialUpdate: ReturnType<typeof vitest.fn>; getAssignableUsers: ReturnType<typeof vitest.fn> };
+  let taskServiceMock: { partialUpdate: ReturnType<typeof vitest.fn> };
   let alertServiceMock: { addAlert: ReturnType<typeof vitest.fn> };
 
   let mockTask: ITask;
 
   beforeEach(() => {
-    mockTask = { ...sampleWithRequiredData, status: 'TODO' };
-    taskServiceMock = { partialUpdate: vitest.fn().mockReturnValue(of({})), getAssignableUsers: vitest.fn().mockReturnValue(of([])) };
+    mockTask = { ...sampleWithRequiredData, status: 'NEEDS_INFO' };
+    taskServiceMock = { partialUpdate: vitest.fn().mockReturnValue(of({})) };
     alertServiceMock = { addAlert: vitest.fn() };
 
     TestBed.configureTestingModule({
@@ -54,7 +54,7 @@ describe('TaskDetailPanel', () => {
   });
 
   it('onStatusChange should not update when status is unchanged', () => {
-    comp.onStatusChange(mockTask, 'TODO');
+    comp.onStatusChange(mockTask, 'NEEDS_INFO');
     expect(taskServiceMock.partialUpdate).not.toHaveBeenCalled();
   });
 

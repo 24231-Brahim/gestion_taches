@@ -56,7 +56,7 @@ DESIGN SYSTEM
 COLORS — kept as originally defined (Dark theme = default, "Void" palette):
 
 ```css
-:root[data-theme="dark"] {
+:root[data-theme='dark'] {
   --color-primary: #97cbff;
   --color-primary-container: #0099fe;
   --color-secondary: #52d6fd;
@@ -86,12 +86,12 @@ COLORS — kept as originally defined (Dark theme = default, "Void" palette):
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.24);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.28);
-  --shadow-lg: 0 8px 24px rgba(0,0,0,0.32);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.28);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.32);
 }
 
-:root[data-theme="light"] {
+:root[data-theme='light'] {
   --color-bg: #f7f9fc;
   --color-surface: #ffffff;
   --color-surface-container: #f1f4f9;
@@ -106,9 +106,9 @@ COLORS — kept as originally defined (Dark theme = default, "Void" palette):
   --color-warning: #d97706;
   --color-danger: #dc2626;
 
-  --shadow-sm: 0 1px 2px rgba(16,24,40,0.06);
-  --shadow-md: 0 4px 12px rgba(16,24,40,0.08);
-  --shadow-lg: 0 8px 24px rgba(16,24,40,0.10);
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+  --shadow-lg: 0 8px 24px rgba(16, 24, 40, 0.1);
 }
 ```
 
@@ -131,15 +131,11 @@ Google Fonts:
 ### Type Scale
 
 ```css
---display-lg: 40px / 1.15 / 700 / -0.02em   /* Inter — hero headings */
---headline-lg: 28px / 1.25 / 600 / -0.01em  /* Inter — section headers */
---headline-md: 20px / 1.3 / 600 / 0em       /* Inter — card titles */
---headline-lg-mobile: 22px / 1.25 / 600     /* Inter — mobile fallback */
---body-lg: 16px / 1.6 / 400 / 0em           /* Inter */
---body-md: 14px / 1.55 / 400 / 0em          /* Inter — default */
---body-sm: 13px / 1.5 / 400 / 0em           /* Inter */
---label-md: 12px / 1.4 / 600 / 0.02em       /* Inter — labels, buttons, badges */
---mono-data: 13px / 1.4 / 500               /* JetBrains Mono — issue keys, code, data */
+--display-lg: 40px / 1.15 / 700 / -0.02em /* Inter — hero headings */ --headline-lg: 28px / 1.25 / 600 / -0.01em
+  /* Inter — section headers */ --headline-md: 20px / 1.3 / 600 / 0em /* Inter — card titles */ --headline-lg-mobile: 22px / 1.25 / 600
+  /* Inter — mobile fallback */ --body-lg: 16px / 1.6 / 400 / 0em /* Inter */ --body-md: 14px / 1.55 / 400 / 0em /* Inter — default */
+  --body-sm: 13px / 1.5 / 400 / 0em /* Inter */ --label-md: 12px / 1.4 / 600 / 0.02em /* Inter — labels, buttons, badges */
+  --mono-data: 13px / 1.4 / 500 /* JetBrains Mono — issue keys, code, data */;
 ```
 
 No forced uppercase by default. Uppercase reserved only for small labels/badges where it aids scanability (status chips, priority tags).
@@ -147,12 +143,7 @@ No forced uppercase by default. Uppercase reserved only for small labels/badges 
 SPACING: 8px base unit system (generous — favor more whitespace over density)
 
 ```css
---unit: 8px
---gutter: 24px
---margin-page: 32px
---stack-sm: 12px
---stack-md: 20px
---stack-lg: 40px
+--unit: 8px --gutter: 24px --margin-page: 32px --stack-sm: 12px --stack-md: 20px --stack-lg: 40px;
 ```
 
 GRID: 12 columns desktop / 6 tablet / 4 mobile
@@ -282,7 +273,10 @@ padding: 10px 20px;
 box-shadow: var(--shadow-sm);
 background: var(--color-primary-container);
 color: #ffffff;
-transition: background 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+transition:
+  background 150ms ease,
+  box-shadow 150ms ease,
+  transform 150ms ease;
 
 /* hover */
 box-shadow: var(--shadow-md);
@@ -308,7 +302,9 @@ border-radius: var(--radius-sm);
 font-family: var(--font-inter);
 color: var(--color-on-surface);
 padding: 10px 14px;
-transition: border-color 150ms ease, box-shadow 150ms ease;
+transition:
+  border-color 150ms ease,
+  box-shadow 150ms ease;
 
 /* focus */
 border-color: var(--color-primary);
@@ -471,9 +467,9 @@ RESPONSIVE
 ====================================================
 
 Desktop (1280px+) : Full sidebar + content
-Laptop (1024px)   : Sidebar collapsible by default
-Tablet (768px)    : Sidebar overlay
-Mobile (375px+)   : Sidebar hidden, bottom nav
+Laptop (1024px) : Sidebar collapsible by default
+Tablet (768px) : Sidebar overlay
+Mobile (375px+) : Sidebar hidden, bottom nav
 
 ====================================================
 DELIVERABLES

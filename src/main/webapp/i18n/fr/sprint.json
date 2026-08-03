@@ -29,7 +29,6 @@
         "emptyColumn": "Aucune tâche",
         "filter": {
           "assignee": "Assigné à",
-          "type": "Type",
           "priority": "Priorité",
           "all": "Tous",
           "reset": "Réinitialiser"
@@ -50,7 +49,7 @@
         "remaining": "Restant",
         "velocity": "Vélocité",
         "days": "Jours",
-        "issues": "Tâches"
+        "tasks": "Tâches"
       },
       "action": {
         "start": "Démarrer",

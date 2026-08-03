@@ -276,10 +276,13 @@ export class Sprint implements OnInit {
     if (!account) {
       return null;
     }
-    if (account.authorities.includes('ROLE_ADMIN')) {
+    // Matches the backend's ProjectPermissionService.hasGlobalProjectAccess(): ADMIN and
+    // PROJET_MANAGER get an implicit OWNER-equivalent bypass, independent of project membership.
+    if (account.authorities.includes('ROLE_ADMIN') || account.authorities.includes('ROLE_PROJET_MANAGER')) {
       return ProjectRole.OWNER;
     }
-    return null;
+    const member = this.currentProject()?.projectMembers?.find(m => m.userLogin === account.login);
+    return member?.role ?? null;
   });
 
   readonly canManageSprints = computed(() => {

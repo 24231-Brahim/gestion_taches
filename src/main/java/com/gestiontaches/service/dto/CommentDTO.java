@@ -17,6 +17,7 @@ public class CommentDTO implements Serializable {
     @Size(min = 1, max = 2000)
     private String content;
 
+    // Set server-side in CommentService.save(); not required on the incoming create payload.
     private Instant createdAt;
 
     @NotNull

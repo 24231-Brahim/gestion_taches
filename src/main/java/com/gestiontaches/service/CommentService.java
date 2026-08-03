@@ -5,8 +5,10 @@ import com.gestiontaches.domain.Task;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.CommentRepository;
 import com.gestiontaches.repository.TaskRepository;
+import com.gestiontaches.repository.UserRepository;
+import com.gestiontaches.security.AuthoritiesConstants;
+import com.gestiontaches.security.SecurityUtils;
 import com.gestiontaches.service.dto.CommentDTO;
-import com.gestiontaches.service.dto.NotificationDTO;
 import com.gestiontaches.service.mapper.CommentMapper;
 import java.time.Instant;
 import java.util.List;
@@ -15,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,20 +34,24 @@ public class CommentService {
 
     private final CommentMapper commentMapper;
 
-    private final NotificationService notificationService;
+    private final UserRepository userRepository;
 
     private final TaskRepository taskRepository;
+
+    private final ProjectPermissionService projectPermissionService;
 
     public CommentService(
         CommentRepository commentRepository,
         CommentMapper commentMapper,
-        NotificationService notificationService,
-        TaskRepository taskRepository
+        UserRepository userRepository,
+        TaskRepository taskRepository,
+        ProjectPermissionService projectPermissionService
     ) {
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
-        this.notificationService = notificationService;
+        this.userRepository = userRepository;
         this.taskRepository = taskRepository;
+        this.projectPermissionService = projectPermissionService;
     }
 
     /**
@@ -55,49 +62,17 @@ public class CommentService {
      */
     public CommentDTO save(CommentDTO commentDTO) {
         LOG.debug("Request to save Comment : {}", commentDTO);
+        Task task = taskRepository.findById(commentDTO.getTask().getId()).orElseThrow(() -> new RuntimeException("Task not found"));
+        // Anyone commenting must at least be able to view the task: a project member, or
+        // ADMIN/PROJET_MANAGER. Prevents an unrelated developer from spamming comments on tasks in
+        // projects they don't belong to just by guessing a taskId.
+        projectPermissionService.requireProjectAccess(task.getProject().getId());
         Comment comment = commentMapper.toEntity(commentDTO);
+        comment.setTask(task);
+        comment.setAuthor(getCurrentUser());
+        comment.setCreatedAt(Instant.now());
         comment = commentRepository.save(comment);
-        notifyCommentCreated(comment);
         return commentMapper.toDto(comment);
-    }
-
-    private void notifyCommentCreated(Comment comment) {
-        try {
-            User author = comment.getAuthor();
-            Task task = comment.getTask();
-            if (task == null || task.getId() == null) {
-                return;
-            }
-            Task fullTask = taskRepository.findOneWithEagerRelationships(task.getId()).orElse(null);
-            if (fullTask == null) {
-                return;
-            }
-            Instant now = Instant.now();
-            Long authorId = author != null ? author.getId() : null;
-            User assignee = fullTask.getAssignee();
-
-            if (assignee != null && (authorId == null || !authorId.equals(assignee.getId()))) {
-                saveNotification(
-                    assignee.getId(),
-                    fullTask,
-                    "Un nouveau commentaire a été ajouté à la tâche '" + fullTask.getTitle() + "' qui vous est assignée",
-                    now
-                );
-            }
-        } catch (Exception e) {
-            LOG.warn("Failed to notify comment creation: {}", e.getMessage());
-        }
-    }
-
-    private void saveNotification(Long userId, Task task, String message, Instant createdAt) {
-        NotificationDTO notification = new NotificationDTO();
-        notification.setMessage(message);
-        notification.setTaskId(task.getId());
-        notification.setTaskTitle(task.getTitle());
-        notification.setUserId(userId);
-        notification.setIsRead(false);
-        notification.setCreatedAt(createdAt);
-        notificationService.save(notification);
     }
 
     /**
@@ -108,9 +83,19 @@ public class CommentService {
      */
     public CommentDTO update(CommentDTO commentDTO) {
         LOG.debug("Request to update Comment : {}", commentDTO);
-        Comment comment = commentMapper.toEntity(commentDTO);
-        comment = commentRepository.save(comment);
-        return commentMapper.toDto(comment);
+        return commentRepository
+            .findById(commentDTO.getId())
+            .map(existingComment -> {
+                checkCanModifyComment(existingComment);
+                User author = existingComment.getAuthor();
+                Task task = existingComment.getTask();
+                commentMapper.partialUpdate(existingComment, commentDTO);
+                preserveDeveloperOwnedFields(existingComment, author, task);
+                return existingComment;
+            })
+            .map(commentRepository::save)
+            .map(commentMapper::toDto)
+            .orElseThrow(() -> new RuntimeException("Comment not found"));
     }
 
     /**
@@ -125,7 +110,11 @@ public class CommentService {
         return commentRepository
             .findById(commentDTO.getId())
             .map(existingComment -> {
+                checkCanModifyComment(existingComment);
+                User author = existingComment.getAuthor();
+                Task task = existingComment.getTask();
                 commentMapper.partialUpdate(existingComment, commentDTO);
+                preserveDeveloperOwnedFields(existingComment, author, task);
 
                 return existingComment;
             })
@@ -164,12 +153,38 @@ public class CommentService {
      */
     public void delete(Long id) {
         LOG.debug("Request to delete Comment : {}", id);
-        commentRepository.deleteById(id);
+        Comment comment = commentRepository.findById(id).orElseThrow(() -> new RuntimeException("Comment not found"));
+        checkCanModifyComment(comment);
+        commentRepository.delete(comment);
     }
 
     @Transactional(readOnly = true)
     public List<CommentDTO> findByTaskId(Long taskId) {
         LOG.debug("Request to get Comments for Task : {}", taskId);
         return commentRepository.findByTaskIdOrderByCreatedAtDesc(taskId).stream().map(commentMapper::toDto).toList();
+    }
+
+    private void checkCanModifyComment(Comment comment) {
+        if (SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN, AuthoritiesConstants.PROJET_MANAGER)) {
+            return;
+        }
+
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
+        User author = comment.getAuthor();
+        if (author == null || !login.equals(author.getLogin())) {
+            throw new AccessDeniedException("User can only modify own comments");
+        }
+    }
+
+    private void preserveDeveloperOwnedFields(Comment comment, User author, Task task) {
+        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.DEVELOPER)) {
+            comment.setAuthor(author);
+            comment.setTask(task);
+        }
+    }
+
+    private User getCurrentUser() {
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
+        return userRepository.findOneByLogin(login).orElseThrow(() -> new RuntimeException("User not found: " + login));
     }
 }

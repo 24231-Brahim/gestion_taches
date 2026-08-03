@@ -2,24 +2,18 @@ package com.gestiontaches.service;
 
 import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.Task;
-import com.gestiontaches.domain.TaskTransition;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.domain.enumeration.TaskStatus;
 import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.TaskRepository;
-import com.gestiontaches.repository.TaskTransitionRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
-import com.gestiontaches.service.dto.EntityChangeEvent;
-import com.gestiontaches.service.dto.EntityEventType;
 import com.gestiontaches.service.dto.NotificationDTO;
 import com.gestiontaches.service.dto.TaskDTO;
 import com.gestiontaches.service.mapper.TaskMapper;
-import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import java.time.Instant;
-import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,25 +44,13 @@ public class TaskService {
 
     private final NotificationService notificationService;
 
-    private final TaskTransitionRepository taskTransitionRepository;
-
-    private final EntityEventSseService entityEventSseService;
-
-    private final EpicService epicService;
-
-    private final SprintService sprintService;
-
     public TaskService(
         TaskRepository taskRepository,
         TaskMapper taskMapper,
         UserRepository userRepository,
         ProjectMemberRepository projectMemberRepository,
         ProjectPermissionService projectPermissionService,
-        NotificationService notificationService,
-        TaskTransitionRepository taskTransitionRepository,
-        EntityEventSseService entityEventSseService,
-        EpicService epicService,
-        SprintService sprintService
+        NotificationService notificationService
     ) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
@@ -76,10 +58,6 @@ public class TaskService {
         this.projectMemberRepository = projectMemberRepository;
         this.projectPermissionService = projectPermissionService;
         this.notificationService = notificationService;
-        this.taskTransitionRepository = taskTransitionRepository;
-        this.entityEventSseService = entityEventSseService;
-        this.epicService = epicService;
-        this.sprintService = sprintService;
     }
 
     /**
@@ -91,44 +69,21 @@ public class TaskService {
     public TaskDTO save(TaskDTO taskDTO) {
         LOG.debug("Request to save Task : {}", taskDTO);
         if (taskDTO.getProject() != null && taskDTO.getProject().getId() != null) {
-            projectPermissionService.requireProjectRole(
-                taskDTO.getProject().getId(),
-                ProjectRole.OWNER,
-                ProjectRole.MANAGER,
-                ProjectRole.MEMBER
-            );
-        }
-        validateSprintEpicBelongToProject(taskDTO);
-        TaskStatus oldStatus = null;
-        if (taskDTO.getId() != null) {
-            oldStatus = taskRepository.findById(taskDTO.getId()).map(Task::getStatus).orElse(null);
+            // Task creation is a management action: only OWNER/MANAGER (i.e. ADMIN/PROJET_MANAGER,
+            // since requireProjectRole grants them an implicit OWNER-equivalent bypass) may create
+            // tasks. A plain MEMBER (the role every DEVELOPER gets added to a project with) must not.
+            projectPermissionService.requireProjectRole(taskDTO.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
         }
         Task task = taskMapper.toEntity(taskDTO);
         if (task.getId() == null) {
-            String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
-                new BadRequestAlertException("Current user not found", "task", "usernotfound")
-            );
+            String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
             User currentUser = userRepository
                 .findOneByLogin(currentLogin)
-                .orElseThrow(() -> new BadRequestAlertException("User not found: " + currentLogin, "task", "usernotfound"));
+                .orElseThrow(() -> new RuntimeException("User not found: " + currentLogin));
             task.setCreatedBy(currentUser);
         }
-        if (task.getCreatedAt() == null) {
-            task.setCreatedAt(java.time.Instant.now());
-        }
         task = taskRepository.save(task);
-        boolean created = taskDTO.getId() == null;
-        if (created) {
-            notifyTaskCreated(task);
-        } else if (task.getStatus() != null && oldStatus != null && oldStatus != task.getStatus()) {
-            recordTransition(task, oldStatus, task.getStatus());
-            recomputeContainerStatus(task);
-        }
-        TaskDTO result = taskMapper.toDto(task);
-        Long projectId = result.getProject() != null ? result.getProject().getId() : null;
-        String eventType = created ? EntityEventType.CREATED : EntityEventType.UPDATED;
-        entityEventSseService.sendEvent(new EntityChangeEvent(EntityEventType.ENTITY_TASK, eventType, result.getId(), projectId));
-        return result;
+        return taskMapper.toDto(task);
     }
 
     /**
@@ -140,29 +95,15 @@ public class TaskService {
     public TaskDTO update(TaskDTO taskDTO) {
         LOG.debug("Request to update Task : {}", taskDTO);
         if (taskDTO.getId() != null) {
-            checkTaskUpdatePermission(taskDTO.getId());
+            checkTaskUpdatePermission(taskDTO.getId(), taskDTO);
         }
-        validateSprintEpicBelongToProject(taskDTO);
         Task existingTask = taskRepository.findById(taskDTO.getId()).orElse(null);
         TaskStatus oldStatus = existingTask != null ? existingTask.getStatus() : null;
-        User oldAssignee = existingTask != null ? existingTask.getAssignee() : null;
         Task task = taskMapper.toEntity(taskDTO);
-        if (task.getUpdatedAt() == null) {
-            task.setUpdatedAt(java.time.Instant.now());
-        }
+        task.setUpdatedAt(java.time.Instant.now());
         task = taskRepository.save(task);
         notifyStatusChangeIfNeeded(existingTask, task, oldStatus);
-        notifyAssigneeChange(existingTask, task, oldAssignee);
-        if (existingTask != null && task.getStatus() != null && oldStatus != null && oldStatus != task.getStatus()) {
-            recordTransition(task, oldStatus, task.getStatus());
-            recomputeContainerStatus(task);
-        }
-        TaskDTO result = taskMapper.toDto(task);
-        Long projectId = result.getProject() != null ? result.getProject().getId() : null;
-        entityEventSseService.sendEvent(
-            new EntityChangeEvent(EntityEventType.ENTITY_TASK, EntityEventType.UPDATED, result.getId(), projectId)
-        );
-        return result;
+        return taskMapper.toDto(task);
     }
 
     /**
@@ -174,61 +115,50 @@ public class TaskService {
     public Optional<TaskDTO> partialUpdate(TaskDTO taskDTO) {
         LOG.debug("Request to partially update Task : {}", taskDTO);
         if (taskDTO.getId() != null) {
-            checkTaskUpdatePermission(taskDTO.getId());
+            checkTaskUpdatePermission(taskDTO.getId(), taskDTO);
         }
 
         return taskRepository
             .findById(taskDTO.getId())
             .map(existingTask -> {
                 TaskStatus oldStatus = existingTask.getStatus();
-                User oldAssignee = existingTask.getAssignee();
                 taskMapper.partialUpdate(existingTask, taskDTO);
-                if (taskDTO.getUpdatedAt() == null) {
-                    existingTask.setUpdatedAt(java.time.Instant.now());
-                }
+                existingTask.setUpdatedAt(java.time.Instant.now());
                 Task savedTask = taskRepository.save(existingTask);
                 notifyStatusChangeIfNeeded(existingTask, savedTask, oldStatus);
-                notifyAssigneeChange(existingTask, savedTask, oldAssignee);
-                if (oldStatus != null && savedTask.getStatus() != null && oldStatus != savedTask.getStatus()) {
-                    recomputeContainerStatus(savedTask);
-                }
                 return savedTask;
             })
-            .map(taskMapper::toDto)
-            .map(dto -> {
-                Long projectId = dto.getProject() != null ? dto.getProject().getId() : null;
-                entityEventSseService.sendEvent(
-                    new EntityChangeEvent(EntityEventType.ENTITY_TASK, EntityEventType.UPDATED, dto.getId(), projectId)
-                );
-                return dto;
-            });
+            .map(taskMapper::toDto);
     }
 
-    private void checkTaskUpdatePermission(Long taskId) {
-        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
-            return;
-        }
-        Task existing = taskRepository
-            .findById(taskId)
-            .orElseThrow(() -> new BadRequestAlertException("Task not found", "task", "idnotfound"));
+    /**
+     * Task edit permission: ADMIN/PROJET_MANAGER (or a project-level OWNER/MANAGER delegate) may
+     * edit any task in the project. A plain MEMBER (every DEVELOPER's project role) may only edit
+     * a task they are personally assigned to — and even then, may not change who it's assigned to;
+     * reassignment is a management action reserved for OWNER/MANAGER, whether attempted through the
+     * dedicated /assign endpoint or smuggled in via this generic update/patch payload.
+     */
+    private void checkTaskUpdatePermission(Long taskId, TaskDTO incoming) {
+        Task existing = taskRepository.findById(taskId).orElseThrow(() -> new RuntimeException("Task not found"));
         Long projectId = existing.getProject().getId();
-        Long currentUserId = SecurityUtils.getCurrentUserId().orElseGet(() -> {
-            String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
-                new BadRequestAlertException("Current user not found", "task", "usernotfound")
-            );
-            return userRepository
-                .findOneByLogin(login)
-                .map(User::getId)
-                .orElseThrow(() -> new BadRequestAlertException("Current user not found", "task", "usernotfound"));
-        });
+        Long currentUserId = projectPermissionService.resolveCurrentUserId();
         ProjectRole role = projectPermissionService.getCurrentUserRole(projectId);
         if (role == ProjectRole.OWNER || role == ProjectRole.MANAGER) {
             return;
         }
-        if (role == ProjectRole.MEMBER && existing.getCreatedBy() != null && existing.getCreatedBy().getId().equals(currentUserId)) {
+        boolean isAssignee = existing.getAssignee() != null && existing.getAssignee().getId().equals(currentUserId);
+        if (role == ProjectRole.MEMBER && isAssignee) {
+            // A merge-patch payload that simply omits `assignee` (the common case for a status/
+            // description/priority-only edit) must NOT be treated as "unassign" — only an explicitly
+            // provided, *different* assignee counts as a (blocked) reassignment attempt.
+            Long existingAssigneeId = existing.getAssignee().getId();
+            Long incomingAssigneeId = incoming.getAssignee() != null ? incoming.getAssignee().getId() : null;
+            if (incomingAssigneeId != null && !incomingAssigneeId.equals(existingAssigneeId)) {
+                throw new AccessDeniedException("Access denied: only OWNER/MANAGER can reassign a task");
+            }
             return;
         }
-        throw new AccessDeniedException("Access denied: you can only update your own tasks");
+        throw new AccessDeniedException("Access denied: you can only update your own assigned tasks");
     }
 
     private void notifyStatusChangeIfNeeded(Task existingTask, Task savedTask, TaskStatus oldStatus) {
@@ -238,163 +168,54 @@ public class TaskService {
         if (oldStatus == savedTask.getStatus()) {
             return;
         }
-        try {
-            String statusLabel = statusLabel(savedTask.getStatus());
-            User currentUser = resolveCurrentUser();
-            User creator = existingTask.getCreatedBy();
-            User assignee = existingTask.getAssignee();
-            Instant now = Instant.now();
-
-            if (creator != null && (currentUser == null || !currentUser.getId().equals(creator.getId()))) {
-                NotificationDTO notification = new NotificationDTO();
-                notification.setMessage("La tâche '" + savedTask.getTitle() + "' que vous avez créée est passée à " + statusLabel);
-                notification.setTaskId(savedTask.getId());
-                notification.setTaskTitle(savedTask.getTitle());
-                notification.setUserId(creator.getId());
-                notification.setIsRead(false);
-                notification.setCreatedAt(now);
-                notificationService.save(notification);
-            }
-
-            boolean sameUser = creator != null && assignee != null && creator.getId().equals(assignee.getId());
-            if (assignee != null && !sameUser && (currentUser == null || !currentUser.getId().equals(assignee.getId()))) {
-                NotificationDTO notification = new NotificationDTO();
-                notification.setMessage("La tâche '" + savedTask.getTitle() + "' qui vous est assignée est passée à " + statusLabel);
-                notification.setTaskId(savedTask.getId());
-                notification.setTaskTitle(savedTask.getTitle());
-                notification.setUserId(assignee.getId());
-                notification.setIsRead(false);
-                notification.setCreatedAt(now);
-                notificationService.save(notification);
-            }
-        } catch (Exception e) {
-            LOG.warn("Failed to notify status change for task {}: {}", savedTask.getId(), e.getMessage());
-        }
-    }
-
-    private void notifyTaskCreated(Task task) {
-        if (task.getAssignee() == null || task.getAssignee().getId() == null) {
+        if (savedTask.getStatus() != TaskStatus.DONE) {
             return;
         }
-        try {
-            User currentUser = resolveCurrentUser();
-            User assignee = task.getAssignee();
-            if (currentUser != null && currentUser.getId().equals(assignee.getId())) {
-                return;
-            }
-            NotificationDTO notification = new NotificationDTO();
-            notification.setMessage("Vous avez été assigné à la tâche #" + task.getId() + " : " + task.getTitle());
-            notification.setTaskId(task.getId());
-            notification.setTaskTitle(task.getTitle());
-            notification.setUserId(assignee.getId());
-            notification.setIsRead(false);
-            notification.setCreatedAt(Instant.now());
-            notificationService.save(notification);
-        } catch (Exception e) {
-            LOG.warn("Failed to notify task creation for task {}: {}", task.getId(), e.getMessage());
-        }
-    }
 
-    private void recomputeContainerStatus(Task task) {
-        try {
-            if (task.getEpic() != null && task.getEpic().getId() != null) {
-                epicService.recomputeStatus(task.getEpic().getId());
-            }
-            if (task.getSprint() != null && task.getSprint().getId() != null) {
-                sprintService.recomputeStatus(task.getSprint().getId());
-            }
-        } catch (Exception e) {
-            LOG.warn("Failed to recompute container status for task {}: {}", task.getId(), e.getMessage());
-        }
-    }
+        String statusLabel = "DONE";
+        User creator = existingTask.getCreatedBy();
+        User assignee = existingTask.getAssignee();
+        boolean creatorIsAdmin = creator != null && hasRole(creator, AuthoritiesConstants.ADMIN);
+        boolean assigneeIsAdmin = assignee != null && hasRole(assignee, AuthoritiesConstants.ADMIN);
 
-    private String statusLabel(TaskStatus status) {
-        return switch (status) {
-            case NEW -> "Nouvelle";
-            case TODO -> "À faire";
-            case IN_PROGRESS -> "En cours";
-            case IN_REVIEW -> "En revue";
-            case DONE -> "Terminée";
-            case CANCELLED -> "Annulée";
-        };
-    }
-
-    private User resolveCurrentUser() {
-        try {
-            String login = SecurityUtils.getCurrentUserLogin().orElse(null);
-            if (login == null) {
-                return null;
-            }
-            return userRepository.findOneByLogin(login).orElse(null);
-        } catch (Exception e) {
-            LOG.warn("Failed to resolve current user: {}", e.getMessage());
-            return null;
-        }
-    }
-
-    private void recordTransition(Task task, TaskStatus fromStatus, TaskStatus toStatus) {
-        try {
-            String currentLogin = SecurityUtils.getCurrentUserLogin().orElse(null);
-            User currentUser = currentLogin != null ? userRepository.findOneByLogin(currentLogin).orElse(null) : null;
-            TaskTransition transition = new TaskTransition();
-            transition.setTask(task);
-            transition.setFromStatus(fromStatus.name());
-            transition.setToStatus(toStatus.name());
-            transition.setUser(currentUser);
-            transition.setCreatedAt(Instant.now());
-            taskTransitionRepository.save(transition);
-        } catch (Exception e) {
-            LOG.warn("Failed to record task transition for task {}: {}", task.getId(), e.getMessage());
-        }
-    }
-
-    private void notifyAssigneeChange(Task existingTask, Task savedTask, User oldAssignee) {
-        if (savedTask.getAssignee() == null) {
+        if (!creatorIsAdmin && !assigneeIsAdmin) {
             return;
         }
-        try {
-            Long newAssigneeId = savedTask.getAssignee().getId();
-            Long oldAssigneeId = oldAssignee != null ? oldAssignee.getId() : null;
-            if (Objects.equals(newAssigneeId, oldAssigneeId)) {
-                return;
-            }
-            User currentUser = resolveCurrentUser();
-            if (currentUser != null && currentUser.getId().equals(newAssigneeId)) {
-                return;
-            }
-            String currentLogin = SecurityUtils.getCurrentUserLogin().orElse("System");
+
+        boolean sameUser = creator != null && assignee != null && creator.getId().equals(assignee.getId());
+        Instant now = Instant.now();
+
+        if (creatorIsAdmin) {
             NotificationDTO notification = new NotificationDTO();
-            notification.setMessage(
-                currentLogin + " vous a assign\u00e9 \u00e0 la t\u00e2che #" + savedTask.getId() + " : " + savedTask.getTitle()
-            );
+            notification.setMessage("La tâche '" + savedTask.getTitle() + "' que vous avez créée est passée à " + statusLabel);
             notification.setTaskId(savedTask.getId());
             notification.setTaskTitle(savedTask.getTitle());
-            notification.setUserId(newAssigneeId);
+            notification.setUserId(creator.getId());
             notification.setIsRead(false);
-            notification.setCreatedAt(Instant.now());
+            notification.setCreatedAt(now);
             notificationService.save(notification);
-        } catch (Exception e) {
-            LOG.warn("Failed to notify assignee change for task {}: {}", savedTask.getId(), e.getMessage());
+        }
+
+        if (assigneeIsAdmin && !sameUser) {
+            NotificationDTO notification = new NotificationDTO();
+            notification.setMessage("La tâche '" + savedTask.getTitle() + "' qui vous est assignée est passée à " + statusLabel);
+            notification.setTaskId(savedTask.getId());
+            notification.setTaskTitle(savedTask.getTitle());
+            notification.setUserId(assignee.getId());
+            notification.setIsRead(false);
+            notification.setCreatedAt(now);
+            notificationService.save(notification);
         }
     }
 
-    private void validateSprintEpicBelongToProject(TaskDTO taskDTO) {
-        Long projectId = taskDTO.getProject() != null ? taskDTO.getProject().getId() : null;
-        if (projectId == null) {
-            return;
-        }
-        if (taskDTO.getSprint() != null && taskDTO.getSprint().getId() != null) {
-            boolean sprintMatches = taskDTO.getSprint().getProject() != null && projectId.equals(taskDTO.getSprint().getProject().getId());
-            if (!sprintMatches) {
-                throw new BadRequestAlertException("Sprint must belong to the same project as the task", "task", "sprintprojectmismatch");
-            }
-        }
-        if (taskDTO.getEpic() != null && taskDTO.getEpic().getId() != null) {
-            boolean epicMatches = taskDTO.getEpic().getProject() != null && projectId.equals(taskDTO.getEpic().getProject().getId());
-            if (!epicMatches) {
-                throw new BadRequestAlertException("Epic must belong to the same project as the task", "task", "epicprojectmismatch");
-            }
-        }
+    private boolean hasRole(User user, String role) {
+        return (
+            user.getAuthorities() != null &&
+            user
+                .getAuthorities()
+                .stream()
+                .anyMatch(a -> role.equals(a.getName()))
+        );
     }
 
     /**
@@ -427,14 +248,13 @@ public class TaskService {
      */
     public TaskDTO createForProject(TaskDTO taskDTO, Long projectId) {
         LOG.debug("Request to save Task for Project {} : {}", projectId, taskDTO);
-        projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER, ProjectRole.MEMBER);
+        // See save(): creation is ADMIN/PROJET_MANAGER-only, never a plain MEMBER/DEVELOPER.
+        projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER);
         Task task = taskMapper.toEntity(taskDTO);
-        String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
-            new BadRequestAlertException("Current user not found", "task", "usernotfound")
-        );
+        String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
         User currentUser = userRepository
             .findOneByLogin(currentLogin)
-            .orElseThrow(() -> new BadRequestAlertException("User not found: " + currentLogin, "task", "usernotfound"));
+            .orElseThrow(() -> new RuntimeException("User not found: " + currentLogin));
         task.setCreatedBy(currentUser);
         if (task.getStatus() == null) {
             task.setStatus(TaskStatus.NEW);
@@ -447,18 +267,11 @@ public class TaskService {
             if (assigneeId != null) {
                 projectMemberRepository
                     .findByProjectIdAndUserId(projectId, assigneeId)
-                    .orElseThrow(() ->
-                        new BadRequestAlertException("Assignee must be a member of the project", "task", "assigneenotmember")
-                    );
+                    .orElseThrow(() -> new RuntimeException("Assignee must be a member of the project"));
             }
         }
         task = taskRepository.save(task);
-        notifyTaskCreated(task);
-        TaskDTO result = taskMapper.toDto(task);
-        entityEventSseService.sendEvent(
-            new EntityChangeEvent(EntityEventType.ENTITY_TASK, EntityEventType.CREATED, result.getId(), projectId)
-        );
-        return result;
+        return taskMapper.toDto(task);
     }
 
     /**
@@ -468,34 +281,11 @@ public class TaskService {
      */
     public void delete(Long id) {
         LOG.debug("Request to delete Task : {}", id);
-        Task task = taskRepository.findById(id).orElseThrow(() -> new BadRequestAlertException("Task not found", "task", "idnotfound"));
-        Long projectId = task.getProject().getId();
-        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
-            taskRepository.deleteById(id);
-            entityEventSseService.sendEvent(new EntityChangeEvent(EntityEventType.ENTITY_TASK, EntityEventType.DELETED, id, projectId));
-            return;
-        }
-        Long currentUserId = SecurityUtils.getCurrentUserId().orElseGet(() -> {
-            String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
-                new BadRequestAlertException("Current user not found", "task", "usernotfound")
-            );
-            return userRepository
-                .findOneByLogin(login)
-                .map(User::getId)
-                .orElseThrow(() -> new BadRequestAlertException("Current user not found", "task", "usernotfound"));
-        });
-        ProjectRole role = projectPermissionService.getCurrentUserRole(projectId);
-        if (role == ProjectRole.OWNER || role == ProjectRole.MANAGER) {
-            taskRepository.deleteById(id);
-            entityEventSseService.sendEvent(new EntityChangeEvent(EntityEventType.ENTITY_TASK, EntityEventType.DELETED, id, projectId));
-            return;
-        }
-        if (role == ProjectRole.MEMBER && task.getCreatedBy() != null && task.getCreatedBy().getId().equals(currentUserId)) {
-            taskRepository.deleteById(id);
-            entityEventSseService.sendEvent(new EntityChangeEvent(EntityEventType.ENTITY_TASK, EntityEventType.DELETED, id, projectId));
-            return;
-        }
-        throw new AccessDeniedException("Access denied: you can only delete your own tasks");
+        Task task = taskRepository.findById(id).orElseThrow(() -> new RuntimeException("Task not found"));
+        // Deletion is a management action: OWNER/MANAGER only (never a plain MEMBER/DEVELOPER,
+        // even for a task they created or are assigned to).
+        projectPermissionService.requireProjectRole(task.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
+        taskRepository.deleteById(id);
     }
 
     /**
@@ -514,23 +304,11 @@ public class TaskService {
                 // Verify user is a member of the project
                 ProjectMember member = projectMemberRepository
                     .findByProjectIdAndUserId(task.getProject().getId(), user.getId())
-                    .orElseThrow(() ->
-                        new BadRequestAlertException("User is not a member of the project for this task", "task", "assigneenotmember")
-                    );
-                User oldAssignee = task.getAssignee();
+                    .orElseThrow(() -> new RuntimeException("User is not a member of the project for this task"));
                 task.setAssignee(user);
-                Task savedTask = taskRepository.save(task);
-                notifyAssigneeChange(task, savedTask, oldAssignee);
-                return savedTask;
+                return taskRepository.save(task);
             })
             .map(taskMapper::toDto)
-            .map(dto -> {
-                Long pid = dto.getProject() != null ? dto.getProject().getId() : null;
-                entityEventSseService.sendEvent(
-                    new EntityChangeEvent(EntityEventType.ENTITY_TASK, EntityEventType.UPDATED, dto.getId(), pid)
-                );
-                return dto;
-            })
-            .orElseThrow(() -> new BadRequestAlertException("Task not found with id " + taskId, "task", "idnotfound"));
+            .orElseThrow(() -> new RuntimeException("Task not found with id " + taskId));
     }
 }

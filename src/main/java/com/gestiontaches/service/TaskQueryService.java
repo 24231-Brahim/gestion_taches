@@ -95,7 +95,8 @@ public class TaskQueryService extends QueryService<Task> {
                     ),
                     buildSpecification(criteria.getSprintId(), root -> root.join(Task_.sprint, JoinType.LEFT).get(Sprint_.id)),
                     buildSpecification(criteria.getEpicId(), root -> root.join(Task_.epic, JoinType.LEFT).get(Epic_.id)),
-                    buildSpecification(criteria.getProjectId(), root -> root.join(Task_.project, JoinType.LEFT).get(Project_.id))
+                    buildSpecification(criteria.getProjectId(), root -> root.join(Task_.project, JoinType.LEFT).get(Project_.id)),
+                    buildSpecification(criteria.getAssigneeId(), root -> root.join(Task_.assignee, JoinType.LEFT).get(User_.id))
                 )
             );
         }

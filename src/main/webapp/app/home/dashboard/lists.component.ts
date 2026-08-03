@@ -8,41 +8,41 @@ import { RouterLink } from '@angular/router';
   standalone: true,
   imports: [TranslateModule, RouterLink],
   template: `
-    <div class="lists-grid">
-      <div class="list-card">
-        <h3 class="list-title">{{ 'dashboard.lists.recentProjects' | translate }}</h3>
-        <div class="list-body">
-          @if (recentProjects().length > 0) {
-            <div class="list-items">
-              @for (p of recentProjects(); track p.id) {
-                <a [routerLink]="['/project', p.key, 'view']" class="list-item">
-                  <span class="item-name">{{ p.name }}</span>
-                  <span class="item-key">{{ p.key }}</span>
-                </a>
-              }
-            </div>
-          } @else {
-            <p class="text-muted">{{ 'dashboard.noData' | translate }}</p>
-          }
+    <div class="lists-grid" [class.lists-grid-single]="!showRecentProjects()">
+      @if (showRecentProjects()) {
+        <div class="list-card">
+          <h3 class="list-title" jhiTranslate="dashboard.lists.recentProjects">RECENT PROJECTS</h3>
+          <div class="list-body">
+            @if (recentProjects().length > 0) {
+              <div class="list-items">
+                @for (p of recentProjects(); track p.id) {
+                  <a [routerLink]="['/project', p.key, 'view']" class="list-item">
+                    <span class="item-name">{{ p.name }}</span>
+                    <span class="item-key">{{ p.key }}</span>
+                  </a>
+                }
+              </div>
+            } @else {
+              <p class="text-muted" jhiTranslate="dashboard.noData">No data</p>
+            }
+          </div>
         </div>
-      </div>
+      }
 
       <div class="list-card">
-        <h3 class="list-title">{{ 'dashboard.lists.recentTasks' | translate }}</h3>
+        <h3 class="list-title" jhiTranslate="dashboard.lists.recentTasks">RECENT TASKS</h3>
         <div class="list-body">
           @if (recentTasks().length > 0) {
             <div class="list-items">
               @for (t of recentTasks(); track t.id) {
                 <a [routerLink]="['/project', t.project?.key, 'task', t.id, 'view']" class="list-item">
                   <span class="item-name">{{ t.title }}</span>
-                  <span class="item-meta" [style.color]="statusColor(t.status!)">{{
-                    'gestionTachesApp.TaskStatus.' + t.status | translate
-                  }}</span>
+                  <span class="item-meta" [style.color]="statusColor(t.status!)">{{ t.status }}</span>
                 </a>
               }
             </div>
           } @else {
-            <p class="text-muted">{{ 'dashboard.noData' | translate }}</p>
+            <p class="text-muted" jhiTranslate="dashboard.noData">No data</p>
           }
         </div>
       </div>
@@ -54,6 +54,9 @@ import { RouterLink } from '@angular/router';
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: var(--stack-lg);
+      }
+      .lists-grid-single {
+        grid-template-columns: 1fr;
       }
       .list-card {
         background: var(--color-surface-container);
@@ -128,15 +131,15 @@ import { RouterLink } from '@angular/router';
 export class DashboardListsComponent {
   readonly recentProjects = input<any[]>([]);
   readonly recentTasks = input<any[]>([]);
+  readonly showRecentProjects = input(true);
 
   statusColor(status: string): string {
     const map: Record<string, string> = {
       DONE: 'var(--color-success)',
       IN_PROGRESS: 'var(--color-info)',
-      IN_REVIEW: '#a855f7',
-      TODO: '#f59e0b',
+      READY_FOR_TEST: '#a855f7',
+      NEEDS_INFO: 'var(--color-danger)',
       NEW: 'var(--color-muted)',
-      CANCELLED: 'var(--color-danger)',
     };
     return map[status] ?? 'var(--color-on-surface)';
   }

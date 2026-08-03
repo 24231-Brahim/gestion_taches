@@ -4,20 +4,20 @@
     "browsehappy": "Vous utilisez un <strong>ancien</strong> navigateur. Veuillez <a href=\"https://browsehappy.com/?locale=fr\">mettre à jour votre navigateur</a> pour une meilleure expérience.",
     "menu": {
       "home": "Accueil",
-      "search": {
-        "placeholder": "Rechercher projets, tâches, sprints..."
-      },
       "jhipster-needle-menu-add-element": "JHipster will add additional menu entries here (do not translate!)",
       "entities": {
         "main": "Entités",
         "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)",
-        "adminAuthority": "Autorité",
-        "project": "Projets",
-        "sprint": "Sprints",
-        "epic": "Epics",
-        "task": "Tâches",
-        "comment": "Commentaires",
-        "attachment": "Pièces jointes"
+        "adminAuthority": "Authority",
+        "project": "Project",
+        "sprint": "Sprint",
+        "epic": "Epic",
+        "task": "Tasks",
+        "kanban": "Kanban",
+        "members": "Membres",
+        "comment": "Comment",
+        "attachment": "Attachment",
+        "actionHistory": "Action History"
       },
       "account": {
         "main": "Compte",
@@ -59,17 +59,10 @@
     "messages": {
       "viewAllNotifications": "Voir tout",
       "markAllAsRead": "Tout marquer comme lu",
-      "markAsRead": "Marquer comme lu",
       "noNotifications": "Aucune notification",
-      "notificationDetail": {
-        "message": "Message",
-        "date": "Date",
-        "status": "Statut",
-        "read": "Lu",
-        "unread": "Non lu",
-        "task": "Tâche",
-        "viewTask": "Voir la tâche"
-      },
+      "empty": "Aucune description",
+      "notAssigned": "Non assigné",
+      "unassigned": "Non assigné",
       "info": {
         "authenticated": {
           "prefix": "Si vous voulez vous ",
@@ -110,8 +103,7 @@
     "ribbon": {
       "dev": "Développement"
     },
-    "item-count": "Affichage {{first}} - {{second}} de {{total}} items.",
-    "loading": "Chargement..."
+    "item-count": "Affichage {{first}} - {{second}} de {{total}} items."
   },
   "entity": {
     "action": {
@@ -119,15 +111,16 @@
       "addimage": "Ajouter image",
       "back": "Retour",
       "cancel": "Annuler",
+      "create": "Créer",
       "edit": "Editer",
       "delete": "Supprimer",
       "open": "Ouvrir",
       "exportCsv": "CSV",
       "save": "Sauvegarder",
       "view": "Voir",
-      "close": "Fermer",
       "show": "Afficher {{otherEntity}}",
-      "related": "Liés"
+      "related": "Liés",
+      "close": "Fermer"
     },
     "detail": {
       "field": "Champ",
@@ -147,8 +140,7 @@
       "pattern": "Ce champ doit suivre l'expression régulière {{pattern}}.",
       "number": "Ce champ doit être un nombre.",
       "datetimelocal": "Ce champ doit être une date et une heure.",
-      "patternLogin": "Ce champ ne peut contenir que des lettres, des chiffres ou des adresses e-mail.",
-      "dateRange": "La date de fin doit être postérieure à la date de début."
+      "patternLogin": "Ce champ ne peut contenir que des lettres, des chiffres ou des adresses e-mail."
     },
     "filters": {
       "set": "Les filtres suivants sont définis",
@@ -180,9 +172,7 @@
       "notSet": "Non défini",
       "notAssigned": "Non assigné",
       "unassigned": "Non assigné",
-      "noNotifications": "Aucune notification",
-      "viewAllNotifications": "Tout afficher",
-      "markAllAsRead": "Tout marquer comme lu"
+      "noNotifications": "Aucune notification"
     }
   },
   "footer": "Ceci est votre pied de page"

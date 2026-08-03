@@ -1,24 +1,17 @@
 package com.gestiontaches.web.rest;
 
 import com.gestiontaches.repository.EpicRepository;
-import com.gestiontaches.repository.TaskRepository;
-import com.gestiontaches.repository.TaskTransitionRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.EpicQueryService;
 import com.gestiontaches.service.EpicService;
+import com.gestiontaches.service.ProjectPermissionService;
 import com.gestiontaches.service.criteria.EpicCriteria;
-import com.gestiontaches.service.dto.BurndownData;
 import com.gestiontaches.service.dto.EpicDTO;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -28,9 +21,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -56,22 +51,28 @@ public class EpicResource {
 
     private final EpicQueryService epicQueryService;
 
-    private final TaskRepository taskRepository;
-
-    private final TaskTransitionRepository taskTransitionRepository;
+    private final ProjectPermissionService projectPermissionService;
 
     public EpicResource(
         EpicService epicService,
         EpicRepository epicRepository,
         EpicQueryService epicQueryService,
-        TaskRepository taskRepository,
-        TaskTransitionRepository taskTransitionRepository
+        ProjectPermissionService projectPermissionService
     ) {
         this.epicService = epicService;
         this.epicRepository = epicRepository;
         this.epicQueryService = epicQueryService;
-        this.taskRepository = taskRepository;
-        this.taskTransitionRepository = taskTransitionRepository;
+        this.projectPermissionService = projectPermissionService;
+    }
+
+    private void requireCriteriaProjectAccess(EpicCriteria criteria) {
+        if (projectPermissionService.hasGlobalProjectAccess()) {
+            return;
+        }
+        if (criteria == null || criteria.getProjectId() == null || criteria.getProjectId().getEquals() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "A projectId filter is required");
+        }
+        projectPermissionService.requireProjectAccess(criteria.getProjectId().getEquals());
     }
 
     /**
@@ -202,6 +203,7 @@ public class EpicResource {
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
         LOG.debug("REST request to get Epics by criteria: {}", criteria);
+        requireCriteriaProjectAccess(criteria);
 
         Page<EpicDTO> page = epicQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -217,6 +219,7 @@ public class EpicResource {
     @GetMapping("/count")
     public ResponseEntity<Long> countEpics(EpicCriteria criteria) {
         LOG.debug("REST request to count Epics by criteria: {}", criteria);
+        requireCriteriaProjectAccess(criteria);
         return ResponseEntity.ok().body(epicQueryService.countByCriteria(criteria));
     }
 
@@ -230,6 +233,7 @@ public class EpicResource {
     public ResponseEntity<EpicDTO> getEpic(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Epic : {}", id);
         Optional<EpicDTO> epicDTO = epicService.findOne(id);
+        epicDTO.ifPresent(dto -> projectPermissionService.requireProjectAccess(dto.getProject().getId()));
         return ResponseUtil.wrapOrNotFound(epicDTO);
     }
 
@@ -255,55 +259,5 @@ public class EpicResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
-    }
-
-    @GetMapping("/{id}/burndown")
-    public ResponseEntity<BurndownData> getBurndown(@PathVariable("id") Long id) {
-        LOG.debug("REST request to get burndown for Epic : {}", id);
-        EpicDTO epicDTO = epicService.findOne(id).orElseThrow(() -> new RuntimeException("Epic not found"));
-        List<com.gestiontaches.domain.Task> epicTasks = taskRepository.findByEpicId(id);
-        int totalTasks = epicTasks.size();
-        if (totalTasks == 0) {
-            LocalDate today = LocalDate.now();
-            return ResponseEntity.ok(new BurndownData(List.of(today.toString()), List.of(0L), List.of(0L)));
-        }
-        List<Object[]> transitions = taskTransitionRepository.findTransitionsByEpicId(id);
-        LocalDate startDate = epicDTO.getStartDate() != null ? epicDTO.getStartDate() : LocalDate.now().minusDays(30);
-        LocalDate endDate = epicDTO.getEndDate() != null ? epicDTO.getEndDate() : LocalDate.now();
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        List<String> dates = new ArrayList<>();
-        List<Long> ideal = new ArrayList<>();
-        List<Long> actual = new ArrayList<>();
-        long remaining = totalTasks;
-        LocalDate cursor = startDate;
-        LocalDate end = endDate.plusDays(1);
-        int totalDays = Math.max(1, (int) (endDate.toEpochDay() - startDate.toEpochDay()));
-        int dayIndex = 0;
-        int trIdx = 0;
-        while (!cursor.isAfter(end)) {
-            Instant cursorInstant = cursor.atStartOfDay(ZoneId.systemDefault()).toInstant();
-            while (trIdx < transitions.size()) {
-                Instant trTime = (Instant) transitions.get(trIdx)[0];
-                if (trTime.isAfter(cursorInstant)) {
-                    break;
-                }
-                String toStatus = (String) transitions.get(trIdx)[2];
-                if ("DONE".equals(toStatus) || "CANCELLED".equals(toStatus)) {
-                    remaining = Math.max(0, remaining - 1);
-                }
-                trIdx++;
-            }
-            dates.add(cursor.format(fmt));
-            ideal.add((long) Math.max(0, totalTasks - (int) (((long) dayIndex * totalTasks) / totalDays)));
-            actual.add(remaining);
-            cursor = cursor.plusDays(1);
-            dayIndex++;
-        }
-        if (dates.isEmpty()) {
-            dates.add(LocalDate.now().format(fmt));
-            ideal.add((long) totalTasks);
-            actual.add(remaining);
-        }
-        return ResponseEntity.ok(new BurndownData(dates, ideal, actual));
     }
 }
