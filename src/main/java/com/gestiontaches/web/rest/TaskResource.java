@@ -6,6 +6,7 @@ import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
 import com.gestiontaches.service.NotificationService;
+import com.gestiontaches.service.ProjectPermissionService;
 import com.gestiontaches.service.TaskQueryService;
 import com.gestiontaches.service.TaskService;
 import com.gestiontaches.service.UserService;
@@ -32,6 +33,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -63,13 +65,16 @@ public class TaskResource {
 
     private final UserRepository userRepository;
 
+    private final ProjectPermissionService projectPermissionService;
+
     public TaskResource(
         TaskService taskService,
         TaskRepository taskRepository,
         TaskQueryService taskQueryService,
         UserService userService,
         NotificationService notificationService,
-        UserRepository userRepository
+        UserRepository userRepository,
+        ProjectPermissionService projectPermissionService
     ) {
         this.taskService = taskService;
         this.taskRepository = taskRepository;
@@ -77,19 +82,54 @@ public class TaskResource {
         this.userService = userService;
         this.notificationService = notificationService;
         this.userRepository = userRepository;
+        this.projectPermissionService = projectPermissionService;
+    }
+
+    /**
+     * Requires either global ADMIN/PROJET_MANAGER authority, membership in the project named by
+     * the criteria's projectId filter, or a self-scoped "my tasks" query (assigneeId equals the
+     * current user), which is always safe regardless of project membership.
+     */
+    private void requireCriteriaProjectAccess(TaskCriteria criteria) {
+        if (projectPermissionService.hasGlobalProjectAccess()) {
+            return;
+        }
+        if (
+            criteria != null &&
+            criteria.getAssigneeId() != null &&
+            criteria.getAssigneeId().getEquals() != null &&
+            criteria.getAssigneeId().getEquals().equals(projectPermissionService.resolveCurrentUserId())
+        ) {
+            return;
+        }
+        if (criteria == null || criteria.getProjectId() == null || criteria.getProjectId().getEquals() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "A projectId or self-scoped assigneeId filter is required");
+        }
+        projectPermissionService.requireProjectAccess(criteria.getProjectId().getEquals());
     }
 
     /**
      * {@code POST  /projects/{projectId}/tasks} : Create a new task for a specific project.
-     * Only the project owner (or ADMIN) can create tasks.
+     * Requires project membership (enforced in {@link TaskService#createForProject}).
      *
      * @param projectId the id of the project.
      * @param taskDTO the taskDTO to create.
      * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new taskDTO,
-     *         or {@code 403 (Forbidden)} if the user is not the owner, or {@code 400 (Bad Request)} if the task has already an ID.
+     *         or {@code 403 (Forbidden)} if the user is not a project member, or {@code 400 (Bad Request)} if the task has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/projects/{projectId}/tasks")
+    @PreAuthorize(
+        "hasAnyAuthority('" +
+            AuthoritiesConstants.ADMIN +
+            "', '" +
+            AuthoritiesConstants.PROJET_MANAGER +
+            "', '" +
+            AuthoritiesConstants.DEVELOPER +
+            "', '" +
+            AuthoritiesConstants.USER +
+            "')"
+    )
     public ResponseEntity<TaskDTO> createTaskForProject(@PathVariable("projectId") Long projectId, @Valid @RequestBody TaskDTO taskDTO)
         throws URISyntaxException {
         LOG.debug("REST request to save Task for Project {} : {}", projectId, taskDTO);
@@ -234,6 +274,7 @@ public class TaskResource {
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
         LOG.debug("REST request to get Tasks by criteria: {}", criteria);
+        requireCriteriaProjectAccess(criteria);
 
         Page<TaskDTO> page = taskQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -249,6 +290,7 @@ public class TaskResource {
     @GetMapping("/count")
     public ResponseEntity<Long> countTasks(TaskCriteria criteria) {
         LOG.debug("REST request to count Tasks by criteria: {}", criteria);
+        requireCriteriaProjectAccess(criteria);
         return ResponseEntity.ok().body(taskQueryService.countByCriteria(criteria));
     }
 
@@ -262,6 +304,13 @@ public class TaskResource {
     public ResponseEntity<TaskDTO> getTask(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Task : {}", id);
         Optional<TaskDTO> taskDTO = taskService.findOne(id);
+        taskDTO.ifPresent(dto -> {
+            Long currentUserId = projectPermissionService.resolveCurrentUserId();
+            boolean isSelfAssigned = dto.getAssignee() != null && currentUserId.equals(dto.getAssignee().getId());
+            if (!isSelfAssigned) {
+                projectPermissionService.requireProjectAccess(dto.getProject().getId());
+            }
+        });
         return ResponseUtil.wrapOrNotFound(taskDTO);
     }
 

@@ -4,6 +4,7 @@ import com.gestiontaches.repository.EpicRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.EpicQueryService;
 import com.gestiontaches.service.EpicService;
+import com.gestiontaches.service.ProjectPermissionService;
 import com.gestiontaches.service.criteria.EpicCriteria;
 import com.gestiontaches.service.dto.EpicDTO;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
@@ -20,9 +21,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -48,10 +51,28 @@ public class EpicResource {
 
     private final EpicQueryService epicQueryService;
 
-    public EpicResource(EpicService epicService, EpicRepository epicRepository, EpicQueryService epicQueryService) {
+    private final ProjectPermissionService projectPermissionService;
+
+    public EpicResource(
+        EpicService epicService,
+        EpicRepository epicRepository,
+        EpicQueryService epicQueryService,
+        ProjectPermissionService projectPermissionService
+    ) {
         this.epicService = epicService;
         this.epicRepository = epicRepository;
         this.epicQueryService = epicQueryService;
+        this.projectPermissionService = projectPermissionService;
+    }
+
+    private void requireCriteriaProjectAccess(EpicCriteria criteria) {
+        if (projectPermissionService.hasGlobalProjectAccess()) {
+            return;
+        }
+        if (criteria == null || criteria.getProjectId() == null || criteria.getProjectId().getEquals() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "A projectId filter is required");
+        }
+        projectPermissionService.requireProjectAccess(criteria.getProjectId().getEquals());
     }
 
     /**
@@ -182,6 +203,7 @@ public class EpicResource {
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
         LOG.debug("REST request to get Epics by criteria: {}", criteria);
+        requireCriteriaProjectAccess(criteria);
 
         Page<EpicDTO> page = epicQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
@@ -197,6 +219,7 @@ public class EpicResource {
     @GetMapping("/count")
     public ResponseEntity<Long> countEpics(EpicCriteria criteria) {
         LOG.debug("REST request to count Epics by criteria: {}", criteria);
+        requireCriteriaProjectAccess(criteria);
         return ResponseEntity.ok().body(epicQueryService.countByCriteria(criteria));
     }
 
@@ -210,6 +233,7 @@ public class EpicResource {
     public ResponseEntity<EpicDTO> getEpic(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Epic : {}", id);
         Optional<EpicDTO> epicDTO = epicService.findOne(id);
+        epicDTO.ifPresent(dto -> projectPermissionService.requireProjectAccess(dto.getProject().getId()));
         return ResponseUtil.wrapOrNotFound(epicDTO);
     }
 

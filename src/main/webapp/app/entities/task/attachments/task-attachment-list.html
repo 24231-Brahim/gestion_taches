@@ -13,7 +13,7 @@
       <fa-icon icon="paperclip" />
       <a [href]="downloadUrl(att)" target="_blank" class="attachment-name">{{ att.fileName }}</a>
       <span class="attachment-date">{{ att.uploadedAt | formatMediumDatetime }}</span>
-      @if (isAdminOrManagerOrDev()) {
+      @if (canModify(att)) {
         <button class="btn btn-sm btn-danger" (click)="deleteAttachment(att.id)">
           <fa-icon icon="times" />
         </button>

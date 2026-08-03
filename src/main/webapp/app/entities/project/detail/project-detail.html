@@ -2,15 +2,19 @@
   @if (project(); as projectRef) {
     <h2 class="page-heading" data-cy="projectDetailsHeading">
       <span>{{ projectRef.name }}</span>
-      <span class="badge border-primary ms-2">{{ projectRef.key }}</span>
+      <span class="badge bg-primary ms-2">{{ projectRef.key }}</span>
 
       <div class="d-flex">
-        <a [routerLink]="['/project', projectRef.key, 'edit']" class="btn btn-primary btn-sm me-2">
-          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
-        </a>
-        <button type="button" class="btn btn-danger btn-sm" (click)="delete(projectRef)">
-          <fa-icon icon="times" />&nbsp;<span jhiTranslate="entity.action.delete">Supprimer</span>
-        </button>
+        @if (canEditProject()) {
+          <a [routerLink]="['/project', projectRef.key, 'edit']" class="btn btn-primary btn-sm me-2">
+            <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
+          </a>
+        }
+        @if (canDeleteProject()) {
+          <button type="button" class="btn btn-danger btn-sm" (click)="delete(projectRef)">
+            <fa-icon icon="times" />&nbsp;<span jhiTranslate="entity.action.delete">Supprimer</span>
+          </button>
+        }
       </div>
     </h2>
 
@@ -85,53 +89,61 @@
           </tr>
         </thead>
         <tbody>
-          @for (member of displayMembers(); track member.id) {
-            <tr [class.table-info]="member.isSynthetic">
-              <td>
-                <fa-icon icon="user" class="me-1" />{{ member.userLogin }}
-                @if (member.isSynthetic) {
-                  <span class="badge bg-info ms-1" jhiTranslate="gestionTachesApp.project.member.adminAccess">Accès administrateur</span>
-                }
-              </td>
-              <td>
-                @if (editingMemberId() === member.id) {
-                  <div class="d-flex gap-1 align-items-center">
-                    <select class="form-select form-select-sm" style="width: 140px" [(ngModel)]="editingRole">
-                      <option [ngValue]="'OWNER'">OWNER</option>
-                      <option [ngValue]="'MANAGER'">MANAGER</option>
-                      <option [ngValue]="'MEMBER'">MEMBER</option>
-                    </select>
-                    <button class="btn btn-sm btn-primary" (click)="saveRole(projectRef.id, member)">
-                      <fa-icon icon="save" />
-                    </button>
-                    <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">
-                      <fa-icon icon="times" />
-                    </button>
-                  </div>
-                } @else {
-                  <span class="badge border-primary">{{ member.role }}</span>
-                }
-              </td>
-              <td>{{ member.joinedAt | formatMediumDatetime }}</td>
-              <td>
-                @if (canManageMembers() && !member.isSynthetic) {
-                  <div class="d-flex gap-1">
-                    @if (editingMemberId() !== member.id) {
-                      <button class="btn btn-sm btn-warning" (click)="startEdit(member)">
-                        <fa-icon icon="pencil-alt" />
-                      </button>
-                    }
-                    <button class="btn btn-sm btn-danger" (click)="removeMember(projectRef.id, member.userId!)">
-                      <fa-icon icon="trash-alt" />
-                    </button>
-                  </div>
-                }
-              </td>
-            </tr>
-          } @empty {
+          @if (membersLoading() && !members().length) {
             <tr>
-              <td colspan="4" class="text-center text-muted" jhiTranslate="gestionTachesApp.project.member.empty">No members yet</td>
+              <td colspan="4" class="text-center text-muted">
+                <fa-icon icon="sync" animation="spin" />
+              </td>
             </tr>
+          } @else {
+            @for (member of displayMembers(); track member.id) {
+              <tr [class.table-info]="member.isSynthetic">
+                <td>
+                  <fa-icon icon="user" class="me-1" />{{ member.userLogin }}
+                  @if (member.isSynthetic) {
+                    <span class="badge bg-info ms-1" jhiTranslate="gestionTachesApp.project.member.adminAccess">Accès administrateur</span>
+                  }
+                </td>
+                <td>
+                  @if (editingMemberId() === member.id) {
+                    <div class="d-flex gap-1 align-items-center">
+                      <select class="form-select form-select-sm" style="width: 140px" [(ngModel)]="editingRole">
+                        <option [ngValue]="'OWNER'">OWNER</option>
+                        <option [ngValue]="'MANAGER'">MANAGER</option>
+                        <option [ngValue]="'MEMBER'">MEMBER</option>
+                      </select>
+                      <button class="btn btn-sm btn-primary" (click)="saveRole(projectRef.id, member)">
+                        <fa-icon icon="save" />
+                      </button>
+                      <button class="btn btn-sm btn-secondary" (click)="cancelEdit()">
+                        <fa-icon icon="times" />
+                      </button>
+                    </div>
+                  } @else {
+                    <span class="badge bg-primary">{{ member.role }}</span>
+                  }
+                </td>
+                <td>{{ member.joinedAt | formatMediumDatetime }}</td>
+                <td>
+                  @if (canManageMembers() && !member.isSynthetic) {
+                    <div class="d-flex gap-1">
+                      @if (editingMemberId() !== member.id) {
+                        <button class="btn btn-sm btn-warning" (click)="startEdit(member)">
+                          <fa-icon icon="pencil-alt" />
+                        </button>
+                      }
+                      <button class="btn btn-sm btn-danger" (click)="removeMember(projectRef.id, member.userId!)">
+                        <fa-icon icon="trash-alt" />
+                      </button>
+                    </div>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="text-center text-muted" jhiTranslate="gestionTachesApp.project.member.empty">No members yet</td>
+              </tr>
+            }
           }
         </tbody>
       </table>

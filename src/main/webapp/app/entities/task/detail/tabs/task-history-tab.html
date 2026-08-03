@@ -2,7 +2,7 @@
   <h4 class="tab-section-title">
     <fa-icon icon="history" class="me-2" />
     <span jhiTranslate="gestionTachesApp.task.detail.history">History</span>
-    <span class="badge bg-secondary ms-2">{{ actionHistories().length }}</span>
+    <span class="badge bg-secondary ms-2">{{ taskHistories().length }}</span>
   </h4>
 
   @if (isLoading()) {
@@ -10,11 +10,11 @@
       <fa-icon icon="sync" animation="spin" />
     </div>
   } @else {
-    @if (actionHistories().length === 0) {
+    @if (taskHistories().length === 0) {
       <p class="text-muted" jhiTranslate="gestionTachesApp.task.detail.noHistory">No history yet.</p>
     } @else {
       <div class="history-list">
-        @for (entry of actionHistories(); track entry.id) {
+        @for (entry of taskHistories(); track entry.id) {
           <div class="history-item">
             <div class="history-header">
               <span class="history-action">
@@ -24,9 +24,8 @@
               <span class="history-user text-muted">{{ entry.user?.login ?? ('gestionTachesApp.task.system' | translate) }}</span>
               <span class="history-date text-muted ms-auto">{{ entry.createdAt | formatMediumDatetime }}</span>
             </div>
-            @if (entry.fieldChanged) {
+            @if (entry.oldValue || entry.newValue) {
               <div class="history-detail">
-                <span class="history-field">{{ entry.fieldChanged }}</span>
                 <span class="history-old text-danger">{{ entry.oldValue }}</span>
                 <fa-icon icon="arrow-right" class="mx-1" />
                 <span class="history-new text-success">{{ entry.newValue }}</span>

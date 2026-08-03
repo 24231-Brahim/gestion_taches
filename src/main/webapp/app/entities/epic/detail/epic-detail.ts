@@ -6,6 +6,7 @@ import dayjs from 'dayjs/esm';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
 import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
@@ -209,9 +210,6 @@ interface EpicStats {
       .task-table tr:hover {
         background: rgba(255, 255, 255, 0.03);
       }
-      .task-type-icon {
-        margin-right: 6px;
-      }
       .assignee-initials {
         width: 22px;
         height: 22px;
@@ -316,13 +314,24 @@ export class EpicDetail {
   protected readonly alertService = inject(AlertService);
   protected readonly translateService = inject(TranslateService);
   protected readonly activatedRoute = inject(ActivatedRoute);
+  protected readonly accountService = inject(AccountService);
+
+  // ADMIN/PROJET_MANAGER bypass only — this page doesn't have the project's member list loaded,
+  // so a non-admin OWNER/MANAGER won't see this link either (safe default: never shown to anyone
+  // unauthorized, matches the backend's EpicService which requires OWNER/MANAGER project role).
+  readonly canManageEpics = computed(
+    () =>
+      this.accountService.account()?.authorities?.includes('ROLE_ADMIN') ||
+      this.accountService.account()?.authorities?.includes('ROLE_PROJET_MANAGER') ||
+      false,
+  );
 
   readonly epicStats = computed<EpicStats>(() => {
     const t = this.tasks();
     const total = t.length;
     const done = t.filter(i => i.status === 'DONE').length;
     const inProgress = t.filter(i => i.status === 'IN_PROGRESS').length;
-    const todo = t.filter(i => i.status === 'TODO' || i.status === 'NEW').length;
+    const todo = t.filter(i => i.status === 'NEW').length;
     const totalSp = t.reduce((s, i) => s + (i.storyPoints ?? 0), 0);
     const doneSp = t.filter(i => i.status === 'DONE').reduce((s, i) => s + (i.storyPoints ?? 0), 0);
     return {
@@ -356,29 +365,21 @@ export class EpicDetail {
     return Array.from(logins).sort();
   });
 
-  readonly typeIcons: Record<string, string> = {
-    STORY: 'th-list',
-    BUG: 'bug',
-    TASK: 'check-circle',
-    SUBTASK: 'plus',
-    IMPROVEMENT: 'arrow-up',
-  };
-
-  readonly typeColors: Record<string, string> = {
-    STORY: 'var(--color-story, #4caf50)',
-    BUG: 'var(--color-bug, #f44336)',
-    TASK: 'var(--color-task, #2196f3)',
-    SUBTASK: 'var(--color-subtask, #9e9e9e)',
-    IMPROVEMENT: 'var(--color-improvement, #ff9800)',
-  };
-
   private epicEffect = effect(() => {
     const ep = this.epic();
     if (ep?.id) {
-      this.taskService.tasksParams.set({
+      // projectId is required alongside epicId: TaskResource.requireCriteriaProjectAccess()
+      // rejects any non-admin/PM request with a 403 if it lacks a projectId filter, which was
+      // silently emptying this page's task list for real project members (only ADMIN/PROJET_MANAGER
+      // bypass that check and never saw the bug).
+      const queryObject: Record<string, string | number> = {
         'epicId.equals': ep.id,
         size: 500,
-      });
+      };
+      if (ep.project?.id) {
+        queryObject['projectId.equals'] = ep.project.id;
+      }
+      this.taskService.tasksParams.set(queryObject);
     }
   });
 
@@ -404,11 +405,10 @@ export class EpicDetail {
   getStatusColor(status: string | null | undefined): string {
     const colors: Record<string, string> = {
       NEW: 'var(--color-status-backlog, #9e9e9e)',
-      TODO: 'var(--color-status-todo, #2196f3)',
       IN_PROGRESS: 'var(--color-status-in-progress, #ff9800)',
-      IN_REVIEW: 'var(--color-status-in-review, #9c27b0)',
+      READY_FOR_TEST: 'var(--color-status-in-review, #9c27b0)',
       DONE: 'var(--color-status-done, #4caf50)',
-      CANCELLED: 'var(--color-status-cancelled, #f44336)',
+      NEEDS_INFO: 'var(--color-status-cancelled, #f44336)',
     };
     return colors[status ?? ''] ?? 'var(--color-outline-variant)';
   }

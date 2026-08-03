@@ -1,29 +1,39 @@
-<div>
-  <h2 id="page-heading" class="page-heading" data-cy="ProjectHeading">
-    <span jhiTranslate="gestionTachesApp.project.home.title">Projects</span>
+<div class="projects-page">
+  <div class="projects-page-header">
+    <h2 id="page-heading" class="page-heading" data-cy="ProjectHeading">
+      <span jhiTranslate="gestionTachesApp.project.home.title">Projects</span>
+    </h2>
 
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
+    <div class="projects-page-actions">
+      @if (canToggleScope()) {
+        <div class="scope-toggle" role="group">
+          <button type="button" class="scope-toggle-btn" [class.active]="scope() === 'mine'" (click)="setScope('mine')">
+            <span jhiTranslate="gestionTachesApp.project.home.scopeMine">Mes projets</span>
+          </button>
+          <button type="button" class="scope-toggle-btn" [class.active]="scope() === 'all'" (click)="setScope('all')">
+            <span jhiTranslate="gestionTachesApp.project.home.scopeAll">Tous les projets</span>
+          </button>
+        </div>
+      }
+
+      <button class="btn-ghost" (click)="load()" [disabled]="isLoading()">
         <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
         <span jhiTranslate="gestionTachesApp.project.home.refreshListLabel">Actualiser la liste</span>
       </button>
 
-      <button class="btn btn-success me-2" (click)="exportCsv()">
+      <button class="btn-outline" (click)="exportCsv()">
         <fa-icon icon="download" />
         <span jhiTranslate="entity.action.exportCsv">CSV</span>
       </button>
 
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-project"
-        [routerLink]="['/project/new']"
-      >
-        <fa-icon icon="plus" />
-        <span jhiTranslate="gestionTachesApp.project.home.createLabel">Créer un nouveau Project</span>
-      </button>
+      @if (canToggleScope()) {
+        <button id="jh-create-entity" data-cy="entityCreateButton" class="btn-cta create-project" [routerLink]="['/project/new']">
+          <fa-icon icon="plus" />
+          <span jhiTranslate="gestionTachesApp.project.home.createLabel">Créer un nouveau Project</span>
+        </button>
+      }
     </div>
-  </h2>
+  </div>
 
   <jhi-alert-error />
 
@@ -43,57 +53,27 @@
   }
 
   @if (projects().length === 0 && !isLoading() && !error()) {
-    <div class="alert alert-warning" id="no-result">
-      <span jhiTranslate="gestionTachesApp.project.home.notFound">Aucun Project trouvé</span>
+    <div class="empty-state" id="no-result">
+      <fa-icon icon="folder-open" class="empty-state-icon" />
+      <h3 jhiTranslate="gestionTachesApp.project.home.emptyTitle">Aucun projet pour l'instant</h3>
+      <p jhiTranslate="gestionTachesApp.project.home.emptyText">
+        Créez votre premier projet pour commencer à organiser sprints, epics et tâches.
+      </p>
     </div>
   } @else {
-    <div class="table-responsive table-entities" id="entities">
-      <table class="table" aria-describedby="page-heading">
-        <thead>
-          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" jhiSortBy="key">
-              <div class="d-flex">
-                <span jhiTranslate="gestionTachesApp.project.key">Key</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="name">
-              <div class="d-flex">
-                <span jhiTranslate="gestionTachesApp.project.name">Name</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="description">
-              <div class="d-flex">
-                <span jhiTranslate="gestionTachesApp.project.description">Description</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="createdAt">
-              <div class="d-flex">
-                <span jhiTranslate="gestionTachesApp.project.createdAt">Created At</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (project of projects(); track trackId(project)) {
-            <tr data-cy="entityTable">
-              <td>
-                <span class="badge border-primary">{{ project.key }}</span>
-              </td>
-              <td>
-                <a [routerLink]="['/project', project.key, 'view']">{{ project.name }}</a>
-              </td>
-              <td>{{ project.description }}</td>
-              <td>{{ project.createdAt | formatMediumDatetime }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
+    <div class="project-grid" id="entities">
+      @for (project of projects(); track trackId(project)) {
+        <jhi-project-card
+          [project]="project"
+          [stats]="statsFor(project)"
+          [canManage]="canManage(project)"
+          [canDelete]="canDelete(project)"
+          (deleteProject)="onDeleteProject($event)"
+        />
+      }
     </div>
   }
+
   @if (projects().length > 0) {
     <div>
       <div class="d-flex justify-content-center">

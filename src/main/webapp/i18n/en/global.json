@@ -13,6 +13,8 @@
         "sprint": "Sprint",
         "epic": "Epic",
         "task": "Tasks",
+        "kanban": "Kanban",
+        "members": "Members",
         "comment": "Comment",
         "attachment": "Attachment",
         "actionHistory": "Action History"
@@ -58,6 +60,9 @@
       "viewAllNotifications": "View all",
       "markAllAsRead": "Mark all as read",
       "noNotifications": "No notifications",
+      "empty": "No description",
+      "notAssigned": "Not assigned",
+      "unassigned": "Unassigned",
       "info": {
         "authenticated": {
           "prefix": "If you want to ",
@@ -106,6 +111,7 @@
       "addimage": "Add image",
       "back": "Back",
       "cancel": "Cancel",
+      "create": "Create",
       "delete": "Delete",
       "edit": "Edit",
       "open": "Open",
@@ -113,7 +119,8 @@
       "save": "Save",
       "view": "View",
       "show": "Show {{otherEntity}}",
-      "related": "Related"
+      "related": "Related",
+      "close": "Close"
     },
     "detail": {
       "field": "Field",

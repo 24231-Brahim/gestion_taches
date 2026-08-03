@@ -17,7 +17,6 @@ import com.gestiontaches.domain.enumeration.TaskStatus;
 import com.gestiontaches.repository.SprintRepository;
 import com.gestiontaches.repository.TaskHistoryRepository;
 import com.gestiontaches.repository.TaskRepository;
-import com.gestiontaches.repository.TaskTransitionRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.service.dto.SprintDTO;
 import com.gestiontaches.service.dto.TaskDTO;
@@ -50,9 +49,6 @@ class SprintServiceTest {
 
     @Mock
     private TaskHistoryRepository taskHistoryRepository;
-
-    @Mock
-    private TaskTransitionRepository taskTransitionRepository;
 
     @Mock
     private NotificationService notificationService;
@@ -97,24 +93,12 @@ class SprintServiceTest {
     }
 
     @Test
-    void startSprint_shouldSetActiveStatusAndTransitionTasks() {
+    void startSprint_shouldSetActiveStatus() {
         when(sprintRepository.findById(10L)).thenReturn(Optional.of(sprint));
         when(projectPermissionService.resolveCurrentUserId()).thenReturn(1L);
         when(userRepository.findById(1L)).thenReturn(Optional.of(currentUser));
 
-        Task task1 = new Task();
-        task1.setId(100L);
-        task1.setStatus(TaskStatus.NEW);
-        task1.setSprint(sprint);
-
-        Task task2 = new Task();
-        task2.setId(101L);
-        task2.setStatus(TaskStatus.NEW);
-        task2.setSprint(sprint);
-
-        when(taskRepository.findBySprintIdAndStatus(10L, TaskStatus.NEW)).thenReturn(List.of(task1, task2));
         when(sprintRepository.save(any(Sprint.class))).thenAnswer(inv -> inv.getArgument(0));
-        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
         when(projectMemberService.getMembersByProjectId(1L)).thenReturn(List.of());
         when(sprintMapper.toDto(any(Sprint.class))).thenAnswer(inv -> {
             Sprint s = inv.getArgument(0);
@@ -129,10 +113,6 @@ class SprintServiceTest {
 
         assertThat(result.getStatus()).isEqualTo(SprintStatus.ACTIVE);
         verify(projectPermissionService).requireProjectRole(1L, ProjectRole.OWNER, ProjectRole.MANAGER);
-        verify(taskRepository, times(2)).save(any(Task.class));
-        verify(taskTransitionRepository, times(2)).save(any());
-        assertThat(task1.getStatus()).isEqualTo(TaskStatus.TODO);
-        assertThat(task2.getStatus()).isEqualTo(TaskStatus.TODO);
     }
 
     @Test
@@ -174,7 +154,7 @@ class SprintServiceTest {
 
         Task todoTask = new Task();
         todoTask.setId(201L);
-        todoTask.setStatus(TaskStatus.TODO);
+        todoTask.setStatus(TaskStatus.IN_PROGRESS);
         todoTask.setSprint(sprint);
 
         Task inProgressTask = new Task();
@@ -243,7 +223,7 @@ class SprintServiceTest {
 
         Task todoTask = new Task();
         todoTask.setId(400L);
-        todoTask.setStatus(TaskStatus.TODO);
+        todoTask.setStatus(TaskStatus.IN_PROGRESS);
         todoTask.setSprint(sprint);
 
         when(taskRepository.findBySprintId(10L)).thenReturn(List.of(todoTask));

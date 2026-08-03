@@ -8,6 +8,7 @@
         "createOrEditLabel": "Créer ou éditer un Epic",
         "notFound": "Aucun Epic trouvé",
         "roadmap": "Roadmap Epic",
+        "tableLabel": "Vue tableau",
         "details": "Détails Epic"
       },
       "created": "Un nouveau Epic a été créé avec l'identifiant {{ param }}",

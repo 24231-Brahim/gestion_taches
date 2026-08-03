@@ -1,18 +1,18 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
+import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
 import { TaskStatus } from 'app/entities/enumerations/task-status.model';
-import { TaskType } from 'app/entities/enumerations/task-type.model';
 import { Priority } from 'app/entities/enumerations/priority.model';
 import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
-import { ISSUE_TYPE_COLORS, ISSUE_TYPE_ICONS, PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES } from '../task-helper';
+import { PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES } from '../task-helper';
 import { ITask } from '../task.model';
 import { TaskService } from '../service/task.service';
 import { TaskCommentList } from '../comments/task-comment-list';
@@ -34,13 +34,10 @@ import { IUser } from 'app/entities/user/user.model';
       }
       .task-drawer {
         position: fixed;
-        top: 0;
-        right: 0;
-        width: min(680px, 100vw);
+        inset: 0;
+        width: 100vw;
         height: 100vh;
         background: var(--color-surface, #0f1419);
-        border-left: 1px solid var(--color-outline-variant, #2a3038);
-        border-radius: var(--radius-lg) 0 0 var(--radius-lg);
         z-index: 1050;
         display: flex;
         flex-direction: column;
@@ -50,22 +47,25 @@ import { IUser } from 'app/entities/user/user.model';
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 16px 20px;
+        padding: 16px 32px;
         border-bottom: 1px solid var(--color-outline-variant, #2a3038);
       }
       .task-drawer-body {
         flex: 1;
         overflow-y: auto;
         display: flex;
-        gap: 20px;
-        padding: 20px;
+        gap: 40px;
+        padding: 32px;
+        max-width: 1800px;
+        width: 100%;
+        margin: 0 auto;
       }
       .task-drawer-main {
         flex: 1;
         min-width: 0;
       }
       .task-drawer-sidebar {
-        width: 220px;
+        width: 300px;
         flex-shrink: 0;
       }
       .task-drawer-title {
@@ -118,9 +118,6 @@ import { IUser } from 'app/entities/user/user.model';
         gap: 8px;
         font-size: 0.9rem;
       }
-      .task-type-badge {
-        display: none;
-      }
       .task-drawer-actions {
         margin-top: 24px;
         padding-top: 16px;
@@ -131,7 +128,7 @@ import { IUser } from 'app/entities/user/user.model';
         height: 28px;
         border-radius: 50%;
         background: var(--color-primary-container, #25a7fd);
-        color: #000;
+        color: var(--color-on-primary-container, #fff);
         font-size: 0.75rem;
         font-weight: 600;
         display: flex;
@@ -140,15 +137,46 @@ import { IUser } from 'app/entities/user/user.model';
         font-family: var(--font-mono);
       }
       @media (max-width: 768px) {
-        .task-drawer {
-          width: 100vw;
+        .task-drawer-header {
+          padding: 16px 20px;
         }
         .task-drawer-body {
           flex-direction: column;
+          padding: 20px;
+          gap: 20px;
         }
         .task-drawer-sidebar {
           width: 100%;
         }
+      }
+      .tab-bar {
+        display: flex;
+        gap: 0;
+        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        margin-bottom: 16px;
+      }
+      .tab-item {
+        padding: 8px 16px;
+        cursor: pointer;
+        font-family: var(--font-inter);
+        font-size: 0.8rem;
+        text-transform: none;
+        letter-spacing: 0;
+        border: none;
+        background: transparent;
+        color: var(--color-text-muted, #6a8fac);
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+        transition:
+          color var(--transition-fast),
+          border-color var(--transition-fast);
+      }
+      .tab-item:hover {
+        color: var(--color-text, #dfe3ea);
+      }
+      .tab-item.active {
+        color: var(--color-primary, #97cbff);
+        border-bottom-color: var(--color-primary, #97cbff);
       }
     `,
   ],
@@ -170,22 +198,37 @@ export class TaskDetailPanel {
   readonly close = input.required<() => void>();
   readonly taskChanged = output<ITask>();
 
-  readonly taskTypeLabels = TaskType;
   readonly taskStatusValues = Object.keys(TaskStatus);
-  readonly taskTypeValues = Object.keys(TaskType);
   readonly priorityValues = Object.keys(Priority);
-  readonly typeColors = ISSUE_TYPE_COLORS;
-  readonly typeIcons = ISSUE_TYPE_ICONS;
   readonly priorityColors = PRIORITY_COLORS;
   readonly priorityIcons = PRIORITY_ICONS;
   readonly statusBadges = STATUS_BADGES;
 
   readonly isSaving = signal(false);
   readonly assignableUsers = signal<IUser[]>([]);
+  readonly activeTab = signal<'details' | 'comments' | 'attachments' | 'history'>('details');
+  private readonly lastTaskId = signal<number | null>(null);
 
   protected readonly taskService = inject(TaskService);
   protected readonly alertService = inject(AlertService);
   protected readonly translateService = inject(TranslateService);
+  protected readonly accountService = inject(AccountService);
+
+  // Reassignment is management-only, even for the assignee's own task (matches
+  // TaskResource.assignTask's OWNER/MANAGER requirement — ADMIN/PROJET_MANAGER bypass shown here
+  // since this shared drawer has no per-project member list loaded).
+  readonly canReassign = computed(
+    () =>
+      this.accountService.account()?.authorities?.includes('ROLE_ADMIN') ||
+      this.accountService.account()?.authorities?.includes('ROLE_PROJET_MANAGER') ||
+      false,
+  );
+
+  // A plain project member viewing a colleague's task (allowed, read-only, "for context") must not
+  // be able to edit its status — only the assignee themself, or ADMIN/PROJET_MANAGER/OWNER/MANAGER.
+  canEditStatus(task: ITask): boolean {
+    return this.canReassign() || this.accountService.account()?.login === task.assignee?.login;
+  }
 
   constructor() {
     effect(() => {
@@ -195,6 +238,17 @@ export class TaskDetailPanel {
         });
       }
     });
+    effect(() => {
+      const id = this.task()?.id ?? null;
+      if (id !== untracked(this.lastTaskId)) {
+        this.lastTaskId.set(id);
+        this.activeTab.set('details');
+      }
+    });
+  }
+
+  setTab(tab: 'details' | 'comments' | 'attachments' | 'history'): void {
+    this.activeTab.set(tab);
   }
 
   onStatusChange(task: ITask, newStatus: string): void {

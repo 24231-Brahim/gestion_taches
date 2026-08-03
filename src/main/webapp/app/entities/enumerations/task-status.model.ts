@@ -1,13 +1,11 @@
 export enum TaskStatus {
   NEW = 'NEW',
 
-  TODO = 'TODO',
-
   IN_PROGRESS = 'IN_PROGRESS',
 
-  IN_REVIEW = 'IN_REVIEW',
+  READY_FOR_TEST = 'READY_FOR_TEST',
 
   DONE = 'DONE',
 
-  CANCELLED = 'CANCELLED',
+  NEEDS_INFO = 'NEEDS_INFO',
 }

@@ -6,7 +6,16 @@
         "refreshListLabel": "Actualiser la liste",
         "createLabel": "Créer un nouveau Project",
         "createOrEditLabel": "Créer ou éditer un Project",
-        "notFound": "Aucun Project trouvé"
+        "notFound": "Aucun Project trouvé",
+        "emptyTitle": "Aucun projet pour l'instant",
+        "emptyText": "Créez votre premier projet pour commencer à organiser sprints, epics et tâches.",
+        "scopeMine": "Mes projets",
+        "scopeAll": "Tous les projets"
+      },
+      "card": {
+        "noDescription": "Pas encore de description.",
+        "progress": "Avancement",
+        "createdAgo": "Créé {{ time }}"
       },
       "created": "Un nouveau Project a été créé avec l'identifiant {{ param }}",
       "updated": "Le Project avec l'identifiant {{ param }} a été mis à jour",
@@ -24,7 +33,7 @@
       "createdAt": "Created At",
       "sprints": "Sprints",
       "epics": "Epics",
-      "tasks": "Issues",
+      "tasks": "Tâches",
       "members": "Membres",
       "member": {
         "add": "Ajouter un membre",

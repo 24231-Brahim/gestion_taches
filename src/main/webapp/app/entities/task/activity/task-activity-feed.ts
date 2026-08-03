@@ -1,11 +1,10 @@
-import { HttpClient } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { IActionHistory } from 'app/entities/action-history/action-history.model';
-import { ApplicationConfigService } from 'app/core/config/application-config.service';
+import { ITaskHistory } from 'app/entities/task-history/task-history.model';
+import { TaskHistoryService } from 'app/entities/task-history/service/task-history.service';
 import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 
@@ -81,17 +80,16 @@ import { TranslateDirective } from 'app/shared/language';
 export class TaskActivityFeed implements OnInit {
   readonly taskId = input.required<number>();
 
-  readonly histories = signal<IActionHistory[]>([]);
+  readonly histories = signal<ITaskHistory[]>([]);
 
-  protected readonly http = inject(HttpClient);
-  protected readonly appConfig = inject(ApplicationConfigService);
+  protected readonly taskHistoryService = inject(TaskHistoryService);
 
   ngOnInit(): void {
     this.loadHistories();
   }
 
   loadHistories(): void {
-    this.http.get<IActionHistory[]>(this.appConfig.getEndpointFor(`api/action-histories/by-task/${this.taskId()}`)).subscribe({
+    this.taskHistoryService.findByTask(this.taskId()).subscribe({
       next: histories => this.histories.set(histories),
     });
   }

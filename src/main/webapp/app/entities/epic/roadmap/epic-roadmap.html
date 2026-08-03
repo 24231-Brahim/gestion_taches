@@ -9,14 +9,16 @@
         <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
         <span jhiTranslate="gestionTachesApp.epic.home.refreshListLabel"></span>
       </button>
-      <a
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary btn-sm"
-        [routerLink]="['/project', currentProjectKey(), 'epic', 'new']"
-      >
-        <fa-icon icon="plus" /><span jhiTranslate="gestionTachesApp.epic.home.createLabel"></span>
-      </a>
+      @if (canManageEpics()) {
+        <a
+          id="jh-create-entity"
+          data-cy="entityCreateButton"
+          class="btn btn-primary btn-sm"
+          [routerLink]="['/project', currentProjectKey(), 'epic', 'new']"
+        >
+          <fa-icon icon="plus" /><span jhiTranslate="gestionTachesApp.epic.home.createLabel"></span>
+        </a>
+      }
       <a class="btn btn-outline-primary btn-sm" [routerLink]="['/project', currentProjectKey(), 'epic', 'table']">
         <fa-icon icon="table" /><span class="ms-1" jhiTranslate="gestionTachesApp.epic.home.tableLabel"></span>
       </a>
@@ -101,7 +103,7 @@
                   </span>
                 </div>
               </div>
-              <span class="roadmap-pct">{{ epic.doneIssues }}/{{ epic.totalIssues }} {{ epic.progress }}%</span>
+              <span class="roadmap-pct">{{ epic.doneTasks }}/{{ epic.totalTasks }} {{ epic.progress }}%</span>
             </div>
           </div>
         }

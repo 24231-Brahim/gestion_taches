@@ -1,10 +1,12 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, OnInit, inject, input, signal } from '@angular/core';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
+import dayjs from 'dayjs/esm';
 
 import { AccountService } from 'app/core/auth/account.service';
+import { AlertService } from 'app/core/util/alert.service';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { IAttachment } from 'app/entities/attachment/attachment.model';
 import { AttachmentService } from 'app/entities/attachment/service/attachment.service';
@@ -97,15 +99,24 @@ export class TaskAttachmentList implements OnInit {
   protected readonly attachmentService = inject(AttachmentService);
   protected readonly accountService = inject(AccountService);
   protected readonly appConfig = inject(ApplicationConfigService);
+  protected readonly alertService = inject(AlertService);
 
   ngOnInit(): void {
     this.loadAttachments();
   }
 
   loadAttachments(): void {
-    this.http.get<IAttachment[]>(this.appConfig.getEndpointFor(`api/attachments/by-task/${this.taskId()}`)).subscribe({
-      next: attachments => this.attachments.set(attachments),
-    });
+    this.http
+      .get<
+        (Omit<IAttachment, 'uploadedAt'> & { uploadedAt?: string | null })[]
+      >(this.appConfig.getEndpointFor(`api/attachments/by-task/${this.taskId()}`))
+      .subscribe({
+        // Same fix as comments: the REST payload's uploadedAt is a plain ISO string, but
+        // formatMediumDatetime requires a real dayjs instance and throws otherwise.
+        next: attachments =>
+          this.attachments.set(attachments.map(a => ({ ...a, uploadedAt: a.uploadedAt ? dayjs(a.uploadedAt) : undefined }))),
+        error: () => this.alertService.addAlert({ type: 'danger', translationKey: 'error.general' }),
+      });
   }
 
   uploadAttachment(file: File): void {
@@ -113,12 +124,20 @@ export class TaskAttachmentList implements OnInit {
     formData.append('file', file);
     this.http.post(this.appConfig.getEndpointFor(`api/attachments/upload?taskId=${this.taskId()}`), formData).subscribe({
       next: () => this.loadAttachments(),
+      error: (err: HttpErrorResponse) => {
+        const message = err.error?.detail ?? err.message ?? 'error.general';
+        this.alertService.addAlert({ type: 'danger', message });
+      },
     });
   }
 
   deleteAttachment(id: number): void {
     this.attachmentService.delete(id).subscribe({
       next: () => this.loadAttachments(),
+      error: (err: HttpErrorResponse) => {
+        const message = err.error?.detail ?? err.message ?? 'error.general';
+        this.alertService.addAlert({ type: 'danger', message });
+      },
     });
   }
 
@@ -143,6 +162,13 @@ export class TaskAttachmentList implements OnInit {
     }
   }
 
-  protected readonly isAdminOrManagerOrDev = () =>
-    this.accountService.hasAnyAuthority(['ROLE_ADMIN', 'ROLE_PROJET_MANAGER', 'ROLE_DEVELOPER']);
+  isUploader(attachment: IAttachment): boolean {
+    return this.accountService.account()?.login === attachment.uploadedBy?.login;
+  }
+
+  canModify(attachment: IAttachment): boolean {
+    // Moderation bypass is ADMIN/PROJET_MANAGER only — a DEVELOPER may only delete their own
+    // uploads, never anyone else's (matches the backend's checkCanModifyAttachment).
+    return this.accountService.hasAnyAuthority(['ROLE_ADMIN', 'ROLE_PROJET_MANAGER']) || this.isUploader(attachment);
+  }
 }

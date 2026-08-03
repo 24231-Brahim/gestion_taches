@@ -3,12 +3,13 @@
 // Remarque : l'entité User est l'entité "User" native de JHipster
 // (login, firstName, lastName, email, password sont déjà gérés par JHipster).
 // Elle n'est donc pas redéfinie ici, seulement référencée dans les relations.
+//
+// Les rôles globaux (admin, chef de projet, développeur, ...) sont gérés par
+// l'entité "Authority" native de JHipster (jhi_authority / jhi_user_authority),
+// au même titre que "User" : ni l'une ni l'autre n'est redéfinie ici.
+// Les rôles au niveau d'un projet (propriétaire / manager / membre) sont portés
+// par ProjectMember.role (voir enum ProjectRole ci-dessous).
 // =========================================================
-
-entity Role {
-  name String required,
-  description String
-}
 
 entity Project {
   name String required,
@@ -18,7 +19,8 @@ entity Project {
 }
 
 entity ProjectMember {
-  joinedAt LocalDate
+  role ProjectRole required,
+  joinedAt Instant required
 }
 
 entity Sprint {
@@ -45,6 +47,7 @@ entity Task {
   description String,
   status TaskStatus,
   priority Priority,
+  storyPoints Integer,
   createdAt Instant,
   updatedAt Instant
 }
@@ -62,8 +65,23 @@ entity Attachment {
 
 entity Notification {
   message String required,
+  taskTitle String,
   isRead Boolean,
   createdAt Instant
+}
+
+entity TaskHistory {
+  action String required maxlength(100),
+  oldValue String maxlength(500),
+  newValue String maxlength(500),
+  createdAt Instant required
+}
+
+entity TaskTransition {
+  fromStatus String maxlength(50),
+  toStatus String required maxlength(50),
+  timeSpentInSeconds Long,
+  createdAt Instant required
 }
 
 // =========================================================
@@ -79,11 +97,15 @@ enum EpicStatus {
 }
 
 enum TaskStatus {
-  NEW, IN_PROGRESS, CODE_REVIEW, READY_FOR_RELEASE, DONE
+  NEW, IN_PROGRESS, READY_FOR_TEST, DONE, NEEDS_INFO
 }
 
 enum Priority {
   LOWEST, LOW, MEDIUM, HIGH, HIGHEST
+}
+
+enum ProjectRole {
+  OWNER, MANAGER, MEMBER
 }
 
 // =========================================================
@@ -97,16 +119,9 @@ relationship ManyToOne {
   Task{assignee} to User
   Task{createdBy} to User
   Comment{author} to User
+  TaskHistory{user} to User
+  TaskTransition{user} to User
 }
-
-// =========================================================
-// Relation Many-to-Many User <-> Role
-// =========================================================
-
-relationship ManyToMany {
-  User{role(name)} to Role{user}
-}
-
 
 // =========================================================
 // Relations One-to-Many (avec côté inverse ManyToOne implicite)
@@ -121,21 +136,16 @@ relationship OneToMany {
   Epic{task} to Task{epic}
   Task{comment} to Comment{task}
   Task{attachment} to Attachment{task}
-}
-
-// =========================================================
-// Options
-// =========================================================
-
-relationship OneToMany {
-    Task{history} to ActionHistory{task required}
+  Task{notification} to Notification{task}
+  Task{history} to TaskHistory{task required}
+  Task{transition} to TaskTransition{task required}
 }
 
 // ─────────────────────────────────────────────
 //  OPTIONS
 // ─────────────────────────────────────────────
 
-paginate Project, Sprint, Epic, Task, Comment, Attachment, Notification with pagination
+paginate Project, Sprint, Epic, Task, Comment, Attachment, Notification, TaskHistory, TaskTransition with pagination
 dto Project, Sprint, Epic, Task with mapstruct
-service Project, ProjectMember, Sprint, Epic, Task, Comment, Attachment, Notification, Role with serviceImpl
+service Project, ProjectMember, Sprint, Epic, Task, Comment, Attachment, Notification, TaskHistory, TaskTransition with serviceImpl
 filter Project, Sprint, Epic, Task

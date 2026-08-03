@@ -114,19 +114,6 @@ class TaskStatusNotificationIT {
     }
 
     @Test
-    void creatorIsAdmin_statusCancelled_createsNotificationForCreator() {
-        TaskDTO taskDTO = taskMapper.toDto(task);
-        taskDTO.setStatus(TaskStatus.CANCELLED);
-
-        taskService.update(taskDTO);
-
-        List<Notification> notifications = notificationRepository.findByUser_idOrderByCreatedAtDesc(adminCreator.getId());
-        assertThat(notifications).hasSize(1);
-        assertThat(notifications.get(0).getMessage()).contains("CANCELLED");
-        assertThat(notifications.get(0).getMessage()).contains("créée");
-    }
-
-    @Test
     void assigneeIsAdmin_differentFromCreator_createsNotificationForAssignee() {
         task.setAssignee(adminAssignee);
         em.persist(task);
@@ -171,7 +158,7 @@ class TaskStatusNotificationIT {
         em.flush();
 
         TaskDTO taskDTO = taskMapper.toDto(task);
-        taskDTO.setStatus(TaskStatus.CANCELLED);
+        taskDTO.setStatus(TaskStatus.DONE);
 
         taskService.update(taskDTO);
 
@@ -234,10 +221,10 @@ class TaskStatusNotificationIT {
     }
 
     @Test
-    void partialUpdate_statusNotDoneOrCancelled_createsNoNotification() {
+    void partialUpdate_statusNotDone_createsNoNotification() {
         TaskDTO partialDto = new TaskDTO();
         partialDto.setId(task.getId());
-        partialDto.setStatus(TaskStatus.IN_REVIEW);
+        partialDto.setStatus(TaskStatus.NEEDS_INFO);
 
         taskService.partialUpdate(partialDto);
 

@@ -8,6 +8,7 @@ export interface IAttachment {
   filePath?: string | null;
   uploadedAt?: dayjs.Dayjs | null;
   task?: Pick<ITask, 'id'> | null;
+  uploadedBy?: { id: number; login: string } | null;
 }
 
 export type NewAttachment = Omit<IAttachment, 'id'> & { id: null };

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
+import dayjs from 'dayjs/esm';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
@@ -96,10 +97,17 @@ export class TaskCommentList implements OnInit {
   }
 
   loadComments(): void {
-    this.http.get<IComment[]>(this.appConfig.getEndpointFor(`api/comments/by-task/${this.taskId()}`)).subscribe({
-      next: comments => this.comments.set(comments),
-      error: () => this.alertService.addAlert({ type: 'danger', translationKey: 'error.general' }),
-    });
+    this.http
+      .get<
+        (Omit<IComment, 'createdAt'> & { createdAt?: string | null })[]
+      >(this.appConfig.getEndpointFor(`api/comments/by-task/${this.taskId()}`))
+      .subscribe({
+        // The REST payload carries createdAt as an ISO string; formatMediumDatetime expects a
+        // real dayjs instance and throws on a plain string, which was silently blanking the rest
+        // of that row's bindings (including the comment content) when change detection ran.
+        next: comments => this.comments.set(comments.map(c => ({ ...c, createdAt: c.createdAt ? dayjs(c.createdAt) : undefined }))),
+        error: () => this.alertService.addAlert({ type: 'danger', translationKey: 'error.general' }),
+      });
   }
 
   addComment(): void {
@@ -134,6 +142,8 @@ export class TaskCommentList implements OnInit {
   }
 
   canModify(comment: IComment): boolean {
-    return this.accountService.hasAnyAuthority(['ROLE_ADMIN', 'ROLE_PROJET_MANAGER', 'ROLE_DEVELOPER']) || this.isAuthor(comment);
+    // Moderation bypass is ADMIN/PROJET_MANAGER only — a DEVELOPER may only touch their own
+    // comments, never anyone else's (matches the backend's checkCanModifyComment).
+    return this.accountService.hasAnyAuthority(['ROLE_ADMIN', 'ROLE_PROJET_MANAGER']) || this.isAuthor(comment);
   }
 }

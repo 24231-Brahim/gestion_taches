@@ -8,7 +8,7 @@ import { ApplicationConfigService } from 'app/core/config/application-config.ser
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
-import { IProject, IProjectMember, NewProject } from '../project.model';
+import { IProject, IProjectCardStats, IProjectMember, NewProject } from '../project.model';
 
 export type PartialUpdateProject = Partial<IProject> & Pick<IProject, 'id'>;
 
@@ -108,6 +108,10 @@ export class ProjectService extends ProjectsService {
 
   getMyRoles(): Observable<IProjectMember[]> {
     return this.http.get<IProjectMember[]>(`${this.resourceUrl}/my-roles`);
+  }
+
+  getProjectCardStats(): Observable<IProjectCardStats[]> {
+    return this.http.get<IProjectCardStats[]>(`${this.resourceUrl}/progress`);
   }
 
   addMember(projectId: number, userId: number): Observable<undefined> {

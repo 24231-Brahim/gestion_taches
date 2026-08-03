@@ -1,0 +1,66 @@
+@if (project(); as p) {
+  <a class="project-card" [routerLink]="['/project', p.key, 'view']" data-cy="entityDetailsButton">
+    <div class="project-card-header">
+      <div class="project-title">
+        <span class="project-name" [title]="p.name ?? ''">{{ p.name }}</span>
+        <span class="project-key">{{ p.key }}</span>
+      </div>
+      @if (stats()?.activeSprintId) {
+        <span class="active-sprint-badge">
+          <fa-icon icon="bolt" />
+          <span>{{ stats()!.activeSprintName }}</span>
+        </span>
+      }
+    </div>
+
+    <p class="project-description" [title]="p.description ?? ''">
+      {{ p.description || ('gestionTachesApp.project.card.noDescription' | translate) }}
+    </p>
+
+    <div class="project-owner">
+      <span class="avatar-circle" [style.background]="ownerColor()">{{ ownerInitials() }}</span>
+      <span>{{ p.ownerLogin }}</span>
+    </div>
+
+    @if ((p.projectMembers?.length ?? 0) > 0) {
+      <div class="member-stack">
+        @for (member of visibleMembers(); track member.id) {
+          <span class="avatar-circle avatar-stacked" [style.background]="memberColor(member.userLogin)">{{
+            memberInitials(member.userLogin)
+          }}</span>
+        }
+        @if (hiddenMemberCount() > 0) {
+          <span class="member-stack-more">+{{ hiddenMemberCount() }}</span>
+        }
+      </div>
+    }
+
+    <div class="progress-row">
+      <div class="progress-label">
+        <span jhiTranslate="gestionTachesApp.project.card.progress">Avancement</span>
+        <span>{{ stats()?.doneTasks ?? 0 }}/{{ stats()?.totalTasks ?? 0 }} ({{ progressPercent() }}%)</span>
+      </div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" [style.width.%]="progressPercent()"></div>
+      </div>
+    </div>
+
+    <div class="project-footer">
+      <span class="created-ago">{{ 'gestionTachesApp.project.card.createdAgo' | translate: { time: createdAgo() } }}</span>
+      @if (canManage() || canDelete()) {
+        <div class="card-actions" (click)="$event.stopPropagation()">
+          @if (canManage()) {
+            <a [routerLink]="['/project', p.key, 'edit']" class="btn-icon" data-cy="entityEditButton">
+              <fa-icon icon="pencil-alt" />
+            </a>
+          }
+          @if (canDelete()) {
+            <button type="button" (click)="onDelete($event)" class="btn-icon btn-icon-danger" data-cy="entityDeleteButton">
+              <fa-icon icon="times" />
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </a>
+}

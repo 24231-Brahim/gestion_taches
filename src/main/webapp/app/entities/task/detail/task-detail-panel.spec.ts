@@ -16,20 +16,20 @@ import { ITask } from '../task.model';
 describe('TaskDetailPanel', () => {
   let fixture: ComponentFixture<TaskDetailPanel>;
   let comp: TaskDetailPanel;
-  let issueServiceMock: { partialUpdate: ReturnType<typeof vitest.fn> };
+  let taskServiceMock: { partialUpdate: ReturnType<typeof vitest.fn> };
   let alertServiceMock: { addAlert: ReturnType<typeof vitest.fn> };
 
-  let mockIssue: ITask;
+  let mockTask: ITask;
 
   beforeEach(() => {
-    mockIssue = { ...sampleWithRequiredData, status: 'TODO' };
-    issueServiceMock = { partialUpdate: vitest.fn().mockReturnValue(of({})) };
+    mockTask = { ...sampleWithRequiredData, status: 'NEEDS_INFO' };
+    taskServiceMock = { partialUpdate: vitest.fn().mockReturnValue(of({})) };
     alertServiceMock = { addAlert: vitest.fn() };
 
     TestBed.configureTestingModule({
       imports: [RouterModule.forRoot([]), FontAwesomeModule, TranslateModule.forRoot(), TaskDetailPanel],
       providers: [
-        { provide: TaskService, useValue: issueServiceMock },
+        { provide: TaskService, useValue: taskServiceMock },
         { provide: AlertService, useValue: alertServiceMock },
       ],
     });
@@ -39,7 +39,7 @@ describe('TaskDetailPanel', () => {
 
     fixture = TestBed.createComponent(TaskDetailPanel);
     comp = fixture.componentInstance;
-    fixture.componentRef.setInput('task', mockIssue);
+    fixture.componentRef.setInput('task', mockTask);
     fixture.componentRef.setInput('visible', true);
     fixture.componentRef.setInput('close', () => {});
     fixture.detectChanges();
@@ -54,33 +54,33 @@ describe('TaskDetailPanel', () => {
   });
 
   it('onStatusChange should not update when status is unchanged', () => {
-    comp.onStatusChange(mockIssue, 'TODO');
-    expect(issueServiceMock.partialUpdate).not.toHaveBeenCalled();
+    comp.onStatusChange(mockTask, 'NEEDS_INFO');
+    expect(taskServiceMock.partialUpdate).not.toHaveBeenCalled();
   });
 
   it('onStatusChange should call partialUpdate when status differs', () => {
-    comp.onStatusChange(mockIssue, 'DONE');
-    expect(issueServiceMock.partialUpdate).toHaveBeenCalledWith({ id: mockIssue.id, status: 'DONE' });
+    comp.onStatusChange(mockTask, 'DONE');
+    expect(taskServiceMock.partialUpdate).toHaveBeenCalledWith({ id: mockTask.id, status: 'DONE' });
   });
 
   it('onStatusChange should update task on success', () => {
-    const updated = { ...mockIssue, status: 'DONE' };
-    issueServiceMock.partialUpdate.mockReturnValue(of(updated));
-    comp.onStatusChange(mockIssue, 'DONE');
-    expect(mockIssue.status).toBe('DONE');
+    const updated = { ...mockTask, status: 'DONE' };
+    taskServiceMock.partialUpdate.mockReturnValue(of(updated));
+    comp.onStatusChange(mockTask, 'DONE');
+    expect(mockTask.status).toBe('DONE');
     expect(comp.isSaving()).toBe(false);
   });
 
   it('onStatusChange should show alert on error', () => {
-    issueServiceMock.partialUpdate.mockReturnValue(throwError(() => ({ error: { detail: 'fail' }, message: 'err' })));
-    comp.onStatusChange(mockIssue, 'DONE');
+    taskServiceMock.partialUpdate.mockReturnValue(throwError(() => ({ error: { detail: 'fail' }, message: 'err' })));
+    comp.onStatusChange(mockTask, 'DONE');
     expect(alertServiceMock.addAlert).toHaveBeenCalledWith({ type: 'danger', message: 'fail' });
     expect(comp.isSaving()).toBe(false);
   });
 
   it('onStatusChange should set isSaving during request', () => {
-    issueServiceMock.partialUpdate.mockReturnValue(of(mockIssue));
-    comp.onStatusChange(mockIssue, 'DONE');
+    taskServiceMock.partialUpdate.mockReturnValue(of(mockTask));
+    comp.onStatusChange(mockTask, 'DONE');
     expect(comp.isSaving()).toBe(false);
   });
 

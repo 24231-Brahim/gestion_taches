@@ -52,10 +52,10 @@ describe('Attachment Management Update Component', () => {
       const task: ITask = { id: 6256 };
       attachment.task = task;
 
-      const issueCollection: ITask[] = [{ id: 6256 }];
-      vitest.spyOn(taskService, 'query').mockReturnValue(of(new HttpResponse({ body: issueCollection })));
+      const taskCollection: ITask[] = [{ id: 6256 }];
+      vitest.spyOn(taskService, 'query').mockReturnValue(of(new HttpResponse({ body: taskCollection })));
       const additionalTasks = [task];
-      const expectedCollection: ITask[] = [...additionalTasks, ...issueCollection];
+      const expectedCollection: ITask[] = [...additionalTasks, ...taskCollection];
       vitest.spyOn(taskService, 'addTaskToCollectionIfMissing').mockReturnValue(expectedCollection);
 
       activatedRoute.data = of({ attachment });
@@ -63,7 +63,7 @@ describe('Attachment Management Update Component', () => {
 
       expect(taskService.query).toHaveBeenCalled();
       expect(taskService.addTaskToCollectionIfMissing).toHaveBeenCalledWith(
-        issueCollection,
+        taskCollection,
         ...additionalTasks.map(i => expect.objectContaining(i) as typeof i),
       );
       expect(comp.tasksSharedCollection()).toEqual(expectedCollection);

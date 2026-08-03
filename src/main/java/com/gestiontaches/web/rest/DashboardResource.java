@@ -7,7 +7,6 @@ import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.service.dto.DashboardKpiDTO;
 import com.gestiontaches.service.dto.DashboardKpiDTO.ProjectProgressDTO;
 import com.gestiontaches.service.dto.DashboardKpiDTO.TaskStatusCountDTO;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -54,7 +53,7 @@ public class DashboardResource {
         long completedTasks = taskRepository.countByStatus(TaskStatus.DONE);
         dto.setCompletedTasks(completedTasks);
 
-        long overdueTasks = taskRepository.countByStatusNotIn(Arrays.asList(TaskStatus.DONE, TaskStatus.CANCELLED));
+        long overdueTasks = taskRepository.countByStatusNotIn(List.of(TaskStatus.DONE));
         dto.setOverdueTasks(overdueTasks);
 
         List<Object[]> projectStats = taskRepository.countTasksGroupByProject();
@@ -91,7 +90,7 @@ public class DashboardResource {
         List<Object[]> statusStats = taskRepository.countTasksGroupByStatus();
         List<TaskStatusCountDTO> distribution = statusStats
             .stream()
-            .map(row -> new TaskStatusCountDTO((String) row[0], ((Number) row[1]).longValue()))
+            .map(row -> new TaskStatusCountDTO(((TaskStatus) row[0]).name(), ((Number) row[1]).longValue()))
             .toList();
         dto.setTaskDistribution(distribution);
 

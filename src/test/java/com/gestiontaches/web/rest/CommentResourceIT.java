@@ -10,7 +10,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gestiontaches.IntegrationTest;
 import com.gestiontaches.domain.Comment;
+import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.Task;
+import com.gestiontaches.domain.User;
+import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.repository.CommentRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.service.dto.CommentDTO;
@@ -188,19 +191,26 @@ class CommentResourceIT {
 
     @Test
     @Transactional
-    void checkCreatedAtIsRequired() throws Exception {
-        long databaseSizeBeforeTest = getRepositoryCount();
-        // set the field null
+    void createCommentWithoutCreatedAtIsAssignedByServer() throws Exception {
+        // createdAt is server-authoritative (set in CommentService.save()), not client-supplied —
+        // omitting it must still succeed instead of failing bean validation.
+        long databaseSizeBeforeCreate = getRepositoryCount();
         comment.setCreatedAt(null);
-
-        // Create the Comment, which fails.
         CommentDTO commentDTO = commentMapper.toDto(comment);
 
-        restCommentMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(commentDTO)))
-            .andExpect(status().isBadRequest());
+        var returnedCommentDTO = om.readValue(
+            restCommentMockMvc
+                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(commentDTO)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(),
+            CommentDTO.class
+        );
 
-        assertSameRepositoryCount(databaseSizeBeforeTest);
+        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        assertThat(returnedCommentDTO.getCreatedAt()).isNotNull();
+        insertedComment = commentMapper.toEntity(returnedCommentDTO);
     }
 
     @Test
@@ -461,10 +471,25 @@ class CommentResourceIT {
         assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
     }
 
+    private void makeProjectMember(String login) {
+        User user = userRepository.findOneByLogin(login).orElseThrow();
+        ProjectMember member = new ProjectMember()
+            .project(comment.getTask().getProject())
+            .user(user)
+            .role(ProjectRole.MEMBER)
+            .joinedAt(Instant.now());
+        em.persist(member);
+        em.flush();
+    }
+
     @Test
     @Transactional
     @WithMockUser(authorities = { "ROLE_USER" })
     void createComment_asUser_shouldSucceed() throws Exception {
+        // Commenting requires at least view access to the task's project: make the mock "user"
+        // account (the default @WithMockUser principal) a member of it.
+        makeProjectMember("user");
+
         long databaseSizeBeforeCreate = getRepositoryCount();
         CommentDTO commentDTO = commentMapper.toDto(comment);
         restCommentMockMvc
@@ -477,6 +502,8 @@ class CommentResourceIT {
     @Transactional
     @WithMockUser(username = "dev", authorities = { "ROLE_DEVELOPER" })
     void createComment_asDeveloper_shouldSetCurrentUserAsAuthor() throws Exception {
+        makeProjectMember("dev");
+
         long databaseSizeBeforeCreate = getRepositoryCount();
         CommentDTO commentDTO = commentMapper.toDto(comment);
 

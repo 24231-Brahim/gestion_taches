@@ -23,9 +23,11 @@
         </div>
       </div>
       <div class="d-flex gap-2">
-        <a [routerLink]="['/project', currentProjectKey(), 'epic', ep.id, 'edit']" class="btn btn-outline-primary btn-sm">
-          <fa-icon icon="pencil-alt" /> {{ 'entity.action.edit' | translate }}
-        </a>
+        @if (canManageEpics()) {
+          <a [routerLink]="['/project', currentProjectKey(), 'epic', ep.id, 'edit']" class="btn btn-outline-primary btn-sm">
+            <fa-icon icon="pencil-alt" /> {{ 'entity.action.edit' | translate }}
+          </a>
+        }
         <a [routerLink]="['/project', currentProjectKey(), 'epic']" class="btn btn-ghost btn-sm">
           <fa-icon icon="arrow-left" />
         </a>
@@ -127,11 +129,6 @@
               @for (task of tasks(); track task.id) {
                 <tr>
                   <td>
-                    <fa-icon
-                      [icon]="typeIcons[task.type ?? 'STORY']"
-                      [style.color]="typeColors[task.type ?? 'STORY']"
-                      class="task-type-icon"
-                    />
                     {{ task.title }}
                   </td>
                   <td>
@@ -199,7 +196,6 @@
                 class="d-flex align-items-center gap-2 p-2"
                 style="border: 2px solid var(--color-outline-variant); background: var(--color-surface-container)"
               >
-                <fa-icon [icon]="typeIcons[task.type ?? 'STORY']" [style.color]="typeColors[task.type ?? 'STORY']" />
                 <span style="flex: 1; font-size: 0.85rem">{{ task.title }}</span>
                 <span class="status-badge" [style.border-color]="getStatusColor(task.status)" style="font-size: 0.65rem">{{
                   'gestionTachesApp.TaskStatus.' + (task.status ?? 'NEW') | translate

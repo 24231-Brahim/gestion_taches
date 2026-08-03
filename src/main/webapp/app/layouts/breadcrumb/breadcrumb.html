@@ -4,9 +4,9 @@
       @for (item of items(); track $index; let last = $last) {
         <li class="breadcrumb-item" [class.active]="last">
           @if (item.route && !last) {
-            <a [routerLink]="item.route" class="breadcrumb-link">{{ item.label }}</a>
+            <a [routerLink]="item.route" class="breadcrumb-link">{{ item.raw ? item.label : (item.label | translate) }}</a>
           } @else {
-            <span class="breadcrumb-text">{{ item.label }}</span>
+            <span class="breadcrumb-text">{{ item.raw ? item.label : (item.label | translate) }}</span>
           }
           @if (!last) {
             <fa-icon icon="chevron-right" class="breadcrumb-separator" />

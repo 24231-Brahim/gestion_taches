@@ -50,14 +50,14 @@ public class ProjectPermissionService {
     }
 
     public ProjectRole getCurrentUserRole(Long projectId) {
-        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+        if (hasGlobalProjectAccess()) {
             return ProjectRole.OWNER;
         }
         return getProjectMember(projectId).getRole();
     }
 
     public void requireProjectRole(Long projectId, ProjectRole... roles) {
-        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+        if (hasGlobalProjectAccess()) {
             return;
         }
         ProjectRole currentRole = getCurrentUserRole(projectId);
@@ -72,7 +72,7 @@ public class ProjectPermissionService {
     }
 
     public void requireProjectRoleOrOwner(Long projectId, Long ownerUserId, ProjectRole... roles) {
-        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+        if (hasGlobalProjectAccess()) {
             return;
         }
         Long currentUserId = resolveCurrentUserId();
@@ -80,5 +80,20 @@ public class ProjectPermissionService {
             return;
         }
         requireProjectRole(projectId, roles);
+    }
+
+    /**
+     * Requires the current user to have read access to a project: global ADMIN/PROJET_MANAGER
+     * authority, or membership in the project (any role).
+     */
+    public void requireProjectAccess(Long projectId) {
+        if (SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN, AuthoritiesConstants.PROJET_MANAGER)) {
+            return;
+        }
+        getProjectMember(projectId);
+    }
+
+    public boolean hasGlobalProjectAccess() {
+        return SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN, AuthoritiesConstants.PROJET_MANAGER);
     }
 }

@@ -40,25 +40,16 @@
               <dd>
                 <span>{{ taskRef.description }}</span>
               </dd>
-              <dt><span jhiTranslate="gestionTachesApp.task.type">Type</span></dt>
-              <dd>
-                <span [jhiTranslate]="'gestionTachesApp.IssueType.' + (taskRef.type ?? 'null')">{{
-                  { null: '', STORY: 'STORY', BUG: 'BUG', TASK: 'TASK', SUBTASK: 'SUBTASK', IMPROVEMENT: 'IMPROVEMENT' }[
-                    taskRef.type ?? 'null'
-                  ]
-                }}</span>
-              </dd>
               <dt><span jhiTranslate="gestionTachesApp.task.status">Status</span></dt>
               <dd>
-                <span [jhiTranslate]="'gestionTachesApp.IssueStatus.' + (taskRef.status ?? 'null')">{{
+                <span [jhiTranslate]="'gestionTachesApp.TaskStatus.' + (taskRef.status ?? 'null')">{{
                   {
                     null: '',
                     NEW: 'NEW',
-                    TODO: 'TODO',
                     IN_PROGRESS: 'IN_PROGRESS',
-                    IN_REVIEW: 'IN_REVIEW',
+                    READY_FOR_TEST: 'READY_FOR_TEST',
                     DONE: 'DONE',
-                    CANCELLED: 'CANCELLED',
+                    NEEDS_INFO: 'NEEDS_INFO',
                   }[taskRef.status ?? 'null']
                 }}</span>
               </dd>

@@ -29,7 +29,6 @@
         "emptyColumn": "Aucune tâche",
         "filter": {
           "assignee": "Assigné à",
-          "type": "Type",
           "priority": "Priorité",
           "all": "Tous",
           "reset": "Réinitialiser"
@@ -40,7 +39,7 @@
         "backlog": "Backlog",
         "sprint": "Sprint",
         "noBacklog": "Toutes les tâches sont affectées à un sprint",
-        "noIssues": "Aucune tâche dans ce sprint",
+        "noTasks": "Aucune tâche dans ce sprint",
         "searchPlaceholder": "Rechercher des tâches..."
       },
       "burndown": {
@@ -51,7 +50,7 @@
         "velocity": "Vélocité",
         "storyPointsVelocity": "Vélocité SP",
         "days": "Jours",
-        "issues": "Tâches"
+        "tasks": "Tâches"
       },
       "action": {
         "start": "Démarrer",

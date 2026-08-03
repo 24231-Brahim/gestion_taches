@@ -60,31 +60,13 @@
           }
         </div>
 
-        @let typeRef = editForm.get('type')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_type" jhiTranslate="gestionTachesApp.task.type">Type</label>
-          <select class="form-control" name="type" formControlName="type" id="field_type" data-cy="type">
-            <option [ngValue]="null">{{ 'gestionTachesApp.IssueType.null' | translate }}</option>
-            @for (taskType of taskTypeValues; track $index) {
-              <option [value]="taskType">{{ 'gestionTachesApp.IssueType.' + taskType | translate }}</option>
-            }
-          </select>
-          @if (typeRef.invalid && (typeRef.dirty || typeRef.touched)) {
-            <div>
-              @if (editForm.get('type')?.errors?.required) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.required">Ce champ est obligatoire.</small>
-              }
-            </div>
-          }
-        </div>
-
         @let statusRef = editForm.get('status')!;
         <div class="mb-3">
           <label class="form-label" for="field_status" jhiTranslate="gestionTachesApp.task.status">Status</label>
           <select class="form-control" name="status" formControlName="status" id="field_status" data-cy="status">
-            <option [ngValue]="null">{{ 'gestionTachesApp.IssueStatus.null' | translate }}</option>
+            <option [ngValue]="null">{{ 'gestionTachesApp.TaskStatus.null' | translate }}</option>
             @for (taskStatus of taskStatusValues; track $index) {
-              <option [value]="taskStatus">{{ 'gestionTachesApp.IssueStatus.' + taskStatus | translate }}</option>
+              <option [value]="taskStatus">{{ 'gestionTachesApp.TaskStatus.' + taskStatus | translate }}</option>
             }
           </select>
           @if (statusRef.invalid && (statusRef.dirty || statusRef.touched)) {

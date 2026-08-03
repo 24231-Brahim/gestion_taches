@@ -24,8 +24,8 @@ jhi-sidebar {
   left: 0;
   width: 256px;
   height: calc(100vh - 64px);
-  background: var(--color-surface);
-  border-right: 1px solid var(--color-outline-variant);
+  background: var(--color-sidebar-bg, var(--color-surface));
+  border-right: none;
   z-index: 90;
   transition:
     width var(--transition-base),
@@ -128,7 +128,7 @@ jhi-sidebar {
   font-weight: 500;
   text-transform: none;
   letter-spacing: 0;
-  color: var(--color-on-surface-variant);
+  color: var(--color-sidebar-fg, var(--color-on-surface-variant));
   text-decoration: none;
   transition:
     color var(--transition-fast),
@@ -146,21 +146,21 @@ jhi-sidebar {
     width: 20px;
     text-align: center;
     flex-shrink: 0;
-    color: var(--color-muted);
+    color: var(--color-sidebar-fg, var(--color-muted));
   }
 
   &:hover {
-    color: var(--color-primary);
-    background-color: var(--color-surface-container-high);
+    color: var(--color-sidebar-fg-active, var(--color-primary));
+    background-color: var(--color-sidebar-item-active-bg, var(--color-surface-container-high));
 
     fa-icon {
-      color: var(--color-primary);
+      color: var(--color-sidebar-fg-active, var(--color-primary));
     }
   }
 
   &.active {
-    color: var(--color-primary);
-    background-color: color-mix(in srgb, var(--color-primary-container) 12%, transparent);
+    color: var(--color-sidebar-fg-active, var(--color-primary));
+    background-color: var(--color-sidebar-item-active-bg, color-mix(in srgb, var(--color-primary-container) 12%, transparent));
 
     &::before {
       content: '';
@@ -175,7 +175,7 @@ jhi-sidebar {
     }
 
     fa-icon {
-      color: var(--color-primary);
+      color: var(--color-sidebar-fg-active, var(--color-primary));
     }
   }
 
@@ -202,7 +202,7 @@ jhi-sidebar {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--color-muted);
+  color: var(--color-sidebar-fg, var(--color-muted));
 
   fa-icon {
     font-size: var(--text-sm);
@@ -218,7 +218,7 @@ jhi-sidebar {
 
 .sidebar-divider {
   border: none;
-  border-top: 1px solid var(--color-outline-variant);
+  border-top: 1px solid rgb(255 255 255 / 12%);
   margin: var(--stack-sm) 16px;
 }
 
@@ -233,8 +233,8 @@ jhi-sidebar {
 
 .sidebar-accordion-toggle {
   &:hover {
-    color: var(--color-primary);
-    background-color: var(--color-surface-container-high);
+    color: var(--color-sidebar-fg-active, var(--color-primary));
+    background-color: var(--color-sidebar-item-active-bg, var(--color-surface-container-high));
   }
 }
 
@@ -346,7 +346,7 @@ jhi-sidebar {
   font-family: var(--font-inter);
   font-size: var(--text-sm);
   font-weight: 500;
-  color: var(--color-on-surface);
+  color: var(--color-sidebar-fg-active, var(--color-on-surface));
   text-decoration: none;
   cursor: pointer;
   transition:
@@ -354,8 +354,8 @@ jhi-sidebar {
     background-color var(--transition-fast);
 
   &:hover {
-    color: var(--color-primary);
-    background-color: var(--color-surface-container-high);
+    color: var(--color-sidebar-fg-active, var(--color-primary));
+    background-color: var(--color-sidebar-item-active-bg, var(--color-surface-container-high));
   }
 
   &:focus-visible {
@@ -376,7 +376,7 @@ jhi-sidebar {
 .sidebar-user-icon {
   font-size: var(--text-lg);
   flex-shrink: 0;
-  color: var(--color-muted);
+  color: var(--color-sidebar-fg, var(--color-muted));
 }
 
 .sidebar-user-name {

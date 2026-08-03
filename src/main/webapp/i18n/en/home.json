@@ -26,26 +26,32 @@
       "totalTasks": "Total Tasks",
       "completedTasks": "Completed",
       "overdueTasks": "Overdue Tasks",
-      "teamMembers": "Team Members"
+      "teamMembers": "Team Members",
+      "myAssignedTasks": "My Assigned Tasks",
+      "inProgressTasks": "In Progress",
+      "myProjects": "My Projects"
     },
     "charts": {
-      "projectProgress": "PROJECT PROGRESS",
-      "taskDistribution": "TASK DISTRIBUTION",
-      "total": "TOTAL"
+      "projectProgress": "Project progress",
+      "taskDistribution": "Task distribution",
+      "total": "Total"
     },
     "lists": {
-      "recentProjects": "RECENT PROJECTS",
-      "recentTasks": "RECENT TASKS"
+      "recentProjects": "Recent projects",
+      "recentTasks": "Recent tasks"
     },
     "timeline": {
-      "title": "RECENT ACTIVITY"
+      "title": "Recent activity"
     },
     "quickActions": {
-      "title": "QUICK ACTIONS",
+      "title": "Quick actions",
       "newProject": "New Project",
       "viewProjects": "View Projects",
-      "newTask": "New Issue",
-      "viewTasks": "View Issues"
+      "newTask": "New Task",
+      "viewTasks": "View Tasks",
+      "myTasks": "My Tasks",
+      "kanbanBoard": "Kanban Board",
+      "viewBacklog": "View Backlog"
     }
   }
 }

@@ -1,14 +1,14 @@
-import { ChangeDetectionStrategy, Component, HostListener, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, computed, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { AccountService } from 'app/core/auth/account.service';
 import { TaskStatus } from 'app/entities/enumerations/task-status.model';
-import { SprintStatus } from 'app/entities/enumerations/sprint-status.model';
 import { TranslateDirective } from 'app/shared/language';
 import { FormatMediumDatePipe } from 'app/shared/date';
-import { ISSUE_TYPE_COLORS, ISSUE_TYPE_ICONS, PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES } from 'app/entities/task/task-helper';
+import { PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES } from 'app/entities/task/task-helper';
 import { ITask } from 'app/entities/task/task.model';
 import { ISprint } from '../sprint.model';
 
@@ -91,7 +91,7 @@ interface KanbanColumn {
         flex: 1;
         min-width: 200px;
         max-width: 300px;
-        background: var(--color-surface-container, #1b2025);
+        background: var(--color-surface-container-low, #1b2025);
         border: 1px solid var(--color-outline-variant, #2a3038);
         border-radius: var(--radius-lg);
         transition: border-color 0.2s;
@@ -101,24 +101,22 @@ interface KanbanColumn {
       }
       .kanban-column-header {
         padding: 12px;
-        border-top: 2px solid;
         border-radius: var(--radius-lg) var(--radius-lg) 0 0;
         display: flex;
         align-items: center;
         justify-content: space-between;
       }
       .kanban-column-title {
-        font-family: var(--font-inter);
+        font-family: var(--font-display);
         font-size: 0.75rem;
-        text-transform: uppercase;
+        text-transform: none;
         letter-spacing: 0;
-        color: var(--color-text, #dfe3ea);
-        font-weight: 600;
+        font-weight: 700;
       }
       .kanban-column-count {
-        background: var(--color-surface-container-high, #262d36);
-        color: var(--color-text-muted, #6a8fac);
-        border-radius: 9999px;
+        background: rgb(0 0 0 / 8%);
+        color: inherit;
+        border-radius: var(--radius-pill, 9999px);
         padding: 1px 8px;
         font-size: 0.75rem;
         font-family: var(--font-inter);
@@ -132,7 +130,7 @@ interface KanbanColumn {
         border-radius: 0 0 var(--radius-lg) var(--radius-lg);
       }
       .kanban-card {
-        background: var(--color-surface-container, #1b2025);
+        background: var(--color-surface, #1b2025);
         border: 1px solid var(--color-outline-variant, #2a3038);
         border-radius: var(--radius-lg);
         padding: 10px;
@@ -148,6 +146,14 @@ interface KanbanColumn {
       }
       .kanban-card-dragging {
         opacity: 0.5;
+      }
+      .kanban-card-not-draggable {
+        cursor: default;
+        opacity: 0.75;
+      }
+      .kanban-card-not-draggable:hover {
+        transform: none;
+        box-shadow: var(--shadow-sm);
       }
       .kanban-card-top {
         display: flex;
@@ -188,7 +194,7 @@ interface KanbanColumn {
         width: 22px;
         height: 22px;
         background: var(--color-primary-container, #25a7fd);
-        color: #000;
+        color: var(--color-on-primary-container, #fff);
         font-size: 0.65rem;
         font-weight: 600;
         display: flex;
@@ -271,16 +277,12 @@ export class SprintActiveBoard {
   readonly completeSprint = output<void>();
   readonly reopenSprint = output<void>();
 
-  readonly typeIcons = ISSUE_TYPE_ICONS;
-  readonly typeColors = ISSUE_TYPE_COLORS;
   readonly priorityIcons = PRIORITY_ICONS;
   readonly priorityColors = PRIORITY_COLORS;
 
   readonly filterAssignee = signal<string>('');
-  readonly filterType = signal<string>('');
   readonly filterPriority = signal<string>('');
 
-  readonly typeValues = Object.keys(ISSUE_TYPE_ICONS);
   readonly priorityValues = Object.keys(PRIORITY_ICONS);
 
   readonly uniqueAssignees = computed(() => {
@@ -296,13 +298,9 @@ export class SprintActiveBoard {
   readonly filteredTasks = computed(() => {
     let result = this.tasks();
     const assignee = this.filterAssignee();
-    const type = this.filterType();
     const priority = this.filterPriority();
     if (assignee) {
       result = result.filter(t => t.assignee?.login === assignee);
-    }
-    if (type) {
-      result = result.filter(t => t.type === type);
     }
     if (priority) {
       result = result.filter(t => t.priority === priority);
@@ -311,12 +309,11 @@ export class SprintActiveBoard {
   });
 
   readonly hasActiveFilters = computed(() => {
-    return !!(this.filterAssignee() || this.filterType() || this.filterPriority());
+    return !!(this.filterAssignee() || this.filterPriority());
   });
 
   resetFilters(): void {
     this.filterAssignee.set('');
-    this.filterType.set('');
     this.filterPriority.set('');
   }
 
@@ -336,7 +333,26 @@ export class SprintActiveBoard {
     }));
   }
 
-  onDragStart(task: ITask): void {
+  protected readonly accountService = inject(AccountService);
+
+  // Matches TaskService.checkTaskUpdatePermission(): only ADMIN/PROJET_MANAGER or the task's own
+  // assignee may change its status. Other members still see the card (read-only) but can't drag it.
+  canDrag(task: ITask): boolean {
+    const account = this.accountService.account();
+    if (!account) {
+      return false;
+    }
+    if (account.authorities?.includes('ROLE_ADMIN') || account.authorities?.includes('ROLE_PROJET_MANAGER')) {
+      return true;
+    }
+    return account.login === task.assignee?.login;
+  }
+
+  onDragStart(task: ITask, event: DragEvent): void {
+    if (!this.canDrag(task)) {
+      event.preventDefault();
+      return;
+    }
     this.dragTaskId = task.id;
   }
 
@@ -356,7 +372,7 @@ export class SprintActiveBoard {
       return;
     }
     const task = this.tasks().find(i => i.id === this.dragTaskId);
-    if (!task || task.status === targetStatus) {
+    if (!task || task.status === targetStatus || !this.canDrag(task)) {
       this.dragTaskId = null;
       return;
     }
@@ -370,14 +386,6 @@ export class SprintActiveBoard {
     this.dragOverStatus = null;
   }
 
-  getTypeIcon(type: string | null | undefined): string {
-    return ISSUE_TYPE_ICONS[type ?? 'STORY'] ?? 'tag';
-  }
-
-  getTypeColor(type: string | null | undefined): string {
-    return ISSUE_TYPE_COLORS[type ?? 'STORY'] ?? 'var(--color-outline-variant)';
-  }
-
   getPriorityIcon(priority: string | null | undefined): string {
     return PRIORITY_ICONS[priority ?? 'MEDIUM'] ?? 'flag';
   }
@@ -388,6 +396,10 @@ export class SprintActiveBoard {
 
   getColumnColor(status: string): string {
     return STATUS_BADGES[status]?.color ?? 'var(--color-outline-variant)';
+  }
+
+  getColumnBg(status: string): string {
+    return STATUS_BADGES[status]?.bg ?? 'var(--color-surface-container)';
   }
 
   statusBorder(status: string | null | undefined): string {

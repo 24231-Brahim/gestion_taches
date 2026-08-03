@@ -2,6 +2,8 @@ package com.gestiontaches.repository;
 
 import com.gestiontaches.domain.Task;
 import com.gestiontaches.domain.enumeration.TaskStatus;
+import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -70,4 +72,13 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
 
     @Query("SELECT t.status, COUNT(t) FROM Task t GROUP BY t.status")
     List<Object[]> countTasksGroupByStatus();
+
+    long countByAssigneeId(Long assigneeId);
+
+    long countByAssigneeIdAndStatus(Long assigneeId, TaskStatus status);
+
+    long countByAssigneeIdAndStatusNotInAndCreatedAtBefore(Long assigneeId, Collection<TaskStatus> statuses, Instant before);
+
+    @Query("SELECT t.status, COUNT(t) FROM Task t WHERE t.assignee.id = :assigneeId GROUP BY t.status")
+    List<Object[]> countTasksGroupByStatusForAssignee(@Param("assigneeId") Long assigneeId);
 }

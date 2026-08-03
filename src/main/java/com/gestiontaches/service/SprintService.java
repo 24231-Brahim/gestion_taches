@@ -4,7 +4,6 @@ import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.Sprint;
 import com.gestiontaches.domain.Task;
 import com.gestiontaches.domain.TaskHistory;
-import com.gestiontaches.domain.TaskTransition;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.domain.enumeration.SprintStatus;
@@ -12,7 +11,6 @@ import com.gestiontaches.domain.enumeration.TaskStatus;
 import com.gestiontaches.repository.SprintRepository;
 import com.gestiontaches.repository.TaskHistoryRepository;
 import com.gestiontaches.repository.TaskRepository;
-import com.gestiontaches.repository.TaskTransitionRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.service.dto.SprintDTO;
 import com.gestiontaches.service.dto.TaskDTO;
@@ -40,7 +38,6 @@ public class SprintService {
     private final ProjectPermissionService projectPermissionService;
     private final TaskRepository taskRepository;
     private final TaskHistoryRepository taskHistoryRepository;
-    private final TaskTransitionRepository taskTransitionRepository;
     private final NotificationService notificationService;
     private final ProjectMemberService projectMemberService;
     private final UserRepository userRepository;
@@ -52,7 +49,6 @@ public class SprintService {
         ProjectPermissionService projectPermissionService,
         TaskRepository taskRepository,
         TaskHistoryRepository taskHistoryRepository,
-        TaskTransitionRepository taskTransitionRepository,
         NotificationService notificationService,
         ProjectMemberService projectMemberService,
         UserRepository userRepository,
@@ -63,7 +59,6 @@ public class SprintService {
         this.projectPermissionService = projectPermissionService;
         this.taskRepository = taskRepository;
         this.taskHistoryRepository = taskHistoryRepository;
-        this.taskTransitionRepository = taskTransitionRepository;
         this.notificationService = notificationService;
         this.projectMemberService = projectMemberService;
         this.userRepository = userRepository;
@@ -123,25 +118,7 @@ public class SprintService {
         sprint.setStatus(SprintStatus.ACTIVE);
         sprint = sprintRepository.save(sprint);
 
-        List<Task> tasksInProgress = taskRepository.findBySprintIdAndStatus(sprintId, TaskStatus.NEW);
-        Instant now = Instant.now();
         User currentUser = resolveCurrentUser();
-
-        for (Task task : tasksInProgress) {
-            TaskStatus oldStatus = task.getStatus();
-            task.setStatus(TaskStatus.TODO);
-            task.setUpdatedAt(now);
-            taskRepository.save(task);
-
-            TaskTransition transition = new TaskTransition();
-            transition.setTask(task);
-            transition.setFromStatus(oldStatus.name());
-            transition.setToStatus(TaskStatus.TODO.name());
-            transition.setUser(currentUser);
-            transition.setCreatedAt(now);
-            taskTransitionRepository.save(transition);
-        }
-
         notifyProjectMembers(sprint, currentUser, "Le sprint \"" + sprint.getName() + "\" a démarré");
 
         return sprintMapper.toDto(sprint);

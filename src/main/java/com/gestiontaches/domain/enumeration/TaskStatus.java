@@ -5,9 +5,8 @@ package com.gestiontaches.domain.enumeration;
  */
 public enum TaskStatus {
     NEW,
-    TODO,
     IN_PROGRESS,
-    IN_REVIEW,
+    READY_FOR_TEST,
     DONE,
-    CANCELLED,
+    NEEDS_INFO,
 }

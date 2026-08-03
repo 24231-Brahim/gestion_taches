@@ -36,10 +36,10 @@ spring:
     serialization:
       indent-output: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/gestion_taches
+    url: jdbc:postgresql://localhost:5432/gestionTaches
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password:
+    username: gestionTaches
+    password: gestionTaches
     hikari:
       auto-commit: false
       maximumPoolSize: 15

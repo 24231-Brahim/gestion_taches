@@ -2,7 +2,7 @@
    Development Ribbon
    ═══════════════════════════════════════════════════════════════ */
 .ribbon {
-  background-color: rgba(170, 0, 0, 0.5);
+  background-color: var(--color-status-cancelled-bg, rgba(170, 0, 0, 0.5));
   overflow: hidden;
   position: absolute;
   top: 40px;
@@ -10,14 +10,15 @@
   width: 15em;
   z-index: 9999;
   pointer-events: none;
-  opacity: 0.75;
+  opacity: 0.95;
   border-radius: 0 0 var(--radius-md) var(--radius-md);
+  box-shadow: var(--shadow-sm);
 
   a {
-    color: #fff;
+    color: var(--color-danger, #fff);
     display: block;
-    font-family: var(--font-inter);
-    font-weight: 500;
+    font-family: var(--font-display);
+    font-weight: 600;
     margin: 1px 0;
     padding: 10px 50px;
     text-align: center;

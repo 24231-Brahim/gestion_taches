@@ -8,6 +8,7 @@
         "createOrEditLabel": "Create or edit a Epic",
         "notFound": "No Epics found",
         "roadmap": "Epic Roadmap",
+        "tableLabel": "Table view",
         "details": "Epic Details"
       },
       "created": "A new Epic is created with identifier {{ param }}",

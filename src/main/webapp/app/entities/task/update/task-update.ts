@@ -9,7 +9,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Observable, finalize, map } from 'rxjs';
 
 import { TaskStatus } from 'app/entities/enumerations/task-status.model';
-import { TaskType } from 'app/entities/enumerations/task-type.model';
 import { Priority } from 'app/entities/enumerations/priority.model';
 import { IEpic } from 'app/entities/epic/epic.model';
 import { SprintService } from 'app/entities/sprint/service/sprint.service';
@@ -36,7 +35,6 @@ export class TaskUpdate implements OnInit {
   readonly isSaving = signal(false);
   readonly isProjectContext = signal(false);
   task: ITask | null = null;
-  taskTypeValues = Object.keys(TaskType);
   taskStatusValues = Object.keys(TaskStatus);
   priorityValues = Object.keys(Priority);
 

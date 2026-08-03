@@ -64,69 +64,123 @@
   --color-on-tertiary-fixed-variant: #234a64;
 }
 
-/* ─── Light Theme ─── */
+/* ─── Light Theme — "Clair & Humain" design system ─── */
 :root[data-theme='light'] {
-  --color-primary: #0077cc;
-  --color-primary-container: #25a7fd;
+  --color-primary: #4c6fff;
+  --color-primary-container: #3d5ce6;
   --color-on-primary: #ffffff;
-  --color-on-primary-container: #003353;
+  --color-on-primary-container: #ffffff;
 
-  --color-secondary: #0097b2;
-  --color-secondary-container: #00b4d8;
+  --color-secondary: #12b8a0;
+  --color-secondary-container: #0d9488;
   --color-on-secondary: #ffffff;
-  --color-on-secondary-container: #003543;
+  --color-on-secondary-container: #ffffff;
 
-  --color-tertiary: #5a8db5;
-  --color-tertiary-container: #7fa4c2;
+  --color-tertiary: #a855f7;
+  --color-tertiary-container: #7c3aed;
   --color-on-tertiary: #ffffff;
-  --color-on-tertiary-container: #0f3a53;
+  --color-on-tertiary-container: #ffffff;
 
-  --color-bg: #f7f9fc;
+  --color-bg: #f5f7fb;
   --color-surface: #ffffff;
-  --color-surface-container: #f1f4f9;
-  --color-surface-container-low: #f7f9fc;
-  --color-surface-container-high: #e9edf3;
-  --color-surface-container-highest: #dde3ec;
+  --color-surface-container: #f5f7fb;
+  --color-surface-container-low: #fafbfd;
+  --color-surface-container-high: #edeff7;
+  --color-surface-container-highest: #e7eaf3;
   --color-surface-container-lowest: #ffffff;
-  --color-surface-variant: #dde3ec;
+  --color-surface-variant: #e7eaf3;
   --color-surface-bright: #ffffff;
 
-  --color-outline: #8a94a0;
-  --color-outline-variant: #dde3ec;
-  --color-on-surface: #1a1d21;
-  --color-on-surface-variant: #4a5568;
-  --color-text: #1a1d21;
-  --color-muted: #5b7286;
+  --color-outline: #c7ccde;
+  --color-outline-variant: #e7eaf3;
+  --color-on-surface: #1d2233;
+  --color-on-surface-variant: #6b7290;
+  --color-text: #1d2233;
+  --color-muted: #6b7290;
+  --color-text-muted: var(--color-muted);
 
-  --color-success: #16a34a;
-  --color-warning: #d97706;
-  --color-danger: #dc2626;
-  --color-error: #d32f2f;
+  --color-success: #1fa971;
+  --color-warning: #f2994a;
+  --color-danger: #e5484d;
+  --color-error: #e5484d;
   --color-on-error: #ffffff;
-  --color-error-container: #fca5a5;
-  --color-on-error-container: #7f1d1d;
+  --color-error-container: #ffe9e9;
+  --color-on-error-container: #e5484d;
 
-  --color-inverse-surface: #2c3136;
-  --color-inverse-on-surface: #dfe3ea;
-  --color-inverse-primary: #97cbff;
-  --color-surface-tint: #0077cc;
+  --color-inverse-surface: #1d2233;
+  --color-inverse-on-surface: #ffffff;
+  --color-inverse-primary: #eaeeff;
+  --color-surface-tint: #4c6fff;
 
-  --color-primary-fixed: #d6eaff;
-  --color-primary-fixed-dim: #a0ccff;
-  --color-on-primary-fixed: #001d33;
-  --color-on-primary-fixed-variant: #004a76;
-  --color-secondary-fixed: #b5ebff;
-  --color-secondary-fixed-dim: #52d6fd;
-  --color-on-secondary-fixed: #001f28;
-  --color-on-secondary-fixed-variant: #004e60;
-  --color-tertiary-fixed: #cae6ff;
-  --color-tertiary-fixed-dim: #a5cbea;
-  --color-on-tertiary-fixed: #001e2f;
-  --color-on-tertiary-fixed-variant: #234a64;
+  --color-primary-fixed: #eaeeff;
+  --color-primary-fixed-dim: #c7d3ff;
+  --color-on-primary-fixed: #14204d;
+  --color-on-primary-fixed-variant: #3d5ce6;
+  --color-secondary-fixed: #e1fbf6;
+  --color-secondary-fixed-dim: #9eefe1;
+  --color-on-secondary-fixed: #04463d;
+  --color-on-secondary-fixed-variant: #0d9488;
+  --color-tertiary-fixed: #f3e8ff;
+  --color-tertiary-fixed-dim: #d9b8ff;
+  --color-on-tertiary-fixed: #3b0764;
+  --color-on-tertiary-fixed-variant: #7c3aed;
 
-  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
-  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
-  --shadow-lg: 0 8px 24px rgba(16, 24, 40, 0.1);
+  --shadow-sm: 0 2px 10px rgba(30, 40, 90, 0.06);
+  --shadow-md: 0 6px 18px rgba(30, 40, 90, 0.12);
+  --shadow-lg: 0 10px 30px rgba(30, 40, 90, 0.16);
+
+  /* Sidebar — deliberately dark indigo anchor color (everything else is light) */
+  --color-sidebar-bg: #2b2f77;
+  --color-sidebar-fg: rgb(255 255 255 / 65%);
+  --color-sidebar-fg-active: #ffffff;
+  --color-sidebar-item-active-bg: rgb(255 255 255 / 12%);
+
+  /* CTA — the one bright-green "create" action, distinct from status/success green */
+  --color-cta: #33c481;
+  --color-cta-hover: #29a96d;
+
+  /* Task status — pastel bg + matching dark-tinted fg per status */
+  --color-status-backlog: #4c6fff;
+  --color-status-backlog-bg: #eaeeff;
+  --color-status-todo: #f2994a;
+  --color-status-todo-bg: #fff1de;
+  --color-status-in-progress: #f2994a;
+  --color-status-in-progress-bg: #fff1de;
+  --color-status-in-review: #a855f7;
+  --color-status-in-review-bg: #f3e8ff;
+  --color-status-testing: #12b8a0;
+  --color-status-testing-bg: #e1fbf6;
+  --color-status-done: #1fa971;
+  --color-status-done-bg: #e4f9ee;
+  --color-status-cancelled: #e5484d;
+  --color-status-cancelled-bg: #ffe9e9;
+
+  /* Priority */
+  --color-priority-lowest: #4c6fff;
+  --color-priority-low: #4c6fff;
+  --color-priority-medium: #e0b429;
+  --color-priority-high: #f2994a;
+  --color-priority-highest: #e5484d;
+
+  /* Task type (Story/Bug/Task/Subtask/Improvement) — reuses the free-form tag palette */
+  --color-story: #0d9488;
+  --color-bug: #e5484d;
+  --color-task: #4c6fff;
+  --color-subtask: #6b7290;
+  --color-improvement: #b8860b;
+  --color-info: #4c6fff;
+
+  /* Free-form tags */
+  --color-tag-pink-bg: #fde7f3;
+  --color-tag-pink-fg: #d6339f;
+  --color-tag-yellow-bg: #fff6d8;
+  --color-tag-yellow-fg: #b8860b;
+  --color-tag-teal-bg: #dff7f3;
+  --color-tag-teal-fg: #0d9488;
+  --color-tag-purple-bg: #efe7fd;
+  --color-tag-purple-fg: #7c3aed;
+  --color-tag-blue-bg: #eaeeff;
+  --color-tag-blue-fg: #4c6fff;
 }
 
 /* ─── Shared Tokens ─── */
@@ -134,15 +188,16 @@
   /* Typography */
   --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-  --font-display: var(--font-inter);
+  --font-poppins: 'Poppins', var(--font-inter);
+  --font-display: var(--font-poppins);
 
-  --display-lg: 700 40px/1.15 var(--font-inter);
-  --headline-lg: 600 28px/1.25 var(--font-inter);
-  --headline-md: 600 20px/1.3 var(--font-inter);
+  --display-lg: 800 40px/1.15 var(--font-poppins);
+  --headline-lg: 700 28px/1.25 var(--font-poppins);
+  --headline-md: 600 20px/1.3 var(--font-poppins);
   --body-lg: 400 16px/1.6 var(--font-inter);
   --body-md: 400 14px/1.55 var(--font-inter);
   --body-sm: 400 13px/1.5 var(--font-inter);
-  --label-md: 600 12px/1.4 var(--font-inter);
+  --label-md: 600 12px/1.4 var(--font-poppins);
   --mono-data: 500 13px/1.4 var(--font-mono);
 
   --text-xs: 0.75rem;
@@ -174,6 +229,7 @@
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
+  --radius-pill: 999px;
 
   /* Border widths */
   --border-width: 1px;
@@ -224,7 +280,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-inter);
+  font-family: var(--font-poppins);
   color: var(--color-on-surface);
   margin: 0 0 var(--stack-md) 0;
   font-weight: 600;

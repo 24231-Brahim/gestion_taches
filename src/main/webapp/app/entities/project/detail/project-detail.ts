@@ -35,6 +35,7 @@ export class ProjectDetail {
   readonly project = input<IProject | null>(null);
 
   readonly members = signal<IProjectMember[]>([]);
+  readonly membersLoading = signal(false);
   readonly showAddForm = signal(false);
   readonly users = signal<IUser[]>([]);
   readonly selectedUserId = signal<number | null>(null);
@@ -47,7 +48,9 @@ export class ProjectDetail {
     if (!account) {
       return null;
     }
-    if (account.authorities.includes('ROLE_ADMIN')) {
+    // Matches the backend's ProjectPermissionService.hasGlobalProjectAccess(): ADMIN and
+    // PROJET_MANAGER get an implicit OWNER-equivalent bypass, independent of project membership.
+    if (account.authorities.includes('ROLE_ADMIN') || account.authorities.includes('ROLE_PROJET_MANAGER')) {
       return ProjectRole.OWNER;
     }
     const member = this.members().find(m => m.userLogin === account.login);
@@ -59,9 +62,16 @@ export class ProjectDetail {
     return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
   });
 
+  // Editing the project itself follows the same OWNER/MANAGER rule as managing its members.
+  readonly canEditProject = this.canManageMembers;
+
+  // Deletion is stricter than edit/member-management: OWNER only (matches
+  // ProjectService.delete()'s requireProjectRole(id, ProjectRole.OWNER)).
+  readonly canDeleteProject = computed(() => this.userProjectRole() === ProjectRole.OWNER);
+
   readonly isAdminNotExplicitMember = computed(() => {
     const account = this.accountService.account();
-    if (!account?.authorities?.includes('ROLE_ADMIN')) {
+    if (!account?.authorities?.includes('ROLE_ADMIN') && !account?.authorities?.includes('ROLE_PROJET_MANAGER')) {
       return false;
     }
     return !this.members().some(m => m.userLogin === account.login);
@@ -105,9 +115,16 @@ export class ProjectDetail {
   }
 
   loadMembers(projectId: number): void {
+    this.membersLoading.set(true);
     this.projectService.getMembers(projectId).subscribe({
-      next: members => this.members.set(members),
-      error: () => this.alertService.addAlert({ type: 'danger', translationKey: 'error.loading' }),
+      next: members => {
+        this.members.set(members);
+        this.membersLoading.set(false);
+      },
+      error: () => {
+        this.membersLoading.set(false);
+        this.alertService.addAlert({ type: 'danger', translationKey: 'error.loading' });
+      },
     });
   }
 

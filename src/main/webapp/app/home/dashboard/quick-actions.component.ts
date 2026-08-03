@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { RouterLink } from '@angular/router';
 
@@ -11,14 +11,29 @@ import { RouterLink } from '@angular/router';
     <div class="quick-actions-card">
       <h3 class="qa-title" jhiTranslate="dashboard.quickActions.title">QUICK ACTIONS</h3>
       <div class="qa-grid">
-        <a [routerLink]="['/project/new']" class="qa-btn">
-          <span class="qa-icon">+</span>
-          <span jhiTranslate="dashboard.quickActions.newProject">New Project</span>
-        </a>
-        <a [routerLink]="['/project']" class="qa-btn">
-          <span class="qa-icon">◉</span>
-          <span jhiTranslate="dashboard.quickActions.viewProjects">View Projects</span>
-        </a>
+        @if (variant() === 'admin') {
+          <a [routerLink]="['/project/new']" class="qa-btn">
+            <span class="qa-icon">+</span>
+            <span jhiTranslate="dashboard.quickActions.newProject">New Project</span>
+          </a>
+          <a [routerLink]="['/project']" class="qa-btn">
+            <span class="qa-icon">◉</span>
+            <span jhiTranslate="dashboard.quickActions.viewProjects">View Projects</span>
+          </a>
+        } @else {
+          <a [routerLink]="['/my-tasks']" class="qa-btn">
+            <span class="qa-icon">✓</span>
+            <span jhiTranslate="dashboard.quickActions.myTasks">My Tasks</span>
+          </a>
+          <a [routerLink]="kanbanLink()" [queryParams]="kanbanQueryParams()" class="qa-btn">
+            <span class="qa-icon">▤</span>
+            <span jhiTranslate="dashboard.quickActions.kanbanBoard">Kanban Board</span>
+          </a>
+          <a [routerLink]="backlogLink()" class="qa-btn">
+            <span class="qa-icon">☰</span>
+            <span jhiTranslate="dashboard.quickActions.viewBacklog">View Backlog</span>
+          </a>
+        }
       </div>
     </div>
   `,
@@ -80,4 +95,11 @@ import { RouterLink } from '@angular/router';
     `,
   ],
 })
-export class DashboardQuickActionsComponent {}
+export class DashboardQuickActionsComponent {
+  readonly variant = input<'admin' | 'developer'>('admin');
+  readonly firstProjectKey = input<string | null>(null);
+
+  readonly kanbanLink = computed(() => (this.firstProjectKey() ? ['/project', this.firstProjectKey(), 'task'] : ['/project']));
+  readonly kanbanQueryParams = computed(() => (this.firstProjectKey() ? { view: 'kanban' } : null));
+  readonly backlogLink = computed(() => (this.firstProjectKey() ? ['/project', this.firstProjectKey(), 'sprint'] : ['/project']));
+}

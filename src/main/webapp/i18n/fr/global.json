@@ -13,6 +13,8 @@
         "sprint": "Sprint",
         "epic": "Epic",
         "task": "Tasks",
+        "kanban": "Kanban",
+        "members": "Membres",
         "comment": "Comment",
         "attachment": "Attachment",
         "actionHistory": "Action History"
@@ -58,6 +60,9 @@
       "viewAllNotifications": "Voir tout",
       "markAllAsRead": "Tout marquer comme lu",
       "noNotifications": "Aucune notification",
+      "empty": "Aucune description",
+      "notAssigned": "Non assigné",
+      "unassigned": "Non assigné",
       "info": {
         "authenticated": {
           "prefix": "Si vous voulez vous ",
@@ -106,6 +111,7 @@
       "addimage": "Ajouter image",
       "back": "Retour",
       "cancel": "Annuler",
+      "create": "Créer",
       "edit": "Editer",
       "delete": "Supprimer",
       "open": "Ouvrir",
@@ -113,7 +119,8 @@
       "save": "Sauvegarder",
       "view": "Voir",
       "show": "Afficher {{otherEntity}}",
-      "related": "Liés"
+      "related": "Liés",
+      "close": "Fermer"
     },
     "detail": {
       "field": "Champ",

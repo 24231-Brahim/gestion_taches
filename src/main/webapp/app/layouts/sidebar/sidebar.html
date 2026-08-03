@@ -12,6 +12,13 @@
     </a>
 
     @if (account() !== null) {
+      <a class="sidebar-item" routerLink="/my-tasks" routerLinkActive="active" (click)="closeMobile()">
+        <fa-icon icon="user-check" [fixedWidth]="true" />
+        <span class="sidebar-label" jhiTranslate="gestionTachesApp.myTasks.title">Mes Tâches</span>
+      </a>
+    }
+
+    @if (account() !== null) {
       @if (currentProjectKey(); as projectKey) {
         <a
           class="sidebar-item"
@@ -57,6 +64,22 @@
         >
           <fa-icon icon="tasks" [fixedWidth]="true" />
           <span class="sidebar-label" jhiTranslate="global.menu.entities.task">Tasks</span>
+        </a>
+
+        <a
+          class="sidebar-item"
+          [routerLink]="['/project', projectKey, 'task']"
+          [queryParams]="{ view: 'kanban' }"
+          routerLinkActive="active"
+          (click)="closeMobile()"
+        >
+          <fa-icon icon="columns" [fixedWidth]="true" />
+          <span class="sidebar-label" jhiTranslate="global.menu.entities.kanban">Kanban</span>
+        </a>
+
+        <a class="sidebar-item" [routerLink]="['/project', projectKey, 'view']" routerLinkActive="active" (click)="closeMobile()">
+          <fa-icon icon="users" [fixedWidth]="true" />
+          <span class="sidebar-label" jhiTranslate="global.menu.entities.members">Membres</span>
         </a>
       } @else {
         <a

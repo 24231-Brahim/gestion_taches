@@ -42,10 +42,13 @@ hr {
 /* ─── Card (jh-card) ─── */
 .jh-card {
   padding: var(--stack-lg);
-  border: 1px solid var(--color-outline-variant);
+  border: none;
   border-radius: var(--radius-lg);
-  background: var(--color-surface-container);
+  background: var(--color-surface);
   box-shadow: var(--shadow-sm);
+  transition:
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
 }
 
 @media (max-width: 575px) {
@@ -161,12 +164,12 @@ select.form-control {
 
 /* ─── Buttons ─── */
 .btn {
-  font-family: var(--font-inter);
+  font-family: var(--font-display);
   font-weight: 600;
   font-size: var(--text-sm);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
   border: 1px solid transparent;
-  padding: 10px 20px;
+  padding: 10px 22px;
   box-shadow: var(--shadow-sm);
   transition:
     background-color var(--transition-fast),
@@ -193,19 +196,20 @@ select.form-control {
 }
 
 .btn-primary {
-  background-color: var(--color-primary-container);
-  border-color: var(--color-primary-container);
+  background-color: var(--color-cta);
+  border-color: var(--color-cta);
   color: #ffffff;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-cta) 30%, transparent);
 
   &:hover {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
+    background-color: var(--color-cta-hover);
+    border-color: var(--color-cta-hover);
     color: #ffffff;
   }
 
   &:active {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
+    background-color: var(--color-cta-hover);
+    border-color: var(--color-cta-hover);
   }
 }
 
@@ -222,14 +226,14 @@ select.form-control {
 }
 
 .btn-danger {
-  background-color: var(--color-danger);
-  border-color: var(--color-danger);
-  color: #ffffff;
+  background-color: var(--color-status-cancelled-bg);
+  border-color: var(--color-status-cancelled-bg);
+  color: var(--color-danger);
 
   &:hover {
-    background-color: color-mix(in srgb, var(--color-danger) 85%, black);
-    border-color: color-mix(in srgb, var(--color-danger) 85%, black);
-    color: #ffffff;
+    background-color: color-mix(in srgb, var(--color-danger) 15%, var(--color-status-cancelled-bg));
+    border-color: color-mix(in srgb, var(--color-danger) 15%, var(--color-status-cancelled-bg));
+    color: var(--color-danger);
   }
 }
 
@@ -283,7 +287,7 @@ select.form-control {
 .btn-sm {
   padding: 6px 14px;
   font-size: var(--text-xs);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
 }
 
 .btn-ghost {
@@ -304,9 +308,9 @@ select.form-control {
 
 /* ─── Cards ─── */
 .card {
-  border: 1px solid var(--color-outline-variant);
+  border: none;
   border-radius: var(--radius-lg);
-  background: var(--color-surface-container);
+  background: var(--color-surface);
   box-shadow: var(--shadow-sm);
 }
 
@@ -660,13 +664,13 @@ ngb-alert {
 
 /* ─── Badge ─── */
 .badge {
-  font-family: var(--font-inter);
+  font-family: var(--font-display);
   font-weight: 600;
   font-size: var(--text-xs);
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
   border: none;
-  border-radius: 9999px;
-  padding: 0.2em 0.625em;
+  border-radius: var(--radius-pill);
+  padding: 0.3em 0.75em;
 }
 
 /* ─── Progress Bar ─── */
@@ -685,9 +689,9 @@ ngb-progressbar {
 
 /* ─── Page Heading ─── */
 .page-heading {
-  font-family: var(--font-inter);
+  font-family: var(--font-display);
   font-size: var(--headline-md-size);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-on-surface);
   margin-bottom: var(--stack-md);
   padding-bottom: var(--stack-sm);

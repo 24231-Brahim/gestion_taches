@@ -13,16 +13,15 @@ describe('Task Form Service', () => {
   });
 
   describe('Service methods', () => {
-    describe('createIssueFormGroup', () => {
+    describe('createTaskFormGroup', () => {
       it('should create a new form with FormControl', () => {
-        const formGroup = service.createIssueFormGroup();
+        const formGroup = service.createTaskFormGroup();
 
         expect(formGroup.controls).toEqual(
           expect.objectContaining({
             id: expect.any(Object),
             title: expect.any(Object),
             description: expect.any(Object),
-            type: expect.any(Object),
             status: expect.any(Object),
             priority: expect.any(Object),
             createdAt: expect.any(Object),
@@ -35,14 +34,13 @@ describe('Task Form Service', () => {
       });
 
       it('passing ITask should create a new form with FormGroup', () => {
-        const formGroup = service.createIssueFormGroup(sampleWithRequiredData);
+        const formGroup = service.createTaskFormGroup(sampleWithRequiredData);
 
         expect(formGroup.controls).toEqual(
           expect.objectContaining({
             id: expect.any(Object),
             title: expect.any(Object),
             description: expect.any(Object),
-            type: expect.any(Object),
             status: expect.any(Object),
             priority: expect.any(Object),
             createdAt: expect.any(Object),
@@ -57,7 +55,7 @@ describe('Task Form Service', () => {
 
     describe('getTask', () => {
       it('should return NewTask for default Task initial value', () => {
-        const formGroup = service.createIssueFormGroup(sampleWithNewData);
+        const formGroup = service.createTaskFormGroup(sampleWithNewData);
 
         const task = service.getTask(formGroup);
 
@@ -65,7 +63,7 @@ describe('Task Form Service', () => {
       });
 
       it('should return NewTask for empty Task initial value', () => {
-        const formGroup = service.createIssueFormGroup();
+        const formGroup = service.createTaskFormGroup();
 
         const task = service.getTask(formGroup);
 
@@ -73,7 +71,7 @@ describe('Task Form Service', () => {
       });
 
       it('should return ITask', () => {
-        const formGroup = service.createIssueFormGroup(sampleWithRequiredData);
+        const formGroup = service.createTaskFormGroup(sampleWithRequiredData);
 
         const task = service.getTask(formGroup);
 
@@ -83,7 +81,7 @@ describe('Task Form Service', () => {
 
     describe('resetForm', () => {
       it('passing ITask should not enable id FormControl', () => {
-        const formGroup = service.createIssueFormGroup();
+        const formGroup = service.createTaskFormGroup();
         expect(formGroup.controls.id.disabled).toBe(true);
 
         service.resetForm(formGroup, sampleWithRequiredData);
@@ -92,7 +90,7 @@ describe('Task Form Service', () => {
       });
 
       it('passing NewTask should disable id FormControl', () => {
-        const formGroup = service.createIssueFormGroup(sampleWithRequiredData);
+        const formGroup = service.createTaskFormGroup(sampleWithRequiredData);
         expect(formGroup.controls.id.disabled).toBe(true);
 
         service.resetForm(formGroup, { id: null });

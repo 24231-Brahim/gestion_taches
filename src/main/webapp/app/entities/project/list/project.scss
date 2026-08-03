@@ -1,0 +1,128 @@
+.projects-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: var(--stack-md, 16px);
+}
+
+.page-heading {
+  font: var(--headline-lg);
+  color: var(--color-on-surface);
+  margin: 0;
+}
+
+.projects-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.scope-toggle {
+  display: flex;
+  padding: 3px;
+  background: var(--color-surface-container-high);
+  border-radius: var(--radius-pill);
+}
+
+.scope-toggle-btn {
+  border: none;
+  background: transparent;
+  padding: 6px 16px;
+  border-radius: var(--radius-pill);
+  font: var(--label-md);
+  font-size: 0.8rem;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.15s ease);
+
+  &.active {
+    background: var(--color-surface);
+    color: var(--color-primary);
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+.btn-ghost,
+.btn-outline,
+.btn-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: var(--radius-pill);
+  font: var(--label-md);
+  font-size: 0.85rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  border-color: var(--color-outline-variant);
+
+  &:hover {
+    background: var(--color-surface-container-high);
+  }
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-secondary);
+  border-color: var(--color-secondary);
+
+  &:hover {
+    background: var(--color-secondary-fixed);
+  }
+}
+
+.btn-cta {
+  background: var(--color-cta);
+  color: var(--color-on-primary);
+  font-weight: 700;
+
+  &:hover {
+    background: var(--color-cta-hover);
+  }
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 56px 24px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-muted);
+
+  h3 {
+    font: var(--headline-md);
+    color: var(--color-on-surface);
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+    font: var(--body-md);
+  }
+}
+
+.empty-state-icon {
+  font-size: 2rem;
+  color: var(--color-primary);
+  opacity: 0.6;
+  margin-bottom: 4px;
+}

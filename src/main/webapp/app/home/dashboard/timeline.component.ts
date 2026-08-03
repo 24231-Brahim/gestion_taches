@@ -2,7 +2,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 
-interface TimelineItem {
+export interface TimelineItem {
   id: number;
   title: string;
   status: string;
@@ -105,9 +105,16 @@ interface TimelineItem {
   ],
 })
 export class DashboardTimelineComponent {
-  readonly tasks = input.required<any[]>();
+  readonly tasks = input<any[]>([]);
+  // When set, used verbatim instead of deriving a feed from `tasks` — for callers (like the
+  // developer dashboard) that already have a real activity feed (e.g. TaskHistory entries).
+  readonly activitiesOverride = input<TimelineItem[] | null>(null);
 
   readonly activities = computed<TimelineItem[]>(() => {
+    const override = this.activitiesOverride();
+    if (override) {
+      return override;
+    }
     const colors = ['#22c55e', '#25a7fd', '#f59e0b', '#a855f7', '#52d6fd'];
     const sorted = [...this.tasks()]
       .sort((a, b) => {

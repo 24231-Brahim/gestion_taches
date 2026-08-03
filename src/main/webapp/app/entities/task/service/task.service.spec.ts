@@ -123,7 +123,7 @@ describe('Task Service', () => {
       });
 
       it('should add only unique Task to an array', () => {
-        const issueArray: ITask[] = [sampleWithRequiredData, sampleWithPartialData, sampleWithFullData];
+        const taskArray: ITask[] = [sampleWithRequiredData, sampleWithPartialData, sampleWithFullData];
         const taskCollection: ITask[] = [sampleWithRequiredData];
         expectedResult = service.addTaskToCollectionIfMissing(taskCollection, ...taskArray);
         expect(expectedResult).toHaveLength(3);
@@ -131,7 +131,7 @@ describe('Task Service', () => {
 
       it('should accept varargs', () => {
         const task: ITask = sampleWithRequiredData;
-        const issue2: ITask = sampleWithPartialData;
+        const task2: ITask = sampleWithPartialData;
         expectedResult = service.addTaskToCollectionIfMissing([], task, task2);
         expect(expectedResult).toEqual([task, task2]);
       });
@@ -149,12 +149,12 @@ describe('Task Service', () => {
       });
     });
 
-    describe('compareIssue', () => {
+    describe('compareTask', () => {
       it('should return true if both entities are null', () => {
         const entity1 = null;
         const entity2 = null;
 
-        const compareResult = service.compareIssue(entity1, entity2);
+        const compareResult = service.compareTask(entity1, entity2);
 
         expect(compareResult).toEqual(true);
       });
@@ -163,8 +163,8 @@ describe('Task Service', () => {
         const entity1 = { id: 6256 };
         const entity2 = null;
 
-        const compareResult1 = service.compareIssue(entity1, entity2);
-        const compareResult2 = service.compareIssue(entity2, entity1);
+        const compareResult1 = service.compareTask(entity1, entity2);
+        const compareResult2 = service.compareTask(entity2, entity1);
 
         expect(compareResult1).toEqual(false);
         expect(compareResult2).toEqual(false);
@@ -174,8 +174,8 @@ describe('Task Service', () => {
         const entity1 = { id: 6256 };
         const entity2 = { id: 29374 };
 
-        const compareResult1 = service.compareIssue(entity1, entity2);
-        const compareResult2 = service.compareIssue(entity2, entity1);
+        const compareResult1 = service.compareTask(entity1, entity2);
+        const compareResult2 = service.compareTask(entity2, entity1);
 
         expect(compareResult1).toEqual(false);
         expect(compareResult2).toEqual(false);
@@ -185,8 +185,8 @@ describe('Task Service', () => {
         const entity1 = { id: 6256 };
         const entity2 = { id: 6256 };
 
-        const compareResult1 = service.compareIssue(entity1, entity2);
-        const compareResult2 = service.compareIssue(entity2, entity1);
+        const compareResult1 = service.compareTask(entity1, entity2);
+        const compareResult2 = service.compareTask(entity2, entity1);
 
         expect(compareResult1).toEqual(true);
         expect(compareResult2).toEqual(true);

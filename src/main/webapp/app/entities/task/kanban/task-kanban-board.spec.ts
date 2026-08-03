@@ -25,25 +25,25 @@ import { ITask } from '../task.model';
 describe('TaskKanbanBoard', () => {
   let fixture: ComponentFixture<TaskKanbanBoard>;
   let comp: TaskKanbanBoard;
-  let issueServiceMock: { partialUpdate: ReturnType<typeof vitest.fn> };
+  let taskServiceMock: { partialUpdate: ReturnType<typeof vitest.fn> };
   let alertServiceMock: { addAlert: ReturnType<typeof vitest.fn> };
   let translateServiceMock: { instant: ReturnType<typeof vitest.fn> };
 
-  const mockIssues: ITask[] = [
-    { ...sampleWithRequiredData, status: 'TODO' },
+  const mockTasks: ITask[] = [
+    { ...sampleWithRequiredData, status: 'NEEDS_INFO' },
     { ...sampleWithPartialData, status: 'IN_PROGRESS' },
     { ...sampleWithFullData, status: 'DONE' },
   ];
 
   beforeEach(() => {
-    issueServiceMock = { partialUpdate: vitest.fn().mockReturnValue(of({})) };
+    taskServiceMock = { partialUpdate: vitest.fn().mockReturnValue(of({})) };
     alertServiceMock = { addAlert: vitest.fn() };
     translateServiceMock = { instant: vitest.fn().mockReturnValue('error') };
 
     TestBed.configureTestingModule({
       imports: [FontAwesomeModule, TranslateModule.forRoot(), TaskKanbanBoard],
       providers: [
-        { provide: TaskService, useValue: issueServiceMock },
+        { provide: TaskService, useValue: taskServiceMock },
         { provide: AlertService, useValue: alertServiceMock },
       ],
     });
@@ -65,20 +65,20 @@ describe('TaskKanbanBoard', () => {
   });
 
   it('should compute columns filtering tasks by status', () => {
-    fixture.componentRef.setInput('tasks', mockIssues);
+    fixture.componentRef.setInput('tasks', mockTasks);
     fixture.detectChanges();
     const cols = comp.getColumns();
     expect(cols.length).toBe(Object.keys(TaskStatus).length);
-    expect(cols.find(c => c.status === 'TODO')!.tasks.length).toBe(1);
+    expect(cols.find(c => c.status === 'NEEDS_INFO')!.tasks.length).toBe(1);
     expect(cols.find(c => c.status === 'IN_PROGRESS')!.tasks.length).toBe(1);
     expect(cols.find(c => c.status === 'DONE')!.tasks.length).toBe(1);
     expect(cols.find(c => c.status === 'NEW')!.tasks.length).toBe(0);
-    expect(cols.find(c => c.status === 'CANCELLED')!.tasks.length).toBe(0);
+    expect(cols.find(c => c.status === 'READY_FOR_TEST')!.tasks.length).toBe(0);
   });
 
   it('onDragStart should set dragTaskId', () => {
-    comp.onDragStart(mockIssues[0]);
-    expect(comp.dragTaskId).toBe(mockIssues[0].id);
+    comp.onDragStart(mockTasks[0]);
+    expect(comp.dragTaskId).toBe(mockTasks[0].id);
   });
 
   it('onDragOver should set dragOverStatus and call preventDefault', () => {
@@ -90,48 +90,48 @@ describe('TaskKanbanBoard', () => {
   });
 
   it('onDragLeave should reset dragOverStatus', () => {
-    comp.dragOverStatus = 'TODO';
+    comp.dragOverStatus = 'NEEDS_INFO';
     comp.onDragLeave();
     expect(comp.dragOverStatus).toBeNull();
   });
 
   it('onDrop should call partialUpdate when status differs', () => {
-    fixture.componentRef.setInput('tasks', mockIssues);
+    fixture.componentRef.setInput('tasks', mockTasks);
     fixture.detectChanges();
-    comp.dragTaskId = mockIssues[0].id;
+    comp.dragTaskId = mockTasks[0].id;
     const event = new DragEvent('drop');
     vitest.spyOn(event, 'preventDefault');
     comp.onDrop(event, 'DONE');
     expect(event.preventDefault).toHaveBeenCalled();
-    expect(issueServiceMock.partialUpdate).toHaveBeenCalledWith({ id: mockIssues[0].id, status: 'DONE' });
+    expect(taskServiceMock.partialUpdate).toHaveBeenCalledWith({ id: mockTasks[0].id, status: 'DONE' });
   });
 
   it('onDrop should not call partialUpdate when status is same', () => {
-    fixture.componentRef.setInput('tasks', mockIssues);
+    fixture.componentRef.setInput('tasks', mockTasks);
     fixture.detectChanges();
-    comp.dragTaskId = mockIssues[0].id;
-    comp.onDrop(new DragEvent('drop'), 'TODO');
-    expect(issueServiceMock.partialUpdate).not.toHaveBeenCalled();
+    comp.dragTaskId = mockTasks[0].id;
+    comp.onDrop(new DragEvent('drop'), 'NEEDS_INFO');
+    expect(taskServiceMock.partialUpdate).not.toHaveBeenCalled();
   });
 
   it('onDrop should no-op when dragTaskId is null', () => {
     comp.dragTaskId = null;
     comp.onDrop(new DragEvent('drop'), 'DONE');
-    expect(issueServiceMock.partialUpdate).not.toHaveBeenCalled();
+    expect(taskServiceMock.partialUpdate).not.toHaveBeenCalled();
   });
 
   it('onDrop should show alert on error', () => {
-    fixture.componentRef.setInput('tasks', mockIssues);
+    fixture.componentRef.setInput('tasks', mockTasks);
     fixture.detectChanges();
-    issueServiceMock.partialUpdate.mockReturnValue(throwError(() => ({ error: { detail: 'fail' }, message: 'err' })));
-    comp.dragTaskId = mockIssues[0].id;
+    taskServiceMock.partialUpdate.mockReturnValue(throwError(() => ({ error: { detail: 'fail' }, message: 'err' })));
+    comp.dragTaskId = mockTasks[0].id;
     comp.onDrop(new DragEvent('drop'), 'DONE');
     expect(alertServiceMock.addAlert).toHaveBeenCalledWith({ type: 'danger', message: 'fail' });
   });
 
   it('onDragEnd should reset drag state', () => {
     comp.dragTaskId = 42;
-    comp.dragOverStatus = 'TODO';
+    comp.dragOverStatus = 'NEEDS_INFO';
     comp.onDragEnd();
     expect(comp.dragTaskId).toBeNull();
     expect(comp.dragOverStatus).toBeNull();
@@ -140,8 +140,8 @@ describe('TaskKanbanBoard', () => {
   it('onTaskClick should emit the task', () => {
     const spy = vitest.fn();
     comp.selectTask.subscribe(spy);
-    comp.onTaskClick(mockIssues[0]);
-    expect(spy).toHaveBeenCalledWith(mockIssues[0]);
+    comp.onTaskClick(mockTasks[0]);
+    expect(spy).toHaveBeenCalledWith(mockTasks[0]);
   });
 
   it('getInitials should return first letter uppercase', () => {

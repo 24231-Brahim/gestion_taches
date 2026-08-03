@@ -7,7 +7,7 @@ import { lastValueFrom, of, throwError } from 'rxjs';
 
 import { TaskService } from '../service/task.service';
 
-import issueResolve from './task-routing-resolve.service';
+import taskResolve from './task-routing-resolve.service';
 
 describe('Task routing resolve service', () => {
   let mockRouter: Router;
@@ -42,7 +42,7 @@ describe('Task routing resolve service', () => {
       // WHEN
       await new Promise<void>(resolve => {
         TestBed.runInInjectionContext(() => {
-          issueResolve(mockActivatedRouteSnapshot).subscribe({
+          taskResolve(mockActivatedRouteSnapshot).subscribe({
             next(result) {
               // THEN
               expect(service.find).toHaveBeenCalledWith(123);
@@ -62,7 +62,7 @@ describe('Task routing resolve service', () => {
       // WHEN
       await new Promise<void>(resolve => {
         TestBed.runInInjectionContext(() => {
-          issueResolve(mockActivatedRouteSnapshot).subscribe({
+          taskResolve(mockActivatedRouteSnapshot).subscribe({
             next(result) {
               // THEN
               expect(service.find).not.toHaveBeenCalled();
@@ -81,7 +81,7 @@ describe('Task routing resolve service', () => {
 
       // WHEN
       await TestBed.runInInjectionContext(async () => {
-        await expect(lastValueFrom(issueResolve(mockActivatedRouteSnapshot))).rejects.toThrow('no elements in sequence');
+        await expect(lastValueFrom(taskResolve(mockActivatedRouteSnapshot))).rejects.toThrow('no elements in sequence');
         // THEN
         expect(service.find).toHaveBeenCalledWith(123);
         expect(mockRouter.navigate).toHaveBeenCalledWith(['404']);
@@ -97,7 +97,7 @@ describe('Task routing resolve service', () => {
 
       // WHEN
       await TestBed.runInInjectionContext(async () => {
-        await expect(lastValueFrom(issueResolve(mockActivatedRouteSnapshot))).rejects.toThrow('no elements in sequence');
+        await expect(lastValueFrom(taskResolve(mockActivatedRouteSnapshot))).rejects.toThrow('no elements in sequence');
         // THEN
         expect(service.find).toHaveBeenCalledWith(123);
         expect(mockRouter.navigate).toHaveBeenCalledWith(['error']);

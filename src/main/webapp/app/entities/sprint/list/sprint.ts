@@ -273,10 +273,13 @@ export class Sprint implements OnInit {
     if (!account) {
       return null;
     }
-    if (account.authorities.includes('ROLE_ADMIN')) {
+    // Matches the backend's ProjectPermissionService.hasGlobalProjectAccess(): ADMIN and
+    // PROJET_MANAGER get an implicit OWNER-equivalent bypass, independent of project membership.
+    if (account.authorities.includes('ROLE_ADMIN') || account.authorities.includes('ROLE_PROJET_MANAGER')) {
       return ProjectRole.OWNER;
     }
-    return null;
+    const member = this.currentProject()?.projectMembers?.find(m => m.userLogin === account.login);
+    return member?.role ?? null;
   });
 
   readonly canManageSprints = computed(() => {
@@ -356,7 +359,7 @@ export class Sprint implements OnInit {
     }
   });
 
-  private issuesEffect = effect(() => {
+  private tasksEffect = effect(() => {
     const raw = this.taskService.tasks();
     if (raw && raw.length > 0) {
       this.tasks.set(raw.filter(i => i.sprint?.id === this.selectedSprintId()));
@@ -413,7 +416,7 @@ export class Sprint implements OnInit {
     }
   }
 
-  private refreshIssues(): void {
+  private refreshTasks(): void {
     this.taskService.refresh();
   }
 
@@ -422,7 +425,7 @@ export class Sprint implements OnInit {
     this.taskService.partialUpdate({ id: event.taskId, status: event.status as any }).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.refreshIssues();
+        this.refreshTasks();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -437,7 +440,7 @@ export class Sprint implements OnInit {
     this.taskService.partialUpdate({ id: event.taskId, sprint: { id: event.sprintId } }).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.refreshIssues();
+        this.refreshTasks();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -452,7 +455,7 @@ export class Sprint implements OnInit {
     this.taskService.partialUpdate({ id: taskId, sprint: null }).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.refreshIssues();
+        this.refreshTasks();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -472,7 +475,7 @@ export class Sprint implements OnInit {
       next: updated => {
         this.isSaving.set(false);
         this.sprints.update(list => list.map(s => (s.id === updated.id ? { ...s, ...updated } : s)));
-        this.refreshIssues();
+        this.refreshTasks();
         this.sprintService.refresh();
       },
       error: (err: HttpErrorResponse) => {
@@ -495,7 +498,7 @@ export class Sprint implements OnInit {
         this.sprints.update(list => list.map(s => (s.id === sp.id ? { ...s, status: 'COMPLETED' } : s)));
         this.velocityReport.set(report);
         this.showVelocityModal.set(true);
-        this.refreshIssues();
+        this.refreshTasks();
         this.sprintService.refresh();
       },
       error: (err: HttpErrorResponse) => {
@@ -511,7 +514,7 @@ export class Sprint implements OnInit {
     this.velocityReport.set(null);
   }
 
-  onSelectTask(_issue: ITask): void {
+  onSelectTask(_task: ITask): void {
     // no-op for now
   }
 

@@ -1,14 +1,16 @@
 package com.gestiontaches.service;
 
 import com.gestiontaches.domain.Comment;
-import com.gestiontaches.domain.Issue;
+import com.gestiontaches.domain.Task;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.CommentRepository;
+import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
 import com.gestiontaches.service.dto.CommentDTO;
 import com.gestiontaches.service.mapper.CommentMapper;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -34,10 +36,22 @@ public class CommentService {
 
     private final UserRepository userRepository;
 
-    public CommentService(CommentRepository commentRepository, CommentMapper commentMapper, UserRepository userRepository) {
+    private final TaskRepository taskRepository;
+
+    private final ProjectPermissionService projectPermissionService;
+
+    public CommentService(
+        CommentRepository commentRepository,
+        CommentMapper commentMapper,
+        UserRepository userRepository,
+        TaskRepository taskRepository,
+        ProjectPermissionService projectPermissionService
+    ) {
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
         this.userRepository = userRepository;
+        this.taskRepository = taskRepository;
+        this.projectPermissionService = projectPermissionService;
     }
 
     /**
@@ -48,8 +62,15 @@ public class CommentService {
      */
     public CommentDTO save(CommentDTO commentDTO) {
         LOG.debug("Request to save Comment : {}", commentDTO);
+        Task task = taskRepository.findById(commentDTO.getTask().getId()).orElseThrow(() -> new RuntimeException("Task not found"));
+        // Anyone commenting must at least be able to view the task: a project member, or
+        // ADMIN/PROJET_MANAGER. Prevents an unrelated developer from spamming comments on tasks in
+        // projects they don't belong to just by guessing a taskId.
+        projectPermissionService.requireProjectAccess(task.getProject().getId());
         Comment comment = commentMapper.toEntity(commentDTO);
+        comment.setTask(task);
         comment.setAuthor(getCurrentUser());
+        comment.setCreatedAt(Instant.now());
         comment = commentRepository.save(comment);
         return commentMapper.toDto(comment);
     }
@@ -67,9 +88,9 @@ public class CommentService {
             .map(existingComment -> {
                 checkCanModifyComment(existingComment);
                 User author = existingComment.getAuthor();
-                Issue issue = existingComment.getIssue();
+                Task task = existingComment.getTask();
                 commentMapper.partialUpdate(existingComment, commentDTO);
-                preserveDeveloperOwnedFields(existingComment, author, issue);
+                preserveDeveloperOwnedFields(existingComment, author, task);
                 return existingComment;
             })
             .map(commentRepository::save)
@@ -91,9 +112,9 @@ public class CommentService {
             .map(existingComment -> {
                 checkCanModifyComment(existingComment);
                 User author = existingComment.getAuthor();
-                Issue issue = existingComment.getIssue();
+                Task task = existingComment.getTask();
                 commentMapper.partialUpdate(existingComment, commentDTO);
-                preserveDeveloperOwnedFields(existingComment, author, issue);
+                preserveDeveloperOwnedFields(existingComment, author, task);
 
                 return existingComment;
             })
@@ -155,10 +176,10 @@ public class CommentService {
         }
     }
 
-    private void preserveDeveloperOwnedFields(Comment comment, User author, Issue issue) {
+    private void preserveDeveloperOwnedFields(Comment comment, User author, Task task) {
         if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.DEVELOPER)) {
             comment.setAuthor(author);
-            comment.setIssue(issue);
+            comment.setTask(task);
         }
     }
 

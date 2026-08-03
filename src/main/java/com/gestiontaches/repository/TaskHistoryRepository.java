@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TaskHistoryRepository extends JpaRepository<TaskHistory, Long> {
     List<TaskHistory> findByTaskIdOrderByCreatedAtDesc(Long taskId);
+
+    List<TaskHistory> findTop10ByUserIdOrderByCreatedAtDesc(Long userId);
 }

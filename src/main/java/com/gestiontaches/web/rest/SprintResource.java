@@ -2,6 +2,7 @@ package com.gestiontaches.web.rest;
 
 import com.gestiontaches.repository.SprintRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
+import com.gestiontaches.service.ProjectPermissionService;
 import com.gestiontaches.service.SprintQueryService;
 import com.gestiontaches.service.SprintService;
 import com.gestiontaches.service.criteria.SprintCriteria;
@@ -22,9 +23,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -47,10 +50,28 @@ public class SprintResource {
 
     private final SprintQueryService sprintQueryService;
 
-    public SprintResource(SprintService sprintService, SprintRepository sprintRepository, SprintQueryService sprintQueryService) {
+    private final ProjectPermissionService projectPermissionService;
+
+    public SprintResource(
+        SprintService sprintService,
+        SprintRepository sprintRepository,
+        SprintQueryService sprintQueryService,
+        ProjectPermissionService projectPermissionService
+    ) {
         this.sprintService = sprintService;
         this.sprintRepository = sprintRepository;
         this.sprintQueryService = sprintQueryService;
+        this.projectPermissionService = projectPermissionService;
+    }
+
+    private void requireCriteriaProjectAccess(SprintCriteria criteria) {
+        if (projectPermissionService.hasGlobalProjectAccess()) {
+            return;
+        }
+        if (criteria == null || criteria.getProjectId() == null || criteria.getProjectId().getEquals() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "A projectId filter is required");
+        }
+        projectPermissionService.requireProjectAccess(criteria.getProjectId().getEquals());
     }
 
     @PostMapping("/sprints")
@@ -141,6 +162,7 @@ public class SprintResource {
         @org.springdoc.core.annotations.ParameterObject Pageable pageable
     ) {
         LOG.debug("REST request to get Sprints by criteria: {}", criteria);
+        requireCriteriaProjectAccess(criteria);
         Page<SprintDTO> page = sprintQueryService.findByCriteria(criteria, pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
@@ -149,6 +171,7 @@ public class SprintResource {
     @GetMapping("/sprints/count")
     public ResponseEntity<Long> countSprints(SprintCriteria criteria) {
         LOG.debug("REST request to count Sprints by criteria: {}", criteria);
+        requireCriteriaProjectAccess(criteria);
         return ResponseEntity.ok().body(sprintQueryService.countByCriteria(criteria));
     }
 
@@ -156,6 +179,7 @@ public class SprintResource {
     public ResponseEntity<SprintDTO> getSprint(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Sprint : {}", id);
         Optional<SprintDTO> sprintDTO = sprintService.findOne(id);
+        sprintDTO.ifPresent(dto -> projectPermissionService.requireProjectAccess(dto.getProject().getId()));
         return ResponseUtil.wrapOrNotFound(sprintDTO);
     }
 
@@ -214,6 +238,7 @@ public class SprintResource {
     @GetMapping("/projects/{projectId}/backlog")
     public ResponseEntity<List<TaskDTO>> getBacklog(@PathVariable("projectId") Long projectId) {
         LOG.debug("REST request to get backlog for project : {}", projectId);
+        projectPermissionService.requireProjectAccess(projectId);
         List<TaskDTO> tasks = sprintService.getBacklogTasks(projectId);
         return ResponseEntity.ok().body(tasks);
     }

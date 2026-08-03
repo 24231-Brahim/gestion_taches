@@ -36,6 +36,7 @@ const epicRoute: Routes = [
     resolve: {
       epic: EpicResolve,
     },
+    data: { authorities: ['ROLE_ADMIN', 'ROLE_PROJET_MANAGER'] },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -44,6 +45,7 @@ const epicRoute: Routes = [
     resolve: {
       epic: EpicResolve,
     },
+    data: { authorities: ['ROLE_ADMIN', 'ROLE_PROJET_MANAGER'] },
     canActivate: [UserRouteAccessService],
   },
 ];

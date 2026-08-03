@@ -13,15 +13,17 @@
         <span class="ms-1" jhiTranslate="gestionTachesApp.epic.home.roadmap">Roadmap</span>
       </a>
 
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-epic"
-        [routerLink]="['/project', currentProjectKey(), 'epic', 'new']"
-      >
-        <fa-icon icon="plus" />
-        <span jhiTranslate="gestionTachesApp.epic.home.createLabel">Créer un nouveau Epic</span>
-      </button>
+      @if (canManageEpics()) {
+        <button
+          id="jh-create-entity"
+          data-cy="entityCreateButton"
+          class="btn btn-primary jh-create-entity create-epic"
+          [routerLink]="['/project', currentProjectKey(), 'epic', 'new']"
+        >
+          <fa-icon icon="plus" />
+          <span jhiTranslate="gestionTachesApp.epic.home.createLabel">Créer un nouveau Epic</span>
+        </button>
+      }
     </div>
   </h2>
 
@@ -133,19 +135,21 @@
                     <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Voir</span>
                   </a>
 
-                  <a
-                    [routerLink]="['/project', currentProjectKey(), 'epic', epic.id, 'edit']"
-                    class="btn btn-primary btn-sm"
-                    data-cy="entityEditButton"
-                  >
-                    <fa-icon icon="pencil-alt" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
-                  </a>
+                  @if (canManageEpics()) {
+                    <a
+                      [routerLink]="['/project', currentProjectKey(), 'epic', epic.id, 'edit']"
+                      class="btn btn-primary btn-sm"
+                      data-cy="entityEditButton"
+                    >
+                      <fa-icon icon="pencil-alt" />
+                      <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editer</span>
+                    </a>
 
-                  <button type="submit" (click)="delete(epic)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                    <fa-icon icon="times" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
-                  </button>
+                    <button type="submit" (click)="delete(epic)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                      <fa-icon icon="times" />
+                      <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Supprimer</span>
+                    </button>
+                  }
                 </div>
               </td>
             </tr>

@@ -8,7 +8,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subscription, combineLatest, switchMap, tap } from 'rxjs';
+import { Subscription, combineLatest, of, switchMap, tap } from 'rxjs';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { CsvDownloadService } from 'app/shared/csv/csv-download.service';
@@ -29,7 +29,7 @@ import { ProjectService } from 'app/entities/project/service/project.service';
 import { TaskDeleteDialog } from '../delete/task-delete-dialog';
 import { TaskDetailPanel } from '../detail/task-detail-panel';
 import { TaskKanbanBoard } from '../kanban/task-kanban-board';
-import { ISSUE_TYPE_COLORS, ISSUE_TYPE_ICONS, PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES, ViewMode } from '../task-helper';
+import { PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES, ViewMode } from '../task-helper';
 import { ITask } from '../task.model';
 import { TaskService } from '../service/task.service';
 
@@ -93,11 +93,10 @@ import { TaskService } from '../service/task.service';
       .status-badge {
         display: inline-block;
         padding: 2px 10px;
-        border-radius: 9999px;
+        border-radius: var(--radius-pill, 9999px);
         font-size: 0.75rem;
-        color: #fff;
         font-weight: 600;
-        font-family: var(--font-inter);
+        font-family: var(--font-display);
       }
       .task-row {
         cursor: pointer;
@@ -177,8 +176,6 @@ export class Task implements OnInit {
   readonly router = inject(Router);
   readonly taskService = inject(TaskService);
   readonly isLoading = this.taskService.tasksResource.isLoading;
-  readonly typeColors = ISSUE_TYPE_COLORS;
-  readonly typeIcons = ISSUE_TYPE_ICONS;
   readonly priorityColors = PRIORITY_COLORS;
   readonly priorityIcons = PRIORITY_ICONS;
   readonly statusBadges = STATUS_BADGES;
@@ -213,14 +210,26 @@ export class Task implements OnInit {
     });
   }
 
+  // This pencil icon routes to the full CRUD form (sprint/epic/project/assignee included), which
+  // is management-only (matches the route guard on /task/:id/edit and TaskService.delete()'s
+  // requireProjectRole(OWNER, MANAGER)). An assignee edits their own task's status/description/
+  // priority inline via the row click → task-detail-panel drawer instead, not through this link.
   canEditTask(task: ITask): boolean {
     const role = this.userProjectRoles().get(task.project?.id ?? -1);
-    if (!role) return false;
-    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER || task.createdBy?.login === this.currentUserLogin();
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
   }
 
   canDeleteTask(task: ITask): boolean {
     return this.canEditTask(task);
+  }
+
+  canCreateTask(): boolean {
+    const project = this.currentProject();
+    if (!project) {
+      return false;
+    }
+    const role = this.userProjectRoles().get(project.id);
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
   }
 
   exportCsv(): void {
@@ -242,12 +251,15 @@ export class Task implements OnInit {
     parentParamMap
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        tap(params => {
+        switchMap(params => {
           const key = params.get('key');
           if (key) {
             this.currentProjectKey.set(key);
-            this.projectService.findByKey(key).subscribe(project => this.currentProject.set(project));
+            return this.projectService.findByKey(key).pipe(tap(project => this.currentProject.set(project)));
           }
+          this.currentProjectKey.set(null);
+          this.currentProject.set(null);
+          return of(null);
         }),
         switchMap(() => combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])),
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
@@ -308,13 +320,6 @@ export class Task implements OnInit {
     this.tasks.update(list => list.map(t => (t.id === event.taskId ? { ...t, status: event.status as keyof typeof TaskStatus } : t)));
   }
 
-  onIssueMoved(updatedIssue: IIssue): void {
-    this.issues.update(issues => issues.map(issue => (issue.id === updatedIssue.id ? updatedIssue : issue)));
-    if (this.selectedIssue()?.id === updatedIssue.id) {
-      this.selectedIssue.set(updatedIssue);
-    }
-  }
-
   setViewMode(mode: ViewMode): void {
     this.viewMode.set(mode);
   }
@@ -332,6 +337,9 @@ export class Task implements OnInit {
     this.page.set(+(page ?? 1));
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
     this.filters.initializeFromParams(params);
+    if (params.get('view') === 'kanban') {
+      this.viewMode.set('kanban');
+    }
   }
 
   protected fillComponentAttributesFromResponseBody(data: ITask[]): ITask[] {

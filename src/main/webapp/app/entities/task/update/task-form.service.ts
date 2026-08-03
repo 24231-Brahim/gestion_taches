@@ -35,7 +35,6 @@ type TaskFormGroupContent = {
   id: FormControl<TaskFormRawValue['id'] | NewTask['id']>;
   title: FormControl<TaskFormRawValue['title']>;
   description: FormControl<TaskFormRawValue['description']>;
-  type: FormControl<TaskFormRawValue['type']>;
   status: FormControl<TaskFormRawValue['status']>;
   priority: FormControl<TaskFormRawValue['priority']>;
   storyPoints: FormControl<TaskFormRawValue['storyPoints']>;
@@ -69,9 +68,6 @@ export class TaskFormService {
       }),
       description: new FormControl(taskRawValue.description, {
         validators: [Validators.maxLength(5000)],
-      }),
-      type: new FormControl(taskRawValue.type, {
-        validators: [Validators.required],
       }),
       status: new FormControl(taskRawValue.status, {
         validators: [Validators.required],
@@ -117,11 +113,11 @@ export class TaskFormService {
     };
   }
 
-  private convertTaskRawValueToTask(rawIssue: TaskFormRawValue | NewTaskFormRawValue): ITask | NewTask {
+  private convertTaskRawValueToTask(rawTask: TaskFormRawValue | NewTaskFormRawValue): ITask | NewTask {
     return {
-      ...rawIssue,
-      createdAt: dayjs(rawIssue.createdAt, DATE_TIME_FORMAT),
-      updatedAt: dayjs(rawIssue.updatedAt, DATE_TIME_FORMAT),
+      ...rawTask,
+      createdAt: dayjs(rawTask.createdAt, DATE_TIME_FORMAT),
+      updatedAt: dayjs(rawTask.updatedAt, DATE_TIME_FORMAT),
     };
   }
 

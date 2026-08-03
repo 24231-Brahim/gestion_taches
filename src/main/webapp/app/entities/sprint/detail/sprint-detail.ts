@@ -235,7 +235,8 @@ export class SprintDetail {
     if (!account) {
       return null;
     }
-    if (account.authorities.includes('ROLE_ADMIN')) {
+    // Matches the backend's ProjectPermissionService.hasGlobalProjectAccess().
+    if (account.authorities.includes('ROLE_ADMIN') || account.authorities.includes('ROLE_PROJET_MANAGER')) {
       return ProjectRole.OWNER;
     }
     return null;
@@ -304,7 +305,7 @@ export class SprintDetail {
     this._currentSprint.set(this.sprint());
   });
 
-  private issuesEffect = effect(() => {
+  private tasksEffect = effect(() => {
     const raw = this.taskService.tasks();
     if (raw && raw.length > 0) {
       this.tasks.set(raw.filter(i => i.sprint?.id === this._currentSprint()?.id));
@@ -325,11 +326,11 @@ export class SprintDetail {
     }
   });
 
-  onSelectTask(_issue: ITask): void {
+  onSelectTask(_task: ITask): void {
     // no-op for now
   }
 
-  private refreshIssues(): void {
+  private refreshTasks(): void {
     const sp = this._currentSprint();
     if (sp?.project?.id) {
       this.taskService.tasksParams.set({
@@ -345,7 +346,7 @@ export class SprintDetail {
     this.taskService.partialUpdate({ id: event.taskId, status: event.status as any }).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.refreshIssues();
+        this.refreshTasks();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -360,7 +361,7 @@ export class SprintDetail {
     this.taskService.partialUpdate({ id: event.taskId, sprint: { id: event.sprintId } }).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.refreshIssues();
+        this.refreshTasks();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -375,7 +376,7 @@ export class SprintDetail {
     this.taskService.partialUpdate({ id: taskId, sprint: null }).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.refreshIssues();
+        this.refreshTasks();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -395,7 +396,7 @@ export class SprintDetail {
       next: updated => {
         this.isSaving.set(false);
         this._currentSprint.set(updated);
-        this.refreshIssues();
+        this.refreshTasks();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -417,7 +418,7 @@ export class SprintDetail {
         this._currentSprint.set({ ...sp, status: 'COMPLETED' });
         this.velocityReport.set(report);
         this.showVelocityModal.set(true);
-        this.refreshIssues();
+        this.refreshTasks();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);

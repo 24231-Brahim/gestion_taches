@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST controller serving the current user's own stats for the developer-scoped home dashboard.
+ */
 @RestController
 @RequestMapping("/api/developer-dashboard")
 public class DeveloperDashboardResource {

@@ -1,14 +1,12 @@
 package com.gestiontaches.web.rest;
 
 import com.gestiontaches.domain.Attachment;
-import com.gestiontaches.domain.Task;
 import com.gestiontaches.repository.AttachmentRepository;
 import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.AttachmentService;
 import com.gestiontaches.service.dto.AttachmentDTO;
 import com.gestiontaches.service.dto.TaskDTO;
-import com.gestiontaches.service.mapper.TaskMapper;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -59,7 +57,6 @@ public class AttachmentResource {
     private final AttachmentService attachmentService;
     private final AttachmentRepository attachmentRepository;
     private final TaskRepository taskRepository;
-    private final TaskMapper taskMapper;
 
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
@@ -67,13 +64,11 @@ public class AttachmentResource {
     public AttachmentResource(
         AttachmentService attachmentService,
         AttachmentRepository attachmentRepository,
-        TaskRepository taskRepository,
-        TaskMapper taskMapper
+        TaskRepository taskRepository
     ) {
         this.attachmentService = attachmentService;
         this.attachmentRepository = attachmentRepository;
         this.taskRepository = taskRepository;
-        this.taskMapper = taskMapper;
     }
 
     /**
@@ -96,9 +91,9 @@ public class AttachmentResource {
     public ResponseEntity<AttachmentDTO> uploadAttachment(@RequestParam("file") MultipartFile file, @RequestParam("taskId") Long taskId)
         throws URISyntaxException, IOException {
         LOG.debug("REST request to upload Attachment for Task : {}", taskId);
-        Task task = taskRepository
-            .findById(taskId)
-            .orElseThrow(() -> new BadRequestAlertException("Task not found", ENTITY_NAME, "idnotfound"));
+        if (!taskRepository.existsById(taskId)) {
+            throw new BadRequestAlertException("Task not found", ENTITY_NAME, "idnotfound");
+        }
         String originalName = file.getOriginalFilename();
         if (originalName == null || originalName.isBlank()) {
             throw new BadRequestAlertException("File name is required", ENTITY_NAME, "filenamerequired");
@@ -112,7 +107,13 @@ public class AttachmentResource {
         attachmentDTO.setFileName(originalName);
         attachmentDTO.setFilePath(storedName);
         attachmentDTO.setUploadedAt(Instant.now());
-        attachmentDTO.setTask(taskMapper.toDto(task));
+        // Only the id is needed — AttachmentService.save() re-fetches the Task itself. Mapping the
+        // full Task (including lazy sprint/epic/assignee associations) here throws
+        // LazyInitializationException outside of an active session on this non-transactional
+        // multipart endpoint.
+        TaskDTO taskRef = new TaskDTO();
+        taskRef.setId(taskId);
+        attachmentDTO.setTask(taskRef);
         attachmentDTO = attachmentService.save(attachmentDTO);
         return ResponseEntity.created(new URI("/api/attachments/" + attachmentDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, attachmentDTO.getId().toString()))

@@ -4,17 +4,22 @@ import com.gestiontaches.domain.Project;
 import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.domain.enumeration.ProjectRole;
+import com.gestiontaches.domain.enumeration.SprintStatus;
 import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.ProjectRepository;
+import com.gestiontaches.repository.SprintRepository;
+import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
-import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
+import com.gestiontaches.service.dto.ProjectCardStatsDTO;
 import com.gestiontaches.service.dto.ProjectDTO;
 import com.gestiontaches.service.dto.ProjectMemberDTO;
 import com.gestiontaches.service.mapper.ProjectMapper;
 import com.gestiontaches.service.mapper.ProjectMemberMapper;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,13 +51,19 @@ public class ProjectService {
 
     private final ProjectPermissionService projectPermissionService;
 
+    private final TaskRepository taskRepository;
+
+    private final SprintRepository sprintRepository;
+
     public ProjectService(
         ProjectRepository projectRepository,
         ProjectMapper projectMapper,
         UserRepository userRepository,
         ProjectMemberRepository projectMemberRepository,
         ProjectMemberMapper projectMemberMapper,
-        ProjectPermissionService projectPermissionService
+        ProjectPermissionService projectPermissionService,
+        TaskRepository taskRepository,
+        SprintRepository sprintRepository
     ) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
@@ -60,6 +71,8 @@ public class ProjectService {
         this.projectMemberRepository = projectMemberRepository;
         this.projectMemberMapper = projectMemberMapper;
         this.projectPermissionService = projectPermissionService;
+        this.taskRepository = taskRepository;
+        this.sprintRepository = sprintRepository;
     }
 
     /**
@@ -125,16 +138,59 @@ public class ProjectService {
      * Get all the projects.
      *
      * @param pageable the pagination information.
+     * @param mineOnly when true, always scope to the current user's own/member projects even if
+     *                 they hold ADMIN/PROJET_MANAGER authority (the "Mes projets" toggle).
      * @return the list of entities.
      */
     @Transactional(readOnly = true)
-    public Page<ProjectDTO> findAll(Pageable pageable) {
+    public Page<ProjectDTO> findAll(Pageable pageable, boolean mineOnly) {
         LOG.debug("Request to get all Projects");
-        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+        if (!mineOnly && projectPermissionService.hasGlobalProjectAccess()) {
             return projectRepository.findAll(pageable).map(projectMapper::toDto);
         }
         String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
         return projectRepository.findByOwnerLoginOrMemberLogin(login, pageable).map(projectMapper::toDto);
+    }
+
+    /**
+     * Get task-progress and active-sprint stats for every project visible to the current user,
+     * for rendering the Projects card grid without one round-trip per card.
+     *
+     * @return the list of per-project stats.
+     */
+    @Transactional(readOnly = true)
+    public List<ProjectCardStatsDTO> getProjectCardStats() {
+        List<Project> visibleProjects;
+        if (projectPermissionService.hasGlobalProjectAccess()) {
+            visibleProjects = projectRepository.findAll();
+        } else {
+            String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
+            visibleProjects = projectRepository.findByOwnerLoginOrMemberLogin(login, Pageable.unpaged()).getContent();
+        }
+
+        Map<Long, long[]> taskCountsByProjectId = new HashMap<>();
+        for (Object[] row : taskRepository.countTasksGroupByProject()) {
+            Long projectId = ((Number) row[0]).longValue();
+            long total = ((Number) row[2]).longValue();
+            long done = ((Number) row[3]).longValue();
+            taskCountsByProjectId.put(projectId, new long[] { total, done });
+        }
+
+        return visibleProjects
+            .stream()
+            .map(project -> {
+                ProjectCardStatsDTO dto = new ProjectCardStatsDTO();
+                dto.setProjectId(project.getId());
+                long[] counts = taskCountsByProjectId.getOrDefault(project.getId(), new long[] { 0, 0 });
+                dto.setTotalTasks(counts[0]);
+                dto.setDoneTasks(counts[1]);
+                sprintRepository.findByProjectIdAndStatus(project.getId(), SprintStatus.ACTIVE).ifPresent(sprint -> {
+                    dto.setActiveSprintId(sprint.getId());
+                    dto.setActiveSprintName(sprint.getName());
+                });
+                return dto;
+            })
+            .toList();
     }
 
     /**
@@ -146,7 +202,7 @@ public class ProjectService {
     @Transactional(readOnly = true)
     public Optional<ProjectDTO> findOne(Long id) {
         LOG.debug("Request to get Project : {}", id);
-        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+        if (projectPermissionService.hasGlobalProjectAccess()) {
             return projectRepository.findById(id).map(projectMapper::toDto);
         }
         String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
@@ -172,7 +228,10 @@ public class ProjectService {
 
     public Set<ProjectMemberDTO> getMembers(Long projectId) {
         LOG.debug("Request to get members of Project : {}", projectId);
-        projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER);
+        // Viewing the member list is a read operation available to any project member (any role),
+        // not just OWNER/MANAGER — those stricter roles are still required to add/remove/re-role
+        // members (see addMember/removeMember/updateMemberRole below).
+        projectPermissionService.requireProjectAccess(projectId);
         List<ProjectMember> members = projectMemberRepository.findByProjectId(projectId);
         return members.stream().map(projectMemberMapper::toDto).collect(Collectors.toSet());
     }
@@ -237,7 +296,7 @@ public class ProjectService {
         List<ProjectMember> members = projectMemberRepository.findByUserId(user.getId());
         Set<ProjectMemberDTO> memberships = members.stream().map(projectMemberMapper::toDto).collect(Collectors.toSet());
 
-        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+        if (projectPermissionService.hasGlobalProjectAccess()) {
             Set<Long> memberProjectIds = memberships.stream().map(ProjectMemberDTO::getProjectId).collect(Collectors.toSet());
             List<Project> allProjects = projectRepository.findAll();
             for (Project project : allProjects) {

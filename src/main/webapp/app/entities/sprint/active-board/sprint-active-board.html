@@ -44,15 +44,6 @@
       </select>
     </div>
     <div class="filter-group">
-      <label class="filter-label">{{ 'gestionTachesApp.sprint.board.filter.type' | translate }}</label>
-      <select class="filter-select" [ngModel]="filterType()" (ngModelChange)="filterType.set($event)">
-        <option value="">{{ 'gestionTachesApp.sprint.board.filter.all' | translate }}</option>
-        @for (t of typeValues; track t) {
-          <option [value]="t">{{ 'gestionTachesApp.IssueType.' + t | translate }}</option>
-        }
-      </select>
-    </div>
-    <div class="filter-group">
       <label class="filter-label">{{ 'gestionTachesApp.sprint.board.filter.priority' | translate }}</label>
       <select class="filter-select" [ngModel]="filterPriority()" (ngModelChange)="filterPriority.set($event)">
         <option value="">{{ 'gestionTachesApp.sprint.board.filter.all' | translate }}</option>
@@ -77,21 +68,21 @@
         (dragleave)="onDragLeave()"
         (drop)="onDrop($event, col.status)"
       >
-        <div class="kanban-column-header" [style.border-top-color]="getColumnColor(col.status)">
-          <span class="kanban-column-title">{{ 'gestionTachesApp.IssueStatus.' + col.status | translate }}</span>
+        <div class="kanban-column-header" [style.background-color]="getColumnBg(col.status)" [style.color]="getColumnColor(col.status)">
+          <span class="kanban-column-title">{{ 'gestionTachesApp.TaskStatus.' + col.status | translate }}</span>
           <span class="kanban-column-count">{{ col.tasks.length }}</span>
         </div>
         <div class="kanban-column-body">
           @for (task of col.tasks; track task.id) {
             <div
               class="kanban-card"
-              draggable="true"
-              (dragstart)="onDragStart(task)"
+              [class.kanban-card-not-draggable]="!canDrag(task)"
+              [attr.draggable]="canDrag(task)"
+              (dragstart)="onDragStart(task, $event)"
               [class.kanban-card-dragging]="dragTaskId === task.id"
               (click)="selectTask.emit(task)"
             >
               <div class="kanban-card-top">
-                <fa-icon [icon]="getTypeIcon(task.type)" [style.color]="getTypeColor(task.type)" size="sm" />
                 <span class="kanban-card-id">#{{ task.id }}</span>
                 @if (task.storyPoints != null) {
                   <span class="kanban-card-sp">{{ task.storyPoints }}</span>

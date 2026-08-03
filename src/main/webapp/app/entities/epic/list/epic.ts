@@ -1,5 +1,5 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
@@ -8,12 +8,14 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
-import { Subscription, combineLatest, filter, switchMap, tap } from 'rxjs';
+import { Subscription, combineLatest, filter, of, switchMap, tap } from 'rxjs';
 
 import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { IProject } from 'app/entities/project/project.model';
 import { ProjectService } from 'app/entities/project/service/project.service';
+import { ProjectRole } from 'app/entities/enumerations/project-role.model';
+import { AccountService } from 'app/core/auth/account.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
@@ -75,6 +77,22 @@ export class Epic implements OnInit {
   readonly currentProjectKey = signal<string | null>(null);
   readonly currentProject = signal<IProject | null>(null);
 
+  protected readonly accountService = inject(AccountService);
+
+  // Matches the backend's EpicService: create/edit/delete requires OWNER/MANAGER project role,
+  // with an implicit bypass for ADMIN/PROJET_MANAGER.
+  readonly canManageEpics = computed(() => {
+    const account = this.accountService.account();
+    if (!account) {
+      return false;
+    }
+    if (account.authorities.includes('ROLE_ADMIN') || account.authorities.includes('ROLE_PROJET_MANAGER')) {
+      return true;
+    }
+    const role = this.currentProject()?.projectMembers?.find(m => m.userLogin === account.login)?.role;
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
+  });
+
   readonly router = inject(Router);
   protected readonly epicService = inject(EpicService);
   protected readonly projectService = inject(ProjectService);
@@ -116,12 +134,15 @@ export class Epic implements OnInit {
     parentParamMap
       .pipe(
         takeUntilDestroyed(this.destroyRef),
-        tap(params => {
+        switchMap(params => {
           const key = params.get('key');
           if (key) {
             this.currentProjectKey.set(key);
-            this.projectService.findByKey(key).subscribe(project => this.currentProject.set(project));
+            return this.projectService.findByKey(key).pipe(tap(project => this.currentProject.set(project)));
           }
+          this.currentProjectKey.set(null);
+          this.currentProject.set(null);
+          return of(null);
         }),
         switchMap(() => combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])),
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),

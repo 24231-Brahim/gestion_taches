@@ -29,7 +29,6 @@
         "emptyColumn": "No tasks",
         "filter": {
           "assignee": "Assignee",
-          "type": "Type",
           "priority": "Priority",
           "all": "All",
           "reset": "Reset filters"
@@ -40,7 +39,7 @@
         "backlog": "Backlog",
         "sprint": "Sprint",
         "noBacklog": "All tasks are assigned to a sprint",
-        "noIssues": "No tasks in this sprint",
+        "noTasks": "No tasks in this sprint",
         "searchPlaceholder": "Search tasks..."
       },
       "burndown": {
@@ -51,7 +50,7 @@
         "velocity": "Velocity",
         "storyPointsVelocity": "SP Velocity",
         "days": "Days",
-        "issues": "Tasks"
+        "tasks": "Tasks"
       },
       "action": {
         "start": "Start Sprint",

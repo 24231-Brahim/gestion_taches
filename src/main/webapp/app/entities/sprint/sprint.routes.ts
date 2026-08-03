@@ -28,6 +28,7 @@ const sprintRoute: Routes = [
     resolve: {
       sprint: SprintResolve,
     },
+    data: { authorities: ['ROLE_ADMIN', 'ROLE_PROJET_MANAGER'] },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -36,6 +37,7 @@ const sprintRoute: Routes = [
     resolve: {
       sprint: SprintResolve,
     },
+    data: { authorities: ['ROLE_ADMIN', 'ROLE_PROJET_MANAGER'] },
     canActivate: [UserRouteAccessService],
   },
 ];

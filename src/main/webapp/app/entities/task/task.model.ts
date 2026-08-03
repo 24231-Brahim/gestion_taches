@@ -1,7 +1,6 @@
 import dayjs from 'dayjs/esm';
 
 import { TaskStatus } from 'app/entities/enumerations/task-status.model';
-import { TaskType } from 'app/entities/enumerations/task-type.model';
 import { Priority } from 'app/entities/enumerations/priority.model';
 import { IEpic } from 'app/entities/epic/epic.model';
 import { IProject } from 'app/entities/project/project.model';
@@ -11,7 +10,6 @@ export interface ITask {
   id: number;
   title?: string | null;
   description?: string | null;
-  type?: keyof typeof TaskType | null;
   status?: keyof typeof TaskStatus | null;
   priority?: keyof typeof Priority | null;
   storyPoints?: number | null;

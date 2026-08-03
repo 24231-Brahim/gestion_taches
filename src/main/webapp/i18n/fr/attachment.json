@@ -21,7 +21,7 @@
       "fileName": "Nom du fichier",
       "filePath": "Chemin du fichier",
       "uploadedAt": "Uploadé le",
-      "task": "Issue",
+      "task": "Tâche",
       "form": {
         "dropzone": "Déposez les fichiers ici ou cliquez pour parcourir",
         "browse": "Parcourir"

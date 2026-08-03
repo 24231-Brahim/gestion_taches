@@ -1,5 +1,7 @@
 @if (isManagerOrAdmin()) {
   <jhi-dashboard />
+} @else if (isDeveloper()) {
+  <jhi-developer-dashboard />
 } @else {
   <div class="row home-row">
     <div class="col-12 col-md-9">

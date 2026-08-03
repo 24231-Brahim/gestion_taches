@@ -5,8 +5,8 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
-import { IActionHistory } from 'app/entities/action-history/action-history.model';
-import { ActionHistoryService } from 'app/entities/action-history/service/action-history.service';
+import { ITaskHistory } from 'app/entities/task-history/task-history.model';
+import { TaskHistoryService } from 'app/entities/task-history/service/task-history.service';
 
 @Component({
   selector: 'jhi-task-history-tab',
@@ -17,10 +17,10 @@ import { ActionHistoryService } from 'app/entities/action-history/service/action
 export class TaskHistoryTab {
   readonly taskId = input.required<number>();
 
-  readonly actionHistories = signal<IActionHistory[]>([]);
+  readonly taskHistories = signal<ITaskHistory[]>([]);
   readonly isLoading = signal(false);
 
-  private readonly actionHistoryService = inject(ActionHistoryService);
+  private readonly taskHistoryService = inject(TaskHistoryService);
 
   constructor() {
     effect(() => {
@@ -33,9 +33,9 @@ export class TaskHistoryTab {
 
   private loadHistory(taskId: number): void {
     this.isLoading.set(true);
-    this.actionHistoryService.query({ 'taskId.equals': taskId, sort: 'createdAt,desc' }).subscribe({
-      next: res => {
-        this.actionHistories.set(res.body ?? []);
+    this.taskHistoryService.findByTask(taskId).subscribe({
+      next: histories => {
+        this.taskHistories.set(histories);
         this.isLoading.set(false);
       },
       error: () => this.isLoading.set(false),
