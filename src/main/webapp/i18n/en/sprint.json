@@ -40,7 +40,7 @@
         "backlog": "Backlog",
         "sprint": "Sprint",
         "noBacklog": "All tasks are assigned to a sprint",
-        "noIssues": "No tasks in this sprint",
+        "noTasks": "No tasks in this sprint",
         "searchPlaceholder": "Search tasks..."
       },
       "burndown": {
@@ -70,6 +70,20 @@
       },
       "progress": {
         "label": "Sprint Progress"
+      },
+      "table": {
+        "title": "Sprint List",
+        "view": "Table View",
+        "taskCount": "Tasks"
+      },
+      "timeline": {
+        "tasks": "Timeline",
+        "empty": "No tasks in this sprint"
+      },
+      "tasks": {
+        "tab": "Tasks",
+        "title": "Sprint Tasks",
+        "empty": "No tasks in this sprint"
       }
     }
   }

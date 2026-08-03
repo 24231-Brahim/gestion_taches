@@ -1,0 +1,40 @@
+<div class="timeline-header">
+  <div class="timeline-task-col">
+    <span class="timeline-header-label">{{ 'gestionTachesApp.sprint.timeline.tasks' | translate }}</span>
+  </div>
+  <div class="timeline-scale">
+    <div class="timeline-labels">
+      @for (label of labels(); track $index) {
+        <span class="timeline-label" [style.inset-inline-start]="labelPosition(label.offset)">{{ label.label }}</span>
+      }
+    </div>
+  </div>
+</div>
+
+<div class="timeline-body">
+  @if (tasks().length === 0) {
+    <div class="timeline-empty">
+      <span jhiTranslate="gestionTachesApp.sprint.timeline.empty">Aucune tâche dans ce sprint</span>
+    </div>
+  } @else {
+    @for (task of tasks(); track task.id) {
+      <div class="timeline-row">
+        <div class="timeline-task-col">
+          <span class="timeline-task-title" [title]="task.title ?? ''">{{ task.title }}</span>
+          <span class="status-badge" [style.border-color]="getStatusColor(task.status)">
+            {{ 'gestionTachesApp.TaskStatus.' + (task.status ?? 'NEW') | translate }}
+          </span>
+        </div>
+        <div class="timeline-scale timeline-track">
+          @for (label of labels(); track $index) {
+            <span class="timeline-gridline" [style.inset-inline-start]="labelPosition(label.offset)"></span>
+          }
+          @if (todayOffset() > 0 && todayOffset() <= totalDays()) {
+            <div class="timeline-today" [style]="todayStyle()"></div>
+          }
+          <div class="timeline-bar" [style]="barStyle(task)" [title]="task.title ?? ''"></div>
+        </div>
+      </div>
+    }
+  }
+</div>

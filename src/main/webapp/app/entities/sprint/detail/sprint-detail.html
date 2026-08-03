@@ -67,8 +67,11 @@
       <button class="tab-item" [class.active]="activeTab() === 'planning'" (click)="setTab('planning')">
         <fa-icon icon="clipboard-list" class="me-1" /> {{ 'gestionTachesApp.sprint.planning.tab' | translate }}
       </button>
-      <button class="tab-item" [class.active]="activeTab() === 'burndown'" (click)="setTab('burndown')">
-        <fa-icon icon="chart-line" class="me-1" /> {{ 'gestionTachesApp.sprint.burndown.tab' | translate }}
+      <button class="tab-item" [class.active]="activeTab() === 'tasks'" (click)="setTab('tasks')">
+        <fa-icon icon="list" class="me-1" /> {{ 'gestionTachesApp.sprint.tasks.tab' | translate }}
+      </button>
+      <button class="tab-item" [class.active]="activeTab() === 'timeline'" (click)="setTab('timeline')">
+        <fa-icon icon="clock" class="me-1" /> {{ 'gestionTachesApp.sprint.timeline.tab' | translate }}
       </button>
     </div>
 
@@ -88,19 +91,70 @@
         <jhi-sprint-backlog-planning
           [sprint]="sp"
           [allTasks]="projectTasks()"
+          [sprintTasksInput]="tasks()"
           [canManage]="canManageSprints()"
           [sprintStatus]="sp.status ?? 'PLANNED'"
           (assignToSprint)="onAssignToSprint($event)"
           (removeFromSprint)="onRemoveFromSprint($event)"
         />
       }
-      @case ('burndown') {
-        <jhi-sprint-burndown-chart
-          [sprint]="sp"
-          [totalTasks]="tasks().length"
-          [doneTasks]="tasks().filter(i => i.status === 'DONE').length"
-          [daysLeft]="sp.endDate ? daysLeft() : 0"
-        />
+      @case ('tasks') {
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0">{{ 'gestionTachesApp.sprint.tasks.title' | translate }}</h5>
+          @if (canManageSprints()) {
+            <button class="btn btn-primary btn-sm" (click)="openCreateTaskModal()">
+              <fa-icon icon="plus" /> {{ 'gestionTachesApp.task.home.createLabel' | translate }}
+            </button>
+          }
+        </div>
+        @if (tasks().length === 0) {
+          <div class="alert alert-warning">
+            <span>{{ 'gestionTachesApp.sprint.tasks.empty' | translate }}</span>
+          </div>
+        } @else {
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>{{ 'gestionTachesApp.task.title' | translate }}</th>
+                  <th>{{ 'gestionTachesApp.task.status' | translate }}</th>
+                  <th>{{ 'gestionTachesApp.task.priority' | translate }}</th>
+                  <th>{{ 'gestionTachesApp.task.assignee' | translate }}</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (task of tasks(); track task.id) {
+                  <tr>
+                    <td>{{ task.title }}</td>
+                    <td>
+                      <span class="status-badge" [style.background]="'var(--color-primary)'">
+                        {{ 'gestionTachesApp.TaskStatus.' + (task.status ?? 'null') | translate }}
+                      </span>
+                    </td>
+                    <td>{{ 'gestionTachesApp.Priority.' + (task.priority ?? 'null') | translate }}</td>
+                    <td>{{ task.assignee?.login ?? ('global.messages.unassigned' | translate) }}</td>
+                    <td class="text-end">
+                      @if (canManageSprints()) {
+                        <div class="btn-group btn-group-sm">
+                          <button class="btn btn-primary btn-sm" (click)="openEditTaskModal(task)">
+                            <fa-icon icon="pencil" />
+                          </button>
+                          <button class="btn btn-danger btn-sm" (click)="deleteTask(task)">
+                            <fa-icon icon="xmark" />
+                          </button>
+                        </div>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+      @case ('timeline') {
+        <jhi-sprint-timeline [sprint]="sp" [tasks]="tasks()" />
       }
     }
   }

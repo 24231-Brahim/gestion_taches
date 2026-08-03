@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="20260731000000-1" author="opencode">
+        <createIndex tableName="task" indexName="idx_task_project_id">
+            <column name="project_id"/>
+        </createIndex>
+        <createIndex tableName="task" indexName="idx_task_sprint_id">
+            <column name="sprint_id"/>
+        </createIndex>
+        <createIndex tableName="task" indexName="idx_task_status">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

@@ -26,8 +26,8 @@ import { EpicService } from '../service/epic.service';
 
 interface EpicWithProgress extends IEpic {
   progress: number;
-  totalIssues: number;
-  doneIssues: number;
+  totalTasks: number;
+  doneTasks: number;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -263,8 +263,8 @@ export class EpicRoadmap implements OnInit {
       return {
         ...e,
         progress: total > 0 ? Math.round((done / total) * 100) : 0,
-        totalIssues: total,
-        doneIssues: done,
+        totalTasks: total,
+        doneTasks: done,
       };
     });
   });
@@ -313,7 +313,8 @@ export class EpicRoadmap implements OnInit {
         if (projectId) {
           this.taskService.tasksParams.set({
             'projectId.equals': projectId,
-            size: 500,
+            'epicId.specified': true,
+            size: 100,
           });
         }
       }

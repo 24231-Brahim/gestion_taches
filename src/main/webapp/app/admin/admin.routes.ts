@@ -33,6 +33,18 @@ const routes: Routes = [
     data: { authorities: ['ROLE_ADMIN'] },
     title: 'adminTasks.title',
   },
+  {
+    path: 'project-members',
+    loadComponent: () => import('../entities/admin/admin-project-members/admin-project-members').then(m => m.AdminProjectMembers),
+    data: { authorities: ['ROLE_ADMIN'] },
+    title: 'adminProjectMembers.title',
+  },
+  {
+    path: 'notifications',
+    loadComponent: () => import('../entities/admin/admin-notifications/admin-notifications').then(m => m.AdminNotifications),
+    data: { authorities: ['ROLE_ADMIN'] },
+    title: 'adminNotifications.title',
+  },
   /* jhipster-needle-add-admin-route - JHipster will add admin routes here */
 ];
 

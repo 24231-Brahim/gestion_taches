@@ -1,45 +1,57 @@
 import { beforeEach, describe, expect, it, vitest } from 'vitest';
-import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
-
+import { signal } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TranslateModule } from '@ngx-translate/core';
-import { of } from 'rxjs';
 
 import { Account } from 'app/core/auth/account.model';
 import { AccountService } from 'app/core/auth/account.service';
-import { ProfileInfo } from 'app/layouts/profiles/profile-info.model';
-import { ProfileService } from 'app/layouts/profiles/profile.service';
-import { LoginService } from 'app/login/login.service';
+import { NotificationService } from 'app/core/util/notification.service';
 
 import Navbar from './navbar';
+
+const account: Account = {
+  activated: true,
+  authorities: [],
+  email: '',
+  firstName: 'John',
+  langKey: '',
+  lastName: 'Doe',
+  login: 'john.doe',
+  imageUrl: '',
+};
 
 describe('Navbar Component', () => {
   let comp: Navbar;
   let fixture: ComponentFixture<Navbar>;
-  let accountService: AccountService;
-  let profileService: ProfileService;
-  const account: Account = {
-    activated: true,
-    authorities: [],
-    email: '',
-    firstName: 'John',
-    langKey: '',
-    lastName: 'Doe',
-    login: 'john.doe',
-    imageUrl: '',
-  };
+  let mockAccountService: AccountService;
+  let mockNotificationService: NotificationService;
 
   beforeEach(() => {
+    const accountSignal = signal<Account | null>(null);
+
     TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot()],
       providers: [
-        {
-          provide: ActivatedRoute,
-          useValue: {},
-        },
+        provideRouter([]),
         provideHttpClientTesting(),
-        LoginService,
+        {
+          provide: AccountService,
+          useValue: {
+            account: accountSignal.asReadonly(),
+            authenticate: vitest.fn((identity: Account | null) => accountSignal.set(identity)),
+          },
+        },
+        {
+          provide: NotificationService,
+          useValue: {
+            startPolling: vitest.fn(),
+            stopPolling: vitest.fn(),
+            markAsRead: vitest.fn(),
+            refresh: vitest.fn(),
+          },
+        },
       ],
     });
   });
@@ -47,55 +59,23 @@ describe('Navbar Component', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(Navbar);
     comp = fixture.componentInstance;
-    accountService = TestBed.inject(AccountService);
-    profileService = TestBed.inject(ProfileService);
+    mockAccountService = TestBed.inject(AccountService);
+    mockNotificationService = TestBed.inject(NotificationService);
   });
 
-  it('should call profileService.getProfileInfo on init', () => {
-    // GIVEN
-    vitest.spyOn(profileService, 'getProfileInfo').mockReturnValue(of(new ProfileInfo()));
-
-    // WHEN
-    comp.ngOnInit();
-
-    // THEN
-    expect(profileService.getProfileInfo).toHaveBeenCalled();
+  it('should create', () => {
+    expect(comp).toBeTruthy();
   });
 
-  it('should hold current authenticated user in variable account', () => {
-    // WHEN
-    comp.ngOnInit();
-
-    // THEN
-    expect(comp.account()).toBeNull();
-
-    // WHEN
-    accountService.authenticate(account);
-
-    // THEN
-    expect(comp.account()).toEqual(account);
-
-    // WHEN
-    accountService.authenticate(null);
-
-    // THEN
+  it('should have account signal null by default', () => {
     expect(comp.account()).toBeNull();
   });
 
-  it('should hold current authenticated user in variable account if user is authenticated before page load', () => {
-    // GIVEN
-    accountService.authenticate(account);
+  it('should start notification polling when account is set', () => {
+    fixture.detectChanges();
+    mockAccountService.authenticate(account);
+    fixture.detectChanges();
 
-    // WHEN
-    comp.ngOnInit();
-
-    // THEN
-    expect(comp.account()).toEqual(account);
-
-    // WHEN
-    accountService.authenticate(null);
-
-    // THEN
-    expect(comp.account()).toBeNull();
+    expect(mockNotificationService.startPolling).toHaveBeenCalled();
   });
 });

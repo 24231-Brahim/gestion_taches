@@ -4,12 +4,14 @@ import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { NotificationService, INotification } from 'app/core/util/notification.service';
 import { ItemCount } from 'app/shared/pagination';
 import { ITEMS_PER_PAGE } from 'app/config/pagination.constants';
+import { NotificationDetailModal } from 'app/notifications/notification-detail-modal';
 
 @Component({
   selector: 'jhi-notification-list',
@@ -25,6 +27,7 @@ export default class NotificationListComponent implements OnInit {
   readonly totalItems = signal(0);
   readonly notificationService = inject(NotificationService);
   private readonly router = inject(Router);
+  private readonly modalService = inject(NgbModal);
 
   ngOnInit(): void {
     this.loadPage();
@@ -39,14 +42,18 @@ export default class NotificationListComponent implements OnInit {
     });
   }
 
+  showDetails(notification: INotification): void {
+    const modalRef = this.modalService.open(NotificationDetailModal, { size: 'lg' });
+    modalRef.componentInstance.notification = notification;
+    modalRef.closed.subscribe(() => this.loadPage());
+    modalRef.dismissed.subscribe(() => this.loadPage());
+  }
+
   markAsRead(notification: INotification): void {
     if (!notification.isRead) {
       this.notificationService.markAsRead(notification.id).subscribe(() => {
         this.loadPage();
       });
-    }
-    if (notification.taskId && notification.projectKey) {
-      this.router.navigate(['/project', notification.projectKey, 'task', notification.taskId]);
     }
   }
 

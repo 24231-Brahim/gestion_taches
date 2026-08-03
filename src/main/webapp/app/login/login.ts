@@ -9,12 +9,14 @@ import { AccountService } from 'app/core/auth/account.service';
 import { StateStorageService } from 'app/core/auth/state-storage.service';
 import { LoginService } from 'app/login/login.service';
 import { ThemeService } from 'app/core/util/theme.service';
+import { LANGUAGES } from 'app/config/language.constants';
 import { TranslateDirective } from 'app/shared/language';
+import FindLanguageFromKeyPipe from 'app/shared/language/find-language-from-key.pipe';
 
 @Component({
   selector: 'jhi-login',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslateDirective, TranslateModule, ReactiveFormsModule, RouterLink, FontAwesomeModule],
+  imports: [TranslateDirective, TranslateModule, ReactiveFormsModule, RouterLink, FontAwesomeModule, FindLanguageFromKeyPipe],
   templateUrl: './login.html',
   styleUrl: './login.component.scss',
 })
@@ -22,7 +24,9 @@ export default class Login implements OnInit, AfterViewInit {
   username = viewChild.required<ElementRef>('username');
 
   readonly authenticationError = signal(false);
+  readonly showLangMenu = signal(false);
   readonly themeService = inject(ThemeService);
+  readonly languages = LANGUAGES;
 
   loginForm = new FormGroup({
     username: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
@@ -39,6 +43,15 @@ export default class Login implements OnInit, AfterViewInit {
   changeLanguage(lang: string): void {
     this.stateStorageService.storeLocale(lang);
     this.translateService.use(lang);
+    this.showLangMenu.set(false);
+  }
+
+  toggleLangMenu(): void {
+    this.showLangMenu.update(v => !v);
+  }
+
+  closeLangMenu(): void {
+    this.showLangMenu.set(false);
   }
 
   ngOnInit(): void {

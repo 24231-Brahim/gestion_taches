@@ -12,6 +12,7 @@ import { Subscription, combineLatest, from, of, switchMap, tap } from 'rxjs';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { CsvDownloadService } from 'app/shared/csv/csv-download.service';
+import { EntityEventService, EntityType } from 'app/core/util/entity-event.service';
 import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, ITEM_SAVED_EVENT, SORT } from 'app/config/navigation.constants';
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { AccountService } from 'app/core/auth/account.service';
@@ -118,7 +119,7 @@ import { TaskService } from '../service/task.service';
         width: 24px;
         height: 24px;
         border-radius: 50%;
-        background: var(--color-primary-container, #25a7fd);
+        background: var(--color-primary-container, #0099fe);
         color: var(--color-on-primary-container);
         font-size: 0.65rem;
         font-weight: 600;
@@ -155,6 +156,7 @@ export class Task implements OnInit {
   readonly totalItems = signal(0);
   readonly page = signal(1);
   readonly searchQuery = signal('');
+  readonly debouncedSearchQuery = signal('');
 
   readonly currentProjectKey = signal<string | null>(null);
   readonly currentProject = signal<IProject | null>(null);
@@ -166,7 +168,7 @@ export class Task implements OnInit {
   private readonly csvDownloadService = inject(CsvDownloadService);
 
   filteredTasks = computed(() => {
-    const q = this.searchQuery().toLowerCase();
+    const q = this.debouncedSearchQuery().toLowerCase();
     if (!q) {
       return this.tasks();
     }
@@ -192,6 +194,7 @@ export class Task implements OnInit {
   protected readonly projectService = inject(ProjectService);
 
   protected readonly destroyRef = inject(DestroyRef);
+  protected readonly entityEventService = inject(EntityEventService);
 
   constructor() {
     effect(() => {
@@ -210,6 +213,11 @@ export class Task implements OnInit {
           this.handleNavigation(1, this.sortState(), filterOptions);
         });
       }
+    });
+    effect(() => {
+      const value = this.searchQuery();
+      const handle = window.setTimeout(() => this.debouncedSearchQuery.set(value), 300);
+      return () => window.clearTimeout(handle);
     });
   }
 
@@ -256,6 +264,10 @@ export class Task implements OnInit {
       )
       .subscribe();
     this.loadUserProjectRoles();
+    this.entityEventService
+      .onEntityType(EntityType.TASK)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.load());
   }
 
   loadUserProjectRoles(): void {

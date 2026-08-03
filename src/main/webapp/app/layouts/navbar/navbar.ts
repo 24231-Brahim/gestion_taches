@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, effect, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
@@ -9,7 +9,8 @@ import { environment } from 'environments/environment';
 
 import { AccountService } from 'app/core/auth/account.service';
 
-import { NotificationService } from 'app/core/util/notification.service';
+import { INotification, NotificationService } from 'app/core/util/notification.service';
+import { EntityEventService } from 'app/core/util/entity-event.service';
 import { SearchService } from 'app/layouts/search/search.service';
 
 import { TranslateDirective } from 'app/shared/language';
@@ -36,9 +37,8 @@ export default class Navbar implements OnDestroy {
   readonly version: string;
   readonly account = inject(AccountService).account;
   readonly notificationService = inject(NotificationService);
+  readonly entityEventService = inject(EntityEventService);
   private readonly searchService = inject(SearchService);
-
-  private readonly router = inject(Router);
 
   constructor() {
     const { VERSION } = environment;
@@ -50,8 +50,10 @@ export default class Navbar implements OnDestroy {
     effect(() => {
       if (this.account() !== null) {
         this.notificationService.startPolling();
+        this.entityEventService.connect();
       } else {
         this.notificationService.stopPolling();
+        this.entityEventService.disconnect();
       }
     });
   }
@@ -68,14 +70,11 @@ export default class Navbar implements OnDestroy {
     this.searchService.open();
   }
 
-  markNotificationRead(notification: any): void {
+  markNotificationRead(notification: INotification): void {
     if (!notification.isRead) {
       this.notificationService.markAsRead(notification.id).subscribe(() => {
         this.notificationService.refresh();
       });
-    }
-    if (notification.taskId && notification.projectKey) {
-      this.router.navigate(['/project', notification.projectKey, 'task', notification.taskId]);
     }
   }
 

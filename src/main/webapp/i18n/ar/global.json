@@ -17,8 +17,7 @@
         "epic": "الإيبك",
         "task": "المهام",
         "comment": "التعليقات",
-        "attachment": "المرفقات",
-        "actionHistory": "سجل الإجراءات"
+        "attachment": "المرفقات"
       },
       "account": {
         "main": "الحساب",
@@ -60,7 +59,17 @@
     "messages": {
       "viewAllNotifications": "عرض الكل",
       "markAllAsRead": "تعيين الكل كمقروء",
+      "markAsRead": "تعيين كمقروء",
       "noNotifications": "لا توجد إشعارات",
+      "notificationDetail": {
+        "message": "الرسالة",
+        "date": "التاريخ",
+        "status": "الحالة",
+        "read": "مقروء",
+        "unread": "غير مقروء",
+        "task": "المهمة",
+        "viewTask": "عرض المهمة"
+      },
       "info": {
         "authenticated": {
           "prefix": "إذا كنت ترغب في ",

@@ -8,13 +8,23 @@
       }
     </button>
 
-    <div class="split-screen-lang-toggle">
-      <button class="split-screen-lang-btn" [class.active]="translateService.getCurrentLang() === 'fr'" (click)="changeLanguage('fr')">
-        FR
+    <div class="split-screen-lang-dropdown">
+      <button class="split-screen-lang-btn" (click)="toggleLangMenu()" (blur)="closeLangMenu()">
+        <fa-icon icon="globe" />
       </button>
-      <button class="split-screen-lang-btn" [class.active]="translateService.getCurrentLang() === 'en'" (click)="changeLanguage('en')">
-        EN
-      </button>
+      @if (showLangMenu()) {
+        <div class="split-screen-lang-menu">
+          @for (language of languages; track $index) {
+            <button
+              class="split-screen-lang-item"
+              [class.active]="translateService.getCurrentLang() === language"
+              (mousedown)="changeLanguage(language)"
+            >
+              {{ language | findLanguageFromKey }}
+            </button>
+          }
+        </div>
+      }
     </div>
   </div>
 

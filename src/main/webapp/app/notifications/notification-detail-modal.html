@@ -1,0 +1,52 @@
+<div class="notification-detail-modal">
+  <div class="modal-header">
+    <h4 class="modal-title" jhiTranslate="global.menu.notifications">Notifications</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="close()"></button>
+  </div>
+
+  <div class="modal-body">
+    <div class="detail-row">
+      <span class="detail-label" jhiTranslate="global.messages.notificationDetail.message">Message</span>
+      <p class="detail-value message-text">{{ notification.message }}</p>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label" jhiTranslate="global.messages.notificationDetail.date">Date</span>
+      <span class="detail-value">{{ notification.createdAt | date: 'medium' }}</span>
+    </div>
+
+    <div class="detail-row">
+      <span class="detail-label" jhiTranslate="global.messages.notificationDetail.status">Statut</span>
+      <span class="detail-value">
+        @if (notification.isRead) {
+          <span class="badge bg-secondary" jhiTranslate="global.messages.notificationDetail.read">Lu</span>
+        } @else {
+          <span class="badge bg-primary" jhiTranslate="global.messages.notificationDetail.unread">Non lu</span>
+        }
+      </span>
+    </div>
+
+    @if (notification.taskTitle) {
+      <div class="detail-row">
+        <span class="detail-label" jhiTranslate="global.messages.notificationDetail.task">Tâche</span>
+        <span class="detail-value">{{ notification.taskTitle }}</span>
+      </div>
+    }
+  </div>
+
+  <div class="modal-footer">
+    @if (!notification.isRead) {
+      <button type="button" class="btn btn-outline-primary" (click)="markAsRead()">
+        <fa-icon icon="check" />
+        <span jhiTranslate="global.messages.markAsRead">Marquer comme lu</span>
+      </button>
+    }
+    @if (notification.taskId && notification.projectKey) {
+      <button type="button" class="btn btn-primary" (click)="goToTask()">
+        <fa-icon icon="external-link-alt" />
+        <span jhiTranslate="global.messages.notificationDetail.viewTask">Voir la tâche</span>
+      </button>
+    }
+    <button type="button" class="btn btn-secondary" (click)="close()" jhiTranslate="entity.action.close">Fermer</button>
+  </div>
+</div>

@@ -82,15 +82,7 @@ public class ProjectResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
-    @PreAuthorize(
-        "hasAnyAuthority('" +
-            AuthoritiesConstants.ADMIN +
-            "', '" +
-            AuthoritiesConstants.PROJET_MANAGER +
-            "', '" +
-            AuthoritiesConstants.USER +
-            "')"
-    )
+    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
     public ResponseEntity<ProjectDTO> updateProject(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody ProjectDTO projectDTO
@@ -125,15 +117,7 @@ public class ProjectResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    @PreAuthorize(
-        "hasAnyAuthority('" +
-            AuthoritiesConstants.ADMIN +
-            "', '" +
-            AuthoritiesConstants.PROJET_MANAGER +
-            "', '" +
-            AuthoritiesConstants.USER +
-            "')"
-    )
+    @PreAuthorize("hasAnyAuthority('" + AuthoritiesConstants.ADMIN + "', '" + AuthoritiesConstants.PROJET_MANAGER + "')")
     public ResponseEntity<ProjectDTO> partialUpdateProject(
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody ProjectDTO projectDTO

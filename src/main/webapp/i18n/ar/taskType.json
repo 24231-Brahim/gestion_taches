@@ -1,6 +1,6 @@
 {
   "gestionTachesApp": {
-    "IssueType": {
+    "TaskType": {
       "null": "",
       "STORY": "قصة",
       "BUG": "خطأ",

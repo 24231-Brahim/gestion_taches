@@ -1,6 +1,6 @@
 <div class="task-page">
   <div class="task-page-header">
-    <h2 id="page-heading" data-cy="IssueHeading" class="page-heading">
+    <h2 id="page-heading" data-cy="TaskHeading" class="page-heading">
       <span jhiTranslate="gestionTachesApp.task.home.title">Tasks</span>
     </h2>
     <div class="d-flex gap-2 align-items-center">
@@ -51,9 +51,6 @@
         <table class="table" aria-describedby="page-heading">
           <thead>
             <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-              <th scope="col" jhiSortBy="type">
-                <div class="d-flex"><span jhiTranslate="gestionTachesApp.task.type">Type</span><fa-icon class="p-1" icon="sort" /></div>
-              </th>
               <th scope="col" jhiSortBy="title">
                 <div class="d-flex"><span jhiTranslate="gestionTachesApp.task.title">Title</span><fa-icon class="p-1" icon="sort" /></div>
               </th>
@@ -72,19 +69,13 @@
                 <div class="d-flex"><span jhiTranslate="gestionTachesApp.task.epic">Epic</span><fa-icon class="p-1" icon="sort" /></div>
               </th>
               <th scope="col"><span jhiTranslate="gestionTachesApp.task.assignee">Assignee</span></th>
+              <th scope="col"><span jhiTranslate="gestionTachesApp.task.createdBy">Cr\u00e9\u00e9 par</span></th>
               <th scope="col"></th>
             </tr>
           </thead>
           <tbody>
             @for (task of filteredTasks(); track trackId(task)) {
               <tr data-cy="entityTable" class="task-row" (click)="onSelectTask(task)">
-                <td>
-                  <fa-icon
-                    [icon]="typeIcons[task.type ?? 'STORY']"
-                    [style.color]="typeColors[task.type ?? 'STORY']"
-                    [title]="'gestionTachesApp.IssueType.' + (task.type ?? 'null') | translate"
-                  />
-                </td>
                 <td class="task-title-cell">{{ task.title }}</td>
                 <td>
                   <span class="status-badge" [style.background]="statusBadges[task.status ?? 'NEW']?.color">
@@ -112,6 +103,11 @@
                 <td>
                   @if (task.assignee) {
                     <span class="assignee-initials-sm" [title]="task.assignee.login">{{ task.assignee.login }}</span>
+                  }
+                </td>
+                <td>
+                  @if (task.createdBy) {
+                    {{ task.createdBy.login }}
                   }
                 </td>
                 <td class="text-end">

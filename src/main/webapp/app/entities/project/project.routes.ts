@@ -39,6 +39,14 @@ const projectRoute: Routes = [
     canActivate: [UserRouteAccessService],
   },
   {
+    path: ':key/settings',
+    loadComponent: () => import('./settings/project-settings').then(m => m.ProjectSettings),
+    resolve: {
+      project: ProjectResolve,
+    },
+    canActivate: [UserRouteAccessService],
+  },
+  {
     path: ':key/sprint',
     resolve: {
       project: ProjectResolve,

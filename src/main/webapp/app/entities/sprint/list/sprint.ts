@@ -22,12 +22,11 @@ import { IProject } from 'app/entities/project/project.model';
 import { ProjectService } from 'app/entities/project/service/project.service';
 import { SprintActiveBoard } from '../active-board/sprint-active-board';
 import { SprintBacklogPlanning } from '../backlog-planning/sprint-backlog-planning';
-import { SprintBurndownChart } from '../burndown/sprint-burndown-chart';
 import { SprintService, VelocityReport } from '../service/sprint.service';
 import { ISprint } from '../sprint.model';
 import { SprintFormModal } from '../update/sprint-form-modal';
 
-type Tab = 'board' | 'planning' | 'burndown';
+type Tab = 'board' | 'planning';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -247,7 +246,6 @@ type Tab = 'board' | 'planning' | 'burndown';
     FormatMediumDatePipe,
     SprintActiveBoard,
     SprintBacklogPlanning,
-    SprintBurndownChart,
   ],
 })
 export class Sprint implements OnInit {
@@ -352,19 +350,28 @@ export class Sprint implements OnInit {
     const sp = this.sprints().find(s => s.id === id);
     if (sp?.project?.id) {
       this.taskService.tasksParams.set({
+        'sprintId.equals': sp.id,
+        size: 100,
+      });
+      this.taskService.backlogTasksParams.set({
         'projectId.equals': sp.project.id,
-        size: 500,
+        'sprintId.specified': false,
+        size: 100,
       });
     }
   });
 
-  private issuesEffect = effect(() => {
+  private tasksEffect = effect(() => {
     const raw = this.taskService.tasks();
+    const backlog = this.taskService.backlogTasks();
     if (raw && raw.length > 0) {
       this.tasks.set(raw.filter(i => i.sprint?.id === this.selectedSprintId()));
-      this.projectTasks.set(raw);
     } else if (raw?.length === 0 && this.taskService.tasksResource.hasValue()) {
       this.tasks.set([]);
+    }
+    if (backlog && backlog.length > 0) {
+      this.projectTasks.set(backlog);
+    } else if (backlog?.length === 0 && this.taskService.backlogTasksResource.hasValue()) {
       this.projectTasks.set([]);
     }
   });
@@ -409,13 +416,18 @@ export class Sprint implements OnInit {
     const sp = this.sprints().find(s => s.id === id);
     if (sp?.project?.id) {
       this.taskService.tasksParams.set({
+        'sprintId.equals': sp.id,
+        size: 100,
+      });
+      this.taskService.backlogTasksParams.set({
         'projectId.equals': sp.project.id,
-        size: 500,
+        'sprintId.specified': false,
+        size: 100,
       });
     }
   }
 
-  private refreshIssues(): void {
+  private refreshTasks(): void {
     this.taskService.refresh();
   }
 
@@ -424,7 +436,7 @@ export class Sprint implements OnInit {
     this.taskService.partialUpdate({ id: event.taskId, status: event.status as any }).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.refreshIssues();
+        this.refreshTasks();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -439,7 +451,7 @@ export class Sprint implements OnInit {
     this.taskService.partialUpdate({ id: event.taskId, sprint: { id: event.sprintId } }).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.refreshIssues();
+        this.refreshTasks();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -454,7 +466,7 @@ export class Sprint implements OnInit {
     this.taskService.partialUpdate({ id: taskId, sprint: null }).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.refreshIssues();
+        this.refreshTasks();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -474,7 +486,7 @@ export class Sprint implements OnInit {
       next: updated => {
         this.isSaving.set(false);
         this.sprints.update(list => list.map(s => (s.id === updated.id ? { ...s, ...updated } : s)));
-        this.refreshIssues();
+        this.refreshTasks();
         this.sprintService.refresh();
       },
       error: (err: HttpErrorResponse) => {
@@ -497,7 +509,7 @@ export class Sprint implements OnInit {
         this.sprints.update(list => list.map(s => (s.id === sp.id ? { ...s, status: 'COMPLETED' } : s)));
         this.velocityReport.set(report);
         this.showVelocityModal.set(true);
-        this.refreshIssues();
+        this.refreshTasks();
         this.sprintService.refresh();
       },
       error: (err: HttpErrorResponse) => {
@@ -513,7 +525,7 @@ export class Sprint implements OnInit {
     this.velocityReport.set(null);
   }
 
-  onSelectTask(_issue: ITask): void {
+  onSelectTask(_task: ITask): void {
     // no-op for now
   }
 

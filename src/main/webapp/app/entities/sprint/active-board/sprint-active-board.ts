@@ -163,7 +163,7 @@ interface KanbanColumn {
         font-family: var(--font-mono);
       }
       .kanban-card-sp {
-        background: var(--color-primary-container, #25a7fd);
+        background: var(--color-primary-container, #0099fe);
         color: var(--color-on-primary-container);
         font-size: 0.65rem;
         font-weight: 600;
@@ -187,7 +187,7 @@ interface KanbanColumn {
       .assignee-initials {
         width: 22px;
         height: 22px;
-        background: var(--color-primary-container, #25a7fd);
+        background: var(--color-primary-container, #0099fe);
         color: var(--color-on-primary-container);
         font-size: 0.65rem;
         font-weight: 600;

@@ -4,6 +4,8 @@ import { ProjectRole } from 'app/entities/enumerations/project-role.model';
 export interface IProjectMember {
   id: number;
   projectId?: number | null;
+  projectName?: string | null;
+  projectKey?: string | null;
   userId?: number | null;
   userLogin?: string | null;
   role?: ProjectRole | null;

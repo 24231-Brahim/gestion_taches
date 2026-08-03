@@ -6,29 +6,51 @@
   </h4>
 
   @if (isLoading()) {
-    <div class="text-center p-3">
-      <fa-icon icon="arrows-rotate" animation="spin" />
+    <div class="loading-state">
+      <fa-icon icon="arrows-rotate" animation="spin" size="lg" />
     </div>
   } @else {
-    @if (comments().length === 0) {
-      <p class="text-muted" jhiTranslate="gestionTachesApp.task.detail.noComments">No comments yet.</p>
+    @if (sortedComments().length === 0) {
+      <div class="empty-state">
+        <div><fa-icon icon="comment" /></div>
+        <p jhiTranslate="gestionTachesApp.task.detail.noComments">No comments yet.</p>
+      </div>
     } @else {
       <div class="comments-list">
-        @for (comment of comments(); track comment.id) {
+        @for (comment of sortedComments(); track comment.id) {
           <div class="comment-item">
             <div class="comment-header">
-              <span class="comment-author">
-                <fa-icon icon="user" class="me-1" />
-                {{ comment.author?.login ?? ('error.messages.unassigned' | translate) }}
-              </span>
-              <span class="comment-date">{{ comment.createdAt | formatMediumDatetime }}</span>
+              <div class="comment-avatar">{{ getInitials(comment.author?.login) }}</div>
+              <div class="comment-meta">
+                <span class="comment-author">{{ comment.author?.login ?? ('error.messages.unassigned' | translate) }}</span>
+                <span class="comment-date">{{ comment.createdAt | formatMediumDatetime }}</span>
+              </div>
+              @if (canModify(comment)) {
+                <div class="comment-actions">
+                  <button class="btn btn-sm btn-outline-danger" (click)="deleteComment(comment.id)" title="Supprimer">
+                    <fa-icon icon="trash" />
+                  </button>
+                </div>
+              }
             </div>
-            <div class="comment-body">
-              {{ comment.content }}
-            </div>
+            <div class="comment-body">{{ comment.content }}</div>
           </div>
         }
       </div>
     }
+
+    <div class="comment-form">
+      <textarea
+        class="form-control"
+        [ngModel]="newCommentText()"
+        (ngModelChange)="newCommentText.set($event)"
+        rows="3"
+        [placeholder]="'gestionTachesApp.comment.form.placeholder' | translate"
+      ></textarea>
+      <button class="btn btn-primary btn-sm mt-2" (click)="addComment()" [disabled]="!newCommentText().trim()">
+        <fa-icon icon="plus" class="me-1" />
+        <span jhiTranslate="gestionTachesApp.comment.form.submit">Ajouter</span>
+      </button>
+    </div>
   }
 </div>

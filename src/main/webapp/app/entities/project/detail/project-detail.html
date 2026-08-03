@@ -5,6 +5,9 @@
       <span class="badge border-primary ms-2">{{ projectRef.key }}</span>
 
       <div class="d-flex">
+        <a [routerLink]="['/project', projectRef.key, 'settings']" class="btn btn-secondary btn-sm me-2" [hidden]="!canManageMembers()">
+          <fa-icon icon="gear" />&nbsp;<span jhiTranslate="gestionTachesApp.project.settings.title">Paramètres</span>
+        </a>
         <a [routerLink]="['/project', projectRef.key, 'edit']" class="btn btn-primary btn-sm me-2">
           <fa-icon icon="pencil" />&nbsp;<span jhiTranslate="entity.action.edit">Editer</span>
         </a>

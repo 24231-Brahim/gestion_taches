@@ -31,6 +31,14 @@
         "members": "Membres",
         "discussion": "Discussion"
       },
+      "settings": {
+        "title": "Paramètres",
+        "forbidden": "Vous n'avez pas les droits d'accès aux paramètres de ce projet.",
+        "information": "Informations générales",
+        "nameRequired": "Le nom est requis.",
+        "descriptionPlaceholder": "Décrivez le but du projet...",
+        "keyHint": "Identifiant court unique (2-10 caractères)."
+      },
       "member": {
         "add": "Ajouter un membre",
         "added": "Membre ajouté au projet",

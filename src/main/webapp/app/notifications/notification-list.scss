@@ -90,3 +90,14 @@ jhi-notification-list {
   color: var(--color-muted);
   flex-wrap: wrap;
 }
+
+.mark-read-btn {
+  flex-shrink: 0;
+  align-self: center;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+
+  .notification-card:hover & {
+    opacity: 1;
+  }
+}

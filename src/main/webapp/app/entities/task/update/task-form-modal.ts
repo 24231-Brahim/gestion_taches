@@ -66,25 +66,26 @@ export class TaskFormModal implements OnInit {
   ngOnInit(): void {
     if (this.task) {
       this.taskFormService.resetForm(this.editForm, this.task);
-      this.sprintsSharedCollection.update(sprints =>
-        this.sprintService.addSprintToCollectionIfMissing<ISprint>(sprints, this.task!.sprint),
-      );
-      this.epicsSharedCollection.update(epics => this.epicService.addEpicToCollectionIfMissing<IEpic>(epics, this.task!.epic));
-      this.projectsSharedCollection.update(projects =>
-        this.projectService.addProjectToCollectionIfMissing<IProject>(projects, this.task!.project),
-      );
+      const projectId = this.task.project?.id;
+      if (projectId) {
+        this.loadProjectScopedOptions(projectId);
+        this.loadProjectMembers(projectId);
+      }
     }
-
-    this.loadRelationshipsOptions();
 
     if (this.projectKey && !this.task) {
       this.projectService.findByKey(this.projectKey).subscribe(project => {
         if (project) {
           this.editForm.patchValue({ project });
           this.loadProjectMembers(project.id!);
+          this.loadProjectScopedOptions(project.id!);
           this.isProjectContext.set(true);
         }
       });
+    }
+
+    if (!this.task && !this.projectKey) {
+      this.loadRelationshipsOptions();
     }
 
     this.editForm
@@ -94,9 +95,24 @@ export class TaskFormModal implements OnInit {
         const projectVal = project as IProject | null;
         if (projectVal?.id) {
           this.loadProjectMembers(projectVal.id);
-          this.editForm.patchValue({ assignee: null }, { emitEvent: false });
+          this.loadProjectScopedOptions(projectVal.id);
+          this.editForm.patchValue({ assignee: null, sprint: null, epic: null }, { emitEvent: false });
         }
       });
+  }
+
+  loadProjectScopedOptions(projectId: number): void {
+    this.sprintService
+      .query({ 'projectId.equals': projectId })
+      .pipe(map((res: HttpResponse<ISprint[]>) => res.body ?? []))
+      .pipe(map((sprints: ISprint[]) => this.sprintService.addSprintToCollectionIfMissing<ISprint>(sprints, this.task?.sprint)))
+      .subscribe((sprints: ISprint[]) => this.sprintsSharedCollection.set(sprints));
+
+    this.epicService
+      .query({ 'projectId.equals': projectId })
+      .pipe(map((res: HttpResponse<IEpic[]>) => res.body ?? []))
+      .pipe(map((epics: IEpic[]) => this.epicService.addEpicToCollectionIfMissing<IEpic>(epics, this.task?.epic)))
+      .subscribe((epics: IEpic[]) => this.epicsSharedCollection.set(epics));
   }
 
   cancel(): void {
@@ -105,9 +121,15 @@ export class TaskFormModal implements OnInit {
 
   save(): void {
     this.isSaving.set(true);
+    const project = this.editForm.get('project')?.value as IProject | null;
+    if (!project?.id) {
+      this.alertService.addAlert({ type: 'danger', translationKey: 'gestionTachesApp.task.error.noProject' });
+      this.isSaving.set(false);
+      return;
+    }
     const task = this.taskFormService.getTask(this.editForm);
     if (task.id === null) {
-      this.subscribeToSaveResponse(this.taskService.create(task));
+      this.subscribeToSaveResponse(this.taskService.createForProject(project.id, task));
     } else {
       this.subscribeToSaveResponse(this.taskService.update(task));
     }

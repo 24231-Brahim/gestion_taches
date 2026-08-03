@@ -40,7 +40,7 @@
         "backlog": "Backlog",
         "sprint": "Sprint",
         "noBacklog": "Toutes les tâches sont affectées à un sprint",
-        "noIssues": "Aucune tâche dans ce sprint",
+        "noTasks": "Aucune tâche dans ce sprint",
         "searchPlaceholder": "Rechercher des tâches..."
       },
       "burndown": {
@@ -70,6 +70,20 @@
       },
       "progress": {
         "label": "Progression du Sprint"
+      },
+      "table": {
+        "title": "Liste des Sprints",
+        "view": "Vue tableau",
+        "taskCount": "Tâches"
+      },
+      "timeline": {
+        "tasks": "Chronologie",
+        "empty": "Aucune tâche dans ce sprint"
+      },
+      "tasks": {
+        "tab": "Tâches",
+        "title": "Tâches du Sprint",
+        "empty": "Aucune tâche dans ce sprint"
       }
     }
   }

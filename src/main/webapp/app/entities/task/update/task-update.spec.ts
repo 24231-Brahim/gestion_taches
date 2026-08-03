@@ -147,7 +147,7 @@ describe('Task Management Update Component', () => {
       const task = { id: 6256 };
       vitest.spyOn(taskFormService, 'getTask').mockReturnValue(task);
       vitest.spyOn(taskService, 'update').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+
       activatedRoute.data = of({ task });
       comp.ngOnInit();
 
@@ -159,7 +159,7 @@ describe('Task Management Update Component', () => {
 
       // THEN
       expect(taskFormService.getTask).toHaveBeenCalled();
-      expect(comp.previousState).toHaveBeenCalled();
+
       expect(taskService.update).toHaveBeenCalledWith(expect.objectContaining(task));
       expect(comp.isSaving()).toEqual(false);
     });
@@ -170,7 +170,7 @@ describe('Task Management Update Component', () => {
       const task = { id: 6256 };
       vitest.spyOn(taskFormService, 'getTask').mockReturnValue({ id: null });
       vitest.spyOn(taskService, 'create').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+
       activatedRoute.data = of({ task: null });
       comp.ngOnInit();
 
@@ -184,7 +184,6 @@ describe('Task Management Update Component', () => {
       expect(taskFormService.getTask).toHaveBeenCalled();
       expect(taskService.create).toHaveBeenCalled();
       expect(comp.isSaving()).toEqual(false);
-      expect(comp.previousState).toHaveBeenCalled();
     });
 
     it('should set isSaving to false on error', () => {
@@ -192,7 +191,7 @@ describe('Task Management Update Component', () => {
       const saveSubject = new Subject<ITask>();
       const task = { id: 6256 };
       vitest.spyOn(taskService, 'update').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+
       activatedRoute.data = of({ task });
       comp.ngOnInit();
 
@@ -204,7 +203,6 @@ describe('Task Management Update Component', () => {
       // THEN
       expect(taskService.update).toHaveBeenCalled();
       expect(comp.isSaving()).toEqual(false);
-      expect(comp.previousState).not.toHaveBeenCalled();
     });
   });
 

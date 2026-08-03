@@ -13,6 +13,11 @@
       }
     </div>
     <div class="sprint-header-actions">
+      @if (currentProjectKey(); as key) {
+        <a [routerLink]="['/project', key, 'sprint', 'table']" class="btn btn-outline-primary btn-sm">
+          <fa-icon icon="table" /> {{ 'gestionTachesApp.sprint.table.view' | translate }}
+        </a>
+      }
       @if (selectedSprint(); as sp) {
         @if (sp.project) {
           <a [routerLink]="['/project', sp.project.key, 'view']" class="btn btn-outline-primary btn-sm">
@@ -90,9 +95,6 @@
       <button class="tab-item" [class.active]="activeTab() === 'planning'" (click)="setTab('planning')">
         <fa-icon icon="clipboard-list" class="me-1" /> {{ 'gestionTachesApp.sprint.planning.tab' | translate }}
       </button>
-      <button class="tab-item" [class.active]="activeTab() === 'burndown'" (click)="setTab('burndown')">
-        <fa-icon icon="chart-line" class="me-1" /> {{ 'gestionTachesApp.sprint.burndown.tab' | translate }}
-      </button>
     </div>
 
     @switch (activeTab()) {
@@ -111,18 +113,11 @@
         <jhi-sprint-backlog-planning
           [sprint]="sp"
           [allTasks]="projectTasks()"
+          [sprintTasksInput]="tasks()"
           [canManage]="canManageSprints()"
           [sprintStatus]="sp.status ?? 'PLANNED'"
           (assignToSprint)="onAssignToSprint($event)"
           (removeFromSprint)="onRemoveFromSprint($event)"
-        />
-      }
-      @case ('burndown') {
-        <jhi-sprint-burndown-chart
-          [sprint]="sp"
-          [totalTasks]="tasks().length"
-          [doneTasks]="tasks().filter(i => i.status === 'DONE').length"
-          [daysLeft]="daysLeft()"
         />
       }
     }

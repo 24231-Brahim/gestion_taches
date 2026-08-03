@@ -1,0 +1,138 @@
+<div>
+  @if (project(); as projectRef) {
+    <h2 class="page-heading" data-cy="projectSettingsHeading">
+      <fa-icon icon="gear" class="me-2" />
+      <span jhiTranslate="gestionTachesApp.project.settings.title">Paramètres du projet</span>
+      <span class="badge border-primary ms-2">{{ projectRef.key }}</span>
+    </h2>
+
+    <jhi-alert-error />
+    <jhi-alert />
+
+    @if (isForbidden()) {
+      <div class="alert alert-danger" role="alert" jhiTranslate="gestionTachesApp.project.settings.forbidden">
+        Vous n'avez pas les droits d'accès aux paramètres de ce projet.
+      </div>
+    } @else {
+      <form name="settingsForm" (ngSubmit)="save()" novalidate>
+        <div class="card mb-4">
+          <div class="card-header">
+            <span jhiTranslate="gestionTachesApp.project.settings.information">Informations générales</span>
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label class="form-label" for="project-settings-name" jhiTranslate="gestionTachesApp.project.name">Nom</label>
+              <input type="text" class="form-control" id="project-settings-name" formControlName="name" />
+              @if (editForm.controls.name.invalid && (editForm.controls.name.dirty || editForm.controls.name.touched)) {
+                <div class="text-danger">
+                  <small jhiTranslate="gestionTachesApp.project.settings.nameRequired">Le nom est requis.</small>
+                </div>
+              }
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="project-settings-description" jhiTranslate="gestionTachesApp.project.description"
+                >Description</label
+              >
+              <textarea
+                class="form-control"
+                id="project-settings-description"
+                rows="4"
+                formControlName="description"
+                [placeholder]="'gestionTachesApp.project.settings.descriptionPlaceholder' | translate"
+              ></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label" for="project-settings-key" jhiTranslate="gestionTachesApp.project.key">Clé du projet</label>
+              <input type="text" class="form-control" id="project-settings-key" formControlName="key" />
+              <div class="form-text" jhiTranslate="gestionTachesApp.project.settings.keyHint">
+                Identifiant court unique (2-10 caractères).
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" [disabled]="isSaving() || editForm.invalid">
+              <fa-icon icon="floppy-disk" />&nbsp;<span jhiTranslate="entity.action.save">Enregistrer</span>
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <div class="card">
+        <div class="card-header d-flex align-items-center">
+          <span jhiTranslate="gestionTachesApp.project.members">Membres</span>
+          <button class="btn btn-primary btn-sm ms-auto" (click)="toggleAddForm()">
+            <fa-icon icon="user-plus" />&nbsp;<span jhiTranslate="gestionTachesApp.project.member.add">Ajouter un membre</span>
+          </button>
+        </div>
+        <div class="card-body">
+          @if (showAddForm()) {
+            <div class="card mb-3 border">
+              <div class="card-body">
+                <div class="row g-2 align-items-end">
+                  <div class="col-auto">
+                    <select class="form-select" [(ngModel)]="selectedUserId" aria-label="User">
+                      <option [ngValue]="null" disabled jhiTranslate="gestionTachesApp.project.member.selectUser">
+                        Sélectionner un utilisateur
+                      </option>
+                      @for (user of users(); track user.id) {
+                        @if (!members().find(m => m.userId === user.id)) {
+                          <option [ngValue]="user.id">{{ user.login }}</option>
+                        }
+                      }
+                    </select>
+                  </div>
+                  <div class="col-auto">
+                    <button class="btn btn-primary" (click)="addMember(projectRef.id)" [disabled]="!selectedUserId()">
+                      <fa-icon icon="floppy-disk" />&nbsp;<span jhiTranslate="entity.action.save">Enregistrer</span>
+                    </button>
+                    <button class="btn btn-secondary ms-1" (click)="toggleAddForm()">
+                      <fa-icon icon="xmark" />&nbsp;<span jhiTranslate="entity.action.cancel">Annuler</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th jhiTranslate="gestionTachesApp.project.member.userLogin">Utilisateur</th>
+                  <th jhiTranslate="gestionTachesApp.project.member.role">Rôle</th>
+                  <th jhiTranslate="gestionTachesApp.project.member.joinedAt">Date d'ajout</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (member of members(); track member.id) {
+                  <tr>
+                    <td><fa-icon icon="user" class="me-1" />{{ member.userLogin }}</td>
+                    <td>
+                      <span class="badge border-primary">
+                        {{ 'gestionTachesApp.project.member.role.' + member.role | translate }}
+                      </span>
+                    </td>
+                    <td>{{ member.joinedAt | formatMediumDatetime }}</td>
+                    <td>
+                      <button class="btn btn-sm btn-danger" (click)="removeMember(projectRef.id, member.userId!)">
+                        <fa-icon icon="trash-can" />
+                      </button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="text-center text-muted" jhiTranslate="gestionTachesApp.project.member.empty">
+                      Aucun membre pour le moment
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

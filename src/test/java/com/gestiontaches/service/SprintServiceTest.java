@@ -66,6 +66,9 @@ class SprintServiceTest {
     @Mock
     private TaskMapper taskMapper;
 
+    @Mock
+    private EntityEventSseService entityEventSseService;
+
     @InjectMocks
     private SprintService sprintService;
 
@@ -122,6 +125,11 @@ class SprintServiceTest {
             dto.setId(s.getId());
             dto.setName(s.getName());
             dto.setStatus(s.getStatus());
+            if (s.getProject() != null) {
+                com.gestiontaches.service.dto.ProjectDTO p = new com.gestiontaches.service.dto.ProjectDTO();
+                p.setId(s.getProject().getId());
+                dto.setProject(p);
+            }
             return dto;
         });
 
@@ -279,5 +287,71 @@ class SprintServiceTest {
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getId()).isEqualTo(500L);
+    }
+
+    @Test
+    void recomputeStatus_allTasksDone_marksSprintCompleted() {
+        sprint.setStatus(SprintStatus.ACTIVE);
+        when(sprintRepository.findById(10L)).thenReturn(Optional.of(sprint));
+
+        Task doneTask = new Task();
+        doneTask.setId(600L);
+        doneTask.setStatus(TaskStatus.DONE);
+
+        Task cancelledTask = new Task();
+        cancelledTask.setId(601L);
+        cancelledTask.setStatus(TaskStatus.CANCELLED);
+
+        when(taskRepository.findBySprintId(10L)).thenReturn(List.of(doneTask, cancelledTask));
+        when(sprintRepository.save(any(Sprint.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        sprintService.recomputeStatus(10L);
+
+        assertThat(sprint.getStatus()).isEqualTo(SprintStatus.COMPLETED);
+        verify(entityEventSseService).sendEvent(any());
+    }
+
+    @Test
+    void recomputeStatus_noTasks_doesNotCompleteSprint() {
+        sprint.setStatus(SprintStatus.ACTIVE);
+        when(sprintRepository.findById(10L)).thenReturn(Optional.of(sprint));
+        when(taskRepository.findBySprintId(10L)).thenReturn(List.of());
+
+        sprintService.recomputeStatus(10L);
+
+        assertThat(sprint.getStatus()).isEqualTo(SprintStatus.ACTIVE);
+        verify(sprintRepository, never()).save(any());
+    }
+
+    @Test
+    void recomputeStatus_cancelledSprint_isNotOverwritten() {
+        sprint.setStatus(SprintStatus.CANCELLED);
+        when(sprintRepository.findById(10L)).thenReturn(Optional.of(sprint));
+
+        sprintService.recomputeStatus(10L);
+
+        assertThat(sprint.getStatus()).isEqualTo(SprintStatus.CANCELLED);
+        verify(sprintRepository, never()).save(any());
+    }
+
+    @Test
+    void recomputeStatus_tasksRemaining_doesNotCompleteSprint() {
+        sprint.setStatus(SprintStatus.ACTIVE);
+        when(sprintRepository.findById(10L)).thenReturn(Optional.of(sprint));
+
+        Task doneTask = new Task();
+        doneTask.setId(700L);
+        doneTask.setStatus(TaskStatus.DONE);
+
+        Task todoTask = new Task();
+        todoTask.setId(701L);
+        todoTask.setStatus(TaskStatus.TODO);
+
+        when(taskRepository.findBySprintId(10L)).thenReturn(List.of(doneTask, todoTask));
+
+        sprintService.recomputeStatus(10L);
+
+        assertThat(sprint.getStatus()).isEqualTo(SprintStatus.ACTIVE);
+        verify(sprintRepository, never()).save(any());
     }
 }

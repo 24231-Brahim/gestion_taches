@@ -17,8 +17,7 @@
         "epic": "Epic",
         "task": "Tasks",
         "comment": "Comment",
-        "attachment": "Attachment",
-        "actionHistory": "Action History"
+        "attachment": "Attachment"
       },
       "account": {
         "main": "Account",
@@ -60,7 +59,17 @@
     "messages": {
       "viewAllNotifications": "View all",
       "markAllAsRead": "Mark all as read",
+      "markAsRead": "Mark as read",
       "noNotifications": "No notifications",
+      "notificationDetail": {
+        "message": "Message",
+        "date": "Date",
+        "status": "Status",
+        "read": "Read",
+        "unread": "Unread",
+        "task": "Task",
+        "viewTask": "View task"
+      },
       "info": {
         "authenticated": {
           "prefix": "If you want to ",

@@ -46,7 +46,10 @@
       "project": "Project",
       "assignee": "Assignee",
       "createdBy": "Created By",
-      "system": "System"
+      "system": "System",
+      "error": {
+        "noProject": "No project selected"
+      }
     }
   }
 }

@@ -90,32 +90,7 @@
       </div>
     </div>
 
-    <div class="mb-3">
-      <label class="form-label" for="field_project" jhiTranslate="gestionTachesApp.task.project">Project</label>
-      <select
-        class="form-control"
-        id="field_project"
-        data-cy="project"
-        name="project"
-        formControlName="project"
-        [compareWith]="compareProject"
-        [attr.disabled]="isProjectContext() ? true : null"
-      >
-        @if (editForm.get(['project'])!.value === null) {
-          <option [ngValue]="null" selected></option>
-        }
-        @for (projectOption of projectsSharedCollection(); track $index) {
-          <option [ngValue]="projectOption">{{ projectOption.name }}</option>
-        }
-      </select>
-      @if (editForm.get(['project'])!.invalid && (editForm.get(['project'])!.dirty || editForm.get(['project'])!.touched)) {
-        <div>
-          @if (editForm.get(['project'])?.errors?.required) {
-            <small class="form-text text-danger" jhiTranslate="entity.validation.required">Ce champ est obligatoire.</small>
-          }
-        </div>
-      }
-    </div>
+    <input type="hidden" name="project" formControlName="project" />
 
     <div class="row">
       <div class="col-md-6 mb-3">

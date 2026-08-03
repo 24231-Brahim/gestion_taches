@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostListener, OnDestroy, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, OnDestroy, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter } from 'rxjs';
 
@@ -40,7 +40,7 @@ import ActiveMenuDirective from 'app/layouts/navbar/active-menu.directive';
 })
 export default class Sidebar implements OnDestroy {
   readonly account = inject(AccountService).account;
-  readonly collapsed = signal(false);
+  readonly collapsed = signal(localStorage.getItem('sidebar-collapsed') === 'true');
   readonly isMobile = signal(window.innerWidth < 768);
   readonly mobileOpen = signal(false);
   readonly inProduction = signal(true);
@@ -73,6 +73,10 @@ export default class Sidebar implements OnDestroy {
       this.detectProjectContext();
     });
     this.detectProjectContext();
+
+    effect(() => {
+      localStorage.setItem('sidebar-collapsed', this.collapsed() ? 'true' : 'false');
+    });
   }
 
   ngOnDestroy(): void {

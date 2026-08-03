@@ -74,6 +74,12 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
+    public Page<NotificationDTO> findAll(Pageable pageable) {
+        LOG.debug("Request to get paginated Notifications for all users");
+        return notificationRepository.findAllByOrderByCreatedAtDesc(pageable).map(notificationMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
     public long countUnreadByUserId(Long userId) {
         return notificationRepository.countByUser_idAndIsReadFalse(userId);
     }

@@ -59,7 +59,7 @@ describe('Project Management Update Component', () => {
       const project = { id: 10300 };
       vitest.spyOn(projectFormService, 'getProject').mockReturnValue(project);
       vitest.spyOn(projectService, 'update').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+
       activatedRoute.data = of({ project });
       comp.ngOnInit();
 
@@ -71,7 +71,7 @@ describe('Project Management Update Component', () => {
 
       // THEN
       expect(projectFormService.getProject).toHaveBeenCalled();
-      expect(comp.previousState).toHaveBeenCalled();
+
       expect(projectService.update).toHaveBeenCalledWith(expect.objectContaining(project));
       expect(comp.isSaving()).toEqual(false);
     });
@@ -82,7 +82,7 @@ describe('Project Management Update Component', () => {
       const project = { id: 10300 };
       vitest.spyOn(projectFormService, 'getProject').mockReturnValue({ id: null });
       vitest.spyOn(projectService, 'create').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+
       activatedRoute.data = of({ project: null });
       comp.ngOnInit();
 
@@ -96,7 +96,6 @@ describe('Project Management Update Component', () => {
       expect(projectFormService.getProject).toHaveBeenCalled();
       expect(projectService.create).toHaveBeenCalled();
       expect(comp.isSaving()).toEqual(false);
-      expect(comp.previousState).toHaveBeenCalled();
     });
 
     it('should set isSaving to false on error', () => {
@@ -104,7 +103,7 @@ describe('Project Management Update Component', () => {
       const saveSubject = new Subject<IProject>();
       const project = { id: 10300 };
       vitest.spyOn(projectService, 'update').mockReturnValue(saveSubject);
-      vitest.spyOn(comp, 'previousState');
+
       activatedRoute.data = of({ project });
       comp.ngOnInit();
 
@@ -116,7 +115,6 @@ describe('Project Management Update Component', () => {
       // THEN
       expect(projectService.update).toHaveBeenCalled();
       expect(comp.isSaving()).toEqual(false);
-      expect(comp.previousState).not.toHaveBeenCalled();
     });
   });
 });

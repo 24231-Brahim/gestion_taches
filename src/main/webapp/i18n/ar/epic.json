@@ -9,10 +9,10 @@
         "notFound": "لم يتم العثور على إيبكات",
         "tableLabel": "الإيبكات",
         "roadmap": "خارطة طريق الإيبك",
-        "details": "تفاصيل الإيبك",
-        "roadmapStart": "البداية",
-        "roadmapEnd": "النهاية"
+        "details": "تفاصيل الإيبك"
       },
+      "roadmapStart": "البداية",
+      "roadmapEnd": "النهاية",
       "created": "تم إنشاء إيبك جديد بالمعرف {{ param }}",
       "updated": "تم تحديث الإيبك بالمعرف {{ param }}",
       "deleted": "تم حذف الإيبك بالمعرف {{ param }}",
