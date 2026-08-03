@@ -4,6 +4,8 @@ import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.enumeration.ProjectRole;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,6 +17,12 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
     Optional<ProjectMember> findByProjectIdAndUserId(Long projectId, Long userId);
 
     long countByProjectIdAndRole(Long projectId, ProjectRole role);
+
+    @Query(
+        value = "SELECT pm FROM ProjectMember pm LEFT JOIN FETCH pm.project LEFT JOIN FETCH pm.user",
+        countQuery = "SELECT COUNT(pm) FROM ProjectMember pm"
+    )
+    Page<ProjectMember> findAllWithProjectAndUser(Pageable pageable);
 
     @Query("SELECT COUNT(DISTINCT pm.user.id) FROM ProjectMember pm")
     long countDistinctUsers();

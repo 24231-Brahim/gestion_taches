@@ -36,11 +36,25 @@ export class TasksService {
   readonly tasks = computed(() =>
     (this.tasksResource.hasValue() ? this.tasksResource.value() : []).map(item => this.convertValueFromServer(item)),
   );
+  readonly backlogTasksParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(
+    undefined,
+  );
+  readonly backlogTasksResource = httpResource<RestTask[]>(() => {
+    const params = this.backlogTasksParams();
+    if (!params) {
+      return undefined;
+    }
+    return { url: this.resourceUrl, params };
+  });
+  readonly backlogTasks = computed(() =>
+    (this.backlogTasksResource.hasValue() ? this.backlogTasksResource.value() : []).map(item => this.convertValueFromServer(item)),
+  );
   protected readonly applicationConfigService = inject(ApplicationConfigService);
   protected readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/tasks');
 
   refresh(): void {
     this.tasksResource.reload();
+    this.backlogTasksResource.reload();
   }
 
   protected convertValueFromServer(restTask: RestTask): ITask {

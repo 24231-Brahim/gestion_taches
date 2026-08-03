@@ -85,8 +85,9 @@ export class SprintTable implements OnInit {
             });
             this.sprintService.refresh();
             this.taskService.tasksParams.set({
-              size: 500,
+              size: 100,
               'projectId.equals': project.id,
+              'sprintId.specified': true,
             });
           }
         });

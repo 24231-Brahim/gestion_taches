@@ -67,11 +67,11 @@
       <button class="tab-item" [class.active]="activeTab() === 'planning'" (click)="setTab('planning')">
         <fa-icon icon="clipboard-list" class="me-1" /> {{ 'gestionTachesApp.sprint.planning.tab' | translate }}
       </button>
-      <button class="tab-item" [class.active]="activeTab() === 'burndown'" (click)="setTab('burndown')">
-        <fa-icon icon="chart-line" class="me-1" /> {{ 'gestionTachesApp.sprint.burndown.tab' | translate }}
-      </button>
       <button class="tab-item" [class.active]="activeTab() === 'tasks'" (click)="setTab('tasks')">
         <fa-icon icon="list" class="me-1" /> {{ 'gestionTachesApp.sprint.tasks.tab' | translate }}
+      </button>
+      <button class="tab-item" [class.active]="activeTab() === 'timeline'" (click)="setTab('timeline')">
+        <fa-icon icon="clock" class="me-1" /> {{ 'gestionTachesApp.sprint.timeline.tab' | translate }}
       </button>
     </div>
 
@@ -91,18 +91,11 @@
         <jhi-sprint-backlog-planning
           [sprint]="sp"
           [allTasks]="projectTasks()"
+          [sprintTasksInput]="tasks()"
           [canManage]="canManageSprints()"
           [sprintStatus]="sp.status ?? 'PLANNED'"
           (assignToSprint)="onAssignToSprint($event)"
           (removeFromSprint)="onRemoveFromSprint($event)"
-        />
-      }
-      @case ('burndown') {
-        <jhi-sprint-burndown-chart
-          [sprint]="sp"
-          [totalTasks]="tasks().length"
-          [doneTasks]="tasks().filter(i => i.status === 'DONE').length"
-          [daysLeft]="sp.endDate ? daysLeft() : 0"
         />
       }
       @case ('tasks') {
@@ -159,6 +152,9 @@
             </table>
           </div>
         }
+      }
+      @case ('timeline') {
+        <jhi-sprint-timeline [sprint]="sp" [tasks]="tasks()" />
       }
     }
   }

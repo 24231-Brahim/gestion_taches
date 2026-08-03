@@ -214,6 +214,9 @@
 - [ ] Corriger les erreurs TS dans `sprint.spec.ts` pour permettre `ng test`
 - [x] Ajouter une page de liste des notifications complète (avec route dédiée) → `/notifications`
 - [ ] Tester le flux assignation + notification avec l'UI
+- [x] Créer `TaskHistoryResource` + DTO + Mapper + Service (backend) → `GET /api/task-histories/by-task/{taskId}
+- [x] Réparer l'onglet Historique de tâche (`task-history-tab`) et `task-activity-feed` après suppression de `ActionHistory`
+- [x] Supprimer le code mort `ActionHistory` (frontend + Cypress test)
 
 ### Règles métier — Ownership Comment
 

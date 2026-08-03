@@ -7,7 +7,7 @@
         <span class="task-type-badge" [style.background]="typeColors[tsk.type ?? 'STORY']">
           {{ typeIcons[tsk.type ?? 'STORY'] }}
         </span>
-        <span [jhiTranslate]="'gestionTachesApp.IssueType.' + (tsk.type ?? 'null')" class="fw-bold"></span>
+        <span [jhiTranslate]="'gestionTachesApp.TaskType.' + (tsk.type ?? 'null')" class="fw-bold"></span>
       </div>
       <button class="btn btn-sm btn-ghost" (click)="close()()">
         <fa-icon icon="xmark" />
@@ -100,7 +100,7 @@
           <span class="task-field-label" jhiTranslate="gestionTachesApp.task.type"></span>
           <div class="d-flex align-items-center gap-1">
             <fa-icon [icon]="typeIcons[tsk.type ?? 'STORY']" [style.color]="typeColors[tsk.type ?? 'STORY']" />
-            <span>{{ 'gestionTachesApp.IssueType.' + (tsk.type ?? 'null') | translate }}</span>
+            <span>{{ 'gestionTachesApp.TaskType.' + (tsk.type ?? 'null') | translate }}</span>
           </div>
         </div>
 

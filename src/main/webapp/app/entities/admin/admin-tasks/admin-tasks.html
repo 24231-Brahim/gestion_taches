@@ -18,14 +18,14 @@
       <fa-icon
         icon="magnifying-glass"
         class="search-icon"
-        style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #6a8fac; font-size: 0.85rem"
+        style="position: absolute; inset-inline-start: 10px; top: 50%; transform: translateY(-50%); color: #6a8fac; font-size: 0.85rem"
       />
       <input
         type="text"
         class="form-control form-control-sm"
-        style="padding-left: 30px"
-        [ngModel]="searchQuery()"
-        (ngModelChange)="searchQuery.set($event)"
+        style="padding-inline-start: 30px"
+        [ngModel]="searchInput()"
+        (ngModelChange)="searchInput.set($event)"
         [placeholder]="'userManagement.adminTasks.searchPlaceholder' | translate"
       />
     </div>

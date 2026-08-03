@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, ParamMap, Router, RouterLink } from '@angular/router';
@@ -45,7 +45,15 @@ export class AdminTasks implements OnInit {
   readonly totalItems = signal(0);
   readonly page = signal(1);
   readonly itemsPerPage = signal(ITEMS_PER_PAGE);
+  readonly searchInput = signal('');
   readonly searchQuery = signal('');
+
+  private debounceSearch = effect(() => {
+    const value = this.searchInput();
+    const handle = window.setTimeout(() => this.searchQuery.set(value.trim()), 250);
+    return () => window.clearTimeout(handle);
+  });
+
   readonly statusBadges = STATUS_BADGES;
   readonly priorityColors = PRIORITY_COLORS;
   sortState = sortStateSignal({});

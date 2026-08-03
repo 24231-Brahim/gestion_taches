@@ -32,7 +32,7 @@ export class NotificationDetailModal {
   goToTask(): void {
     if (this.notification.taskId && this.notification.projectKey) {
       this.activeModal.close();
-      this.router.navigate(['/project', this.notification.projectKey, 'task', this.notification.taskId]);
+      this.router.navigate(['/project', this.notification.projectKey, 'task', this.notification.taskId, 'view']);
     }
   }
 

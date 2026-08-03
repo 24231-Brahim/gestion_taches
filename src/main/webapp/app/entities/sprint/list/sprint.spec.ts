@@ -47,6 +47,9 @@ describe('Sprint Component', () => {
     tasks: signal([]),
     tasksParams: signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(undefined),
     tasksResource: { hasValue: () => false },
+    backlogTasks: signal([]),
+    backlogTasksParams: signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(undefined),
+    backlogTasksResource: { hasValue: () => false },
     refresh: vitest.fn(),
     partialUpdate: vitest.fn().mockReturnValue(of({})),
   } as unknown as TaskService;
@@ -107,9 +110,6 @@ describe('Sprint Component', () => {
   it('should switch tabs', () => {
     comp.setTab('planning');
     expect(comp.activeTab()).toBe('planning');
-
-    comp.setTab('burndown');
-    expect(comp.activeTab()).toBe('burndown');
 
     comp.setTab('board');
     expect(comp.activeTab()).toBe('board');

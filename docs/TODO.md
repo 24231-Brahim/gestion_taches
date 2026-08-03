@@ -12,6 +12,7 @@
 - [x] CommentResource: GET /by-task/{taskId}, auto-set author on POST
 - [x] AttachmentResource: POST /upload, GET /download/{id}, GET /by-task/{taskId}
 - [x] TaskHistoryResource: GET /by-task/{taskId}
+- [x] TaskHistoryDTO + Mapper + Service
 
 ### Frontend — Sprint
 - [x] SprintActiveBoard component (kanban + drag-drop)

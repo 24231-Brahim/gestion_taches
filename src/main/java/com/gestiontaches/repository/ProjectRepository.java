@@ -34,6 +34,8 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
     Optional<Project> findByKey(String key);
 
+    boolean existsByKey(String key);
+
     @Query("SELECT DISTINCT p FROM Project p LEFT JOIN FETCH p.owner")
     java.util.List<Project> findAllWithOwner();
 

@@ -156,6 +156,7 @@ export class Task implements OnInit {
   readonly totalItems = signal(0);
   readonly page = signal(1);
   readonly searchQuery = signal('');
+  readonly debouncedSearchQuery = signal('');
 
   readonly currentProjectKey = signal<string | null>(null);
   readonly currentProject = signal<IProject | null>(null);
@@ -167,7 +168,7 @@ export class Task implements OnInit {
   private readonly csvDownloadService = inject(CsvDownloadService);
 
   filteredTasks = computed(() => {
-    const q = this.searchQuery().toLowerCase();
+    const q = this.debouncedSearchQuery().toLowerCase();
     if (!q) {
       return this.tasks();
     }
@@ -212,6 +213,11 @@ export class Task implements OnInit {
           this.handleNavigation(1, this.sortState(), filterOptions);
         });
       }
+    });
+    effect(() => {
+      const value = this.searchQuery();
+      const handle = window.setTimeout(() => this.debouncedSearchQuery.set(value), 300);
+      return () => window.clearTimeout(handle);
     });
   }
 

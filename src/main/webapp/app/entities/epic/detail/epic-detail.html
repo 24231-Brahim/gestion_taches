@@ -91,9 +91,6 @@
       <button class="tab-item" [class.active]="activeTab() === 'kanban'" (click)="setTab('kanban')">
         <fa-icon icon="table-columns" class="me-1" /> {{ 'gestionTachesApp.epic.tab.kanban' | translate }}
       </button>
-      <button class="tab-item" [class.active]="activeTab() === 'burndown'" (click)="setTab('burndown')">
-        <fa-icon icon="chart-line" class="me-1" /> {{ 'gestionTachesApp.epic.tab.burndown' | translate }}
-      </button>
       <button class="tab-item" [class.active]="activeTab() === 'timeline'" (click)="setTab('timeline')">
         <fa-icon icon="clock" class="me-1" /> {{ 'gestionTachesApp.epic.tab.timeline' | translate }}
       </button>
@@ -161,9 +158,6 @@
       }
       @case ('kanban') {
         <jhi-task-kanban-board [tasks]="tasks()" />
-      }
-      @case ('burndown') {
-        <jhi-epic-burndown-chart [epic]="ep" [totalTasks]="epicStats().totalTasks" [doneTasks]="epicStats().doneTasks" />
       }
       @case ('timeline') {
         <div class="timeline-container">

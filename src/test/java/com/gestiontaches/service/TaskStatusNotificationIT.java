@@ -14,9 +14,12 @@ import com.gestiontaches.domain.enumeration.Priority;
 import com.gestiontaches.domain.enumeration.TaskStatus;
 import com.gestiontaches.repository.NotificationRepository;
 import com.gestiontaches.repository.TaskRepository;
+import com.gestiontaches.repository.TaskTransitionRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
+import com.gestiontaches.service.dto.ProjectDTO;
 import com.gestiontaches.service.dto.TaskDTO;
+import com.gestiontaches.service.dto.UserDTO;
 import com.gestiontaches.service.mapper.TaskMapper;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
@@ -31,6 +34,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.core.ClaimAccessor;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.transaction.annotation.Transactional;
 
 @IntegrationTest
@@ -51,6 +55,9 @@ class TaskStatusNotificationIT {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private TaskTransitionRepository taskTransitionRepository;
 
     @Autowired
     private EntityManager em;
@@ -93,6 +100,8 @@ class TaskStatusNotificationIT {
     @AfterEach
     void cleanup() {
         SecurityContextHolder.clearContext();
+        em.flush();
+        taskTransitionRepository.deleteAll();
         notificationRepository.deleteAll();
         taskRepository.deleteAll();
         em.flush();
@@ -107,7 +116,7 @@ class TaskStatusNotificationIT {
 
         List<Notification> notifications = notificationRepository.findByUser_idOrderByCreatedAtDesc(adminCreator.getId());
         assertThat(notifications).hasSize(1);
-        assertThat(notifications.get(0).getMessage()).contains("DONE");
+        assertThat(notifications.get(0).getMessage()).contains("Terminée");
         assertThat(notifications.get(0).getMessage()).contains("créée");
         assertThat(notifications.get(0).getTaskTitle()).isEqualTo("Test Task");
         assertThat(notifications.get(0).getIsRead()).isFalse();
@@ -122,7 +131,7 @@ class TaskStatusNotificationIT {
 
         List<Notification> notifications = notificationRepository.findByUser_idOrderByCreatedAtDesc(adminCreator.getId());
         assertThat(notifications).hasSize(1);
-        assertThat(notifications.get(0).getMessage()).contains("CANCELLED");
+        assertThat(notifications.get(0).getMessage()).contains("Annulée");
         assertThat(notifications.get(0).getMessage()).contains("créée");
     }
 
@@ -139,7 +148,7 @@ class TaskStatusNotificationIT {
 
         List<Notification> assigneeNotifications = notificationRepository.findByUser_idOrderByCreatedAtDesc(adminAssignee.getId());
         assertThat(assigneeNotifications).hasSize(1);
-        assertThat(assigneeNotifications.get(0).getMessage()).contains("DONE");
+        assertThat(assigneeNotifications.get(0).getMessage()).contains("Terminée");
         assertThat(assigneeNotifications.get(0).getMessage()).contains("assignée");
     }
 
@@ -181,7 +190,7 @@ class TaskStatusNotificationIT {
     }
 
     @Test
-    void neitherCreatorNorAssigneeAreAdmin_createsNoNotification() {
+    void nonAdminCreatorAndAssignee_createsNotificationOnStatusChange() {
         task.setCreatedBy(developerUser);
         task.setAssignee(developerUser);
         em.persist(task);
@@ -193,7 +202,8 @@ class TaskStatusNotificationIT {
         taskService.update(taskDTO);
 
         List<Notification> notifications = notificationRepository.findByUser_idOrderByCreatedAtDesc(developerUser.getId());
-        assertThat(notifications).isEmpty();
+        assertThat(notifications).hasSize(1);
+        assertThat(notifications.get(0).getMessage()).contains("Terminée");
     }
 
     @Test
@@ -210,13 +220,16 @@ class TaskStatusNotificationIT {
         reopenDto.setStatus(TaskStatus.IN_PROGRESS);
         taskService.update(reopenDto);
 
+        List<Notification> afterReopen = notificationRepository.findByUser_idOrderByCreatedAtDesc(adminCreator.getId());
+        assertThat(afterReopen).hasSize(2);
+
         refreshedTask = taskRepository.findById(task.getId()).orElseThrow();
         TaskDTO secondDoneDto = taskMapper.toDto(refreshedTask);
         secondDoneDto.setStatus(TaskStatus.DONE);
         taskService.update(secondDoneDto);
 
         List<Notification> afterSecondDone = notificationRepository.findByUser_idOrderByCreatedAtDesc(adminCreator.getId());
-        assertThat(afterSecondDone).hasSize(2);
+        assertThat(afterSecondDone).hasSize(3);
     }
 
     @Test
@@ -229,12 +242,12 @@ class TaskStatusNotificationIT {
 
         List<Notification> notifications = notificationRepository.findByUser_idOrderByCreatedAtDesc(adminCreator.getId());
         assertThat(notifications).hasSize(1);
-        assertThat(notifications.get(0).getMessage()).contains("DONE");
+        assertThat(notifications.get(0).getMessage()).contains("Terminée");
         assertThat(notifications.get(0).getMessage()).contains("créée");
     }
 
     @Test
-    void partialUpdate_statusNotDoneOrCancelled_createsNoNotification() {
+    void partialUpdate_otherStatusChange_createsNotification() {
         TaskDTO partialDto = new TaskDTO();
         partialDto.setId(task.getId());
         partialDto.setStatus(TaskStatus.IN_REVIEW);
@@ -242,7 +255,8 @@ class TaskStatusNotificationIT {
         taskService.partialUpdate(partialDto);
 
         List<Notification> notifications = notificationRepository.findByUser_idOrderByCreatedAtDesc(adminCreator.getId());
-        assertThat(notifications).isEmpty();
+        assertThat(notifications).hasSize(1);
+        assertThat(notifications.get(0).getMessage()).contains("En revue");
     }
 
     @Test
@@ -256,6 +270,67 @@ class TaskStatusNotificationIT {
         assertThat(notifications).hasSize(1);
         assertThat(notifications.get(0).getTask()).isNotNull();
         assertThat(notifications.get(0).getTask().getId()).isEqualTo(task.getId());
+    }
+
+    @Test
+    void taskCreation_withAssignee_createsNotificationForAssigneeOnly() {
+        setupJwtSecurityContext(adminCreator);
+
+        TaskDTO taskDTO = new TaskDTO();
+        taskDTO.setTitle("New Task");
+        taskDTO.setStatus(TaskStatus.NEW);
+        taskDTO.setPriority(Priority.MEDIUM);
+        ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setId(project.getId());
+        taskDTO.setProject(projectDTO);
+        UserDTO assigneeDTO = new UserDTO();
+        assigneeDTO.setId(adminAssignee.getId());
+        taskDTO.setAssignee(assigneeDTO);
+
+        taskService.save(taskDTO);
+
+        List<Notification> assigneeNotifications = notificationRepository.findByUser_idOrderByCreatedAtDesc(adminAssignee.getId());
+        assertThat(assigneeNotifications).hasSize(1);
+        assertThat(assigneeNotifications.get(0).getMessage()).contains("assigné");
+        assertThat(assigneeNotifications.get(0).getTaskTitle()).isEqualTo("New Task");
+
+        List<Notification> creatorNotifications = notificationRepository.findByUser_idOrderByCreatedAtDesc(adminCreator.getId());
+        assertThat(creatorNotifications).isEmpty();
+    }
+
+    @Test
+    void taskCreation_assignedToCurrentUser_createsNoNotification() {
+        setupJwtSecurityContext(adminCreator);
+
+        TaskDTO taskDTO = new TaskDTO();
+        taskDTO.setTitle("Self Assigned Task");
+        taskDTO.setStatus(TaskStatus.NEW);
+        taskDTO.setPriority(Priority.MEDIUM);
+        ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setId(project.getId());
+        taskDTO.setProject(projectDTO);
+        UserDTO assigneeDTO = new UserDTO();
+        assigneeDTO.setId(adminCreator.getId());
+        taskDTO.setAssignee(assigneeDTO);
+
+        taskService.save(taskDTO);
+
+        List<Notification> notifications = notificationRepository.findByUser_idOrderByCreatedAtDesc(adminCreator.getId());
+        assertThat(notifications).isEmpty();
+    }
+
+    private void setupJwtSecurityContext(User user) {
+        var now = Instant.now();
+        var jwt = Jwt.withTokenValue("token")
+            .issuedAt(now)
+            .expiresAt(now.plusSeconds(60))
+            .subject(user.getLogin())
+            .claim("userId", user.getId())
+            .header("alg", "HS512")
+            .build();
+        var authorities = List.of(new SimpleGrantedAuthority(AuthoritiesConstants.ADMIN));
+        var auth = new UsernamePasswordAuthenticationToken(jwt, "token", authorities);
+        SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
     private void setupSecurityContext(User user) {

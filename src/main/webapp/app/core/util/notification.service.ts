@@ -11,24 +11,28 @@ export interface INotification {
   taskTitle?: string;
   projectKey?: string;
   userId: number;
+  userLogin?: string;
   isRead: boolean;
   createdAt: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
+  readonly unreadCount = signal(0);
+  readonly notifications = signal<INotification[]>([]);
+  readonly notificationReceived$: Observable<INotification>;
+
   private readonly http = inject(HttpClient);
   private readonly applicationConfigService = inject(ApplicationConfigService);
   private readonly stateStorageService = inject(StateStorageService);
   private readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/notifications');
-
-  readonly unreadCount = signal(0);
-  readonly notifications = signal<INotification[]>([]);
   private pollingSubscription: any;
   private abortController: AbortController | null = null;
   private readonly notificationReceived = new Subject<INotification>();
 
-  readonly notificationReceived$ = this.notificationReceived.asObservable();
+  constructor() {
+    this.notificationReceived$ = this.notificationReceived.asObservable();
+  }
 
   startPolling(): void {
     if (!this.pollingSubscription) {
@@ -50,7 +54,7 @@ export class NotificationService {
 
   refresh(): void {
     this.getUnreadCount().subscribe(count => this.unreadCount.set(count));
-    this.getNotificationsPaginated(0, 20).subscribe(resp => this.notifications.set(resp.body ?? []));
+    this.getNotificationsPaginated(0, 5).subscribe(resp => this.notifications.set(resp.body ?? []));
   }
 
   getUnreadCount(): Observable<number> {
@@ -70,8 +74,8 @@ export class NotificationService {
     return this.http.patch(`${this.resourceUrl}/${id}/read`, {});
   }
 
-  markAllAsRead(): Observable<void> {
-    return this.http.patch<void>(`${this.resourceUrl}/read-all`, {});
+  markAllAsRead(): Observable<unknown> {
+    return this.http.patch(`${this.resourceUrl}/read-all`, {});
   }
 
   private connectSSE(): void {
@@ -122,7 +126,7 @@ export class NotificationService {
                   try {
                     const notification: INotification = JSON.parse(eventData);
                     this.unreadCount.update(c => c + 1);
-                    this.notifications.update(list => [notification, ...list].slice(0, 20));
+                    this.notifications.update(list => [notification, ...list].slice(0, 5));
                     this.notificationReceived.next(notification);
                   } catch {
                     // ignore parse errors

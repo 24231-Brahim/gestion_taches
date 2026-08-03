@@ -69,6 +69,31 @@
       "priority": "الأولوية",
       "assignee": "المُعيَّن له",
       "createdAt": "تاريخ الإنشاء"
+    },
+    "adminProjectMembers": {
+      "title": "جميع الأعضاء",
+      "refresh": "تحديث",
+      "noMembers": "لم يتم العثور على أعضاء",
+      "id": "المعرف",
+      "project": "المشروع",
+      "user": "المستخدم",
+      "role": "الدور",
+      "joinedAt": "تاريخ الانضمام",
+      "searchPlaceholder": "البحث حسب المستخدم أو المشروع أو الدور..."
+    },
+    "adminNotifications": {
+      "title": "جميع الإشعارات",
+      "refresh": "تحديث",
+      "noNotifications": "لم يتم العثور على إشعارات",
+      "id": "المعرف",
+      "user": "المستخدم",
+      "message": "الرسالة",
+      "task": "المهمة",
+      "status": "الحالة",
+      "createdAt": "التاريخ",
+      "read": "مقروء",
+      "unread": "غير مقروء",
+      "searchPlaceholder": "البحث حسب المستخدم أو الرسالة أو المهمة..."
     }
   }
 }

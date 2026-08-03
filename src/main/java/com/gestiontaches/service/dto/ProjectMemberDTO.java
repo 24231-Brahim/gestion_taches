@@ -13,6 +13,10 @@ public class ProjectMemberDTO implements Serializable {
 
     private Long projectId;
 
+    private String projectName;
+
+    private String projectKey;
+
     private Long userId;
 
     private String userLogin;
@@ -37,6 +41,22 @@ public class ProjectMemberDTO implements Serializable {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public String getProjectName() {
+        return projectName;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
+    }
+
+    public String getProjectKey() {
+        return projectKey;
+    }
+
+    public void setProjectKey(String projectKey) {
+        this.projectKey = projectKey;
     }
 
     public Long getUserId() {
@@ -100,6 +120,12 @@ public class ProjectMemberDTO implements Serializable {
             getId() +
             ", projectId='" +
             getProjectId() +
+            "'" +
+            ", projectName='" +
+            getProjectName() +
+            "'" +
+            ", projectKey='" +
+            getProjectKey() +
             "'" +
             ", userId='" +
             getUserId() +

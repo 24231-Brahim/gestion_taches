@@ -2,10 +2,9 @@ import dayjs from 'dayjs/esm';
 
 import { ITask } from 'app/entities/task/task.model';
 
-export interface IActionHistory {
+export interface ITaskHistory {
   id: number;
   action?: string | null;
-  fieldChanged?: string | null;
   oldValue?: string | null;
   newValue?: string | null;
   createdAt?: dayjs.Dayjs | null;
@@ -13,4 +12,4 @@ export interface IActionHistory {
   user?: { id: number; login: string } | null;
 }
 
-export type NewActionHistory = Omit<IActionHistory, 'id'> & { id: null };
+export type NewTaskHistory = Omit<ITaskHistory, 'id'> & { id: null };

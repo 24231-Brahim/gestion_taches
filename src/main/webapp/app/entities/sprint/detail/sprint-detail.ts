@@ -22,11 +22,11 @@ import { ITask } from 'app/entities/task/task.model';
 import { TaskFormModal } from 'app/entities/task/update/task-form-modal';
 import { SprintActiveBoard } from '../active-board/sprint-active-board';
 import { SprintBacklogPlanning } from '../backlog-planning/sprint-backlog-planning';
-import { SprintBurndownChart } from '../burndown/sprint-burndown-chart';
 import { SprintService, VelocityReport } from '../service/sprint.service';
+import { SprintTimeline } from '../timeline/sprint-timeline';
 import { ISprint } from '../sprint.model';
 
-type Tab = 'board' | 'planning' | 'burndown' | 'tasks';
+type Tab = 'board' | 'planning' | 'tasks' | 'timeline';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -221,7 +221,7 @@ type Tab = 'board' | 'planning' | 'burndown' | 'tasks';
     FormatMediumDatePipe,
     SprintActiveBoard,
     SprintBacklogPlanning,
-    SprintBurndownChart,
+    SprintTimeline,
   ],
 })
 export class SprintDetail {
@@ -310,13 +310,17 @@ export class SprintDetail {
     this._currentSprint.set(this.sprint());
   });
 
-  private issuesEffect = effect(() => {
+  private tasksEffect = effect(() => {
     const raw = this.taskService.tasks();
+    const backlog = this.taskService.backlogTasks();
     if (raw && raw.length > 0) {
       this.tasks.set(raw.filter(i => i.sprint?.id === this._currentSprint()?.id));
-      this.projectTasks.set(raw);
     } else if (raw?.length === 0 && this.taskService.tasksResource.hasValue()) {
       this.tasks.set([]);
+    }
+    if (backlog && backlog.length > 0) {
+      this.projectTasks.set(backlog);
+    } else if (backlog?.length === 0 && this.taskService.backlogTasksResource.hasValue()) {
       this.projectTasks.set([]);
     }
   });
@@ -325,8 +329,13 @@ export class SprintDetail {
     const sp = this._currentSprint();
     if (sp?.project?.id) {
       this.taskService.tasksParams.set({
+        'sprintId.equals': sp.id,
+        size: 100,
+      });
+      this.taskService.backlogTasksParams.set({
         'projectId.equals': sp.project.id,
-        size: 500,
+        'sprintId.specified': false,
+        size: 100,
       });
     }
   });
@@ -335,19 +344,25 @@ export class SprintDetail {
     this.entityEventService
       .onEntityType(EntityType.TASK)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.refreshIssues());
+      .subscribe(() => this.refreshTasks());
   }
 
-  onSelectTask(_issue: ITask): void {
+  onSelectTask(_task: ITask): void {
     // no-op for now
   }
 
-  private refreshIssues(): void {
+  private refreshTasks(): void {
     const sp = this._currentSprint();
     if (sp?.project?.id) {
       this.taskService.tasksParams.set({
+        'sprintId.equals': sp.id,
+        size: 100,
+        t: Date.now(),
+      });
+      this.taskService.backlogTasksParams.set({
         'projectId.equals': sp.project.id,
-        size: 500,
+        'sprintId.specified': false,
+        size: 100,
         t: Date.now(),
       });
     }
@@ -358,7 +373,7 @@ export class SprintDetail {
     this.taskService.partialUpdate({ id: event.taskId, status: event.status as any }).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.refreshIssues();
+        this.refreshTasks();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -373,7 +388,7 @@ export class SprintDetail {
     this.taskService.partialUpdate({ id: event.taskId, sprint: { id: event.sprintId } }).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.refreshIssues();
+        this.refreshTasks();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -388,7 +403,7 @@ export class SprintDetail {
     this.taskService.partialUpdate({ id: taskId, sprint: null }).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.refreshIssues();
+        this.refreshTasks();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -408,7 +423,7 @@ export class SprintDetail {
       next: updated => {
         this.isSaving.set(false);
         this._currentSprint.set(updated);
-        this.refreshIssues();
+        this.refreshTasks();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -430,7 +445,7 @@ export class SprintDetail {
         this._currentSprint.set({ ...sp, status: 'COMPLETED' });
         this.velocityReport.set(report);
         this.showVelocityModal.set(true);
-        this.refreshIssues();
+        this.refreshTasks();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -460,7 +475,7 @@ export class SprintDetail {
       .pipe(
         tap(reason => {
           if (reason === ITEM_SAVED_EVENT) {
-            this.refreshIssues();
+            this.refreshTasks();
           }
         }),
       )
@@ -476,7 +491,7 @@ export class SprintDetail {
       .pipe(
         tap(reason => {
           if (reason === ITEM_SAVED_EVENT) {
-            this.refreshIssues();
+            this.refreshTasks();
           }
         }),
       )
@@ -489,7 +504,7 @@ export class SprintDetail {
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
-        tap(() => this.refreshIssues()),
+        tap(() => this.refreshTasks()),
       )
       .subscribe();
   }

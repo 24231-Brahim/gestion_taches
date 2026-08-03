@@ -86,8 +86,8 @@ describe('EpicRoadmap', () => {
     const items = comp.epicsWithProgress();
     expect(items.length).toBe(2);
     expect(items[0].progress).toBe(0);
-    expect(items[0].totalIssues).toBe(0);
-    expect(items[0].doneIssues).toBe(0);
+    expect(items[0].totalTasks).toBe(0);
+    expect(items[0].doneTasks).toBe(0);
   });
 
   it('getBarStyle should return width and background style', () => {

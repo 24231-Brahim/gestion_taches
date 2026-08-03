@@ -1,0 +1,125 @@
+<div>
+  <h2 id="page-heading" class="page-heading" data-cy="AdminNotificationsHeading">
+    <span jhiTranslate="userManagement.adminNotifications.title">Toutes les notifications</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="loadAll()" [disabled]="isLoading()">
+        <fa-icon icon="arrows-rotate" [animation]="isLoading() ? 'spin' : undefined" />
+        <span jhiTranslate="userManagement.adminNotifications.refresh">Actualiser</span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error />
+  <jhi-alert />
+
+  <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+    <div class="search-box" style="position: relative; flex: 1; min-width: 200px">
+      <fa-icon
+        icon="magnifying-glass"
+        class="search-icon"
+        style="position: absolute; inset-inline-start: 10px; top: 50%; transform: translateY(-50%); color: #6a8fac; font-size: 0.85rem"
+      />
+      <input
+        type="text"
+        class="form-control form-control-sm"
+        style="padding-inline-start: 30px"
+        [ngModel]="searchInput()"
+        (ngModelChange)="searchInput.set($event)"
+        [placeholder]="'userManagement.adminNotifications.searchPlaceholder' | translate"
+      />
+    </div>
+  </div>
+
+  @if (filteredNotifications().length === 0 && !isLoading()) {
+    <div class="alert alert-warning" jhiTranslate="userManagement.adminNotifications.noNotifications">Aucune notification trouvée</div>
+  } @else {
+    <div class="table-responsive">
+      <table class="table" aria-describedby="admin-notifications-heading">
+        <thead>
+          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" jhiSortBy="id">
+              <div class="d-flex">
+                <span jhiTranslate="userManagement.adminNotifications.id">ID</span><fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="userLogin">
+              <div class="d-flex">
+                <span jhiTranslate="userManagement.adminNotifications.user">Utilisateur</span><fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="message">
+              <div class="d-flex">
+                <span jhiTranslate="userManagement.adminNotifications.message">Message</span><fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="taskTitle">
+              <div class="d-flex">
+                <span jhiTranslate="userManagement.adminNotifications.task">Tâche</span><fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="isRead">
+              <div class="d-flex">
+                <span jhiTranslate="userManagement.adminNotifications.status">Statut</span><fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="createdAt">
+              <div class="d-flex">
+                <span jhiTranslate="userManagement.adminNotifications.createdAt">Date</span><fa-icon class="p-1" icon="sort" />
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (notification of filteredNotifications(); track notification.id) {
+            <tr>
+              <td>{{ notification.id }}</td>
+              <td>
+                @if (notification.userLogin) {
+                  {{ notification.userLogin }}
+                } @else {
+                  #{{ notification.userId }}
+                }
+              </td>
+              <td>{{ notification.message }}</td>
+              <td>
+                @if (notification.taskId && notification.projectKey) {
+                  <a [routerLink]="['/project', notification.projectKey, 'task', notification.taskId, 'view']">
+                    {{ notification.taskTitle }}
+                  </a>
+                } @else {
+                  {{ notification.taskTitle }}
+                }
+              </td>
+              <td>
+                @if (notification.isRead) {
+                  <span class="badge bg-secondary" jhiTranslate="userManagement.adminNotifications.read">Lue</span>
+                } @else {
+                  <span class="badge bg-warning text-dark" jhiTranslate="userManagement.adminNotifications.unread">Non lue</span>
+                }
+              </td>
+              <td>{{ notification.createdAt | date: 'dd/MM/yy HH:mm' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <div class="d-flex justify-content-center">
+        <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      </div>
+      <div class="d-flex justify-content-center">
+        <ngb-pagination
+          [collectionSize]="totalItems()"
+          [(page)]="page"
+          [pageSize]="itemsPerPage()"
+          [maxSize]="5"
+          [rotate]="true"
+          [boundaryLinks]="true"
+          (pageChange)="navigateToPage($event)"
+        />
+      </div>
+    </div>
+  }
+</div>

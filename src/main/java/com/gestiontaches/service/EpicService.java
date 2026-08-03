@@ -1,18 +1,24 @@
 package com.gestiontaches.service;
 
 import com.gestiontaches.domain.Epic;
+import com.gestiontaches.domain.Task;
 import com.gestiontaches.domain.enumeration.EpicStatus;
 import com.gestiontaches.domain.enumeration.ProjectRole;
+import com.gestiontaches.domain.enumeration.TaskStatus;
 import com.gestiontaches.repository.EpicRepository;
+import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.service.dto.EntityChangeEvent;
 import com.gestiontaches.service.dto.EntityEventType;
 import com.gestiontaches.service.dto.EpicDTO;
 import com.gestiontaches.service.mapper.EpicMapper;
+import com.gestiontaches.web.rest.errors.BadRequestAlertException;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +35,8 @@ public class EpicService {
 
     private final EpicMapper epicMapper;
 
+    private final TaskRepository taskRepository;
+
     private final ProjectPermissionService projectPermissionService;
 
     private final EntityEventSseService entityEventSseService;
@@ -36,11 +44,13 @@ public class EpicService {
     public EpicService(
         EpicRepository epicRepository,
         EpicMapper epicMapper,
+        TaskRepository taskRepository,
         ProjectPermissionService projectPermissionService,
         EntityEventSseService entityEventSseService
     ) {
         this.epicRepository = epicRepository;
         this.epicMapper = epicMapper;
+        this.taskRepository = taskRepository;
         this.projectPermissionService = projectPermissionService;
         this.entityEventSseService = entityEventSseService;
     }
@@ -124,6 +134,42 @@ public class EpicService {
             });
     }
 
+    /**
+     * Recompute the status of an epic based on its tasks.
+     * An epic with no tasks is never marked DONE, and a CANCELLED epic is never overwritten.
+     *
+     * @param epicId the id of the epic.
+     */
+    public void recomputeStatus(Long epicId) {
+        LOG.debug("Request to recompute status of Epic : {}", epicId);
+        Epic epic = epicRepository.findById(epicId).orElse(null);
+        if (epic == null || epic.getStatus() == EpicStatus.CANCELLED) {
+            return;
+        }
+        List<Task> tasks = taskRepository.findByEpicId(epicId);
+        if (tasks.isEmpty()) {
+            return;
+        }
+        boolean allDone = tasks.stream().allMatch(t -> t.getStatus() == TaskStatus.DONE || t.getStatus() == TaskStatus.CANCELLED);
+        EpicStatus newStatus;
+        if (allDone) {
+            newStatus = EpicStatus.DONE;
+        } else {
+            boolean anyActive = tasks
+                .stream()
+                .anyMatch(t -> t.getStatus() == TaskStatus.IN_PROGRESS || t.getStatus() == TaskStatus.IN_REVIEW);
+            newStatus = anyActive ? EpicStatus.IN_PROGRESS : EpicStatus.TODO;
+        }
+        if (newStatus != epic.getStatus()) {
+            epic.setStatus(newStatus);
+            epicRepository.save(epic);
+            Long projectId = epic.getProject() != null ? epic.getProject().getId() : null;
+            entityEventSseService.sendEvent(
+                new EntityChangeEvent(EntityEventType.ENTITY_EPIC, EntityEventType.UPDATED, epic.getId(), projectId)
+            );
+        }
+    }
+
     private void validateEpicStatusTransition(EpicDTO epicDTO) {
         if (epicDTO.getId() == null) {
             return;
@@ -136,13 +182,13 @@ public class EpicService {
         EpicStatus next = epicDTO.getStatus();
 
         if (current == EpicStatus.DONE || current == EpicStatus.CANCELLED) {
-            throw new RuntimeException("Cannot change status of a " + current + " epic");
+            throw new BadRequestAlertException("Cannot change status of a " + current + " epic", "epic", "invalidstatus");
         }
         if (current == EpicStatus.TODO && next != EpicStatus.IN_PROGRESS) {
-            throw new RuntimeException("A TODO epic can only transition to IN_PROGRESS");
+            throw new BadRequestAlertException("A TODO epic can only transition to IN_PROGRESS", "epic", "invalidstatus");
         }
         if (current == EpicStatus.IN_PROGRESS && next != EpicStatus.DONE && next != EpicStatus.CANCELLED) {
-            throw new RuntimeException("An IN_PROGRESS epic can only transition to DONE or CANCELLED");
+            throw new BadRequestAlertException("An IN_PROGRESS epic can only transition to DONE or CANCELLED", "epic", "invalidstatus");
         }
     }
 
@@ -174,7 +220,7 @@ public class EpicService {
      */
     public void delete(Long id) {
         LOG.debug("Request to delete Epic : {}", id);
-        Epic epic = epicRepository.findById(id).orElseThrow(() -> new RuntimeException("Epic not found"));
+        Epic epic = epicRepository.findById(id).orElseThrow(() -> new BadRequestAlertException("Epic not found", "epic", "idnotfound"));
         projectPermissionService.requireProjectRole(epic.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
         Long projectId = epic.getProject().getId();
         epicRepository.deleteById(id);

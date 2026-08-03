@@ -31,6 +31,14 @@
         "members": "Members",
         "discussion": "Discussion"
       },
+      "settings": {
+        "title": "Settings",
+        "forbidden": "You do not have access to the settings of this project.",
+        "information": "General information",
+        "nameRequired": "Name is required.",
+        "descriptionPlaceholder": "Describe the purpose of the project...",
+        "keyHint": "Short unique identifier (2-10 characters)."
+      },
       "member": {
         "add": "Add member",
         "added": "Member added to project",

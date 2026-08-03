@@ -116,11 +116,11 @@ export class TaskFormService {
     };
   }
 
-  private convertTaskRawValueToTask(rawIssue: TaskFormRawValue | NewTaskFormRawValue): ITask | NewTask {
+  private convertTaskRawValueToTask(rawTask: TaskFormRawValue | NewTaskFormRawValue): ITask | NewTask {
     return {
-      ...rawIssue,
-      createdAt: dayjs(rawIssue.createdAt, DATE_TIME_FORMAT),
-      updatedAt: dayjs(rawIssue.updatedAt, DATE_TIME_FORMAT),
+      ...rawTask,
+      createdAt: dayjs(rawTask.createdAt, DATE_TIME_FORMAT),
+      updatedAt: dayjs(rawTask.updatedAt, DATE_TIME_FORMAT),
     };
   }
 

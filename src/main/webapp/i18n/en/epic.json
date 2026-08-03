@@ -9,10 +9,10 @@
         "notFound": "No Epics found",
         "tableLabel": "Epics",
         "roadmap": "Epic Roadmap",
-        "details": "Epic Details",
-        "roadmapStart": "Start",
-        "roadmapEnd": "End"
+        "details": "Epic Details"
       },
+      "roadmapStart": "Start",
+      "roadmapEnd": "End",
       "created": "A new Epic is created with identifier {{ param }}",
       "updated": "A Epic is updated with identifier {{ param }}",
       "deleted": "A Epic is deleted with identifier {{ param }}",

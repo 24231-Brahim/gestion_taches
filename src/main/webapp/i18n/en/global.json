@@ -17,8 +17,7 @@
         "epic": "Epic",
         "task": "Tasks",
         "comment": "Comment",
-        "attachment": "Attachment",
-        "actionHistory": "Action History"
+        "attachment": "Attachment"
       },
       "account": {
         "main": "Account",

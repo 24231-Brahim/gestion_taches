@@ -21,6 +21,7 @@ import com.gestiontaches.service.dto.TaskDTO;
 import com.gestiontaches.service.dto.VelocityReportDTO;
 import com.gestiontaches.service.mapper.SprintMapper;
 import com.gestiontaches.service.mapper.TaskMapper;
+import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -152,28 +154,30 @@ public class SprintService {
         SprintStatus next = sprintDTO.getStatus();
 
         if (current == SprintStatus.COMPLETED || current == SprintStatus.CANCELLED) {
-            throw new RuntimeException("Cannot change status of a " + current + " sprint");
+            throw new BadRequestAlertException("Cannot change status of a " + current + " sprint", "sprint", "invalidstatus");
         }
         if (current == SprintStatus.PLANNED && next != SprintStatus.ACTIVE) {
-            throw new RuntimeException("A PLANNED sprint can only transition to ACTIVE");
+            throw new BadRequestAlertException("A PLANNED sprint can only transition to ACTIVE", "sprint", "invalidstatus");
         }
         if (current == SprintStatus.ACTIVE && next != SprintStatus.COMPLETED && next != SprintStatus.CANCELLED) {
-            throw new RuntimeException("An ACTIVE sprint can only transition to COMPLETED or CANCELLED");
+            throw new BadRequestAlertException("An ACTIVE sprint can only transition to COMPLETED or CANCELLED", "sprint", "invalidstatus");
         }
     }
 
     public SprintDTO startSprint(Long sprintId) {
         LOG.debug("Request to start Sprint : {}", sprintId);
-        Sprint sprint = sprintRepository.findById(sprintId).orElseThrow(() -> new RuntimeException("Sprint not found"));
+        Sprint sprint = sprintRepository
+            .findById(sprintId)
+            .orElseThrow(() -> new BadRequestAlertException("Sprint not found", "sprint", "idnotfound"));
         projectPermissionService.requireProjectRole(sprint.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
 
         if (sprint.getStatus() != SprintStatus.PLANNED) {
-            throw new RuntimeException("Only a PLANNED sprint can be started");
+            throw new BadRequestAlertException("Only a PLANNED sprint can be started", "sprint", "invalidstatus");
         }
 
         Optional<Sprint> existingActive = sprintRepository.findByProjectIdAndStatus(sprint.getProject().getId(), SprintStatus.ACTIVE);
         if (existingActive.isPresent() && !existingActive.get().getId().equals(sprintId)) {
-            throw new RuntimeException("A project can only have one active sprint at a time");
+            throw new BadRequestAlertException("A project can only have one active sprint at a time", "sprint", "activeexists");
         }
 
         sprint.setStatus(SprintStatus.ACTIVE);
@@ -209,11 +213,13 @@ public class SprintService {
 
     public VelocityReportDTO closeSprint(Long sprintId) {
         LOG.debug("Request to close Sprint : {}", sprintId);
-        Sprint sprint = sprintRepository.findById(sprintId).orElseThrow(() -> new RuntimeException("Sprint not found"));
+        Sprint sprint = sprintRepository
+            .findById(sprintId)
+            .orElseThrow(() -> new BadRequestAlertException("Sprint not found", "sprint", "idnotfound"));
         projectPermissionService.requireProjectRole(sprint.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
 
         if (sprint.getStatus() != SprintStatus.ACTIVE) {
-            throw new RuntimeException("Only an ACTIVE sprint can be closed");
+            throw new BadRequestAlertException("Only an ACTIVE sprint can be closed", "sprint", "invalidstatus");
         }
 
         List<Task> sprintTasks = taskRepository.findBySprintId(sprintId);
@@ -265,6 +271,33 @@ public class SprintService {
         return taskRepository.findByProjectIdAndSprintIsNullWithToOneRelationships(projectId).stream().map(taskMapper::toDto).toList();
     }
 
+    /**
+     * Recompute the status of a sprint based on its tasks.
+     * A sprint with no tasks is never marked COMPLETED, and a COMPLETED or CANCELLED sprint is never overwritten.
+     *
+     * @param sprintId the id of the sprint.
+     */
+    public void recomputeStatus(Long sprintId) {
+        LOG.debug("Request to recompute status of Sprint : {}", sprintId);
+        Sprint sprint = sprintRepository.findById(sprintId).orElse(null);
+        if (sprint == null || sprint.getStatus() == SprintStatus.COMPLETED || sprint.getStatus() == SprintStatus.CANCELLED) {
+            return;
+        }
+        List<Task> tasks = taskRepository.findBySprintId(sprintId);
+        if (tasks.isEmpty()) {
+            return;
+        }
+        boolean allDone = tasks.stream().allMatch(t -> t.getStatus() == TaskStatus.DONE || t.getStatus() == TaskStatus.CANCELLED);
+        if (allDone) {
+            sprint.setStatus(SprintStatus.COMPLETED);
+            sprintRepository.save(sprint);
+            Long projectId = sprint.getProject() != null ? sprint.getProject().getId() : null;
+            entityEventSseService.sendEvent(
+                new EntityChangeEvent(EntityEventType.ENTITY_SPRINT, EntityEventType.UPDATED, sprint.getId(), projectId)
+            );
+        }
+    }
+
     private void validateSingleActiveSprint(SprintDTO sprintDTO) {
         if (sprintDTO.getStatus() == SprintStatus.ACTIVE && sprintDTO.getProject() != null && sprintDTO.getProject().getId() != null) {
             Optional<Sprint> existingActive = sprintRepository.findByProjectIdAndStatus(
@@ -273,7 +306,7 @@ public class SprintService {
             );
             existingActive.ifPresent(s -> {
                 if (!s.getId().equals(sprintDTO.getId())) {
-                    throw new RuntimeException("A project can only have one active sprint at a time");
+                    throw new BadRequestAlertException("A project can only have one active sprint at a time", "sprint", "activeexists");
                 }
             });
         }
@@ -299,7 +332,9 @@ public class SprintService {
 
     private User resolveCurrentUser() {
         Long userId = projectPermissionService.resolveCurrentUserId();
-        return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Current user not found"));
+        return userRepository
+            .findById(userId)
+            .orElseThrow(() -> new BadRequestAlertException("Current user not found", "sprint", "usernotfound"));
     }
 
     public Page<SprintDTO> findAllWithEagerRelationships(Pageable pageable) {
@@ -314,7 +349,9 @@ public class SprintService {
 
     public void delete(Long id) {
         LOG.debug("Request to delete Sprint : {}", id);
-        Sprint sprint = sprintRepository.findById(id).orElseThrow(() -> new RuntimeException("Sprint not found"));
+        Sprint sprint = sprintRepository
+            .findById(id)
+            .orElseThrow(() -> new BadRequestAlertException("Sprint not found", "sprint", "idnotfound"));
         projectPermissionService.requireProjectRole(sprint.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
         Long projectId = sprint.getProject().getId();
         sprintRepository.deleteById(id);

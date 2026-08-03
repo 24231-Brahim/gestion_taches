@@ -12,10 +12,9 @@ import { TranslateDirective } from 'app/shared/language';
 import { TaskService } from 'app/entities/task/service/task.service';
 import { ITask } from 'app/entities/task/task.model';
 import { TaskKanbanBoard } from 'app/entities/task/kanban/task-kanban-board';
-import { EpicBurndownChart } from '../burndown/epic-burndown-chart';
 import { IEpic } from '../epic.model';
 
-type Tab = 'tasks' | 'kanban' | 'burndown' | 'timeline';
+type Tab = 'tasks' | 'kanban' | 'timeline';
 
 interface EpicStats {
   totalTasks: number;
@@ -299,7 +298,6 @@ interface EpicStats {
     FormatMediumDatePipe,
     FormatMediumDatetimePipe,
     TaskKanbanBoard,
-    EpicBurndownChart,
   ],
 })
 export class EpicDetail {
@@ -394,7 +392,7 @@ export class EpicDetail {
     if (ep?.id) {
       this.taskService.tasksParams.set({
         'epicId.equals': ep.id,
-        size: 500,
+        size: 100,
       });
     }
   });

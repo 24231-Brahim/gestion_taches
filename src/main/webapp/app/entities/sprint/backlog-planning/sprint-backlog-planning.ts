@@ -56,6 +56,7 @@ import { ISprint } from '../sprint.model';
 export class SprintBacklogPlanning {
   readonly sprint = input<ISprint | null>(null);
   readonly allTasks = input<ITask[]>([]);
+  readonly sprintTasksInput = input<ITask[] | null>(null);
   readonly canManage = input(false);
   readonly sprintStatus = input<string>('PLANNED');
 
@@ -77,7 +78,13 @@ export class SprintBacklogPlanning {
     });
   });
 
-  readonly sprintTasks = computed(() => this.allTasks().filter(task => task.sprint?.id === this.sprint()?.id));
+  readonly sprintTasks = computed(() => {
+    const explicit = this.sprintTasksInput();
+    if (explicit) {
+      return explicit;
+    }
+    return this.allTasks().filter(task => task.sprint?.id === this.sprint()?.id);
+  });
 
   readonly isDragDisabled = computed(() => this.sprintStatus() === 'ACTIVE');
 

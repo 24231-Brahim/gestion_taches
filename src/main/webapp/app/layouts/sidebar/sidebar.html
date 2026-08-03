@@ -132,6 +132,26 @@
                 <span class="sidebar-label" jhiTranslate="userManagement.adminTasks.title">Toutes les tâches</span>
               </a>
 
+              <a
+                class="sidebar-item sidebar-item-nested"
+                routerLink="/admin/project-members"
+                routerLinkActive="active"
+                (click)="closeMobile()"
+              >
+                <fa-icon icon="users" [fixedWidth]="true" />
+                <span class="sidebar-label" jhiTranslate="userManagement.adminProjectMembers.title">Tous les membres</span>
+              </a>
+
+              <a
+                class="sidebar-item sidebar-item-nested"
+                routerLink="/admin/notifications"
+                routerLinkActive="active"
+                (click)="closeMobile()"
+              >
+                <fa-icon icon="bell" [fixedWidth]="true" />
+                <span class="sidebar-label" jhiTranslate="userManagement.adminNotifications.title">Toutes les notifications</span>
+              </a>
+
               <a class="sidebar-item sidebar-item-nested" routerLink="/admin/metrics" routerLinkActive="active" (click)="closeMobile()">
                 <fa-icon icon="gauge-high" [fixedWidth]="true" />
                 <span class="sidebar-label" jhiTranslate="global.menu.admin.metrics">Métriques</span>

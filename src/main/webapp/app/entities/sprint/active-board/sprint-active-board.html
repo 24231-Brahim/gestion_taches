@@ -48,7 +48,7 @@
       <select class="filter-select" [ngModel]="filterType()" (ngModelChange)="filterType.set($event)">
         <option value="">{{ 'gestionTachesApp.sprint.board.filter.all' | translate }}</option>
         @for (t of typeValues; track t) {
-          <option [value]="t">{{ 'gestionTachesApp.IssueType.' + t | translate }}</option>
+          <option [value]="t">{{ 'gestionTachesApp.TaskType.' + t | translate }}</option>
         }
       </select>
     </div>

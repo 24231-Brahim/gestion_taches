@@ -73,6 +73,31 @@
       "allStatuses": "Tous les statuts",
       "allPriorities": "Toutes les priorités",
       "resetFilters": "Réinitialiser"
+    },
+    "adminProjectMembers": {
+      "title": "Tous les membres",
+      "refresh": "Actualiser",
+      "noMembers": "Aucun membre trouvé",
+      "id": "ID",
+      "project": "Projet",
+      "user": "Utilisateur",
+      "role": "Rôle",
+      "joinedAt": "Rejoint le",
+      "searchPlaceholder": "Rechercher par utilisateur, projet ou rôle..."
+    },
+    "adminNotifications": {
+      "title": "Toutes les notifications",
+      "refresh": "Actualiser",
+      "noNotifications": "Aucune notification trouvée",
+      "id": "ID",
+      "user": "Utilisateur",
+      "message": "Message",
+      "task": "Tâche",
+      "status": "Statut",
+      "createdAt": "Date",
+      "read": "Lue",
+      "unread": "Non lue",
+      "searchPlaceholder": "Rechercher par utilisateur, message ou tâche..."
     }
   }
 }

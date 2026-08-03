@@ -1,9 +1,14 @@
 package com.gestiontaches.service;
 
 import com.gestiontaches.domain.Comment;
+import com.gestiontaches.domain.Task;
+import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.CommentRepository;
+import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.service.dto.CommentDTO;
+import com.gestiontaches.service.dto.NotificationDTO;
 import com.gestiontaches.service.mapper.CommentMapper;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -26,9 +31,20 @@ public class CommentService {
 
     private final CommentMapper commentMapper;
 
-    public CommentService(CommentRepository commentRepository, CommentMapper commentMapper) {
+    private final NotificationService notificationService;
+
+    private final TaskRepository taskRepository;
+
+    public CommentService(
+        CommentRepository commentRepository,
+        CommentMapper commentMapper,
+        NotificationService notificationService,
+        TaskRepository taskRepository
+    ) {
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
+        this.notificationService = notificationService;
+        this.taskRepository = taskRepository;
     }
 
     /**
@@ -41,7 +57,47 @@ public class CommentService {
         LOG.debug("Request to save Comment : {}", commentDTO);
         Comment comment = commentMapper.toEntity(commentDTO);
         comment = commentRepository.save(comment);
+        notifyCommentCreated(comment);
         return commentMapper.toDto(comment);
+    }
+
+    private void notifyCommentCreated(Comment comment) {
+        try {
+            User author = comment.getAuthor();
+            Task task = comment.getTask();
+            if (task == null || task.getId() == null) {
+                return;
+            }
+            Task fullTask = taskRepository.findOneWithEagerRelationships(task.getId()).orElse(null);
+            if (fullTask == null) {
+                return;
+            }
+            Instant now = Instant.now();
+            Long authorId = author != null ? author.getId() : null;
+            User assignee = fullTask.getAssignee();
+
+            if (assignee != null && (authorId == null || !authorId.equals(assignee.getId()))) {
+                saveNotification(
+                    assignee.getId(),
+                    fullTask,
+                    "Un nouveau commentaire a été ajouté à la tâche '" + fullTask.getTitle() + "' qui vous est assignée",
+                    now
+                );
+            }
+        } catch (Exception e) {
+            LOG.warn("Failed to notify comment creation: {}", e.getMessage());
+        }
+    }
+
+    private void saveNotification(Long userId, Task task, String message, Instant createdAt) {
+        NotificationDTO notification = new NotificationDTO();
+        notification.setMessage(message);
+        notification.setTaskId(task.getId());
+        notification.setTaskTitle(task.getTitle());
+        notification.setUserId(userId);
+        notification.setIsRead(false);
+        notification.setCreatedAt(createdAt);
+        notificationService.save(notification);
     }
 
     /**

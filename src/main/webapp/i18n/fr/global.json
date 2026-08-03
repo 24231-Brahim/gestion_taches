@@ -17,8 +17,7 @@
         "epic": "Epics",
         "task": "Tâches",
         "comment": "Commentaires",
-        "attachment": "Pièces jointes",
-        "actionHistory": "Historique des actions"
+        "attachment": "Pièces jointes"
       },
       "account": {
         "main": "Compte",

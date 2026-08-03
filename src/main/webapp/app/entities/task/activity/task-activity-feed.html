@@ -9,14 +9,14 @@
           @if (h.user?.login) {
             <span class="activity-detail"> — {{ 'gestionTachesApp.activity.by' | translate }} {{ h.user?.login }}</span>
           }
-          @if (h.fieldChanged) {
-            <span class="activity-detail"> — {{ h.fieldChanged }}: {{ h.oldValue }} → {{ h.newValue }}</span>
+          @if (h.oldValue || h.newValue) {
+            <span class="activity-detail"> — {{ h.oldValue }} → {{ h.newValue }}</span>
           }
           <div class="activity-date">{{ h.createdAt | formatMediumDatetime }}</div>
         </div>
       </div>
     } @empty {
-      <div class="text-muted" jhiTranslate="gestionTachesApp.actionHistory.home.notFound"></div>
+      <div class="text-muted" jhiTranslate="gestionTachesApp.task.detail.noHistory">No history yet.</div>
     }
   </div>
 </div>
