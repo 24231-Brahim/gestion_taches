@@ -41,7 +41,8 @@
     },
     "lists": {
       "recentProjects": "المشاريع الأخيرة",
-      "recentTasks": "المهام الأخيرة"
+      "recentTasks": "المهام الأخيرة",
+      "seeAll": "عرض الكل"
     },
     "timeline": {
       "title": "النشاط الأخير"

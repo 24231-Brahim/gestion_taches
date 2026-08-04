@@ -29,13 +29,13 @@ import { TranslateDirective } from 'app/shared/language';
         font-family: var(--font-inter);
         font-size: 0.8rem;
         text-transform: none;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         margin: 0 0 4px;
         font-weight: 600;
       }
       .comment-item {
-        background: var(--color-surface-container, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-lg);
         padding: 10px 12px;
       }
@@ -49,12 +49,12 @@ import { TranslateDirective } from 'app/shared/language';
         font-family: var(--font-inter);
         font-size: 0.8rem;
         font-weight: 600;
-        color: var(--color-primary, #97cbff);
+        color: var(--color-primary);
       }
       .comment-date {
         font-family: var(--font-inter);
         font-size: 0.7rem;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
       }
       .comment-delete {
         margin-left: auto;
@@ -62,7 +62,7 @@ import { TranslateDirective } from 'app/shared/language';
       .comment-content {
         font-family: var(--font-inter);
         font-size: 0.85rem;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         white-space: pre-wrap;
         line-height: 1.5;
       }
@@ -72,7 +72,7 @@ import { TranslateDirective } from 'app/shared/language';
         flex-direction: column;
       }
       .text-muted {
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-family: var(--font-inter);
         font-size: 0.8rem;
       }

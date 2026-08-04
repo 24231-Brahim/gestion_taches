@@ -206,14 +206,20 @@ export class DashboardChartsComponent {
 
   readonly chartTaskDistribution = computed<ChartTaskStatusCount[]>(() => {
     const statuses = ['NEW', 'IN_PROGRESS', 'READY_FOR_TEST', 'DONE', 'NEEDS_INFO'];
-    const colors = ['#4c6fff', '#f2994a', '#a855f7', '#1fa971', '#e5484d'];
+    const colors = [
+      'var(--color-status-backlog)',
+      'var(--color-status-in-progress)',
+      'var(--color-status-in-review)',
+      'var(--color-status-done)',
+      'var(--color-status-cancelled)',
+    ];
     const input = this.taskDistribution();
     return input
       .filter(d => d.count > 0)
       .map(d => ({
         label: d.status,
         value: d.count,
-        color: colors[statuses.indexOf(d.status)] ?? '#6b7290',
+        color: colors[statuses.indexOf(d.status)] ?? 'var(--color-muted)',
       }));
   });
 
@@ -237,7 +243,18 @@ export class DashboardChartsComponent {
   });
 
   readonly chartProjectProgress = computed<ChartProjectProgress[]>(() => {
-    const colors = ['#1fa971', '#4c6fff', '#f2994a', '#a855f7', '#12b8a0', '#e5484d', '#d6339f', '#7c3aed', '#0d9488', '#e0b429'];
+    const colors = [
+      'var(--color-success)',
+      'var(--color-status-backlog)',
+      'var(--color-warning)',
+      'var(--color-status-in-review)',
+      'var(--color-secondary)',
+      'var(--color-danger)',
+      'var(--color-priority-medium)',
+      'var(--color-tertiary)',
+      'var(--color-cta)',
+      'var(--color-info)',
+    ];
     return this.projectProgress()
       .map((p, i) => ({
         name: p.projectName,

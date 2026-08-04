@@ -18,21 +18,21 @@ import { ISprint } from '../sprint.model';
       }
       .backlog-search-input {
         width: 100%;
-        background: var(--color-surface, #0f1419);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-sm);
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         font-family: var(--font-inter);
         font-size: 0.8rem;
         padding: 8px 10px;
         box-sizing: border-box;
       }
       .backlog-search-input::placeholder {
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
       }
       .backlog-search-input:focus {
         outline: none;
-        border-color: var(--color-primary, #97cbff);
+        border-color: var(--color-primary);
       }
       .planning-card-meta {
         display: flex;
@@ -41,7 +41,7 @@ import { ISprint } from '../sprint.model';
         margin-top: 4px;
       }
       .planning-card-sp {
-        background: var(--color-primary-container, #0099fe);
+        background: var(--color-primary-container);
         color: var(--color-on-primary-container);
         font-size: 0.65rem;
         font-weight: 600;

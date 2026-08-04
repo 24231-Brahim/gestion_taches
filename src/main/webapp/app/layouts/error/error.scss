@@ -1,5 +1,5 @@
 .error-page {
-  background: #fff;
+  background: var(--color-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -21,7 +21,7 @@
 .error-code {
   font-size: 6rem;
   font-weight: 700;
-  color: #0099fe;
+  color: var(--color-link, var(--color-primary));
   line-height: 1;
   font-family: var(--font-mono);
 }

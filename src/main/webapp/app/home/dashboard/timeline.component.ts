@@ -115,14 +115,20 @@ export class DashboardTimelineComponent {
     if (override) {
       return override;
     }
-    const colors = ['#22c55e', '#25a7fd', '#f59e0b', '#a855f7', '#52d6fd'];
+    const colors = [
+      'var(--color-success)',
+      'var(--color-status-backlog)',
+      'var(--color-warning)',
+      'var(--color-status-in-review)',
+      'var(--color-secondary)',
+    ];
     const sorted = [...this.tasks()]
       .sort((a, b) => {
         const da = a.updatedAt ?? a.createdAt ?? '';
         const db = b.updatedAt ?? b.createdAt ?? '';
         return db.localeCompare(da);
       })
-      .slice(0, 10);
+      .slice(0, 5);
     return sorted.map((task, i) => ({
       id: task.id,
       title: task.title ?? 'Untitled',

@@ -5,6 +5,7 @@ import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
+import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.ProjectPermissionService;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -46,7 +47,7 @@ public class CsvExportResource {
     }
 
     @GetMapping("/projects")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('" + AuthoritiesConstants.ADMIN + "')")
     public ResponseEntity<byte[]> exportProjectsCsv() {
         LOG.debug("REST request to export Projects as CSV");
         StringWriter sw = new StringWriter();
@@ -72,7 +73,7 @@ public class CsvExportResource {
     }
 
     @GetMapping("/tasks")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('" + AuthoritiesConstants.ADMIN + "')")
     public ResponseEntity<byte[]> exportTasksCsv() {
         LOG.debug("REST request to export Tasks as CSV");
         StringWriter sw = new StringWriter();
@@ -107,7 +108,7 @@ public class CsvExportResource {
     }
 
     @GetMapping("/projects/{projectId}/tasks")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('" + AuthoritiesConstants.ADMIN + "')")
     public ResponseEntity<byte[]> exportProjectTasksCsv(@PathVariable("projectId") Long projectId) {
         LOG.debug("REST request to export Tasks of Project {} as CSV", projectId);
         projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER);

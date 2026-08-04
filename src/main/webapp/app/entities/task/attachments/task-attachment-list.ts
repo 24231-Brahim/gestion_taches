@@ -28,7 +28,7 @@ import { TranslateDirective } from 'app/shared/language';
         font-family: var(--font-inter);
         font-size: 0.8rem;
         text-transform: none;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         margin: 0 0 4px;
         font-weight: 600;
       }
@@ -37,10 +37,10 @@ import { TranslateDirective } from 'app/shared/language';
         align-items: center;
         gap: 10px;
         padding: 16px;
-        border: 2px dashed var(--color-outline-variant, #2a3038);
+        border: 2px dashed var(--color-outline-variant);
         border-radius: var(--radius-lg);
-        background: var(--color-surface-container, #1b2025);
-        color: var(--color-text-muted, #6a8fac);
+        background: var(--color-surface-container);
+        color: var(--color-text-muted);
         font-family: var(--font-inter);
         font-size: 0.8rem;
         cursor: pointer;
@@ -50,22 +50,22 @@ import { TranslateDirective } from 'app/shared/language';
       }
       .attachment-drop-zone:hover,
       .attachment-drop-zone.drag-over {
-        border-color: var(--color-primary, #97cbff);
-        background: var(--color-surface-container-high, #262a30);
+        border-color: var(--color-primary);
+        background: var(--color-surface-container-high);
       }
       .attachment-item {
         display: flex;
         align-items: center;
         gap: 8px;
         padding: 8px 10px;
-        background: var(--color-surface-container, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-lg);
       }
       .attachment-name {
         font-family: var(--font-inter);
         font-size: 0.85rem;
-        color: var(--color-primary, #97cbff);
+        color: var(--color-primary);
         text-decoration: none;
         flex: 1;
         overflow: hidden;
@@ -78,11 +78,11 @@ import { TranslateDirective } from 'app/shared/language';
       .attachment-date {
         font-family: var(--font-inter);
         font-size: 0.7rem;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         white-space: nowrap;
       }
       .text-muted {
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-family: var(--font-inter);
         font-size: 0.8rem;
       }

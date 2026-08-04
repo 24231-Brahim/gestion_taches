@@ -75,7 +75,7 @@ jhi-navbar {
     border-radius: 4px;
     color: var(--color-muted);
     line-height: 1;
-    margin-left: 4px;
+    margin-inline-start: 4px;
   }
 
   @media (max-width: 576px) {
@@ -99,7 +99,7 @@ jhi-navbar {
   font-weight: 600;
 
   &:hover {
-    color: var(--color-primary);
+    color: var(--color-link, var(--color-primary));
   }
 
   .topbar-version {
@@ -159,12 +159,12 @@ jhi-navbar {
     background-color var(--transition-fast);
 
   &:hover {
-    color: var(--color-primary);
+    color: var(--color-link, var(--color-primary));
     background-color: var(--color-surface-container-high);
   }
 
   &.active {
-    color: var(--color-primary);
+    color: var(--color-link, var(--color-primary));
   }
 
   &:focus-visible {
@@ -195,7 +195,7 @@ jhi-navbar {
         color var(--transition-fast);
 
       &:hover {
-        color: var(--color-primary);
+        color: var(--color-link, var(--color-primary));
         background-color: var(--color-surface-container-high);
       }
 
@@ -222,9 +222,9 @@ jhi-navbar {
 .notification-badge {
   position: absolute;
   top: 2px;
-  right: 2px;
+  inset-inline-end: 2px;
   background-color: var(--color-danger);
-  color: #ffffff;
+  color: var(--color-on-danger);
   font-family: var(--font-inter);
   font-size: 10px;
   font-weight: 600;
@@ -243,10 +243,10 @@ jhi-navbar {
 .notification-item {
   white-space: normal !important;
   font-weight: 400 !important;
-  border-left: 3px solid transparent;
+  border-inline-start: 3px solid transparent;
 
   &.unread {
-    border-left-color: var(--color-primary);
+    border-inline-start-color: var(--color-primary);
     background-color: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface-container));
   }
 

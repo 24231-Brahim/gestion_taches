@@ -11,7 +11,12 @@ import { RouterLink } from '@angular/router';
     <div class="lists-grid" [class.lists-grid-single]="!showRecentProjects()">
       @if (showRecentProjects()) {
         <div class="list-card">
-          <h3 class="list-title" jhiTranslate="dashboard.lists.recentProjects">RECENT PROJECTS</h3>
+          <div class="list-header">
+            <h3 class="list-title" jhiTranslate="dashboard.lists.recentProjects">RECENT PROJECTS</h3>
+            @if (seeAllProjectsRoute()) {
+              <a [routerLink]="seeAllProjectsRoute()" class="see-all-link" jhiTranslate="dashboard.lists.seeAll">Voir tout</a>
+            }
+          </div>
           <div class="list-body">
             @if (recentProjects().length > 0) {
               <div class="list-items">
@@ -30,7 +35,12 @@ import { RouterLink } from '@angular/router';
       }
 
       <div class="list-card">
-        <h3 class="list-title" jhiTranslate="dashboard.lists.recentTasks">RECENT TASKS</h3>
+        <div class="list-header">
+          <h3 class="list-title" jhiTranslate="dashboard.lists.recentTasks">RECENT TASKS</h3>
+          @if (seeAllTasksRoute()) {
+            <a [routerLink]="seeAllTasksRoute()" class="see-all-link" jhiTranslate="dashboard.lists.seeAll">Voir tout</a>
+          }
+        </div>
         <div class="list-body">
           @if (recentTasks().length > 0) {
             <div class="list-items">
@@ -74,6 +84,26 @@ import { RouterLink } from '@angular/router';
         margin-bottom: var(--stack-md);
         padding-bottom: var(--stack-sm);
         border-bottom: 1px solid var(--color-outline-variant);
+      }
+      .list-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--stack-sm);
+      }
+      .list-header .list-title {
+        margin-bottom: var(--stack-md);
+      }
+      .see-all-link {
+        font-family: var(--font-inter);
+        font-size: var(--text-xs);
+        font-weight: 600;
+        color: var(--color-primary);
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .see-all-link:hover {
+        color: var(--color-secondary);
       }
       .list-body {
         min-height: 100px;
@@ -132,12 +162,14 @@ export class DashboardListsComponent {
   readonly recentProjects = input<any[]>([]);
   readonly recentTasks = input<any[]>([]);
   readonly showRecentProjects = input(true);
+  readonly seeAllProjectsRoute = input<string | null>('/project');
+  readonly seeAllTasksRoute = input<string | null>('/my-tasks');
 
   statusColor(status: string): string {
     const map: Record<string, string> = {
       DONE: 'var(--color-success)',
       IN_PROGRESS: 'var(--color-info)',
-      READY_FOR_TEST: '#a855f7',
+      READY_FOR_TEST: 'var(--color-status-in-review)',
       NEEDS_INFO: 'var(--color-danger)',
       NEW: 'var(--color-muted)',
     };

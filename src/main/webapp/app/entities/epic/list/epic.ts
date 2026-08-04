@@ -36,12 +36,12 @@ import { EpicService } from '../service/epic.service';
       .status-badge {
         display: inline-block;
         padding: 2px 10px;
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant);
         border-radius: 9999px;
         font-size: 0.75rem;
         font-family: var(--font-inter);
         text-transform: none;
-        background: var(--color-surface-container, #1b2025);
+        background: var(--color-surface-container);
         font-weight: 600;
       }
     `,
@@ -181,21 +181,21 @@ export class Epic implements OnInit {
 
   getStatusColor(status: string | null | undefined): string {
     const colors: Record<string, string> = {
-      TODO: 'var(--color-status-todo, #2196f3)',
-      IN_PROGRESS: 'var(--color-status-in-progress, #ff9800)',
-      DONE: 'var(--color-status-done, #4caf50)',
-      CANCELLED: 'var(--color-status-cancelled, #f44336)',
+      TODO: 'var(--color-status-todo)',
+      IN_PROGRESS: 'var(--color-status-in-progress)',
+      DONE: 'var(--color-status-done)',
+      CANCELLED: 'var(--color-status-cancelled)',
     };
     return colors[status ?? ''] ?? 'var(--color-outline-variant)';
   }
 
   getPriorityColor(priority: string | null | undefined): string {
     const colors: Record<string, string> = {
-      LOWEST: 'var(--color-priority-lowest, #9e9e9e)',
-      LOW: 'var(--color-priority-low, #607d8b)',
-      MEDIUM: 'var(--color-priority-medium, #2196f3)',
-      HIGH: 'var(--color-priority-high, #ff9800)',
-      HIGHEST: 'var(--color-priority-highest, #f44336)',
+      LOWEST: 'var(--color-priority-lowest)',
+      LOW: 'var(--color-priority-low)',
+      MEDIUM: 'var(--color-priority-medium)',
+      HIGH: 'var(--color-priority-high)',
+      HIGHEST: 'var(--color-priority-highest)',
     };
     return colors[priority ?? ''] ?? 'var(--color-outline-variant)';
   }

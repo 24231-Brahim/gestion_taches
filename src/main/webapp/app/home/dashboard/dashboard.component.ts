@@ -17,10 +17,10 @@ export interface DashboardKpis {
   overdueTasks: number;
   teamMembers: number;
   totalTimeSpentSeconds: number;
-  timeSpentByUser: Array<{ login: string; totalSeconds: number }>;
-  timeSpentByProject: Array<{ projectName: string; totalSeconds: number }>;
-  projectProgress: Array<{ projectId: number; projectName: string; totalTasks: number; doneTasks: number }>;
-  taskDistribution: Array<{ status: string; count: number }>;
+  timeSpentByUser: { login: string; totalSeconds: number }[];
+  timeSpentByProject: { projectName: string; totalSeconds: number }[];
+  projectProgress: { projectId: number; projectName: string; totalTasks: number; doneTasks: number }[];
+  taskDistribution: { status: string; count: number }[];
 }
 
 @Component({
@@ -81,7 +81,7 @@ export interface DashboardKpis {
           </div>
         </div>
       }
-      <jhi-dashboard-lists [recentProjects]="recentProjects()" [recentTasks]="recentTasks()" />
+      <jhi-dashboard-lists [recentProjects]="recentProjects()" [recentTasks]="recentTasks()" seeAllTasksRoute="/admin/tasks" />
       <div class="bottom-grid">
         <jhi-dashboard-timeline [tasks]="recentTasks()" />
       </div>
@@ -216,7 +216,7 @@ export class DashboardComponent {
   }));
   private readonly tasksResource = httpResource<any[]>(() => ({
     url: this.applicationConfigService.getEndpointFor('api/tasks'),
-    params: new HttpParams().set('page', '0').set('size', '10').set('sort', 'updatedAt,desc'),
+    params: new HttpParams().set('page', '0').set('size', '5').set('sort', 'updatedAt,desc'),
   }));
 
   formatTime(seconds: number): string {

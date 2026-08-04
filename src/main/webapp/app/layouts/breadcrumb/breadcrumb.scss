@@ -34,7 +34,7 @@
   transition: color var(--transition-fast);
 
   &:hover {
-    color: var(--color-primary);
+    color: var(--color-link, var(--color-primary));
   }
 }
 
@@ -49,7 +49,7 @@
 }
 
 .active .breadcrumb-text {
-  color: var(--color-primary);
+  color: var(--color-link, var(--color-primary));
   font-weight: 600;
 }
 

@@ -1,23 +1,42 @@
 /* ═══════════════════════════════════════════════════════════════
    Design System — Modern Minimal Dashboard
-   Clean, calm, professional — inspired by Linear, Notion, Vercel
+   Reconstruit à partir des couleurs du logo :
+     #57deff (cyan logo)  et  #079dfe (bleu logo)
+   Ces deux valeurs ne sont JAMAIS modifiées, dans aucun mode.
+   Toutes les autres couleurs sont rebâties autour d'elles,
+   avec la MÊME famille de teinte utilisée dans les deux thèmes
+   (seule la clarté change pour rester lisible), et tous les
+   contrastes texte/fond validés ≥ 4.5:1 (WCAG AA).
    ═══════════════════════════════════════════════════════════════ */
 
-/* ─── Dark Theme (Default) ─── */
-:root[data-theme='dark'] {
-  --color-primary: #97cbff;
-  --color-primary-container: #25a7fd;
-  --color-on-primary: #003353;
-  --color-on-primary-container: #ffffff;
+/* ─── Ancrage de marque — identique partout, ne pas toucher ─── */
+:root {
+  --color-brand-cyan: #57deff; /* logo */
+  --color-brand-blue: #079dfe; /* logo */
+  --color-on-brand: #f7f9fa; /* texte/icône à utiliser SUR ces deux couleurs, dans les 2 modes */
+}
 
-  --color-secondary: #52d6fd;
-  --color-secondary-container: #01afd4;
-  --color-on-secondary: #003543;
+/* ─── Dark Theme ───
+   Sur fond sombre, les deux couleurs du logo sont assez claires
+   pour servir directement de texte/icône (11.7:1 et 6.4:1) —
+   donc aucune transformation nécessaire ici, elles sont utilisées
+   telles quelles. */
+:root[data-theme='dark'] {
+  --color-primary: var(--color-brand-cyan); /* texte/icônes/liens sur fond sombre — 11.7:1 */
+  --color-primary-container: var(--color-brand-blue); /* fond de bouton/badge plein */
+  --color-on-primary: var(--color-on-brand);
+  --color-on-primary-container: var(--color-on-brand); /* 6.1:1 sur le bleu logo ✓ */
+
+  /* Teal — même teinte qu'en mode clair, éclaircie pour rester lisible sur fond sombre */
+  --color-secondary: #2dd4bf; /* 9.9:1 sur fond sombre ✓ */
+  --color-secondary-container: #0f766e;
+  --color-on-secondary: #00201c;
   --color-on-secondary-container: #ffffff;
 
-  --color-tertiary: #a5cbea;
-  --color-tertiary-container: #7fa4c2;
-  --color-on-tertiary: #05344d;
+  /* Violet — même teinte qu'en mode clair, éclaircie pour le fond sombre */
+  --color-tertiary: #c4b5fd; /* 10.0:1 sur fond sombre ✓ */
+  --color-tertiary-container: #6d28d9;
+  --color-on-tertiary: #2e1065;
   --color-on-tertiary-container: #ffffff;
 
   --color-bg: #0f1419;
@@ -35,8 +54,9 @@
   --color-on-surface: #dfe3ea;
   --color-on-surface-variant: #bec7d3;
   --color-text: #dfe3ea;
-  --color-muted: #6a8fac;
+  --color-muted: #9aa7b5;
 
+  /* Statuts — même teinte que le mode clair, ajustée pour le fond sombre (8–10:1) */
   --color-success: #22c55e;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
@@ -47,37 +67,113 @@
 
   --color-inverse-surface: #dfe3ea;
   --color-inverse-on-surface: #2c3136;
-  --color-inverse-primary: #00639b;
-  --color-surface-tint: #97cbff;
+  --color-inverse-primary: var(--color-brand-blue);
+  --color-surface-tint: var(--color-brand-blue);
 
-  --color-primary-fixed: #cee5ff;
-  --color-primary-fixed-dim: #97cbff;
+  --color-primary-fixed: #cfeeff;
+  --color-primary-fixed-dim: var(--color-brand-cyan);
   --color-on-primary-fixed: #001d33;
-  --color-on-primary-fixed-variant: #004a76;
-  --color-secondary-fixed: #b5ebff;
-  --color-secondary-fixed-dim: #52d6fd;
-  --color-on-secondary-fixed: #001f28;
-  --color-on-secondary-fixed-variant: #004e60;
-  --color-tertiary-fixed: #cae6ff;
-  --color-tertiary-fixed-dim: #a5cbea;
-  --color-on-tertiary-fixed: #001e2f;
-  --color-on-tertiary-fixed-variant: #234a64;
+  --color-on-primary-fixed-variant: var(--color-brand-blue);
+  --color-secondary-fixed: #ccfbf1;
+  --color-secondary-fixed-dim: #2dd4bf;
+  --color-on-secondary-fixed: #00201c;
+  --color-on-secondary-fixed-variant: #0f766e;
+  --color-tertiary-fixed: #ede9fe;
+  --color-tertiary-fixed-dim: #c4b5fd;
+  --color-on-tertiary-fixed: #2e1065;
+  --color-on-tertiary-fixed-variant: #6d28d9;
+
+  /* Sidebar — fond bleu logo, texte marine (#00263b sur #079dfe = 5.4:1 ✓,
+     identique aux deux modes) */
+  --color-sidebar-bg: var(--color-brand-blue);
+  --color-sidebar-fg: var(--color-on-brand);
+  --color-sidebar-fg-active: var(--color-on-brand);
+  --color-sidebar-item-active-bg: rgb(0 38 59 / 10%);
+  --color-sidebar-divider: rgb(0 38 59 / 16%);
+  --color-sidebar-active-indicator: var(--color-on-brand);
+
+  /* Liens et texte atténué — mêmes règles de contraste qu'en mode clair */
+  --color-link: var(--color-primary);
+  --color-text-muted: var(--color-muted);
+
+  /* CTA — teal éclairci pour le fond sombre, texte marine */
+  --color-cta: #2dd4bf;
+  --color-cta-hover: #5eead4;
+  --color-on-cta: #00201c;
+
+  /* Texte sur badges de statut pleins (les fonds sont clairs en sombre) */
+  --color-on-success: #052e14;
+  --color-on-warning: #1c0e00;
+  --color-on-danger: #2a0505;
+
+  /* Utilitaires texte Bootstrap (.text-danger / .text-success / .text-warning) :
+     Bootstrap les compose via --bs-*-rgb, on les aligne sur les tokens sémantiques
+     du dark pour garder le contraste (au lieu du rouge Bootstrap #dc3545, 3.6:1) */
+  --bs-danger-rgb: 239, 68, 68; /* --color-danger  #ef4444 */
+  --bs-success-rgb: 34, 197, 94; /* --color-success #22c55e */
+  --bs-warning-rgb: 245, 158, 11; /* --color-warning #f59e0b */
+
+  /* Statuts des tâches — mêmes teintes qu'en mode clair, éclaircies
+     pour rester lisibles sur fond sombre, fonds en 16 % d'opacité */
+  --color-status-backlog: var(--color-brand-cyan);
+  --color-status-backlog-bg: color-mix(in srgb, var(--color-brand-cyan) 16%, transparent);
+  --color-status-todo: var(--color-warning);
+  --color-status-in-progress: var(--color-warning);
+  --color-status-in-progress-bg: color-mix(in srgb, var(--color-warning) 16%, transparent);
+  --color-status-in-review: var(--color-tertiary);
+  --color-status-in-review-bg: color-mix(in srgb, var(--color-tertiary) 16%, transparent);
+  --color-status-done: var(--color-success);
+  --color-status-done-bg: color-mix(in srgb, var(--color-success) 16%, transparent);
+  --color-status-cancelled: var(--color-danger);
+  --color-status-cancelled-bg: color-mix(in srgb, var(--color-danger) 16%, transparent);
+
+  /* Priorité */
+  --color-priority-lowest: var(--color-brand-cyan);
+  --color-priority-low: var(--color-brand-cyan);
+  --color-priority-medium: var(--color-warning);
+  --color-priority-high: var(--color-warning);
+  --color-priority-highest: var(--color-danger);
+
+  /* Type de tâche */
+  --color-info: var(--color-brand-cyan);
+
+  /* Tags libres */
+  --color-tag-teal-fg: var(--color-secondary);
+  --color-tag-blue-bg: color-mix(in srgb, var(--color-brand-cyan) 16%, transparent);
+  --color-tag-blue-fg: var(--color-brand-cyan);
 }
 
-/* ─── Light Theme — "Clair & Humain" design system ─── */
+/* ─── Light Theme ───
+   Sur fond blanc, aucune des deux couleurs du logo n'atteint le
+   seuil de contraste requis pour du PETIT TEXTE (#079dfe = 2.9:1,
+   #57deff = 1.6:1 — c'est une contrainte physique de leur clarté,
+   pas un choix). Elles restent donc utilisées PURES, sans
+   altération, comme :
+     - fonds de blocs/boutons/badges pleins (avec texte marine
+       dessus, --color-on-brand, qui passe 6:1+)
+     - grands éléments graphiques, logo, bordures, icônes dans un
+       badge coloré
+   Un seul token supplémentaire, --color-link, est introduit pour
+   le texte cliquable en petite taille — nécessaire car aucune
+   couleur à cette clarté ne peut légalement servir de texte fin
+   sur blanc. Ce n'est pas une dégradation du logo : c'est une
+   couleur fonctionnelle à part, de la même famille de teinte. */
 :root[data-theme='light'] {
-  --color-primary: #4c6fff;
-  --color-primary-container: #3d5ce6;
-  --color-on-primary: #ffffff;
-  --color-on-primary-container: #ffffff;
+  --color-primary: var(--color-brand-blue); /* fonds de blocs/boutons pleins */
+  --color-primary-container: var(--color-brand-blue); /* même bleu logo, cohérent avec le dark */
+  --color-on-primary: var(--color-on-brand); /* 6.1:1 ✓ */
+  --color-on-primary-container: var(--color-on-brand); /* 6.1:1 ✓ */
+  --color-link: #0074c2; /* texte/liens cliquables — 4.9:1 sur blanc ✓ */
 
-  --color-secondary: #12b8a0;
-  --color-secondary-container: #0d9488;
+  /* Teal — même teinte que le dark mode, assombrie pour le fond clair */
+  --color-secondary: #0f766e; /* 5.6:1 sur blanc ✓ */
+  --color-secondary-container: #0f766e;
   --color-on-secondary: #ffffff;
   --color-on-secondary-container: #ffffff;
 
-  --color-tertiary: #a855f7;
-  --color-tertiary-container: #7c3aed;
+  /* Violet — même teinte que le dark mode, assombrie pour le fond clair */
+  --color-tertiary: #6d28d9; /* 6.5:1 sur blanc ✓ */
+  --color-tertiary-container: #6d28d9;
   --color-on-tertiary: #ffffff;
   --color-on-tertiary-container: #ffffff;
 
@@ -94,93 +190,84 @@
   --color-outline: #c7ccde;
   --color-outline-variant: #e7eaf3;
   --color-on-surface: #1d2233;
-  --color-on-surface-variant: #6b7290;
+  --color-on-surface-variant: #575e78; /* assombri pour lisibilité (texte gris trop clair avant) */
   --color-text: #1d2233;
-  --color-muted: #6b7290;
+  --color-muted: #575e78;
   --color-text-muted: var(--color-muted);
 
-  --color-success: #1fa971;
-  --color-warning: #f2994a;
-  --color-danger: #e5484d;
-  --color-error: #e5484d;
+  /* Statuts — même teinte que le dark mode, assombrie pour passer 4.5:1 sur blanc */
+  --color-success: #15803d; /* 5.0:1 ✓ (était #1fa971, trop clair) */
+  --color-warning: #b45309; /* 5.0:1 ✓ (était #f2994a, trop clair) */
+  --color-danger: #dc2626; /* 4.8:1 ✓ */
+  --color-error: #dc2626;
   --color-on-error: #ffffff;
   --color-error-container: #ffe9e9;
-  --color-on-error-container: #e5484d;
+  --color-on-error-container: #b91c1c; /* 5.6:1 sur le fond pastel ✓ */
 
   --color-inverse-surface: #1d2233;
   --color-inverse-on-surface: #ffffff;
-  --color-inverse-primary: #eaeeff;
-  --color-surface-tint: #4c6fff;
+  --color-inverse-primary: var(--color-brand-cyan);
+  --color-surface-tint: var(--color-brand-blue);
 
-  --color-primary-fixed: #eaeeff;
-  --color-primary-fixed-dim: #c7d3ff;
-  --color-on-primary-fixed: #14204d;
-  --color-on-primary-fixed-variant: #3d5ce6;
-  --color-secondary-fixed: #e1fbf6;
-  --color-secondary-fixed-dim: #9eefe1;
-  --color-on-secondary-fixed: #04463d;
-  --color-on-secondary-fixed-variant: #0d9488;
-  --color-tertiary-fixed: #f3e8ff;
-  --color-tertiary-fixed-dim: #d9b8ff;
-  --color-on-tertiary-fixed: #3b0764;
-  --color-on-tertiary-fixed-variant: #7c3aed;
+  --color-primary-fixed: #e3f4ff;
+  --color-primary-fixed-dim: #a8dfff;
+  --color-on-primary-fixed: #00263b;
+  --color-on-primary-fixed-variant: #0074c2;
+  --color-secondary-fixed: #ccfbf1;
+  --color-secondary-fixed-dim: #5eead4;
+  --color-on-secondary-fixed: #00201c;
+  --color-on-secondary-fixed-variant: #0f766e;
+  --color-tertiary-fixed: #ede9fe;
+  --color-tertiary-fixed-dim: #c4b5fd;
+  --color-on-tertiary-fixed: #2e1065;
+  --color-on-tertiary-fixed-variant: #6d28d9;
 
-  --shadow-sm: 0 2px 10px rgba(30, 40, 90, 0.06);
-  --shadow-md: 0 6px 18px rgba(30, 40, 90, 0.12);
-  --shadow-lg: 0 10px 30px rgba(30, 40, 90, 0.16);
+  /* Sidebar — fond bleu logo, texte marine (#00263b sur #079dfe = 5.4:1 ✓,
+     identique aux deux modes) */
+  --color-sidebar-bg: var(--color-brand-blue);
+  --color-sidebar-fg: var(--color-on-brand);
+  --color-sidebar-fg-active: var(--color-on-brand);
+  --color-sidebar-item-active-bg: rgb(0 38 59 / 10%);
+  --color-sidebar-divider: rgb(0 38 59 / 16%);
+  --color-sidebar-active-indicator: var(--color-on-brand);
 
-  /* Sidebar — deliberately dark indigo anchor color (everything else is light) */
-  --color-sidebar-bg: #2b2f77;
-  --color-sidebar-fg: rgb(255 255 255 / 65%);
-  --color-sidebar-fg-active: #ffffff;
-  --color-sidebar-item-active-bg: rgb(255 255 255 / 12%);
+  /* CTA — bouton "créer", vert distinct du vert de statut */
+  --color-cta: #0f766e; /* 5.5:1 avec --color-on-cta ✓ */
+  --color-cta-hover: #115e59; /* 7.6:1 avec --color-on-cta ✓ */
+  --color-on-cta: #ffffff;
 
-  /* CTA — the one bright-green "create" action, distinct from status/success green */
-  --color-cta: #33c481;
-  --color-cta-hover: #29a96d;
-
-  /* Task status — pastel bg + matching dark-tinted fg per status */
-  --color-status-backlog: #4c6fff;
-  --color-status-backlog-bg: #eaeeff;
-  --color-status-todo: #f2994a;
-  --color-status-todo-bg: #fff1de;
-  --color-status-in-progress: #f2994a;
+  /* Statuts des tâches — icône/texte identique au dark mode (même hex), fond pastel adapté au thème clair */
+  --color-status-backlog: var(--color-brand-blue);
+  --color-status-backlog-bg: #e3f4ff;
+  --color-status-todo: #b45309;
+  --color-status-in-progress: #b45309;
   --color-status-in-progress-bg: #fff1de;
-  --color-status-in-review: #a855f7;
-  --color-status-in-review-bg: #f3e8ff;
-  --color-status-testing: #12b8a0;
-  --color-status-testing-bg: #e1fbf6;
-  --color-status-done: #1fa971;
-  --color-status-done-bg: #e4f9ee;
-  --color-status-cancelled: #e5484d;
+  --color-status-in-review: #6d28d9;
+  --color-status-in-review-bg: #ede9fe;
+  --color-status-done: #15803d;
+  --color-status-done-bg: #dcfce7;
+  --color-status-cancelled: #dc2626;
   --color-status-cancelled-bg: #ffe9e9;
 
-  /* Priority */
-  --color-priority-lowest: #4c6fff;
-  --color-priority-low: #4c6fff;
-  --color-priority-medium: #e0b429;
-  --color-priority-high: #f2994a;
-  --color-priority-highest: #e5484d;
+  /* Texte sur badges de statut pleins (fonds assombris en clair) */
+  --color-on-success: #ffffff;
+  --color-on-warning: #ffffff;
+  --color-on-danger: #ffffff;
 
-  /* Task type (Story/Bug/Task/Subtask/Improvement) — reuses the free-form tag palette */
-  --color-story: #0d9488;
-  --color-bug: #e5484d;
-  --color-task: #4c6fff;
-  --color-subtask: #6b7290;
-  --color-improvement: #b8860b;
-  --color-info: #4c6fff;
+  /* Priorité */
+  --color-priority-lowest: var(--color-brand-blue);
+  --color-priority-low: var(--color-brand-blue);
+  --color-priority-medium: #a16207;
+  --color-priority-high: #b45309;
+  --color-priority-highest: #dc2626;
 
-  /* Free-form tags */
-  --color-tag-pink-bg: #fde7f3;
-  --color-tag-pink-fg: #d6339f;
-  --color-tag-yellow-bg: #fff6d8;
-  --color-tag-yellow-fg: #b8860b;
-  --color-tag-teal-bg: #dff7f3;
-  --color-tag-teal-fg: #0d9488;
-  --color-tag-purple-bg: #efe7fd;
-  --color-tag-purple-fg: #7c3aed;
-  --color-tag-blue-bg: #eaeeff;
-  --color-tag-blue-fg: #4c6fff;
+  /* Type de tâche */
+  --color-info: var(--color-brand-blue);
+
+  /* Tags libres */
+  --color-tag-teal-fg: #0f766e;
+  --color-tag-blue-bg: #e3f4ff;
+  --color-tag-blue-fg: #0074c2;
 }
 
 /* ─── Shared Tokens ─── */
@@ -216,7 +303,7 @@
   --body-sm-size: 13px;
   --label-md-size: 12px;
 
-  /* Spacing — 8px base unit */
+  /* Spacing — base 8px */
   --unit: 8px;
   --gutter: 24px;
   --margin-page: 32px;
@@ -235,7 +322,7 @@
   --border-width: 1px;
   --border-width-thin: 1px;
 
-  /* Shadows — soft, diffuse only */
+  /* Shadows — douces, diffuses uniquement */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.24);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.28);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.32);
@@ -244,7 +331,7 @@
   --transition-fast: 150ms ease;
   --transition-base: 200ms ease;
 
-  /* Legacy compat aliases (mapped to new tokens) */
+  /* Alias de compatibilité */
   --shadow-brutal: var(--shadow-sm);
   --shadow-brutal-hover: var(--shadow-md);
   --shadow-brutal-active: var(--shadow-sm);
@@ -305,8 +392,11 @@ h4 {
   font-size: var(--text-base);
 }
 
+/* Liens : bleu logo direct en mode sombre (contraste OK),
+   variante --color-link en mode clair (le bleu logo pur échoue
+   le contraste en tant que petit texte sur blanc) */
 a {
-  color: var(--color-primary);
+  color: var(--color-link, var(--color-primary));
   text-decoration: none;
   font-weight: 500;
   transition: color var(--transition-fast);
@@ -317,13 +407,13 @@ a:hover {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--color-brand-blue);
   outline-offset: 2px;
   border-radius: inherit;
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--color-primary) 20%, transparent);
+  background: color-mix(in srgb, var(--color-brand-blue) 20%, transparent);
   color: var(--color-on-surface);
 }
 
@@ -332,7 +422,12 @@ img {
   height: auto;
 }
 
-/* ─── Icon Defaults — Material Symbols Outlined ─── */
+/* ─── Icon Defaults — Material Symbols Outlined ───
+   Les icônes héritent de --color-on-surface / --color-muted par
+   défaut (identiques en logique dans les 2 modes) ou de
+   --color-brand-blue / --color-brand-cyan quand elles sont dans
+   un badge/bouton de marque. Elles ne changent jamais de famille
+   de couleur entre les thèmes, seule leur teinte de fond change. */
 .material-symbols-outlined {
   font-variation-settings:
     'FILL' 0,

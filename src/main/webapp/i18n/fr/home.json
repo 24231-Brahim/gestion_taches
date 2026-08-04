@@ -38,7 +38,8 @@
     },
     "lists": {
       "recentProjects": "Projets récents",
-      "recentTasks": "Tâches récentes"
+      "recentTasks": "Tâches récentes",
+      "seeAll": "Voir tout"
     },
     "timeline": {
       "title": "Activité récente"

@@ -65,22 +65,6 @@
           <fa-icon icon="list-check" [fixedWidth]="true" />
           <span class="sidebar-label" jhiTranslate="global.menu.entities.task">Tasks</span>
         </a>
-
-        <a
-          class="sidebar-item"
-          [routerLink]="['/project', projectKey, 'task']"
-          [queryParams]="{ view: 'kanban' }"
-          routerLinkActive="active"
-          (click)="closeMobile()"
-        >
-          <fa-icon icon="columns" [fixedWidth]="true" />
-          <span class="sidebar-label" jhiTranslate="global.menu.entities.kanban">Kanban</span>
-        </a>
-
-        <a class="sidebar-item" [routerLink]="['/project', projectKey, 'view']" routerLinkActive="active" (click)="closeMobile()">
-          <fa-icon icon="users" [fixedWidth]="true" />
-          <span class="sidebar-label" jhiTranslate="global.menu.entities.members">Membres</span>
-        </a>
       } @else {
         <a
           class="sidebar-item"

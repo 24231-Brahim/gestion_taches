@@ -15,6 +15,7 @@ import {
   faChartLine,
   faTableColumns,
   faListCheck,
+  faTable,
 } from '@fortawesome/free-solid-svg-icons';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { TranslateModule } from '@ngx-translate/core';
@@ -90,7 +91,7 @@ describe('Sprint Component', () => {
     modalService = TestBed.inject(NgbModal);
 
     const library = TestBed.inject(FaIconLibrary);
-    library.addIcons(faCheck, faClipboardList, faFolder, faPencil, faPlay, faPlus, faChartLine, faTableColumns, faListCheck);
+    library.addIcons(faCheck, faClipboardList, faFolder, faPencil, faPlay, faPlus, faChartLine, faTableColumns, faListCheck, faTable);
 
     fixture.detectChanges();
   });
@@ -203,7 +204,7 @@ describe('Sprint Component', () => {
 
     comp.tasks.set([
       { id: 1, title: 'Task 1', status: 'DONE' },
-      { id: 2, title: 'Task 2', status: 'TODO' },
+      { id: 2, title: 'Task 2', status: 'IN_PROGRESS' },
     ]);
     fixture.detectChanges();
     expect(comp.sprintProgress()).toBe(50);

@@ -23,13 +23,11 @@ import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
-import { TaskStatus } from 'app/entities/enumerations/task-status.model';
 import { IProject } from 'app/entities/project/project.model';
 import { ProjectService } from 'app/entities/project/service/project.service';
 import { TaskDeleteDialog } from '../delete/task-delete-dialog';
 import { TaskDetailPanel } from '../detail/task-detail-panel';
-import { TaskKanbanBoard } from '../kanban/task-kanban-board';
-import { PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES, ViewMode } from '../task-helper';
+import { PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES } from '../task-helper';
 import { ITask } from '../task.model';
 import { TaskService } from '../service/task.service';
 
@@ -64,31 +62,11 @@ import { TaskService } from '../service/task.service';
         left: 10px;
         top: 50%;
         transform: translateY(-50%);
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-size: 0.85rem;
       }
       .search-box input {
         padding-left: 30px;
-      }
-      .view-mode-tabs {
-        display: flex;
-        gap: 0;
-        border: 1px solid var(--color-outline-variant, #2a3038);
-        border-radius: var(--radius-md);
-        overflow: hidden;
-      }
-      .view-mode-tabs .btn {
-        border: none;
-        border-radius: 0;
-        padding: 6px 14px;
-        background: transparent;
-        color: var(--color-text-muted, #6a8fac);
-        font-size: 0.85rem;
-        font-family: var(--font-inter);
-      }
-      .view-mode-tabs .btn-active {
-        background: var(--color-primary, #97cbff);
-        color: #000;
       }
       .status-badge {
         display: inline-block;
@@ -103,7 +81,7 @@ import { TaskService } from '../service/task.service';
         transition: background-color var(--transition-fast);
       }
       .task-row:hover {
-        background: var(--color-surface-container, #1b2025);
+        background: var(--color-surface-container);
       }
       .task-title-cell {
         font-weight: 500;
@@ -116,8 +94,8 @@ import { TaskService } from '../service/task.service';
         width: 24px;
         height: 24px;
         border-radius: 50%;
-        background: var(--color-primary-container, #25a7fd);
-        color: #000;
+        background: var(--color-primary-container);
+        color: var(--color-on-primary-container);
         font-size: 0.65rem;
         font-weight: 600;
         display: inline-flex;
@@ -141,7 +119,6 @@ import { TaskService } from '../service/task.service';
     Filter,
     NgbPagination,
     ItemCount,
-    TaskKanbanBoard,
     TaskDetailPanel,
   ],
 })
@@ -158,11 +135,8 @@ export class Task implements OnInit {
   readonly currentProjectKey = signal<string | null>(null);
   readonly currentProject = signal<IProject | null>(null);
 
-  readonly viewMode = signal<ViewMode>('list');
   readonly selectedTask = signal<ITask | null>(null);
   readonly drawerVisible = signal(false);
-
-  private readonly csvDownloadService = inject(CsvDownloadService);
 
   filteredTasks = computed(() => {
     const q = this.searchQuery().toLowerCase();
@@ -172,7 +146,6 @@ export class Task implements OnInit {
     return this.tasks().filter(i => i.title?.toLowerCase().includes(q));
   });
 
-  protected readonly appConfig = inject(ApplicationConfigService);
   readonly router = inject(Router);
   readonly taskService = inject(TaskService);
   readonly isLoading = this.taskService.tasksResource.isLoading;
@@ -181,6 +154,9 @@ export class Task implements OnInit {
   readonly statusBadges = STATUS_BADGES;
   readonly userProjectRoles = signal<Map<number, ProjectRole>>(new Map());
   readonly currentUserLogin = computed(() => this.accountService.account()?.login ?? null);
+  readonly isAdmin = computed(() => this.accountService.account()?.authorities?.includes('ROLE_ADMIN') ?? false);
+
+  protected readonly appConfig = inject(ApplicationConfigService);
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly sortService = inject(SortService);
   protected readonly filterOptions = toSignal(this.filters.filterChanges);
@@ -189,6 +165,8 @@ export class Task implements OnInit {
   protected readonly projectService = inject(ProjectService);
 
   protected readonly destroyRef = inject(DestroyRef);
+
+  private readonly csvDownloadService = inject(CsvDownloadService);
 
   constructor() {
     effect(() => {
@@ -316,14 +294,6 @@ export class Task implements OnInit {
     this.selectedTask.set(updated);
   }
 
-  onKanbanStatusChange(event: { taskId: number; status: string }): void {
-    this.tasks.update(list => list.map(t => (t.id === event.taskId ? { ...t, status: event.status as keyof typeof TaskStatus } : t)));
-  }
-
-  setViewMode(mode: ViewMode): void {
-    this.viewMode.set(mode);
-  }
-
   navigateToWithComponentValues(event: SortState): void {
     this.handleNavigation(this.page(), event, this.filters.filterOptions);
   }
@@ -337,9 +307,6 @@ export class Task implements OnInit {
     this.page.set(+(page ?? 1));
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
     this.filters.initializeFromParams(params);
-    if (params.get('view') === 'kanban') {
-      this.viewMode.set('kanban');
-    }
   }
 
   protected fillComponentAttributesFromResponseBody(data: ITask[]): ITask[] {

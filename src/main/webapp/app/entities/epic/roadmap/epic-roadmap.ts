@@ -33,10 +33,10 @@ interface EpicWithProgress extends IEpic {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  TODO: 'var(--color-status-todo, #2196f3)',
-  IN_PROGRESS: 'var(--color-status-in-progress, #ff9800)',
-  DONE: 'var(--color-status-done, #4caf50)',
-  CANCELLED: 'var(--color-status-cancelled, #f44336)',
+  TODO: 'var(--color-status-todo)',
+  IN_PROGRESS: 'var(--color-status-in-progress)',
+  DONE: 'var(--color-status-done)',
+  CANCELLED: 'var(--color-status-cancelled)',
 };
 
 @Component({
@@ -69,21 +69,21 @@ const STATUS_COLORS: Record<string, string> = {
         flex: 0 1 auto;
       }
       .roadmap-container {
-        background: var(--color-surface-container, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-lg);
         overflow: hidden;
       }
       .roadmap-timeline-header {
         padding: 12px 20px;
-        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant);
       }
       .roadmap-month-labels {
         display: flex;
         justify-content: space-between;
         font-family: var(--font-inter);
         font-size: 0.7rem;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         text-transform: none;
       }
       .roadmap-list {
@@ -95,7 +95,7 @@ const STATUS_COLORS: Record<string, string> = {
         align-items: center;
         gap: 16px;
         padding: 14px 20px;
-        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant);
         transition: background-color var(--transition-fast);
       }
       .roadmap-epic-row:last-child {
@@ -111,21 +111,21 @@ const STATUS_COLORS: Record<string, string> = {
       .roadmap-epic-title {
         font-family: var(--font-inter);
         font-size: 0.85rem;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         text-decoration: none;
         display: block;
         margin-bottom: 4px;
         word-break: break-word;
       }
       .roadmap-epic-title:hover {
-        color: var(--color-primary, #97cbff);
+        color: var(--color-primary);
       }
       .roadmap-epic-meta {
         display: flex;
         align-items: center;
         gap: 8px;
         font-size: 0.75rem;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         flex-wrap: wrap;
       }
       .status-dot {
@@ -148,7 +148,7 @@ const STATUS_COLORS: Record<string, string> = {
       .roadmap-epic-bar-track {
         flex: 1;
         height: 6px;
-        background: var(--color-surface-container-high, #262d36);
+        background: var(--color-surface-container-high);
         border-radius: 9999px;
         overflow: hidden;
       }
@@ -165,14 +165,14 @@ const STATUS_COLORS: Record<string, string> = {
       .roadmap-epic-bar-label {
         font-size: 0.65rem;
         font-weight: 600;
-        color: #000;
+        color: var(--color-on-primary-container);
         font-family: var(--font-inter);
       }
       .roadmap-pct {
         width: 40px;
         text-align: right;
         font-size: 0.75rem;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-family: var(--font-inter);
       }
       .roadmap-legend {
@@ -186,7 +186,7 @@ const STATUS_COLORS: Record<string, string> = {
         align-items: center;
         gap: 6px;
         font-size: 0.8rem;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
       }
       .legend-dot {
         width: 10px;

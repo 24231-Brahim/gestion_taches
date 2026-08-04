@@ -74,7 +74,7 @@ describe('Task routing resolve service', () => {
       });
     });
 
-    it('should route to 404 page if data not found in server', async () => {
+    it('should emit an empty observable when data not found in server', async () => {
       // GIVEN
       vitest.spyOn(service, 'find').mockReturnValue(throwError(() => new HttpErrorResponse({ status: 404, statusText: 'Not Found' })));
       mockActivatedRouteSnapshot.params = { id: 123 };
@@ -84,11 +84,11 @@ describe('Task routing resolve service', () => {
         await expect(lastValueFrom(taskResolve(mockActivatedRouteSnapshot))).rejects.toThrow('no elements in sequence');
         // THEN
         expect(service.find).toHaveBeenCalledWith(123);
-        expect(mockRouter.navigate).toHaveBeenCalledWith(['404']);
+        expect(mockRouter.navigate).not.toHaveBeenCalled();
       });
     });
 
-    it('should route to error page if server returns an error other than 404', async () => {
+    it('should emit an empty observable if server returns an error other than 404', async () => {
       // GIVEN
       vitest
         .spyOn(service, 'find')
@@ -100,7 +100,7 @@ describe('Task routing resolve service', () => {
         await expect(lastValueFrom(taskResolve(mockActivatedRouteSnapshot))).rejects.toThrow('no elements in sequence');
         // THEN
         expect(service.find).toHaveBeenCalledWith(123);
-        expect(mockRouter.navigate).toHaveBeenCalledWith(['error']);
+        expect(mockRouter.navigate).not.toHaveBeenCalled();
       });
     });
   });

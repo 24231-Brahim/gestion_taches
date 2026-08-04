@@ -8,12 +8,12 @@ import { ITask } from 'app/entities/task/task.model';
 import { ISprint } from '../sprint.model';
 
 const STATUS_COLORS: Record<string, string> = {
-  NEW: 'var(--color-status-backlog, #9e9e9e)',
-  TODO: 'var(--color-status-todo, #2196f3)',
-  IN_PROGRESS: 'var(--color-status-in-progress, #ff9800)',
-  IN_REVIEW: 'var(--color-status-in-review, #9c27b0)',
-  DONE: 'var(--color-status-done, #4caf50)',
-  CANCELLED: 'var(--color-status-cancelled, #f44336)',
+  NEW: 'var(--color-status-backlog)',
+  TODO: 'var(--color-status-todo)',
+  IN_PROGRESS: 'var(--color-status-in-progress)',
+  IN_REVIEW: 'var(--color-status-in-review)',
+  DONE: 'var(--color-status-done)',
+  CANCELLED: 'var(--color-status-cancelled)',
 };
 
 interface TimelineLabel {
@@ -35,7 +35,7 @@ interface TimelineLabel {
       }
       .timeline-header {
         padding-bottom: 8px;
-        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant);
       }
       .timeline-task-col {
         width: 260px;
@@ -49,7 +49,7 @@ interface TimelineLabel {
         font-family: var(--font-inter);
         font-size: 0.7rem;
         text-transform: none;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-weight: 600;
       }
       .timeline-scale {
@@ -69,7 +69,7 @@ interface TimelineLabel {
         white-space: nowrap;
         font-family: var(--font-inter);
         font-size: 0.65rem;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
       }
       .timeline-body {
         display: flex;
@@ -77,15 +77,15 @@ interface TimelineLabel {
       }
       .timeline-row {
         height: 40px;
-        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant);
       }
       .timeline-row:hover {
-        background: var(--color-surface-container, #1b2025);
+        background: var(--color-surface-container);
       }
       .timeline-task-title {
         font-family: var(--font-inter);
         font-size: 0.8rem;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -95,12 +95,12 @@ interface TimelineLabel {
       .status-badge {
         display: inline-block;
         padding: 2px 8px;
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant);
         border-radius: 9999px;
         font-size: 0.65rem;
         font-family: var(--font-inter);
-        color: var(--color-text-muted, #6a8fac);
-        background: var(--color-surface-container, #1b2025);
+        color: var(--color-text-muted);
+        background: var(--color-surface-container);
         flex-shrink: 0;
       }
       .timeline-track {
@@ -111,7 +111,7 @@ interface TimelineLabel {
         top: 0;
         bottom: 0;
         width: 1px;
-        background: var(--color-outline-variant, #2a3038);
+        background: var(--color-outline-variant);
         opacity: 0.5;
       }
       .timeline-bar {
@@ -129,13 +129,13 @@ interface TimelineLabel {
         top: 0;
         bottom: 0;
         width: 2px;
-        background: var(--color-primary, #97cbff);
+        background: var(--color-primary);
         z-index: 2;
       }
       .timeline-empty {
         padding: 32px 16px;
         text-align: center;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-family: var(--font-inter);
         font-size: 0.85rem;
       }

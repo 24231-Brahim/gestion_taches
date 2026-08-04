@@ -45,7 +45,7 @@
 .project-key {
   font: var(--label-md);
   letter-spacing: 0.04em;
-  color: var(--color-primary);
+  color: var(--color-link, var(--color-primary));
 }
 
 .active-sprint-badge {
@@ -55,8 +55,8 @@
   flex-shrink: 0;
   padding: 3px 10px;
   border-radius: var(--radius-pill);
-  background: var(--color-status-in-progress-bg, #fff1de);
-  color: var(--color-status-in-progress, #f2994a);
+  background: var(--color-status-in-progress-bg);
+  color: var(--color-status-in-progress);
   font: var(--label-md);
   font-size: 0.7rem;
 }

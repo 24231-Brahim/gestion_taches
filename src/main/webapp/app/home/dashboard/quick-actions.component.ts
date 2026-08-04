@@ -25,10 +25,6 @@ import { RouterLink } from '@angular/router';
             <span class="qa-icon">✓</span>
             <span jhiTranslate="dashboard.quickActions.myTasks">My Tasks</span>
           </a>
-          <a [routerLink]="kanbanLink()" [queryParams]="kanbanQueryParams()" class="qa-btn">
-            <span class="qa-icon">▤</span>
-            <span jhiTranslate="dashboard.quickActions.kanbanBoard">Kanban Board</span>
-          </a>
           <a [routerLink]="backlogLink()" class="qa-btn">
             <span class="qa-icon">☰</span>
             <span jhiTranslate="dashboard.quickActions.viewBacklog">View Backlog</span>
@@ -99,7 +95,5 @@ export class DashboardQuickActionsComponent {
   readonly variant = input<'admin' | 'developer'>('admin');
   readonly firstProjectKey = input<string | null>(null);
 
-  readonly kanbanLink = computed(() => (this.firstProjectKey() ? ['/project', this.firstProjectKey(), 'task'] : ['/project']));
-  readonly kanbanQueryParams = computed(() => (this.firstProjectKey() ? { view: 'kanban' } : null));
   readonly backlogLink = computed(() => (this.firstProjectKey() ? ['/project', this.firstProjectKey(), 'sprint'] : ['/project']));
 }

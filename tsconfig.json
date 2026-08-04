@@ -20,7 +20,10 @@
     "target": "es2022",
     "module": "es2020",
     "types": [],
-    "lib": ["es2018", "es2020", "es2021", "dom"]
+    "lib": ["es2018", "es2020", "es2021", "dom"],
+    "paths": {
+      "src/test/javascript/mocks/*": ["../../test/javascript/mocks/*"]
+    }
   },
   "references": [
     {

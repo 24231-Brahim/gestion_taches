@@ -74,6 +74,8 @@ public class TaskQueryService extends QueryService<Task> {
                 root.fetch(Task_.sprint, JoinType.LEFT);
                 root.fetch(Task_.epic, JoinType.LEFT);
                 root.fetch(Task_.project, JoinType.LEFT);
+                root.fetch(Task_.assignee, JoinType.LEFT);
+                root.fetch(Task_.createdBy, JoinType.LEFT);
             }
             return null;
         });

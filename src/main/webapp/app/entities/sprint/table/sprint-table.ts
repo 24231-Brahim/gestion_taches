@@ -27,7 +27,7 @@ import { SprintService } from '../service/sprint.service';
       .page-title {
         font-family: var(--font-inter);
         font-size: 1.4rem;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         margin-bottom: 20px;
       }
     `,

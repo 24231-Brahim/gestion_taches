@@ -33,12 +33,12 @@ import { IProjectMember } from 'app/entities/project/project.model';
         font-family: var(--font-inter);
         font-size: 1rem;
         font-weight: 600;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         margin: 0;
       }
       .members-sidebar {
-        background: var(--color-surface-container, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-lg);
         padding: 12px;
       }
@@ -47,7 +47,7 @@ import { IProjectMember } from 'app/entities/project/project.model';
         font-size: 0.75rem;
         font-weight: 600;
         text-transform: none;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         margin: 0 0 8px;
       }
       .member-item {
@@ -58,16 +58,16 @@ import { IProjectMember } from 'app/entities/project/project.model';
         border-radius: var(--radius-md);
         font-family: var(--font-inter);
         font-size: 0.85rem;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
       }
       .member-item:hover {
-        background: var(--color-surface-container-high, #262a30);
+        background: var(--color-surface-container-high);
       }
       .member-avatar {
         width: 28px;
         height: 28px;
         border-radius: 50%;
-        background: var(--color-primary-container, #0099fe);
+        background: var(--color-primary-container);
         color: var(--color-on-primary-container);
         font-size: 0.75rem;
         font-weight: 600;
@@ -79,7 +79,7 @@ import { IProjectMember } from 'app/entities/project/project.model';
       }
       .member-role {
         font-size: 0.7rem;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         margin-left: auto;
       }
       .message-list {
@@ -90,13 +90,13 @@ import { IProjectMember } from 'app/entities/project/project.model';
         min-width: 0;
       }
       .message-item {
-        background: var(--color-surface-container, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-lg);
         padding: 12px 14px;
       }
       .message-item.private {
-        border-left: 3px solid var(--color-primary, #97cbff);
+        border-left: 3px solid var(--color-primary);
       }
       .message-header {
         display: flex;
@@ -108,32 +108,32 @@ import { IProjectMember } from 'app/entities/project/project.model';
         font-family: var(--font-inter);
         font-size: 0.8rem;
         font-weight: 600;
-        color: var(--color-primary, #97cbff);
+        color: var(--color-primary);
       }
       .message-recipient {
         font-family: var(--font-inter);
         font-size: 0.7rem;
-        color: var(--color-text-muted, #6a8fac);
-        background: var(--color-surface-container-high, #262a30);
+        color: var(--color-text-muted);
+        background: var(--color-surface-container-high);
         padding: 1px 6px;
         border-radius: var(--radius-sm);
       }
       .message-date {
         font-family: var(--font-inter);
         font-size: 0.7rem;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         margin-left: auto;
       }
       .message-content {
         font-family: var(--font-inter);
         font-size: 0.85rem;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         white-space: pre-wrap;
         line-height: 1.5;
       }
       .compose-box {
-        background: var(--color-surface-container, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-lg);
         padding: 14px;
         display: flex;
@@ -155,7 +155,7 @@ import { IProjectMember } from 'app/entities/project/project.model';
       .empty-state {
         text-align: center;
         padding: 32px 16px;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-family: var(--font-inter);
         font-size: 0.85rem;
       }

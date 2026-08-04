@@ -16,7 +16,7 @@ export interface DeveloperDashboardStatistics {
   doneTasks: number;
   overdueTasks: number;
   memberProjectsCount: number;
-  taskDistribution: Array<{ status: string; count: number }>;
+  taskDistribution: { status: string; count: number }[];
 }
 
 interface MemberProject {
@@ -31,7 +31,13 @@ interface ProjectProgressStats {
   doneTasks: number;
 }
 
-const ACTIVITY_COLORS = ['#22c55e', '#25a7fd', '#f59e0b', '#a855f7', '#52d6fd'];
+const ACTIVITY_COLORS = [
+  'var(--color-success)',
+  'var(--color-status-backlog)',
+  'var(--color-warning)',
+  'var(--color-status-in-review)',
+  'var(--color-secondary)',
+];
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -121,6 +127,56 @@ const ACTIVITY_COLORS = ['#22c55e', '#25a7fd', '#f59e0b', '#a855f7', '#52d6fd'];
   ],
 })
 export class DeveloperDashboardComponent {
+  readonly assignedTasksTotal = computed(() => this.statisticsResource.value()?.assignedTasksTotal ?? 0);
+  readonly inProgressTasks = computed(() => this.statisticsResource.value()?.inProgressTasks ?? 0);
+  readonly doneTasks = computed(() => this.statisticsResource.value()?.doneTasks ?? 0);
+  readonly overdueTasks = computed(() => this.statisticsResource.value()?.overdueTasks ?? 0);
+  readonly memberProjectsCount = computed(() => this.statisticsResource.value()?.memberProjectsCount ?? 0);
+  readonly taskDistribution = computed(() => this.statisticsResource.value()?.taskDistribution ?? []);
+
+  readonly firstProjectKey = computed(() => this.myProjectsResource.value()?.[0]?.key ?? null);
+
+  readonly projectProgress = computed(() => {
+    const projects = this.myProjectsResource.value() ?? [];
+    const stats = this.projectStatsResource.value() ?? [];
+    const statsById = new Map(stats.map(s => [s.projectId, s]));
+    return projects.map(p => {
+      const s = statsById.get(p.id);
+      return { projectId: p.id, projectName: p.name, totalTasks: s?.totalTasks ?? 0, doneTasks: s?.doneTasks ?? 0 };
+    });
+  });
+
+  readonly recentTasks = computed<any[]>(() => this.recentTasksResource.value() ?? []);
+
+  readonly recentActivity = computed<TimelineItem[]>(() => {
+    const histories = this.recentActivityResource.value() ?? [];
+    return histories.slice(0, 5).map((h, i) => ({
+      id: h.id,
+      title: h.task?.title ?? '—',
+      status: h.action,
+      date: this.formatDate(h.createdAt),
+      color: ACTIVITY_COLORS[i % ACTIVITY_COLORS.length],
+    }));
+  });
+
+  readonly loading = computed(
+    () =>
+      this.statisticsResource.isLoading() ||
+      this.myProjectsResource.isLoading() ||
+      this.projectStatsResource.isLoading() ||
+      this.recentTasksResource.isLoading() ||
+      this.recentActivityResource.isLoading(),
+  );
+
+  readonly error = computed(
+    () =>
+      this.statisticsResource.error() ??
+      this.myProjectsResource.error() ??
+      this.projectStatsResource.error() ??
+      this.recentTasksResource.error() ??
+      this.recentActivityResource.error(),
+  );
+
   private readonly applicationConfigService = inject(ApplicationConfigService);
   private readonly accountService = inject(AccountService);
   private readonly translateService = inject(TranslateService);
@@ -149,7 +205,7 @@ export class DeveloperDashboardComponent {
     }
     return {
       url: this.applicationConfigService.getEndpointFor('api/tasks'),
-      params: new HttpParams().set('assigneeId.equals', userId).set('page', '0').set('size', '10').set('sort', 'updatedAt,desc'),
+      params: new HttpParams().set('assigneeId.equals', userId).set('page', '0').set('size', '5').set('sort', 'updatedAt,desc'),
     };
   });
 
@@ -157,60 +213,10 @@ export class DeveloperDashboardComponent {
     url: this.applicationConfigService.getEndpointFor('api/task-histories/mine'),
   }));
 
-  readonly assignedTasksTotal = computed(() => this.statisticsResource.value()?.assignedTasksTotal ?? 0);
-  readonly inProgressTasks = computed(() => this.statisticsResource.value()?.inProgressTasks ?? 0);
-  readonly doneTasks = computed(() => this.statisticsResource.value()?.doneTasks ?? 0);
-  readonly overdueTasks = computed(() => this.statisticsResource.value()?.overdueTasks ?? 0);
-  readonly memberProjectsCount = computed(() => this.statisticsResource.value()?.memberProjectsCount ?? 0);
-  readonly taskDistribution = computed(() => this.statisticsResource.value()?.taskDistribution ?? []);
-
-  readonly firstProjectKey = computed(() => this.myProjectsResource.value()?.[0]?.key ?? null);
-
-  readonly projectProgress = computed(() => {
-    const projects = this.myProjectsResource.value() ?? [];
-    const stats = this.projectStatsResource.value() ?? [];
-    const statsById = new Map(stats.map(s => [s.projectId, s]));
-    return projects.map(p => {
-      const s = statsById.get(p.id);
-      return { projectId: p.id, projectName: p.name, totalTasks: s?.totalTasks ?? 0, doneTasks: s?.doneTasks ?? 0 };
-    });
-  });
-
-  readonly recentTasks = computed<any[]>(() => this.recentTasksResource.value() ?? []);
-
-  readonly recentActivity = computed<TimelineItem[]>(() => {
-    const histories = this.recentActivityResource.value() ?? [];
-    return histories.map((h, i) => ({
-      id: h.id,
-      title: h.task?.title ?? '—',
-      status: h.action,
-      date: this.formatDate(h.createdAt),
-      color: ACTIVITY_COLORS[i % ACTIVITY_COLORS.length],
-    }));
-  });
-
-  readonly loading = computed(
-    () =>
-      this.statisticsResource.isLoading() ||
-      this.myProjectsResource.isLoading() ||
-      this.projectStatsResource.isLoading() ||
-      this.recentTasksResource.isLoading() ||
-      this.recentActivityResource.isLoading(),
-  );
-
-  readonly error = computed(
-    () =>
-      this.statisticsResource.error() ??
-      this.myProjectsResource.error() ??
-      this.projectStatsResource.error() ??
-      this.recentTasksResource.error() ??
-      this.recentActivityResource.error(),
-  );
-
   private formatDate(value: string | undefined): string {
     if (!value) {
       return '—';
     }
-    return new Date(value).toLocaleString(this.translateService.currentLang);
+    return new Date(value).toLocaleString(this.translateService.getCurrentLang());
   }
 }

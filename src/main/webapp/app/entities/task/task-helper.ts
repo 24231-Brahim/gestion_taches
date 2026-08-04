@@ -39,5 +39,3 @@ export const STATUS_BADGES: Record<string, StatusBadge> = {
     bg: 'var(--color-status-cancelled-bg)',
   },
 };
-
-export type ViewMode = 'list' | 'kanban';

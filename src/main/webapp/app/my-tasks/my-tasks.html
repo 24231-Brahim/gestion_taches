@@ -1,5 +1,17 @@
 <div class="my-tasks-page">
-  <h2 class="my-tasks-title" jhiTranslate="gestionTachesApp.myTasks.title">Mes Tâches</h2>
+  <div class="my-tasks-header">
+    <h2 class="my-tasks-title" jhiTranslate="gestionTachesApp.myTasks.title">Mes Tâches</h2>
+    @if (hasTasks() || !isLoading()) {
+      <div class="view-mode-tabs">
+        <button class="btn btn-sm" [class.btn-active]="viewMode() === 'list'" (click)="setViewMode('list')">
+          <fa-icon icon="list" /><span class="d-none d-md-inline ms-1" jhiTranslate="gestionTachesApp.myTasks.view.list">Liste</span>
+        </button>
+        <button class="btn btn-sm" [class.btn-active]="viewMode() === 'kanban'" (click)="setViewMode('kanban')">
+          <fa-icon icon="columns" /><span class="d-none d-md-inline ms-1" jhiTranslate="gestionTachesApp.myTasks.view.board">Tableau</span>
+        </button>
+      </div>
+    }
+  </div>
 
   @if (isLoading()) {
     <p jhiTranslate="dashboard.loading">Chargement...</p>
@@ -7,6 +19,54 @@
     <div class="my-tasks-empty">
       <fa-icon icon="user-check" class="my-tasks-empty-icon" />
       <p jhiTranslate="gestionTachesApp.myTasks.empty">Aucune tâche pour l'instant, profitez-en pour souffler !</p>
+    </div>
+  } @else if (viewMode() === 'list') {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table" aria-describedby="page-heading">
+        <thead>
+          <tr>
+            <th scope="col"><span jhiTranslate="gestionTachesApp.task.title">Title</span></th>
+            <th scope="col"><span jhiTranslate="gestionTachesApp.task.status">Status</span></th>
+            <th scope="col"><span jhiTranslate="gestionTachesApp.task.priority">Priority</span></th>
+            <th scope="col"><span jhiTranslate="gestionTachesApp.task.project">Project</span></th>
+            <th scope="col"><span jhiTranslate="gestionTachesApp.task.assignee">Assignee</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (task of tasks(); track trackId(task)) {
+            <tr data-cy="entityTable" class="task-row" (click)="onSelectTask(task)">
+              <td class="task-title-cell">{{ task.title }}</td>
+              <td>
+                <span
+                  class="status-badge"
+                  [style.background]="statusBadges[task.status ?? 'NEW']?.bg"
+                  [style.color]="statusBadges[task.status ?? 'NEW']?.color"
+                >
+                  {{ 'gestionTachesApp.TaskStatus.' + (task.status ?? 'null') | translate }}
+                </span>
+              </td>
+              <td>
+                <fa-icon
+                  [icon]="priorityIcons[task.priority ?? 'MEDIUM']"
+                  [style.color]="priorityColors[task.priority ?? 'MEDIUM']"
+                  class="me-1"
+                />
+                <span>{{ 'gestionTachesApp.Priority.' + (task.priority ?? 'null') | translate }}</span>
+              </td>
+              <td>
+                @if (task.project) {
+                  {{ task.project.key }}
+                }
+              </td>
+              <td>
+                @if (task.assignee) {
+                  <span class="assignee-initials-sm" [title]="task.assignee.login">{{ task.assignee.login }}</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
     </div>
   } @else {
     <jhi-task-kanban-board

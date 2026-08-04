@@ -3,9 +3,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterModule } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
-import { faTimes, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { TranslateModule } from '@ngx-translate/core';
 import { of, throwError } from 'rxjs';
+
+import { registerAllIcons } from 'src/test/javascript/mocks/fa-icon-library';
 
 import { TaskService } from '../service/task.service';
 import { AlertService } from 'app/core/util/alert.service';
@@ -16,14 +17,14 @@ import { ITask } from '../task.model';
 describe('TaskDetailPanel', () => {
   let fixture: ComponentFixture<TaskDetailPanel>;
   let comp: TaskDetailPanel;
-  let taskServiceMock: { partialUpdate: ReturnType<typeof vitest.fn> };
+  let taskServiceMock: { partialUpdate: ReturnType<typeof vitest.fn>; getAssignableUsers: ReturnType<typeof vitest.fn> };
   let alertServiceMock: { addAlert: ReturnType<typeof vitest.fn> };
 
   let mockTask: ITask;
 
   beforeEach(() => {
     mockTask = { ...sampleWithRequiredData, status: 'NEEDS_INFO' };
-    taskServiceMock = { partialUpdate: vitest.fn().mockReturnValue(of({})) };
+    taskServiceMock = { partialUpdate: vitest.fn().mockReturnValue(of({})), getAssignableUsers: vitest.fn().mockReturnValue(of([])) };
     alertServiceMock = { addAlert: vitest.fn() };
 
     TestBed.configureTestingModule({
@@ -35,7 +36,7 @@ describe('TaskDetailPanel', () => {
     });
 
     const library = TestBed.inject(FaIconLibrary);
-    library.addIcons(faTimes, faPencilAlt);
+    registerAllIcons(library);
 
     fixture = TestBed.createComponent(TaskDetailPanel);
     comp = fixture.componentInstance;
@@ -66,8 +67,9 @@ describe('TaskDetailPanel', () => {
   it('onStatusChange should update task on success', () => {
     const updated = { ...mockTask, status: 'DONE' };
     taskServiceMock.partialUpdate.mockReturnValue(of(updated));
+    const emitSpy = vitest.spyOn(comp.taskChanged, 'emit');
     comp.onStatusChange(mockTask, 'DONE');
-    expect(mockTask.status).toBe('DONE');
+    expect(emitSpy).toHaveBeenCalledWith({ ...mockTask, ...updated });
     expect(comp.isSaving()).toBe(false);
   });
 

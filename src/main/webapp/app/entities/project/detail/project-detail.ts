@@ -36,7 +36,7 @@ export interface DisplayMember extends IProjectMember {
       .tab-bar {
         display: flex;
         gap: 0;
-        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant);
         margin-bottom: 20px;
       }
       .tab-item {
@@ -48,7 +48,7 @@ export interface DisplayMember extends IProjectMember {
         letter-spacing: 0;
         border: none;
         background: transparent;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         border-bottom: 2px solid transparent;
         margin-bottom: -1px;
         transition:
@@ -56,11 +56,11 @@ export interface DisplayMember extends IProjectMember {
           border-color var(--transition-fast);
       }
       .tab-item:hover {
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
       }
       .tab-item.active {
-        color: var(--color-primary, #97cbff);
-        border-bottom-color: var(--color-primary, #97cbff);
+        color: var(--color-primary);
+        border-bottom-color: var(--color-primary);
       }
     `,
   ],

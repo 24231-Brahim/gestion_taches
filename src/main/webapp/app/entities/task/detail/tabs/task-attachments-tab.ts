@@ -22,10 +22,10 @@ import { AttachmentService } from 'app/entities/attachment/service/attachment.se
         align-items: center;
         gap: 10px;
         padding: 16px;
-        border: 2px dashed var(--color-outline-variant, #2a3038);
+        border: 2px dashed var(--color-outline-variant);
         border-radius: var(--radius-lg);
-        background: var(--color-surface-container, #1b2025);
-        color: var(--color-text-muted, #6a8fac);
+        background: var(--color-surface-container);
+        color: var(--color-text-muted);
         font-family: var(--font-inter);
         font-size: 0.8rem;
         cursor: pointer;
@@ -36,8 +36,8 @@ import { AttachmentService } from 'app/entities/attachment/service/attachment.se
       }
       .attachment-drop-zone:hover,
       .attachment-drop-zone.drag-over {
-        border-color: var(--color-primary, #97cbff);
-        background: var(--color-surface-container-high, #262a30);
+        border-color: var(--color-primary);
+        background: var(--color-surface-container-high);
       }
       .attachments-list {
         display: flex;
@@ -49,14 +49,14 @@ import { AttachmentService } from 'app/entities/attachment/service/attachment.se
         align-items: center;
         gap: 8px;
         padding: 8px 10px;
-        background: var(--color-surface-container, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-lg);
       }
       .attachment-name {
         font-family: var(--font-inter);
         font-size: 0.85rem;
-        color: var(--color-primary, #97cbff);
+        color: var(--color-primary);
         text-decoration: none;
         flex: 1;
         overflow: hidden;

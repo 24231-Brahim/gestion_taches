@@ -111,13 +111,13 @@ export class AdminTasks implements OnInit {
   }
 
   getStatusColor(status: string | null | undefined): string {
-    if (!status) return '#9e9e9e';
+    if (!status) return 'var(--color-muted)';
     const badge: StatusBadge | undefined = (STATUS_BADGES as Record<string, StatusBadge | undefined>)[status];
-    return badge ? badge.color : '#9e9e9e';
+    return badge ? badge.color : 'var(--color-muted)';
   }
 
   getPriorityColor(priority: string | null | undefined): string {
-    return PRIORITY_COLORS[priority ?? ''] ?? '#9e9e9e';
+    return PRIORITY_COLORS[priority ?? ''] ?? 'var(--color-muted)';
   }
 
   getStatusLabel(status: string | null | undefined): string {

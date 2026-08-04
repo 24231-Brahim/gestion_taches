@@ -54,10 +54,10 @@ type Tab = 'board' | 'planning';
       }
       select.sprint-selector {
         min-width: 280px;
-        background: var(--color-surface-container, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-sm);
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         font-family: var(--font-inter);
         font-size: 0.9rem;
         padding: 8px 12px;
@@ -70,34 +70,34 @@ type Tab = 'board' | 'planning';
       .sprint-name {
         font-family: var(--font-inter);
         font-size: 1.4rem;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         margin: 0;
       }
       .sprint-meta {
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-size: 0.85rem;
         font-family: var(--font-inter);
       }
       .sprint-goal {
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         font-size: 0.9rem;
         margin: 4px 0;
       }
       .status-badge {
         display: inline-block;
         padding: 2px 10px;
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant);
         border-radius: 9999px;
         font-size: 0.75rem;
         font-family: var(--font-inter);
         text-transform: none;
-        background: var(--color-surface-container, #1b2025);
+        background: var(--color-surface-container);
         font-weight: 600;
       }
       .tab-bar {
         display: flex;
         gap: 0;
-        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant);
         margin-bottom: 20px;
       }
       .tab-item {
@@ -109,7 +109,7 @@ type Tab = 'board' | 'planning';
         letter-spacing: 0;
         border: none;
         background: transparent;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         border-bottom: 2px solid transparent;
         margin-bottom: -1px;
         transition:
@@ -117,16 +117,16 @@ type Tab = 'board' | 'planning';
           border-color var(--transition-fast);
       }
       .tab-item:hover {
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
       }
       .tab-item.active {
-        color: var(--color-primary, #97cbff);
-        border-bottom-color: var(--color-primary, #97cbff);
+        color: var(--color-primary);
+        border-bottom-color: var(--color-primary);
       }
       .no-sprint {
         text-align: center;
         padding: 60px 20px;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-family: var(--font-inter);
       }
       .velocity-modal-overlay {
@@ -142,8 +142,8 @@ type Tab = 'board' | 'planning';
         z-index: 1050;
       }
       .velocity-modal {
-        background: var(--color-surface-container, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-lg);
         padding: 24px;
         max-width: 420px;
@@ -152,7 +152,7 @@ type Tab = 'board' | 'planning';
       }
       .velocity-modal h3 {
         font-family: var(--font-inter);
-        color: var(--color-primary, #97cbff);
+        color: var(--color-primary);
         margin-bottom: 16px;
         font-weight: 600;
       }
@@ -160,14 +160,14 @@ type Tab = 'board' | 'planning';
         display: flex;
         justify-content: space-between;
         padding: 8px 0;
-        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant);
         font-family: var(--font-inter);
         font-size: 0.9rem;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
       }
       .velocity-stat-value {
         font-weight: 600;
-        color: var(--color-primary, #97cbff);
+        color: var(--color-primary);
       }
       .tooltip-wrapper {
         position: relative;
@@ -182,9 +182,9 @@ type Tab = 'board' | 'planning';
       .sprint-progress-wrapper {
         margin-bottom: 20px;
         padding: 12px 16px;
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-lg);
-        background: var(--color-surface-container, #1b2025);
+        background: var(--color-surface-container);
         box-shadow: var(--shadow-sm);
       }
       .sprint-progress-header {
@@ -196,25 +196,25 @@ type Tab = 'board' | 'planning';
       .sprint-progress-label {
         font-family: var(--font-inter);
         font-size: 0.8rem;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         text-transform: none;
       }
       .sprint-progress-value {
         font-family: var(--font-inter);
         font-size: 0.85rem;
-        color: var(--color-primary, #97cbff);
+        color: var(--color-primary);
         font-weight: 600;
       }
       .sprint-progress-bar {
         width: 100%;
         height: 6px;
-        background: var(--color-surface-container-high, #262d36);
+        background: var(--color-surface-container-high);
         border-radius: 9999px;
         overflow: hidden;
       }
       .sprint-progress-fill {
         height: 100%;
-        background: var(--color-status-done, #4caf50);
+        background: var(--color-status-done);
         border-radius: 9999px;
         transition: width 0.3s ease;
       }

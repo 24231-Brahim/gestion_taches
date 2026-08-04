@@ -7,6 +7,9 @@ import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
+
+import { registerAllIcons } from 'src/test/javascript/mocks/fa-icon-library';
+
 import { ProjectService } from '../service/project.service';
 
 import { Project } from './project';
@@ -57,8 +60,11 @@ describe('Project Management Component', () => {
     routerNavigateSpy = vitest.spyOn(comp.router, 'navigate');
 
     const library = TestBed.inject(FaIconLibrary);
-    library.addIcons(faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes);
+    registerAllIcons(library);
     httpMock = TestBed.inject(HttpTestingController);
+
+    vitest.spyOn(service, 'getMyRoles').mockReturnValue(of([]));
+    vitest.spyOn(service, 'getProjectCardStats').mockReturnValue(of([]));
   });
 
   afterEach(() => {
@@ -131,7 +137,8 @@ describe('Project Management Component', () => {
 
   it('should calculate the sort attribute for a non-id attribute', () => {
     // WHEN
-    comp.navigateToWithComponentValues({ predicate: 'non-existing-column', order: 'asc' });
+    comp.sortState.set({ predicate: 'non-existing-column', order: 'asc' });
+    comp.navigateToPage(1);
 
     // THEN
     expect(routerNavigateSpy).toHaveBeenLastCalledWith(

@@ -101,23 +101,16 @@ describe('Task Management Update Component', () => {
 
     it('should call Project query and add missing value', () => {
       const task: ITask = { id: 29374 };
-      const project: IProject = { id: 10300 };
-      task.project = project;
 
       const projectCollection: IProject[] = [{ id: 10300 }];
       vitest.spyOn(projectService, 'query').mockReturnValue(of(new HttpResponse({ body: projectCollection })));
-      const additionalProjects = [project];
-      const expectedCollection: IProject[] = [...additionalProjects, ...projectCollection];
+      const expectedCollection: IProject[] = [{ id: 10300 }];
       vitest.spyOn(projectService, 'addProjectToCollectionIfMissing').mockReturnValue(expectedCollection);
 
       activatedRoute.data = of({ task });
       comp.ngOnInit();
 
       expect(projectService.query).toHaveBeenCalled();
-      expect(projectService.addProjectToCollectionIfMissing).toHaveBeenCalledWith(
-        projectCollection,
-        ...additionalProjects.map(i => expect.objectContaining(i) as typeof i),
-      );
       expect(comp.projectsSharedCollection()).toEqual(expectedCollection);
     });
 
@@ -150,6 +143,7 @@ describe('Task Management Update Component', () => {
 
       activatedRoute.data = of({ task });
       comp.ngOnInit();
+      comp.editForm.patchValue({ project: { id: 10300 } });
 
       // WHEN
       comp.save();
@@ -169,10 +163,11 @@ describe('Task Management Update Component', () => {
       const saveSubject = new Subject<ITask>();
       const task = { id: 6256 };
       vitest.spyOn(taskFormService, 'getTask').mockReturnValue({ id: null });
-      vitest.spyOn(taskService, 'create').mockReturnValue(saveSubject);
+      vitest.spyOn(taskService, 'createForProject').mockReturnValue(saveSubject);
 
       activatedRoute.data = of({ task: null });
       comp.ngOnInit();
+      comp.editForm.patchValue({ project: { id: 10300 } });
 
       // WHEN
       comp.save();
@@ -182,7 +177,7 @@ describe('Task Management Update Component', () => {
 
       // THEN
       expect(taskFormService.getTask).toHaveBeenCalled();
-      expect(taskService.create).toHaveBeenCalled();
+      expect(taskService.createForProject).toHaveBeenCalled();
       expect(comp.isSaving()).toEqual(false);
     });
 
@@ -194,6 +189,7 @@ describe('Task Management Update Component', () => {
 
       activatedRoute.data = of({ task });
       comp.ngOnInit();
+      comp.editForm.patchValue({ project: { id: 10300 } });
 
       // WHEN
       comp.save();

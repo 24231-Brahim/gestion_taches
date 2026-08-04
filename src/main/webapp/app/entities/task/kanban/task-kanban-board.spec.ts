@@ -18,6 +18,7 @@ import { of, throwError } from 'rxjs';
 import { TaskStatus } from 'app/entities/enumerations/task-status.model';
 import { TaskService } from '../service/task.service';
 import { AlertService } from 'app/core/util/alert.service';
+import { AccountService } from 'app/core/auth/account.service';
 import { TaskKanbanBoard } from './task-kanban-board';
 import { sampleWithRequiredData, sampleWithPartialData, sampleWithFullData } from '../task.test-samples';
 import { ITask } from '../task.model';
@@ -28,6 +29,7 @@ describe('TaskKanbanBoard', () => {
   let taskServiceMock: { partialUpdate: ReturnType<typeof vitest.fn> };
   let alertServiceMock: { addAlert: ReturnType<typeof vitest.fn> };
   let translateServiceMock: { instant: ReturnType<typeof vitest.fn> };
+  let accountServiceMock: { account: ReturnType<typeof vitest.fn> };
 
   const mockTasks: ITask[] = [
     { ...sampleWithRequiredData, status: 'NEEDS_INFO' },
@@ -39,12 +41,14 @@ describe('TaskKanbanBoard', () => {
     taskServiceMock = { partialUpdate: vitest.fn().mockReturnValue(of({})) };
     alertServiceMock = { addAlert: vitest.fn() };
     translateServiceMock = { instant: vitest.fn().mockReturnValue('error') };
+    accountServiceMock = { account: vitest.fn().mockReturnValue({ authorities: ['ROLE_ADMIN'], login: 'admin' }) };
 
     TestBed.configureTestingModule({
       imports: [FontAwesomeModule, TranslateModule.forRoot(), TaskKanbanBoard],
       providers: [
         { provide: TaskService, useValue: taskServiceMock },
         { provide: AlertService, useValue: alertServiceMock },
+        { provide: AccountService, useValue: accountServiceMock },
       ],
     });
 
@@ -77,7 +81,7 @@ describe('TaskKanbanBoard', () => {
   });
 
   it('onDragStart should set dragTaskId', () => {
-    comp.onDragStart(mockTasks[0]);
+    comp.onDragStart(mockTasks[0], new DragEvent('dragstart'));
     expect(comp.dragTaskId).toBe(mockTasks[0].id);
   });
 

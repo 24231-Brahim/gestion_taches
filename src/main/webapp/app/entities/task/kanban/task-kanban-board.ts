@@ -34,13 +34,13 @@ interface KanbanColumn {
         flex: 1;
         min-width: 220px;
         max-width: 300px;
-        background: var(--color-surface-container-low, #1b2025);
+        background: var(--color-surface-container-low);
         border-radius: var(--radius-lg);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant);
         transition: border-color 0.2s;
       }
       .kanban-column-drag-over {
-        border-color: var(--color-primary, #97cbff);
+        border-color: var(--color-primary);
       }
       .kanban-column-header {
         padding: 12px;
@@ -73,8 +73,8 @@ interface KanbanColumn {
         border-radius: 0 0 var(--radius-lg) var(--radius-lg);
       }
       .kanban-card {
-        background: var(--color-surface, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-lg);
         padding: 10px;
         cursor: grab;
@@ -106,14 +106,14 @@ interface KanbanColumn {
         font-size: 0.8rem;
       }
       .kanban-card-id {
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-size: 0.7rem;
         margin-left: auto;
         font-family: var(--font-mono);
       }
       .kanban-card-title {
         font-size: 0.85rem;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         line-height: 1.3;
         margin-bottom: 8px;
         word-break: break-word;
@@ -125,8 +125,8 @@ interface KanbanColumn {
         font-weight: 600;
         padding: 2px 8px;
         border-radius: var(--radius-pill, 9999px);
-        background: var(--color-tag-blue-bg, var(--color-primary-fixed));
-        color: var(--color-tag-blue-fg, var(--color-primary));
+        background: var(--color-tag-blue-bg);
+        color: var(--color-tag-blue-fg);
         margin-bottom: 8px;
       }
       .kanban-card-footer {
@@ -138,8 +138,8 @@ interface KanbanColumn {
         width: 22px;
         height: 22px;
         border-radius: 50%;
-        background: var(--color-primary-container, #25a7fd);
-        color: var(--color-on-primary-container, #fff);
+        background: var(--color-primary-container);
+        color: var(--color-on-primary-container);
         font-size: 0.65rem;
         font-weight: 600;
         display: flex;

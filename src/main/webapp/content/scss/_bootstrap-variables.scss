@@ -18,8 +18,8 @@ $border-radius-lg: 12px;
 $border-radius-sm: 6px;
 
 /* ─── Body ─── */
-$body-bg: #ffffff;
-$body-color: #1a1d21;
+$body-bg: #f5f7fb;
+$body-color: #1d2233;
 
 /* ─── Typography ─── */
 $font-family-sans-serif:
@@ -41,14 +41,14 @@ $headings-font-family:
 $headings-font-weight: 600;
 $headings-line-height: 1.25;
 
-$link-color: #0077cc;
-$link-hover-color: #0097b2;
+$link-color: #0074c2;
+$link-hover-color: #0f766e;
 $link-font-weight: 500;
 
 /* ─── Navbar ─── */
-$navbar-dark-color: #1a1d21;
-$navbar-dark-hover-color: #0077cc;
-$navbar-dark-active-color: #0099fe;
+$navbar-dark-color: #1d2233;
+$navbar-dark-hover-color: #0074c2;
+$navbar-dark-active-color: #079dfe;
 $navbar-padding-y: 0;
 $navbar-padding-x: 0;
 
@@ -57,35 +57,35 @@ $nav-link-padding-x: 1rem;
 
 /* ─── Dropdown ─── */
 $dropdown-bg: #ffffff;
-$dropdown-color: #1a1d21;
-$dropdown-border-color: #dde3ec;
+$dropdown-color: #1d2233;
+$dropdown-border-color: #e7eaf3;
 $dropdown-border-width: 1px;
 $dropdown-border-radius: 12px;
-$dropdown-link-color: #1a1d21;
-$dropdown-link-hover-color: #0077cc;
-$dropdown-link-hover-bg: #f1f4f9;
-$dropdown-link-active-color: #ffffff;
-$dropdown-link-active-bg: #0099fe;
+$dropdown-link-color: #1d2233;
+$dropdown-link-hover-color: #0074c2;
+$dropdown-link-hover-bg: #f5f7fb;
+$dropdown-link-active-color: #00263b;
+$dropdown-link-active-bg: #079dfe;
 
 /* ─── Card ─── */
-$card-bg: #f1f4f9;
-$card-border-color: #dde3ec;
+$card-bg: #f5f7fb;
+$card-border-color: #e7eaf3;
 $card-border-width: 1px;
 $card-border-radius: 12px;
 $card-cap-bg: transparent;
-$card-cap-color: #1a1d21;
+$card-cap-color: #1d2233;
 
 /* ─── Input ─── */
 $input-bg: #ffffff;
-$input-color: #1a1d21;
-$input-border-color: #dde3ec;
+$input-color: #1d2233;
+$input-border-color: #e7eaf3;
 $input-border-width: 1px;
 $input-border-radius: 6px;
-$input-focus-border-color: #0077cc;
-$input-focus-color: #1a1d21;
+$input-focus-border-color: #0074c2;
+$input-focus-color: #1d2233;
 $input-focus-bg: #ffffff;
-$input-placeholder-color: #5b7286;
-$input-disabled-bg: #f7f9fc;
+$input-placeholder-color: #575e78;
+$input-disabled-bg: #fafbfd;
 
 /* ─── Buttons ─── */
 $btn-border-radius: 8px;
@@ -103,29 +103,29 @@ $btn-padding-x: 1.25rem;
 $btn-font-size: 0.875rem;
 
 /* ─── Table ─── */
-$table-color: #1a1d21;
+$table-color: #1d2233;
 $table-bg: transparent;
-$table-border-color: #dde3ec;
+$table-border-color: #e7eaf3;
 $table-border-width: 1px;
-$table-striped-bg: rgba(241, 244, 249, 0.4);
-$table-hover-bg: #e9edf3;
-$table-hover-color: #1a1d21;
+$table-striped-bg: rgba(245, 247, 251, 0.4);
+$table-hover-bg: #edeff7;
+$table-hover-color: #1d2233;
 $table-cell-padding-y: 0.75rem;
 $table-cell-padding-x: 0.75rem;
 $table-th-font-weight: 600;
 
 /* ─── Pagination ─── */
-$pagination-bg: #f1f4f9;
-$pagination-color: #1a1d21;
-$pagination-border-color: #dde3ec;
+$pagination-bg: #f5f7fb;
+$pagination-color: #1d2233;
+$pagination-border-color: #e7eaf3;
 $pagination-border-width: 1px;
 $pagination-border-radius: 8px;
-$pagination-hover-bg: #e9edf3;
-$pagination-hover-color: #0077cc;
-$pagination-active-bg: #0099fe;
-$pagination-active-color: #ffffff;
-$pagination-disabled-bg: #f7f9fc;
-$pagination-disabled-color: #5b7286;
+$pagination-hover-bg: #edeff7;
+$pagination-hover-color: #0074c2;
+$pagination-active-bg: #079dfe;
+$pagination-active-color: #00263b;
+$pagination-disabled-bg: #fafbfd;
+$pagination-disabled-color: #575e78;
 
 /* ─── Alert ─── */
 $alert-border-radius: 8px;
@@ -146,22 +146,22 @@ $badge-padding-x: 0.625em;
 
 /* ─── Modal ─── */
 $modal-content-bg: #ffffff;
-$modal-content-border-color: #dde3ec;
+$modal-content-border-color: #e7eaf3;
 $modal-content-border-width: 1px;
 $modal-content-border-radius: 12px;
-$modal-header-border-color: #dde3ec;
-$modal-footer-border-color: #dde3ec;
+$modal-header-border-color: #e7eaf3;
+$modal-footer-border-color: #e7eaf3;
 $modal-backdrop-bg: rgba(0, 0, 0, 0.5);
 
 /* ─── Divider ─── */
-$hr-border-color: #dde3ec;
+$hr-border-color: #e7eaf3;
 $hr-border-width: 1px;
 
 /* ─── Progress ─── */
-$progress-bg: #e9edf3;
+$progress-bg: #edeff7;
 $progress-border-radius: 9999px;
-$progress-bar-bg: #0099fe;
+$progress-bar-bg: #079dfe;
 
 /* ─── Close ─── */
-$close-color: #1a1d21;
+$close-color: #1d2233;
 $close-font-weight: 500;

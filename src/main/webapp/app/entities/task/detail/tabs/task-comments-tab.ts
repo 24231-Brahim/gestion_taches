@@ -26,7 +26,7 @@ import { CommentService } from 'app/entities/comment/service/comment.service';
         font-family: var(--font-inter);
         font-size: 1rem;
         font-weight: 600;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         margin: 0 0 20px;
         display: flex;
         align-items: center;
@@ -38,14 +38,14 @@ import { CommentService } from 'app/entities/comment/service/comment.service';
         margin-bottom: 24px;
       }
       .comment-item {
-        background: var(--color-surface-container, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container);
+        border: 1px solid var(--color-outline-variant);
         border-radius: 12px;
         padding: 16px 20px;
         transition: border-color var(--transition-fast);
       }
       .comment-item:hover {
-        border-color: var(--color-outline, #404952);
+        border-color: var(--color-outline);
       }
       .comment-header {
         display: flex;
@@ -57,7 +57,7 @@ import { CommentService } from 'app/entities/comment/service/comment.service';
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        background: var(--color-primary-container, #0099fe);
+        background: var(--color-primary-container);
         color: var(--color-on-primary-container);
         display: flex;
         align-items: center;
@@ -77,13 +77,13 @@ import { CommentService } from 'app/entities/comment/service/comment.service';
         font-family: var(--font-inter);
         font-size: 0.85rem;
         font-weight: 600;
-        color: var(--color-primary, #97cbff);
+        color: var(--color-primary);
         line-height: 1.3;
       }
       .comment-date {
         font-family: var(--font-inter);
         font-size: 0.7rem;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
       }
       .comment-actions {
         margin-left: auto;
@@ -92,14 +92,14 @@ import { CommentService } from 'app/entities/comment/service/comment.service';
       .comment-body {
         font-family: var(--font-inter);
         font-size: 0.88rem;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         white-space: pre-wrap;
         line-height: 1.6;
         padding-left: 44px;
       }
       .comment-form {
-        background: var(--color-surface-container, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container);
+        border: 1px solid var(--color-outline-variant);
         border-radius: 12px;
         padding: 16px 20px;
       }
@@ -110,7 +110,7 @@ import { CommentService } from 'app/entities/comment/service/comment.service';
       .empty-state {
         padding: 40px 20px;
         text-align: center;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-family: var(--font-inter);
         font-size: 0.88rem;
       }
@@ -122,7 +122,7 @@ import { CommentService } from 'app/entities/comment/service/comment.service';
       .loading-state {
         text-align: center;
         padding: 40px 20px;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
       }
     `,
   ],

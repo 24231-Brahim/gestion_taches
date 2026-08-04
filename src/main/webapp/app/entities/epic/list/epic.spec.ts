@@ -9,6 +9,8 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, of } from 'rxjs';
 
+import { registerAllIcons } from 'src/test/javascript/mocks/fa-icon-library';
+
 import { sampleWithRequiredData } from '../epic.test-samples';
 import { EpicService } from '../service/epic.service';
 
@@ -51,6 +53,7 @@ describe('Epic Management Component', () => {
                 'filter[someId.in]': 'dc4279ea-cfb9-11ec-9d64-0242ac120002',
               }),
             },
+            paramMap: of(convertToParamMap({})),
           },
         },
       ],
@@ -62,7 +65,7 @@ describe('Epic Management Component', () => {
     routerNavigateSpy = vitest.spyOn(comp.router, 'navigate');
 
     const library = TestBed.inject(FaIconLibrary);
-    library.addIcons(faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes);
+    registerAllIcons(library);
     httpMock = TestBed.inject(HttpTestingController);
   });
 

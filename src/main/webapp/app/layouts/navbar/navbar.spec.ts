@@ -3,7 +3,10 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
+
+import { registerAllIcons } from 'src/test/javascript/mocks/fa-icon-library';
 
 import { Account } from 'app/core/auth/account.model';
 import { AccountService } from 'app/core/auth/account.service';
@@ -50,6 +53,8 @@ describe('Navbar Component', () => {
             stopPolling: vitest.fn(),
             markAsRead: vitest.fn(),
             refresh: vitest.fn(),
+            unreadCount: signal(0).asReadonly(),
+            notifications: signal([]).asReadonly(),
           },
         },
       ],
@@ -61,6 +66,7 @@ describe('Navbar Component', () => {
     comp = fixture.componentInstance;
     mockAccountService = TestBed.inject(AccountService);
     mockNotificationService = TestBed.inject(NotificationService);
+    registerAllIcons(TestBed.inject(FaIconLibrary));
   });
 
   it('should create', () => {

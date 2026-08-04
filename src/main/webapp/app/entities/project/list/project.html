@@ -21,10 +21,12 @@
         <span jhiTranslate="gestionTachesApp.project.home.refreshListLabel">Actualiser la liste</span>
       </button>
 
-      <button class="btn-outline" (click)="exportCsv()">
-        <fa-icon icon="download" />
-        <span jhiTranslate="entity.action.exportCsv">CSV</span>
-      </button>
+      @if (isAdmin()) {
+        <button class="btn-outline" (click)="exportCsv()">
+          <fa-icon icon="download" />
+          <span jhiTranslate="entity.action.exportCsv">CSV</span>
+        </button>
+      }
 
       @if (canToggleScope()) {
         <button id="jh-create-entity" data-cy="entityCreateButton" class="btn-cta create-project" [routerLink]="['/project/new']">

@@ -1,0 +1,23 @@
+ID,Key,Name,Description,CreatedAt,OwnerLogin
+27,FACT,Invoice Generator,Generation et envoi de factures automatiques,2026-05-10T08:30:00Z,manager1
+22,PARK,Parking Management,Gestion de places de parking et reservation,2026-04-05T10:00:00Z,manager2
+23,EVT,Event Management,Organisation et suivi d'evenements,2026-04-10T08:00:00Z,admin
+20,FOOD,Food Delivery,Service de livraison de repas a domicile,2026-03-20T08:30:00Z,admin
+19,IMMO,Real Estate,Plateforme d'annonce immobiliere,2026-03-15T11:00:00Z,manager2
+25,VOYG,Travel Agency,Gestion de voyages et reservations,2026-05-01T09:00:00Z,manager2
+2585,GDE,gestion des etudiants,une web application pour gestion des etudiants,2026-07-30T09:19:00Z,brahim
+12,ECOM,E-Commerce Platform,Plateforme de vente en ligne avec panier et paiement,2026-01-20T10:30:00Z,manager1
+15,CHAT,Chat Application,Application de messagerie en temps reel,2026-02-15T09:30:00Z,manager1
+29,WIKI,Wiki Platform,Encyclopedie collaborative interne,2026-06-01T10:00:00Z,admin
+13,BLOG,Blog API,API REST pour un systeme de blog avec commentaires,2026-02-01T08:00:00Z,manager2
+24,SURV,Survey Platform,Creation et analyse de questionnaires en ligne,2026-04-15T11:30:00Z,manager1
+11,GEST,Gestion Taches,Application web de gestion de taches et projets,2026-01-15T09:00:00Z,admin
+17,ETUD,Student Portal,Portail etudiant pour notes et emplois du temps,2026-03-05T10:00:00Z,admin
+18,HLTH,Healthcare App,Application de prise de rendez-vous medical,2026-03-10T09:00:00Z,manager1
+26,FITN,Fitness Tracker,Suivi d'entrainements et de calories,2026-05-05T10:00:00Z,admin
+28,PLNV,Task Scheduler,Planificateur de taches recurring et notifications,2026-05-15T09:00:00Z,manager2
+2735,LC,local camera,local camera,2026-07-30T10:42:00Z,admin
+21,BIBL,Library System,Systeme de gestion de bibliotheque et pret de livres,2026-04-01T09:00:00Z,manager1
+14,INV,Inventory System,Systeme de gestion de stock et d'approvisionnement,2026-02-10T11:00:00Z,admin
+16,HRMS,HR Management,Gestion des ressources humaines et paie,2026-03-01T08:00:00Z,manager2
+30,ACTF,Asset Tracking,Suivi des actifs materiels de l'entreprise,2026-06-05T08:00:00Z,manager1

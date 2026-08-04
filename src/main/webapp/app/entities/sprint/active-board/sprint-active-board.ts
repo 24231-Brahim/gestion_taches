@@ -34,8 +34,8 @@ interface KanbanColumn {
         align-items: flex-start;
         justify-content: space-between;
         gap: 16px;
-        background: var(--color-surface-container, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-lg);
         padding: 16px;
         box-shadow: var(--shadow-sm);
@@ -49,12 +49,12 @@ interface KanbanColumn {
         font-family: var(--font-inter);
         font-size: 1.1rem;
         margin: 0;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
       }
       .sprint-goal {
         margin: 0;
         font-size: 0.85rem;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-style: italic;
       }
       .sprint-dates {
@@ -62,7 +62,7 @@ interface KanbanColumn {
         align-items: center;
         gap: 8px;
         font-size: 0.8rem;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
       }
       .sprint-status-badge {
         font-family: var(--font-inter);
@@ -71,8 +71,8 @@ interface KanbanColumn {
         padding: 2px 8px;
         border: 1px solid var(--color-outline-variant);
         border-radius: 9999px;
-        background: var(--color-surface, #0f1419);
-        color: var(--color-text, #dfe3ea);
+        background: var(--color-surface);
+        color: var(--color-text);
         font-weight: 600;
       }
       .sprint-actions {
@@ -91,13 +91,13 @@ interface KanbanColumn {
         flex: 1;
         min-width: 200px;
         max-width: 300px;
-        background: var(--color-surface-container-low, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container-low);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-lg);
         transition: border-color 0.2s;
       }
       .kanban-column-drag-over {
-        border-color: var(--color-primary, #97cbff);
+        border-color: var(--color-primary);
       }
       .kanban-column-header {
         padding: 12px;
@@ -130,8 +130,8 @@ interface KanbanColumn {
         border-radius: 0 0 var(--radius-lg) var(--radius-lg);
       }
       .kanban-card {
-        background: var(--color-surface, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-lg);
         padding: 10px;
         cursor: grab;
@@ -163,14 +163,14 @@ interface KanbanColumn {
         font-size: 0.8rem;
       }
       .kanban-card-id {
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-size: 0.7rem;
         margin-left: auto;
         font-family: var(--font-mono);
       }
       .kanban-card-sp {
-        background: var(--color-primary-container, #25a7fd);
-        color: #000;
+        background: var(--color-primary-container);
+        color: var(--color-on-primary-container);
         font-size: 0.65rem;
         font-weight: 600;
         padding: 1px 6px;
@@ -180,7 +180,7 @@ interface KanbanColumn {
       }
       .kanban-card-title {
         font-size: 0.85rem;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         line-height: 1.3;
         margin-bottom: 8px;
         word-break: break-word;
@@ -193,8 +193,8 @@ interface KanbanColumn {
       .assignee-initials {
         width: 22px;
         height: 22px;
-        background: var(--color-primary-container, #25a7fd);
-        color: var(--color-on-primary-container, #fff);
+        background: var(--color-primary-container);
+        color: var(--color-on-primary-container);
         font-size: 0.65rem;
         font-weight: 600;
         display: flex;
@@ -206,7 +206,7 @@ interface KanbanColumn {
       .kanban-empty {
         padding: 20px 8px;
         text-align: center;
-        color: var(--color-muted, #6a8fac);
+        color: var(--color-muted);
         font-family: var(--font-inter);
         font-size: 0.8rem;
       }
@@ -215,8 +215,8 @@ interface KanbanColumn {
         align-items: flex-end;
         gap: 16px;
         padding: 12px 16px;
-        background: var(--color-surface-container, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-lg);
         box-shadow: var(--shadow-sm);
         flex-wrap: wrap;
@@ -230,13 +230,13 @@ interface KanbanColumn {
         font-family: var(--font-inter);
         font-size: 0.7rem;
         text-transform: none;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
       }
       .filter-select {
-        background: var(--color-surface, #0f1419);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-sm);
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         font-family: var(--font-inter);
         font-size: 0.8rem;
         padding: 6px 10px;
@@ -244,9 +244,9 @@ interface KanbanColumn {
       }
       .filter-reset-btn {
         background: transparent;
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-sm);
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-family: var(--font-inter);
         font-size: 0.75rem;
         padding: 6px 12px;
@@ -259,8 +259,8 @@ interface KanbanColumn {
           box-shadow var(--transition-fast);
       }
       .filter-reset-btn:hover {
-        color: var(--color-text, #dfe3ea);
-        border-color: var(--color-primary, #97cbff);
+        color: var(--color-text);
+        border-color: var(--color-primary);
       }
     `,
   ],
@@ -404,10 +404,10 @@ export class SprintActiveBoard {
 
   statusBorder(status: string | null | undefined): string {
     const borders: Record<string, string> = {
-      PLANNED: 'var(--color-status-backlog, #9e9e9e)',
-      ACTIVE: 'var(--color-status-in-progress, #ff9800)',
-      COMPLETED: 'var(--color-status-done, #4caf50)',
-      CANCELLED: 'var(--color-status-cancelled, #f44336)',
+      PLANNED: 'var(--color-status-backlog)',
+      ACTIVE: 'var(--color-status-in-progress)',
+      COMPLETED: 'var(--color-status-done)',
+      CANCELLED: 'var(--color-status-cancelled)',
     };
     return borders[status ?? 'PLANNED'] ?? 'var(--color-outline-variant)';
   }

@@ -114,6 +114,7 @@
             "runner": "vitest",
             "buildTarget": "::development",
             "runnerConfig": true,
+            "setupFiles": ["src/test/javascript/mocks/test-setup.ts"],
             "coverageReporters": ["text", "lcov"],
             "reporters": [
               "default",

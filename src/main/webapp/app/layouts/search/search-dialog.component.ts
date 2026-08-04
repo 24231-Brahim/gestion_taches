@@ -75,8 +75,8 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap, takeUntil } fro
       .search-dialog {
         width: 100%;
         max-width: 560px;
-        background: var(--color-surface-container-high, #1e2128);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container-high);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-lg, 12px);
         overflow: hidden;
         max-height: 60vh;
@@ -88,10 +88,10 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap, takeUntil } fro
         align-items: center;
         padding: 12px 16px;
         gap: 10px;
-        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant);
       }
       .search-icon {
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-size: 1rem;
       }
       .search-input {
@@ -99,19 +99,19 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap, takeUntil } fro
         background: none;
         border: none;
         outline: none;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         font-family: var(--font-inter, Inter, sans-serif);
         font-size: 0.95rem;
       }
       .search-input::placeholder {
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
       }
       .search-shortcut {
         font-family: var(--font-jetbrains, monospace);
         font-size: 0.7rem;
-        color: var(--color-text-muted, #6a8fac);
-        background: var(--color-surface-container, #171a20);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        color: var(--color-text-muted);
+        background: var(--color-surface-container);
+        border: 1px solid var(--color-outline-variant);
         border-radius: 4px;
         padding: 2px 6px;
       }
@@ -119,7 +119,7 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap, takeUntil } fro
       .search-empty {
         padding: 24px;
         text-align: center;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-family: var(--font-inter, Inter, sans-serif);
         font-size: 0.85rem;
       }
@@ -140,7 +140,7 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap, takeUntil } fro
       }
       .search-result-item:hover,
       .search-result-item.active {
-        background: var(--color-surface-container, #171a20);
+        background: var(--color-surface-container);
       }
       .result-type {
         font-family: var(--font-jetbrains, monospace);
@@ -149,26 +149,26 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap, takeUntil } fro
         text-transform: uppercase;
         padding: 2px 6px;
         border-radius: 4px;
-        background: var(--color-outline-variant, #2a3038);
-        color: var(--color-text-muted, #6a8fac);
+        background: var(--color-outline-variant);
+        color: var(--color-text-muted);
         min-width: 50px;
         text-align: center;
       }
       .result-type-project {
-        background: rgba(33, 150, 243, 0.15);
-        color: #64b5f6;
+        background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+        color: var(--color-primary);
       }
       .result-type-task {
-        background: rgba(76, 175, 80, 0.15);
-        color: #81c784;
+        background: color-mix(in srgb, var(--color-success) 15%, transparent);
+        color: var(--color-success);
       }
       .result-type-sprint {
-        background: rgba(255, 152, 0, 0.15);
-        color: #ffb74d;
+        background: color-mix(in srgb, var(--color-warning) 15%, transparent);
+        color: var(--color-warning);
       }
       .result-type-epic {
-        background: rgba(156, 39, 176, 0.15);
-        color: #ce93d8;
+        background: color-mix(in srgb, var(--color-tertiary) 15%, transparent);
+        color: var(--color-tertiary);
       }
       .result-info {
         flex: 1;
@@ -180,14 +180,14 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap, takeUntil } fro
       .result-title {
         font-family: var(--font-inter, Inter, sans-serif);
         font-size: 0.85rem;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
       .result-description {
         font-size: 0.75rem;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -195,7 +195,7 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap, takeUntil } fro
       .result-project {
         font-family: var(--font-jetbrains, monospace);
         font-size: 0.7rem;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
       }
     `,
   ],

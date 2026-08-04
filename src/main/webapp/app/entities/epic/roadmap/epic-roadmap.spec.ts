@@ -8,6 +8,8 @@ import { faLayerGroup, faSync, faPlus, faTimes, faSearch, faFilter } from '@fort
 import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
+import { registerAllIcons } from 'src/test/javascript/mocks/fa-icon-library';
+
 import { ITEMS_PER_PAGE } from 'app/config/pagination.constants';
 import { IEpic } from '../epic.model';
 import { EpicService } from '../service/epic.service';
@@ -44,7 +46,7 @@ describe('EpicRoadmap', () => {
     });
 
     const library = TestBed.inject(FaIconLibrary);
-    library.addIcons(faLayerGroup, faSync, faPlus);
+    registerAllIcons(library);
 
     fixture = TestBed.createComponent(EpicRoadmap);
     comp = fixture.componentInstance;
@@ -140,7 +142,7 @@ describe('EpicRoadmap', () => {
     expect(navigateSpy).toHaveBeenCalledWith(
       ['./'],
       expect.objectContaining({
-        queryParams: { page: 2, size: ITEMS_PER_PAGE, sort: 'id,asc' },
+        queryParams: { page: 2, size: ITEMS_PER_PAGE, sort: ['id,asc'] },
       }),
     );
   });

@@ -4,9 +4,10 @@ import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
-import { faArrowLeft, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
+
+import { registerAllIcons } from 'src/test/javascript/mocks/fa-icon-library';
 
 import { SprintDetail } from './sprint-detail';
 
@@ -31,8 +32,7 @@ describe('Sprint Management Detail Component', () => {
       ],
     });
     const library = TestBed.inject(FaIconLibrary);
-    library.addIcons(faArrowLeft);
-    library.addIcons(faPencilAlt);
+    registerAllIcons(library);
   });
 
   beforeEach(() => {

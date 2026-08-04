@@ -23,6 +23,7 @@ import Sidebar from '../sidebar/sidebar';
 export default class Main implements OnInit {
   readonly account = inject(AccountService).account;
   readonly appReady = signal(false);
+  readonly isErrorPage = signal(false);
 
   private readonly renderer: Renderer2;
   private readonly htmlElement: HTMLElement;
@@ -32,18 +33,11 @@ export default class Main implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly translateService = inject(TranslateService);
   private readonly rootRenderer = inject(RendererFactory2);
+  private readonly errorRoutes = ['/404', '/error', '/accessdenied'];
 
   constructor() {
     this.htmlElement = this.document.documentElement;
     this.renderer = this.rootRenderer.createRenderer(this.htmlElement, null);
-  }
-
-  readonly isErrorPage = signal(false);
-
-  private readonly errorRoutes = ['/404', '/error', '/accessdenied'];
-
-  private checkIfErrorPage(): void {
-    this.isErrorPage.set(this.errorRoutes.includes(this.router.url));
   }
 
   ngOnInit(): void {
@@ -57,12 +51,23 @@ export default class Main implements OnInit {
       error: () => this.appReady.set(true),
     });
 
+    this.applyDocumentDirection(this.translateService.getCurrentLang());
+
     this.translateService.onLangChange.subscribe((langChangeEvent: LangChangeEvent) => {
       this.appPageTitleStrategy.updateTitle(this.router.routerState.snapshot);
       dayjs.locale(langChangeEvent.lang);
-      this.renderer.setAttribute(this.htmlElement, 'lang', langChangeEvent.lang);
-      const isRtl = langChangeEvent.lang === 'ar';
-      this.renderer.setAttribute(this.htmlElement, 'dir', isRtl ? 'rtl' : 'ltr');
+      this.applyDocumentDirection(langChangeEvent.lang);
     });
+  }
+
+  private checkIfErrorPage(): void {
+    this.isErrorPage.set(this.errorRoutes.includes(this.router.url));
+  }
+
+  private applyDocumentDirection(lang: string | undefined): void {
+    const currentLang = lang ?? this.translateService.getFallbackLang() ?? 'fr';
+    this.renderer.setAttribute(this.htmlElement, 'lang', currentLang);
+    const isRtl = currentLang === 'ar';
+    this.renderer.setAttribute(this.htmlElement, 'dir', isRtl ? 'rtl' : 'ltr');
   }
 }

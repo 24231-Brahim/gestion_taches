@@ -14,7 +14,7 @@ import { TranslateDirective } from 'app/shared/language';
 export default class PasswordStrengthBar {
   readonly passwordToCheck = input('');
 
-  colors = ['#F00', '#F90', '#FF0', '#9F0', '#0F0'];
+  colors = ['var(--color-danger)', 'var(--color-warning)', 'var(--color-warning)', 'var(--color-success)', 'var(--color-success)'];
 
   private readonly renderer = inject(Renderer2);
   private readonly elementRef = inject(ElementRef);
@@ -33,7 +33,7 @@ export default class PasswordStrengthBar {
           if (i < c.idx) {
             this.renderer.setStyle(lis[i], 'backgroundColor', c.color);
           } else {
-            this.renderer.setStyle(lis[i], 'backgroundColor', '#DDD');
+            this.renderer.setStyle(lis[i], 'backgroundColor', 'var(--color-outline-variant)');
           }
         }
       }

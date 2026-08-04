@@ -40,7 +40,7 @@
 
   &.active {
     background: var(--color-surface);
-    color: var(--color-primary);
+    color: var(--color-link, var(--color-primary));
     box-shadow: var(--shadow-sm);
   }
 }
@@ -82,7 +82,7 @@
 
 .btn-cta {
   background: var(--color-cta);
-  color: var(--color-on-primary);
+  color: var(--color-on-cta);
   font-weight: 700;
 
   &:hover {

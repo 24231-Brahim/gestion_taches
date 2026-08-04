@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, ActivatedRouteSnapshot, Router, convertToParamMap } from '@angular/router';
 
-import { lastValueFrom, of, throwError } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 import { ProjectService } from '../service/project.service';
 
@@ -34,10 +34,10 @@ describe('Project routing resolve service', () => {
   });
 
   describe('resolve', () => {
-    it('should return IProject returned by find', async () => {
+    it('should return IProject returned by findByKey', async () => {
       // GIVEN
-      service.find = vitest.fn(id => of({ id }));
-      mockActivatedRouteSnapshot.params = { id: 123 };
+      service.findByKey = vitest.fn(id => of({ id }));
+      mockActivatedRouteSnapshot.params = { key: 'foo' };
 
       // WHEN
       await new Promise<void>(resolve => {
@@ -45,8 +45,8 @@ describe('Project routing resolve service', () => {
           projectResolve(mockActivatedRouteSnapshot).subscribe({
             next(result) {
               // THEN
-              expect(service.find).toHaveBeenCalledWith(123);
-              expect(result).toEqual({ id: 123 });
+              expect(service.findByKey).toHaveBeenCalledWith('foo');
+              expect(result).toEqual({ id: 'foo' });
               resolve();
             },
           });
@@ -54,9 +54,9 @@ describe('Project routing resolve service', () => {
       });
     });
 
-    it('should return null if id is not provided', async () => {
+    it('should return null if key is not provided', async () => {
       // GIVEN
-      service.find = vitest.fn();
+      service.findByKey = vitest.fn();
       mockActivatedRouteSnapshot.params = {};
 
       // WHEN
@@ -65,7 +65,7 @@ describe('Project routing resolve service', () => {
           projectResolve(mockActivatedRouteSnapshot).subscribe({
             next(result) {
               // THEN
-              expect(service.find).not.toHaveBeenCalled();
+              expect(service.findByKey).not.toHaveBeenCalled();
               expect(result).toEqual(null);
               resolve();
             },
@@ -74,33 +74,47 @@ describe('Project routing resolve service', () => {
       });
     });
 
-    it('should route to 404 page if data not found in server', async () => {
+    it('should return null if data not found in server', async () => {
       // GIVEN
-      vitest.spyOn(service, 'find').mockReturnValue(throwError(() => new HttpErrorResponse({ status: 404, statusText: 'Not Found' })));
-      mockActivatedRouteSnapshot.params = { id: 123 };
+      vitest.spyOn(service, 'findByKey').mockReturnValue(throwError(() => new HttpErrorResponse({ status: 404, statusText: 'Not Found' })));
+      mockActivatedRouteSnapshot.params = { key: 'foo' };
 
       // WHEN
-      await TestBed.runInInjectionContext(async () => {
-        await expect(lastValueFrom(projectResolve(mockActivatedRouteSnapshot))).rejects.toThrow('no elements in sequence');
-        // THEN
-        expect(service.find).toHaveBeenCalledWith(123);
-        expect(mockRouter.navigate).toHaveBeenCalledWith(['404']);
+      await new Promise<void>(resolve => {
+        TestBed.runInInjectionContext(() => {
+          projectResolve(mockActivatedRouteSnapshot).subscribe({
+            next(result) {
+              // THEN
+              expect(service.findByKey).toHaveBeenCalledWith('foo');
+              expect(result).toEqual(null);
+              expect(mockRouter.navigate).not.toHaveBeenCalled();
+              resolve();
+            },
+          });
+        });
       });
     });
 
-    it('should route to error page if server returns an error other than 404', async () => {
+    it('should return null if server returns an error other than 404', async () => {
       // GIVEN
       vitest
-        .spyOn(service, 'find')
+        .spyOn(service, 'findByKey')
         .mockReturnValue(throwError(() => new HttpErrorResponse({ status: 500, statusText: 'Internal Server Error' })));
-      mockActivatedRouteSnapshot.params = { id: 123 };
+      mockActivatedRouteSnapshot.params = { key: 'foo' };
 
       // WHEN
-      await TestBed.runInInjectionContext(async () => {
-        await expect(lastValueFrom(projectResolve(mockActivatedRouteSnapshot))).rejects.toThrow('no elements in sequence');
-        // THEN
-        expect(service.find).toHaveBeenCalledWith(123);
-        expect(mockRouter.navigate).toHaveBeenCalledWith(['error']);
+      await new Promise<void>(resolve => {
+        TestBed.runInInjectionContext(() => {
+          projectResolve(mockActivatedRouteSnapshot).subscribe({
+            next(result) {
+              // THEN
+              expect(service.findByKey).toHaveBeenCalledWith('foo');
+              expect(result).toEqual(null);
+              expect(mockRouter.navigate).not.toHaveBeenCalled();
+              resolve();
+            },
+          });
+        });
       });
     });
   });

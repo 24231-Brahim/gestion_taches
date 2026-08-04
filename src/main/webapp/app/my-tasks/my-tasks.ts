@@ -5,6 +5,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { TranslateDirective } from 'app/shared/language';
 import { AccountService } from 'app/core/auth/account.service';
+import { PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES } from 'app/entities/task/task-helper';
 import { TaskKanbanBoard } from 'app/entities/task/kanban/task-kanban-board';
 import { TaskDetailPanel } from 'app/entities/task/detail/task-detail-panel';
 import { TaskService } from 'app/entities/task/service/task.service';
@@ -13,6 +14,9 @@ import { ProjectService } from 'app/entities/project/service/project.service';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
 
 const MANAGED_ROLES: ProjectRole[] = [ProjectRole.OWNER, ProjectRole.MANAGER];
+
+type ViewMode = 'list' | 'kanban';
+const VIEW_MODE_KEY = 'myTasksViewMode';
 
 @Component({
   selector: 'jhi-my-tasks',
@@ -23,9 +27,37 @@ const MANAGED_ROLES: ProjectRole[] = [ProjectRole.OWNER, ProjectRole.MANAGER];
       .my-tasks-page {
         padding: var(--stack-lg, 24px);
       }
+      .my-tasks-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: var(--stack-md, 16px);
+      }
       .my-tasks-title {
         font-family: var(--font-display);
-        margin-bottom: var(--stack-md, 16px);
+        margin: 0;
+      }
+      .view-mode-tabs {
+        display: flex;
+        gap: 0;
+        border: 1px solid var(--color-outline-variant);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+      }
+      .view-mode-tabs .btn {
+        border: none;
+        border-radius: 0;
+        padding: 6px 14px;
+        background: transparent;
+        color: var(--color-text-muted);
+        font-size: 0.85rem;
+        font-family: var(--font-inter);
+      }
+      .view-mode-tabs .btn-active {
+        background: var(--color-primary);
+        color: var(--color-on-primary-container);
       }
       .my-tasks-empty {
         display: flex;
@@ -41,6 +73,41 @@ const MANAGED_ROLES: ProjectRole[] = [ProjectRole.OWNER, ProjectRole.MANAGER];
         color: var(--color-primary);
         opacity: 0.6;
       }
+      .task-row {
+        cursor: pointer;
+        transition: background-color var(--transition-fast);
+      }
+      .task-row:hover {
+        background: var(--color-surface-container);
+      }
+      .task-title-cell {
+        font-weight: 500;
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .assignee-initials-sm {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--color-primary-container);
+        color: var(--color-on-primary-container);
+        font-size: 0.65rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-mono);
+      }
+      .status-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: var(--radius-pill, 9999px);
+        font-size: 0.75rem;
+        font-weight: 600;
+        font-family: var(--font-display);
+      }
     `,
   ],
   imports: [TranslateModule, TranslateDirective, FontAwesomeModule, TaskKanbanBoard, TaskDetailPanel],
@@ -50,6 +117,11 @@ export default class MyTasks {
   readonly isLoading = signal(false);
   readonly selectedTask = signal<ITask | null>(null);
   readonly drawerVisible = signal(false);
+
+  readonly viewMode = signal<ViewMode>(this.loadViewMode());
+  readonly priorityColors = PRIORITY_COLORS;
+  readonly priorityIcons = PRIORITY_ICONS;
+  readonly statusBadges = STATUS_BADGES;
 
   readonly hasTasks = computed(() => this.tasks().length > 0);
 
@@ -61,6 +133,32 @@ export default class MyTasks {
     this.loadTasks();
   }
 
+  onSelectTask(task: ITask): void {
+    this.selectedTask.set(task);
+    this.drawerVisible.set(true);
+  }
+
+  trackId = (item: ITask): number => this.taskService.getTaskIdentifier(item);
+
+  setViewMode(mode: ViewMode): void {
+    this.viewMode.set(mode);
+    localStorage.setItem(VIEW_MODE_KEY, mode);
+  }
+
+  onCloseDrawer(): void {
+    this.drawerVisible.set(false);
+    this.selectedTask.set(null);
+  }
+
+  onKanbanStatusChange(event: { taskId: number; status: string }): void {
+    this.tasks.update(list => list.map(t => (t.id === event.taskId ? { ...t, status: event.status as ITask['status'] } : t)));
+  }
+
+  private loadViewMode(): ViewMode {
+    const stored = localStorage.getItem(VIEW_MODE_KEY);
+    return stored === 'kanban' ? 'kanban' : 'list';
+  }
+
   private loadTasks(): void {
     const account = this.accountService.account();
     if (!account) {
@@ -68,7 +166,7 @@ export default class MyTasks {
     }
 
     this.isLoading.set(true);
-    const authorities = account.authorities ?? [];
+    const authorities = account.authorities;
     const isAdmin = authorities.includes('ROLE_ADMIN');
     const isProjectManager = authorities.includes('ROLE_PROJET_MANAGER');
 
@@ -122,19 +220,5 @@ export default class MyTasks {
       },
       error: () => this.isLoading.set(false),
     });
-  }
-
-  onSelectTask(task: ITask): void {
-    this.selectedTask.set(task);
-    this.drawerVisible.set(true);
-  }
-
-  onCloseDrawer(): void {
-    this.drawerVisible.set(false);
-    this.selectedTask.set(null);
-  }
-
-  onKanbanStatusChange(event: { taskId: number; status: string }): void {
-    this.tasks.update(list => list.map(t => (t.id === event.taskId ? { ...t, status: event.status as ITask['status'] } : t)));
   }
 }

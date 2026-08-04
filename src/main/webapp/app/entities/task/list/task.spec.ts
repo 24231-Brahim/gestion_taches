@@ -9,6 +9,10 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, of } from 'rxjs';
 
+import { registerAllIcons } from 'src/test/javascript/mocks/fa-icon-library';
+
+import { ProjectService } from 'app/entities/project/service/project.service';
+
 import { sampleWithRequiredData } from '../task.test-samples';
 import { TaskService } from '../service/task.service';
 
@@ -51,6 +55,7 @@ describe('Task Management Component', () => {
                 'filter[someId.in]': 'dc4279ea-cfb9-11ec-9d64-0242ac120002',
               }),
             },
+            paramMap: of(convertToParamMap({})),
           },
         },
       ],
@@ -62,8 +67,10 @@ describe('Task Management Component', () => {
     routerNavigateSpy = vitest.spyOn(comp.router, 'navigate');
 
     const library = TestBed.inject(FaIconLibrary);
-    library.addIcons(faEye, faPencilAlt, faPlus, faSort, faSortDown, faSortUp, faSync, faTimes);
+    registerAllIcons(library);
     httpMock = TestBed.inject(HttpTestingController);
+
+    vitest.spyOn(TestBed.inject(ProjectService), 'getMyRoles').mockReturnValue(of([]));
   });
 
   afterEach(() => {

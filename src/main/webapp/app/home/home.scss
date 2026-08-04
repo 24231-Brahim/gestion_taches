@@ -56,7 +56,7 @@ jhi-home {
     font-family: var(--font-inter);
     font-weight: 500;
     font-size: var(--text-sm);
-    color: var(--color-primary);
+    color: var(--color-link, var(--color-primary));
     transition: color var(--transition-fast);
 
     &:hover {

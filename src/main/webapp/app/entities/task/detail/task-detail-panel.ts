@@ -37,7 +37,7 @@ import { IUser } from 'app/entities/user/user.model';
         inset: 0;
         width: 100vw;
         height: 100vh;
-        background: var(--color-surface, #0f1419);
+        background: var(--color-surface);
         z-index: 1050;
         display: flex;
         flex-direction: column;
@@ -48,7 +48,7 @@ import { IUser } from 'app/entities/user/user.model';
         align-items: center;
         justify-content: space-between;
         padding: 16px 32px;
-        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant);
       }
       .task-drawer-body {
         flex: 1;
@@ -71,7 +71,7 @@ import { IUser } from 'app/entities/user/user.model';
       .task-drawer-title {
         font-family: var(--font-inter);
         font-size: 1.1rem;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         margin-bottom: 20px;
         word-break: break-word;
       }
@@ -82,20 +82,20 @@ import { IUser } from 'app/entities/user/user.model';
         display: block;
         font-size: 0.7rem;
         text-transform: none;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         margin-bottom: 4px;
         font-family: var(--font-inter);
         font-weight: 600;
       }
       .task-description {
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         font-size: 0.9rem;
         line-height: 1.5;
         white-space: pre-wrap;
       }
       .task-comment-box {
-        background: var(--color-surface-container, #1b2025);
-        border: 1px solid var(--color-outline-variant, #2a3038);
+        background: var(--color-surface-container);
+        border: 1px solid var(--color-outline-variant);
         border-radius: var(--radius-lg);
         padding: 12px;
         min-height: 40px;
@@ -107,7 +107,7 @@ import { IUser } from 'app/entities/user/user.model';
         display: block;
         font-size: 0.65rem;
         text-transform: none;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         margin-bottom: 4px;
         font-family: var(--font-inter);
         font-weight: 600;
@@ -121,14 +121,14 @@ import { IUser } from 'app/entities/user/user.model';
       .task-drawer-actions {
         margin-top: 24px;
         padding-top: 16px;
-        border-top: 1px solid var(--color-outline-variant, #2a3038);
+        border-top: 1px solid var(--color-outline-variant);
       }
       .assignee-avatar {
         width: 28px;
         height: 28px;
         border-radius: 50%;
-        background: var(--color-primary-container, #25a7fd);
-        color: var(--color-on-primary-container, #fff);
+        background: var(--color-primary-container);
+        color: var(--color-on-primary-container);
         font-size: 0.75rem;
         font-weight: 600;
         display: flex;
@@ -152,7 +152,7 @@ import { IUser } from 'app/entities/user/user.model';
       .tab-bar {
         display: flex;
         gap: 0;
-        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant);
         margin-bottom: 16px;
       }
       .tab-item {
@@ -164,7 +164,7 @@ import { IUser } from 'app/entities/user/user.model';
         letter-spacing: 0;
         border: none;
         background: transparent;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         border-bottom: 2px solid transparent;
         margin-bottom: -1px;
         transition:
@@ -172,11 +172,11 @@ import { IUser } from 'app/entities/user/user.model';
           border-color var(--transition-fast);
       }
       .tab-item:hover {
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
       }
       .tab-item.active {
-        color: var(--color-primary, #97cbff);
-        border-bottom-color: var(--color-primary, #97cbff);
+        color: var(--color-primary);
+        border-bottom-color: var(--color-primary);
       }
     `,
   ],

@@ -23,7 +23,7 @@ import { TranslateDirective } from 'app/shared/language';
         font-family: var(--font-inter);
         font-size: 0.8rem;
         text-transform: none;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         margin: 0 0 4px;
         font-weight: 600;
       }
@@ -36,7 +36,7 @@ import { TranslateDirective } from 'app/shared/language';
         display: flex;
         gap: 12px;
         padding: 10px 0;
-        border-bottom: 1px solid var(--color-outline-variant, #2a3038);
+        border-bottom: 1px solid var(--color-outline-variant);
       }
       .activity-item:last-child {
         border-bottom: none;
@@ -46,30 +46,30 @@ import { TranslateDirective } from 'app/shared/language';
         height: 10px;
         margin-top: 5px;
         flex-shrink: 0;
-        background: var(--color-primary, #97cbff);
-        border: 2px solid var(--color-primary-container, #25a7fd);
+        background: var(--color-primary);
+        border: 2px solid var(--color-primary-container);
         border-radius: 50%;
       }
       .activity-content {
         font-family: var(--font-inter);
         font-size: 0.8rem;
-        color: var(--color-text, #dfe3ea);
+        color: var(--color-text);
         line-height: 1.5;
       }
       .activity-action {
         font-weight: 600;
-        color: var(--color-primary, #97cbff);
+        color: var(--color-primary);
       }
       .activity-detail {
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
       }
       .activity-date {
         font-size: 0.7rem;
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         margin-top: 2px;
       }
       .text-muted {
-        color: var(--color-text-muted, #6a8fac);
+        color: var(--color-text-muted);
         font-family: var(--font-inter);
         font-size: 0.8rem;
       }

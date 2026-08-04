@@ -2,7 +2,11 @@
   "gestionTachesApp": {
     "myTasks": {
       "title": "Mes tâches",
-      "empty": "Rien à faire pour l'instant, profitez-en pour souffler !"
+      "empty": "Rien à faire pour l'instant, profitez-en pour souffler !",
+      "view": {
+        "list": "Liste",
+        "board": "Tableau"
+      }
     }
   }
 }

@@ -39,11 +39,11 @@
   }
 
   &:hover {
-    color: var(--color-primary);
+    color: var(--color-link, var(--color-primary));
   }
 
   &.active {
-    color: var(--color-primary);
+    color: var(--color-link, var(--color-primary));
   }
 
   &:focus-visible {

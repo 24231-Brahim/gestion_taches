@@ -38,7 +38,8 @@
     },
     "lists": {
       "recentProjects": "Recent projects",
-      "recentTasks": "Recent tasks"
+      "recentTasks": "Recent tasks",
+      "seeAll": "See all"
     },
     "timeline": {
       "title": "Recent activity"
