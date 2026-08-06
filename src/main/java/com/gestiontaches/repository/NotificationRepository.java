@@ -29,4 +29,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     int markAllAsReadByUserId(@Param("userId") Long userId);
 
     boolean existsByTaskIdAndMessageContaining(Long taskId, String messagePart);
+
+    int deleteByCreatedAtBefore(java.time.Instant limit);
 }

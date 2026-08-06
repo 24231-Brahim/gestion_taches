@@ -43,6 +43,9 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     )
     java.util.List<Project> findAllByOwnerLoginOrMemberLogin(String login);
 
+    @Query("SELECT DISTINCT p.id FROM Project p LEFT JOIN p.projectMembers pm WHERE p.owner.login = ?1 OR pm.user.login = ?1")
+    java.util.List<Long> findProjectIdsByOwnerLoginOrMemberLogin(String login);
+
     @Query(
         "SELECT DISTINCT p FROM Project p LEFT JOIN FETCH p.owner LEFT JOIN p.projectMembers pm WHERE (p.owner.login = :login OR pm.user.login = :login) AND (LOWER(p.name) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(p.description) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(p.key) LIKE LOWER(CONCAT('%', :query, '%')))"
     )

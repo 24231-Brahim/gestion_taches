@@ -149,7 +149,7 @@ export class Chat implements OnInit {
 
   refreshConversations(): void {
     const projectId = this.projectId();
-    if (!projectId || this.loadingConversations()) {
+    if (!projectId || this.loadingConversations() || this.loadError()) {
       return;
     }
     this.chatService.getConversations(projectId).subscribe({

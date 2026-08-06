@@ -51,6 +51,7 @@ public class ChatAttachment implements Serializable {
     private String filePath;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "uploaded_by")
     @JsonIgnoreProperties(value = { "authorities" }, allowSetters = true)
     private User uploadedBy;
 

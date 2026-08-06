@@ -52,6 +52,7 @@ public class Conversation implements Serializable {
     private Project project;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
     @JsonIgnoreProperties(value = { "authorities" }, allowSetters = true)
     private User createdBy;
 

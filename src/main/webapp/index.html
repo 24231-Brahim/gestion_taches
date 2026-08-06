@@ -18,6 +18,10 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="content/css/loading.css" />
+    <script>
+      // sockjs-client references the Node global "global"; make it available in the browser.
+      window.global = window;
+    </script>
     <!-- jhipster-needle-add-resources-to-root - JHipster will add new resources here -->
   </head>
   <body>

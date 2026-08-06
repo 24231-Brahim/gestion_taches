@@ -8,6 +8,7 @@ import com.gestiontaches.domain.Task;
 import com.gestiontaches.domain.TaskHistory;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.NotificationRepository;
+import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.service.mapper.NotificationMapper;
@@ -19,6 +20,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
@@ -33,7 +35,10 @@ class NotificationServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private NotificationSseService notificationSseService;
+    private SimpMessageSendingOperations messagingTemplate;
+
+    @Mock
+    private TaskRepository taskRepository;
 
     @InjectMocks
     private NotificationService notificationService;

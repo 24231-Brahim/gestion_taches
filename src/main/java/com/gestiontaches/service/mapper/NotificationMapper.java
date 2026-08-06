@@ -28,4 +28,26 @@ public interface NotificationMapper extends EntityMapper<NotificationDTO, Notifi
     @Mapping(target = "id", source = "id")
     @Mapping(target = "login", source = "login")
     UserDTO toDtoUserId(User user);
+
+    @AfterMapping
+    default void handleProjectAndSprintNotifications(Notification notification, @MappingTarget NotificationDTO dto) {
+        if (notification.getTask() == null && notification.getTaskTitle() != null) {
+            String title = notification.getTaskTitle();
+            if (title.startsWith("Projet: ")) {
+                dto.setProjectKey(title.substring(8).trim());
+            } else if (title.startsWith("Sprint:")) {
+                String[] parts = title.split(":", 4);
+                if (parts.length >= 4) {
+                    try {
+                        Long sprintId = Long.parseLong(parts[1].trim());
+                        dto.setTaskId(sprintId);
+                    } catch (NumberFormatException e) {
+                        // Ignore
+                    }
+                    dto.setProjectKey(parts[2].trim());
+                    dto.setTaskTitle("Sprint: " + parts[3].trim());
+                }
+            }
+        }
+    }
 }

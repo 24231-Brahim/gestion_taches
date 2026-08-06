@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -20,6 +21,7 @@ export class NotificationDetailModal {
   readonly activeModal = inject(NgbActiveModal);
   private readonly router = inject(Router);
   private readonly notificationService = inject(NotificationService);
+  private readonly http = inject(HttpClient);
 
   markAsRead(): void {
     if (!this.notification.isRead) {
@@ -31,8 +33,33 @@ export class NotificationDetailModal {
 
   goToTask(): void {
     if (this.notification.taskId && this.notification.projectKey) {
+      this.markAsRead();
       this.activeModal.close();
       this.router.navigate(['/project', this.notification.projectKey, 'task', this.notification.taskId, 'view']);
+    }
+  }
+
+  goToProject(): void {
+    if (this.notification.projectKey) {
+      this.markAsRead();
+      this.activeModal.close();
+      this.http.get(`/api/projects/by-key/${this.notification.projectKey}`).subscribe({
+        next: () => {
+          this.router.navigate(['/project', this.notification.projectKey, 'view']);
+        },
+        error: () => {
+          alert("Le projet n'existe plus.");
+          this.router.navigate(['/project']);
+        },
+      });
+    }
+  }
+
+  goToSprint(): void {
+    if (this.notification.taskId && this.notification.projectKey) {
+      this.markAsRead();
+      this.activeModal.close();
+      this.router.navigate(['/project', this.notification.projectKey, 'sprint', this.notification.taskId, 'view']);
     }
   }
 

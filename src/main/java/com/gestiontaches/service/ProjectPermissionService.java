@@ -83,17 +83,22 @@ public class ProjectPermissionService {
     }
 
     /**
-     * Requires the current user to have read access to a project: global ADMIN/PROJET_MANAGER
-     * authority, or membership in the project (any role).
+     * Requires the current user to have read access to a project: global ADMIN authority, or
+     * membership in the project (any role). PROJET_MANAGER/DEVELOPER/USER must be an actual
+     * {@link ProjectMember} of the project to see it.
      */
     public void requireProjectAccess(Long projectId) {
-        if (SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN, AuthoritiesConstants.PROJET_MANAGER)) {
+        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
             return;
         }
         getProjectMember(projectId);
     }
 
+    /**
+     * Only ADMIN has global (cross-project) access. Every other role — including PROJET_MANAGER —
+     * is scoped to the projects they belong to as a {@link ProjectMember}.
+     */
     public boolean hasGlobalProjectAccess() {
-        return SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN, AuthoritiesConstants.PROJET_MANAGER);
+        return SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN);
     }
 }

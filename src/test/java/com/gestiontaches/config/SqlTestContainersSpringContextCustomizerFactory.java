@@ -30,10 +30,7 @@ public class SqlTestContainersSpringContextCustomizerFactory implements ContextC
                 boolean usingTestProdProfile = List.of(context.getEnvironment().getActiveProfiles()).contains(
                     "test" + JHipsterConstants.SPRING_PROFILE_PRODUCTION
                 );
-                boolean usingTestDevProfile = List.of(context.getEnvironment().getActiveProfiles()).contains(
-                    "test" + JHipsterConstants.SPRING_PROFILE_DEVELOPMENT
-                );
-                if (null != sqlAnnotation && (usingTestProdProfile || usingTestDevProfile)) {
+                if (null != sqlAnnotation && usingTestProdProfile) {
                     log.debug("detected the EmbeddedSQL annotation on class {}", testClass.getName());
                     log.info("Warming up the sql database");
                     if (null == prodTestcontainer) {

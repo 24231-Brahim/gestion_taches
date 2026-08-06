@@ -55,6 +55,8 @@ public class ProjectService {
 
     private final SprintRepository sprintRepository;
 
+    private final NotificationService notificationService;
+
     public ProjectService(
         ProjectRepository projectRepository,
         ProjectMapper projectMapper,
@@ -63,7 +65,8 @@ public class ProjectService {
         ProjectMemberMapper projectMemberMapper,
         ProjectPermissionService projectPermissionService,
         TaskRepository taskRepository,
-        SprintRepository sprintRepository
+        SprintRepository sprintRepository,
+        NotificationService notificationService
     ) {
         this.projectRepository = projectRepository;
         this.projectMapper = projectMapper;
@@ -73,6 +76,7 @@ public class ProjectService {
         this.projectPermissionService = projectPermissionService;
         this.taskRepository = taskRepository;
         this.sprintRepository = sprintRepository;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -223,7 +227,20 @@ public class ProjectService {
     public void delete(Long id) {
         LOG.debug("Request to delete Project : {}", id);
         projectPermissionService.requireProjectRole(id, ProjectRole.OWNER);
-        projectRepository.deleteById(id);
+        Project project = projectRepository.findById(id).orElseThrow(() -> new RuntimeException("Project not found"));
+        List<ProjectMember> members = projectMemberRepository.findByProjectId(id);
+        String currentLogin = SecurityUtils.getCurrentUserLogin().orElse(null);
+
+        String message = "Le projet " + project.getName() + " a été supprimé";
+        for (ProjectMember member : members) {
+            User recipient = member.getUser();
+            if (currentLogin == null || !currentLogin.equals(recipient.getLogin())) {
+                notificationService.createNotification(recipient, message, "Projet: " + project.getName(), null);
+            }
+        }
+
+        projectMemberRepository.deleteAll(members);
+        projectRepository.delete(project);
     }
 
     public Set<ProjectMemberDTO> getMembers(Long projectId) {
@@ -246,6 +263,16 @@ public class ProjectService {
         }
         ProjectMember member = new ProjectMember().project(project).user(user).role(ProjectRole.MEMBER).joinedAt(Instant.now());
         projectMemberRepository.save(member);
+
+        String currentLogin = SecurityUtils.getCurrentUserLogin().orElse(null);
+        if (currentLogin == null || !currentLogin.equals(user.getLogin())) {
+            notificationService.createNotification(
+                user,
+                "Vous avez été ajouté au projet " + project.getName(),
+                "Projet: " + project.getName(),
+                null
+            );
+        }
     }
 
     public void removeMember(Long projectId, Long userId) {

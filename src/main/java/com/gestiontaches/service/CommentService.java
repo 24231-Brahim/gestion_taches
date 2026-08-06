@@ -40,18 +40,22 @@ public class CommentService {
 
     private final ProjectPermissionService projectPermissionService;
 
+    private final NotificationService notificationService;
+
     public CommentService(
         CommentRepository commentRepository,
         CommentMapper commentMapper,
         UserRepository userRepository,
         TaskRepository taskRepository,
-        ProjectPermissionService projectPermissionService
+        ProjectPermissionService projectPermissionService,
+        NotificationService notificationService
     ) {
         this.commentRepository = commentRepository;
         this.commentMapper = commentMapper;
         this.userRepository = userRepository;
         this.taskRepository = taskRepository;
         this.projectPermissionService = projectPermissionService;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -69,9 +73,25 @@ public class CommentService {
         projectPermissionService.requireProjectAccess(task.getProject().getId());
         Comment comment = commentMapper.toEntity(commentDTO);
         comment.setTask(task);
-        comment.setAuthor(getCurrentUser());
+        User author = getCurrentUser();
+        comment.setAuthor(author);
         comment.setCreatedAt(Instant.now());
         comment = commentRepository.save(comment);
+
+        // Notify task assignee and task creator (excluding the comment author)
+        User assignee = task.getAssignee();
+        User creator = task.getCreatedBy();
+        String commentMessage = "Un nouveau commentaire a été ajouté sur la tâche \"" + task.getTitle() + "\"";
+
+        if (assignee != null && !assignee.getId().equals(author.getId())) {
+            notificationService.createNotification(assignee, commentMessage, task.getTitle(), task);
+        }
+        if (creator != null && !creator.getId().equals(author.getId())) {
+            if (assignee == null || !assignee.getId().equals(creator.getId())) {
+                notificationService.createNotification(creator, commentMessage, task.getTitle(), task);
+            }
+        }
+
         return commentMapper.toDto(comment);
     }
 

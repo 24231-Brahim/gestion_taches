@@ -12,6 +12,7 @@ import com.gestiontaches.repository.SprintRepository;
 import com.gestiontaches.repository.TaskHistoryRepository;
 import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
+import com.gestiontaches.security.SecurityUtils;
 import com.gestiontaches.service.dto.EntityChangeEvent;
 import com.gestiontaches.service.dto.EntityEventType;
 import com.gestiontaches.service.dto.SprintDTO;
@@ -81,6 +82,7 @@ public class SprintService {
             sprintDTO.setStatus(SprintStatus.PLANNED);
         }
         validateSingleActiveSprint(sprintDTO);
+        boolean isNew = sprintDTO.getId() == null;
         Sprint sprint = sprintMapper.toEntity(sprintDTO);
         sprint = sprintRepository.save(sprint);
         SprintDTO result = sprintMapper.toDto(sprint);
@@ -88,6 +90,24 @@ public class SprintService {
         entityEventSseService.sendEvent(
             new EntityChangeEvent(EntityEventType.ENTITY_SPRINT, EntityEventType.CREATED, result.getId(), projectId)
         );
+
+        if (isNew && projectId != null) {
+            List<ProjectMember> members = projectMemberService.getMembersByProjectId(projectId);
+            String currentLogin = SecurityUtils.getCurrentUserLogin().orElse(null);
+            String message = "Un nouveau sprint '" + sprint.getName() + "' a été créé dans le projet " + sprint.getProject().getName();
+            for (ProjectMember member : members) {
+                User recipient = member.getUser();
+                if (currentLogin == null || !currentLogin.equals(recipient.getLogin())) {
+                    notificationService.createNotification(
+                        recipient,
+                        message,
+                        "Sprint:" + sprint.getId() + ":" + sprint.getProject().getKey() + ":" + sprint.getName(),
+                        null
+                    );
+                }
+            }
+        }
+
         return result;
     }
 

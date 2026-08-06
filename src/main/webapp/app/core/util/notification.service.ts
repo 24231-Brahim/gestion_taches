@@ -2,7 +2,9 @@ import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { StateStorageService } from 'app/core/auth/state-storage.service';
-import { Observable, Subject, interval } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
 
 export interface INotification {
   id: number;
@@ -26,8 +28,7 @@ export class NotificationService {
   private readonly applicationConfigService = inject(ApplicationConfigService);
   private readonly stateStorageService = inject(StateStorageService);
   private readonly resourceUrl = this.applicationConfigService.getEndpointFor('api/notifications');
-  private pollingSubscription: any;
-  private abortController: AbortController | null = null;
+  private stompClient: Client | null = null;
   private readonly notificationReceived = new Subject<INotification>();
 
   constructor() {
@@ -35,19 +36,12 @@ export class NotificationService {
   }
 
   startPolling(): void {
-    if (!this.pollingSubscription) {
-      this.refresh();
-      this.pollingSubscription = interval(60000).subscribe(() => this.refresh());
-    }
-    this.connectSSE();
+    this.refresh();
+    this.connectWebSocket();
   }
 
   stopPolling(): void {
-    if (this.pollingSubscription) {
-      this.pollingSubscription.unsubscribe();
-      this.pollingSubscription = null;
-    }
-    this.disconnectSSE();
+    this.disconnectWebSocket();
     this.unreadCount.set(0);
     this.notifications.set([]);
   }
@@ -78,78 +72,43 @@ export class NotificationService {
     return this.http.patch(`${this.resourceUrl}/read-all`, {});
   }
 
-  private connectSSE(): void {
-    if (this.abortController) {
+  private connectWebSocket(): void {
+    if (this.stompClient?.connected) {
       return;
     }
-    this.abortController = new AbortController();
-    const url = `${this.resourceUrl}/stream`;
+    const url = this.applicationConfigService.getEndpointFor('websocket/tracker');
     const token = this.stateStorageService.getAuthenticationToken();
 
-    const headers: Record<string, string> = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+    this.stompClient = new Client({
+      webSocketFactory: () => new SockJS(url),
+      connectHeaders: {
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
 
-    fetch(url, {
-      headers,
-      signal: this.abortController.signal,
-    })
-      .then(response => {
-        if (!response.ok || !response.body) {
-          this.disconnectSSE();
-          return;
+    this.stompClient.onConnect = () => {
+      this.stompClient?.subscribe('/user/queue/notifications', message => {
+        try {
+          const notification: INotification = JSON.parse(message.body);
+          this.unreadCount.update(c => c + 1);
+          this.notifications.update(list => [notification, ...list].slice(0, 5));
+          this.notificationReceived.next(notification);
+        } catch {
+          // ignore parse errors
         }
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-
-        const processStream = (): void => {
-          reader.read().then(({ done, value }) => {
-            if (done) {
-              this.disconnectSSE();
-              return;
-            }
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split('\n');
-            buffer = lines.pop() ?? '';
-
-            let eventName = 'message';
-            let eventData = '';
-            for (const line of lines) {
-              if (line.startsWith('event:')) {
-                eventName = line.slice(6).trim();
-              } else if (line.startsWith('data:')) {
-                eventData = line.slice(5).trim();
-              } else if (line === '' && eventData) {
-                if (eventName === 'notification') {
-                  try {
-                    const notification: INotification = JSON.parse(eventData);
-                    this.unreadCount.update(c => c + 1);
-                    this.notifications.update(list => [notification, ...list].slice(0, 5));
-                    this.notificationReceived.next(notification);
-                  } catch {
-                    // ignore parse errors
-                  }
-                }
-                eventName = 'message';
-                eventData = '';
-              }
-            }
-            processStream();
-          });
-        };
-        processStream();
-      })
-      .catch(() => {
-        this.disconnectSSE();
       });
+    };
+
+    this.stompClient.activate();
   }
 
-  private disconnectSSE(): void {
-    if (this.abortController) {
-      this.abortController.abort();
-      this.abortController = null;
+  private disconnectWebSocket(): void {
+    if (this.stompClient) {
+      this.stompClient.deactivate();
+      this.stompClient = null;
     }
   }
 }

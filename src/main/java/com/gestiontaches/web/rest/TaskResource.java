@@ -4,21 +4,17 @@ import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
-import com.gestiontaches.security.SecurityUtils;
-import com.gestiontaches.service.NotificationService;
 import com.gestiontaches.service.ProjectPermissionService;
 import com.gestiontaches.service.TaskQueryService;
 import com.gestiontaches.service.TaskService;
 import com.gestiontaches.service.UserService;
 import com.gestiontaches.service.criteria.TaskCriteria;
-import com.gestiontaches.service.dto.NotificationDTO;
 import com.gestiontaches.service.dto.TaskDTO;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -35,6 +31,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import tech.jhipster.service.filter.LongFilter;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
 import tech.jhipster.web.util.ResponseUtil;
@@ -61,8 +58,6 @@ public class TaskResource {
 
     private final UserService userService;
 
-    private final NotificationService notificationService;
-
     private final UserRepository userRepository;
 
     private final ProjectPermissionService projectPermissionService;
@@ -72,7 +67,6 @@ public class TaskResource {
         TaskRepository taskRepository,
         TaskQueryService taskQueryService,
         UserService userService,
-        NotificationService notificationService,
         UserRepository userRepository,
         ProjectPermissionService projectPermissionService
     ) {
@@ -80,15 +74,15 @@ public class TaskResource {
         this.taskRepository = taskRepository;
         this.taskQueryService = taskQueryService;
         this.userService = userService;
-        this.notificationService = notificationService;
         this.userRepository = userRepository;
         this.projectPermissionService = projectPermissionService;
     }
 
     /**
-     * Requires either global ADMIN/PROJET_MANAGER authority, membership in the project named by
-     * the criteria's projectId filter, or a self-scoped "my tasks" query (assigneeId equals the
-     * current user), which is always safe regardless of project membership.
+     * Requires either global ADMIN authority, membership in the project named by the criteria's
+     * projectId filter (single equals or a multi-value {@code projectId.in}), or a self-scoped
+     * "my tasks" query (assigneeId equals the current user), which is always safe regardless of
+     * project membership.
      */
     private void requireCriteriaProjectAccess(TaskCriteria criteria) {
         if (projectPermissionService.hasGlobalProjectAccess()) {
@@ -102,10 +96,20 @@ public class TaskResource {
         ) {
             return;
         }
-        if (criteria == null || criteria.getProjectId() == null || criteria.getProjectId().getEquals() == null) {
+        if (criteria == null || criteria.getProjectId() == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "A projectId or self-scoped assigneeId filter is required");
         }
-        projectPermissionService.requireProjectAccess(criteria.getProjectId().getEquals());
+        LongFilter projectIdFilter = criteria.getProjectId();
+        if (projectIdFilter.getEquals() != null) {
+            projectPermissionService.requireProjectAccess(projectIdFilter.getEquals());
+            return;
+        }
+        List<Long> projectIds = projectIdFilter.getIn();
+        if (projectIds != null && !projectIds.isEmpty()) {
+            projectIds.forEach(projectPermissionService::requireProjectAccess);
+            return;
+        }
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "A projectId or self-scoped assigneeId filter is required");
     }
 
     /**
@@ -357,16 +361,6 @@ public class TaskResource {
         }
 
         TaskDTO result = taskService.assign(id, user);
-
-        String currentLogin = SecurityUtils.getCurrentUserLogin().orElse("System");
-        NotificationDTO notification = new NotificationDTO();
-        notification.setMessage(currentLogin + " vous a assigné à la tâche #" + id + " : " + result.getTitle());
-        notification.setTaskId(id);
-        notification.setTaskTitle(result.getTitle());
-        notification.setUserId(userId);
-        notification.setIsRead(false);
-        notification.setCreatedAt(Instant.now());
-        notificationService.save(notification);
 
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, id.toString()))

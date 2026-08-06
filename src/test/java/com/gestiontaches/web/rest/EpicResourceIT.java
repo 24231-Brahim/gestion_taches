@@ -873,13 +873,13 @@ class EpicResourceIT {
     @Test
     @Transactional
     @WithMockUser(authorities = { "ROLE_PROJET_MANAGER" })
-    void createEpic_asProjetManager_shouldSucceed() throws Exception {
-        long databaseSizeBeforeCreate = getRepositoryCount();
+    void createEpic_asProjetManager_withoutMembership_shouldForbid() throws Exception {
+        // A PROJET_MANAGER who is not a ProjectMember of the epic's project must not create epics
+        // there — project-level access no longer comes from the system role alone.
         EpicDTO epicDTO = epicMapper.toDto(epic);
         restEpicMockMvc
             .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(epicDTO)))
-            .andExpect(status().isCreated());
-        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+            .andExpect(status().isForbidden());
     }
 
     @Test

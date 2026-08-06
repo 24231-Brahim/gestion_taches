@@ -881,13 +881,13 @@ class SprintResourceIT {
     @Test
     @Transactional
     @WithMockUser(authorities = { "ROLE_PROJET_MANAGER" })
-    void createSprint_asProjetManager_shouldSucceed() throws Exception {
-        long databaseSizeBeforeCreate = getRepositoryCount();
+    void createSprint_asProjetManager_withoutMembership_shouldForbid() throws Exception {
+        // A PROJET_MANAGER who is not a ProjectMember of the sprint's project must not create
+        // sprints there — project-level access no longer comes from the system role alone.
         SprintDTO sprintDTO = sprintMapper.toDto(sprint);
         restSprintMockMvc
             .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(sprintDTO)))
-            .andExpect(status().isCreated());
-        assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+            .andExpect(status().isForbidden());
     }
 
     @Test

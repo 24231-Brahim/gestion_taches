@@ -1,10 +1,13 @@
 package com.gestiontaches.web.rest;
 
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -143,7 +146,7 @@ class ProjectRolePermissionIT {
     // --- Project update tests ---
 
     @Test
-    @WithMockUser(username = "owner-user")
+    @WithMockUser(username = "owner-user", authorities = "ROLE_PROJET_MANAGER")
     @Transactional
     void owner_can_update_project() throws Exception {
         ProjectDTO dto = projectMapper.toDto(project);
@@ -158,7 +161,7 @@ class ProjectRolePermissionIT {
     }
 
     @Test
-    @WithMockUser(username = "manager-user")
+    @WithMockUser(username = "manager-user", authorities = "ROLE_PROJET_MANAGER")
     @Transactional
     void manager_can_update_project() throws Exception {
         ProjectDTO dto = projectMapper.toDto(project);
@@ -707,12 +710,12 @@ class ProjectRolePermissionIT {
         mockMvc.perform(delete("/api/attachments/{id}", attachment.getId())).andExpect(status().isForbidden());
     }
 
-    // --- PROJET_MANAGER system-role parity test (no explicit project-level role) ---
+    // --- PROJET_MANAGER system-role scoping tests (no implicit global access) ---
 
     @Test
     @WithMockUser(username = "system-pm", authorities = "ROLE_PROJET_MANAGER")
     @Transactional
-    void system_projet_manager_can_manage_project_without_explicit_project_membership() throws Exception {
+    void system_projet_manager_cannot_manage_project_without_explicit_membership() throws Exception {
         createUserWithAuthority("system-pm", AuthoritiesConstants.PROJET_MANAGER);
         ProjectDTO dto = projectMapper.toDto(project);
         dto.setName("Updated By System PM");
@@ -722,6 +725,162 @@ class ProjectRolePermissionIT {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(om.writeValueAsString(dto))
             )
+            .andExpect(status().isForbidden());
+    }
+
+    // --- PROJET_MANAGER cross-manager isolation tests ---
+
+    private Project createProjectWithOwner(User owner, String key, String name) {
+        Project p = new Project().name(name).key(key).createdAt(Instant.now().truncatedTo(ChronoUnit.MILLIS));
+        em.persist(p);
+        p.setOwner(owner);
+        addMember(p, owner, ProjectRole.OWNER);
+        return p;
+    }
+
+    @Test
+    @WithMockUser(username = "pm-a", authorities = "ROLE_PROJET_MANAGER")
+    @Transactional
+    void projet_manager_a_does_not_see_projects_of_projet_manager_b() throws Exception {
+        User pmA = createUserWithAuthority("pm-a", AuthoritiesConstants.PROJET_MANAGER);
+        User pmB = createUserWithAuthority("pm-b", AuthoritiesConstants.PROJET_MANAGER);
+        em.flush();
+        createProjectWithOwner(pmA, "PMA", "Project A");
+        createProjectWithOwner(pmB, "PMB", "Project B");
+        em.flush();
+
+        mockMvc
+            .perform(get(PROJECT_API))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.[*].key", hasItem("PMA")))
+            .andExpect(jsonPath("$.[*].key", not(hasItem("PMB"))));
+    }
+
+    @Test
+    @WithMockUser(username = "pm-a", authorities = "ROLE_PROJET_MANAGER")
+    @Transactional
+    void projet_manager_a_cannot_access_detail_of_project_owned_by_projet_manager_b() throws Exception {
+        User pmA = createUserWithAuthority("pm-a", AuthoritiesConstants.PROJET_MANAGER);
+        User pmB = createUserWithAuthority("pm-b", AuthoritiesConstants.PROJET_MANAGER);
+        em.flush();
+        Project projectA = createProjectWithOwner(pmA, "PMA", "Project A");
+        Project projectB = createProjectWithOwner(pmB, "PMB", "Project B");
+        em.flush();
+
+        // Own project is accessible (200)…
+        mockMvc.perform(get(PROJECT_API + "/{id}", projectA.getId())).andExpect(status().isOk());
+        // …but the other PM's project is hidden (404, existence not revealed).
+        mockMvc.perform(get(PROJECT_API + "/{id}", projectB.getId())).andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "pm-a", authorities = "ROLE_PROJET_MANAGER")
+    @Transactional
+    void system_pm_who_is_owner_member_can_update_own_project() throws Exception {
+        User pmA = createUserWithAuthority("pm-a", AuthoritiesConstants.PROJET_MANAGER);
+        em.flush();
+        Project projectA = createProjectWithOwner(pmA, "PMA", "Project A");
+        em.flush();
+
+        ProjectDTO dto = projectMapper.toDto(projectA);
+        dto.setName("Updated By PM A");
+        mockMvc
+            .perform(
+                put(PROJECT_API + "/{id}", projectA.getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(om.writeValueAsString(dto))
+            )
             .andExpect(status().isOk());
+    }
+
+    // --- ADMIN regression tests ---
+
+    @Test
+    @WithMockUser(username = "admin-user", authorities = "ROLE_ADMIN")
+    @Transactional
+    void admin_sees_all_projects_and_any_detail() throws Exception {
+        User pmA = createUserWithAuthority("pm-a", AuthoritiesConstants.PROJET_MANAGER);
+        User pmB = createUserWithAuthority("pm-b", AuthoritiesConstants.PROJET_MANAGER);
+        em.flush();
+        createProjectWithOwner(pmA, "PMA", "Project A");
+        Project projectB = createProjectWithOwner(pmB, "PMB", "Project B");
+        em.flush();
+
+        mockMvc
+            .perform(get(PROJECT_API))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.[*].key", hasItem("PMA")))
+            .andExpect(jsonPath("$.[*].key", hasItem("PMB")));
+
+        mockMvc.perform(get(PROJECT_API + "/{id}", projectB.getId())).andExpect(status().isOk());
+    }
+
+    // --- MEMBER (simple) read vs write tests ---
+
+    @Test
+    @WithMockUser(username = "member-user", roles = { "USER", "DEVELOPER" })
+    @Transactional
+    void member_can_view_project_but_cannot_delete_it() throws Exception {
+        mockMvc.perform(get(PROJECT_API + "/{id}", project.getId())).andExpect(status().isOk());
+        mockMvc.perform(delete(PROJECT_API + "/{id}", project.getId())).andExpect(status().isForbidden());
+    }
+
+    // --- PROJET_MANAGER scoping on tasks / sprints / epics (no implicit global access) ---
+
+    @Test
+    @WithMockUser(username = "pm-a", authorities = "ROLE_PROJET_MANAGER")
+    @Transactional
+    void system_pm_without_membership_cannot_list_or_read_foreign_tasks_sprints_epics() throws Exception {
+        createUserWithAuthority("pm-a", AuthoritiesConstants.PROJET_MANAGER);
+        em.flush();
+
+        com.gestiontaches.domain.Task task = persistTask(ownerUser);
+        com.gestiontaches.domain.Sprint sprint = new com.gestiontaches.domain.Sprint()
+            .name("Foreign Sprint")
+            .status(com.gestiontaches.domain.enumeration.SprintStatus.PLANNED)
+            .project(project);
+        em.persist(sprint);
+        com.gestiontaches.domain.Epic epic = new com.gestiontaches.domain.Epic()
+            .title("Foreign Epic")
+            .status(com.gestiontaches.domain.enumeration.EpicStatus.TODO)
+            .priority(com.gestiontaches.domain.enumeration.Priority.MEDIUM)
+            .createdAt(Instant.now())
+            .project(project);
+        em.persist(epic);
+        em.flush();
+
+        mockMvc.perform(get("/api/tasks?projectId.equals=" + project.getId())).andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/sprints?projectId.equals=" + project.getId())).andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/epics?projectId.equals=" + project.getId())).andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/api/tasks/{id}", task.getId())).andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/sprints/{id}", sprint.getId())).andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/epics/{id}", epic.getId())).andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "manager-user", authorities = "ROLE_PROJET_MANAGER")
+    @Transactional
+    void project_manager_can_list_tasks_scoped_to_member_projects_via_projectId_in() throws Exception {
+        persistTask(ownerUser);
+        persistTask(ownerUser);
+        em.flush();
+
+        mockMvc
+            .perform(get("/api/tasks?projectId.in=" + project.getId() + "&page=0&size=5"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(2));
+    }
+
+    @Test
+    @WithMockUser(username = "pm-a", authorities = "ROLE_PROJET_MANAGER")
+    @Transactional
+    void system_pm_projectId_in_containing_foreign_project_is_forbidden() throws Exception {
+        createUserWithAuthority("pm-a", AuthoritiesConstants.PROJET_MANAGER);
+        em.flush();
+        persistTask(ownerUser);
+        em.flush();
+
+        mockMvc.perform(get("/api/tasks?projectId.in=" + project.getId())).andExpect(status().isForbidden());
     }
 }

@@ -79,10 +79,15 @@ public class TaskService {
     public TaskDTO save(TaskDTO taskDTO) {
         LOG.debug("Request to save Task : {}", taskDTO);
         if (taskDTO.getProject() != null && taskDTO.getProject().getId() != null) {
-            // Task creation is a management action: only OWNER/MANAGER (i.e. ADMIN/PROJET_MANAGER,
-            // since requireProjectRole grants them an implicit OWNER-equivalent bypass) may create
-            // tasks. A plain MEMBER (the role every DEVELOPER gets added to a project with) must not.
+            // Task creation is a management action: only a project-level OWNER/MANAGER may create
+            // tasks. ADMIN bypasses the role check (implicit OWNER), but a PROJET_MANAGER must hold
+            // the OWNER or MANAGER role on this specific project. A plain MEMBER (the role every
+            // DEVELOPER gets added to a project with) must not.
             projectPermissionService.requireProjectRole(taskDTO.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
+        }
+        Task oldTask = null;
+        if (taskDTO.getId() != null) {
+            oldTask = taskRepository.findById(taskDTO.getId()).orElse(null);
         }
         Task task = taskMapper.toEntity(taskDTO);
         if (task.getId() == null) {
@@ -94,6 +99,7 @@ public class TaskService {
         }
         task = taskRepository.save(task);
         recalculateParentStatuses(task);
+        checkAndNotifyTaskChanges(oldTask, task);
         return taskMapper.toDto(task);
     }
 
@@ -109,12 +115,20 @@ public class TaskService {
             checkTaskUpdatePermission(taskDTO.getId(), taskDTO);
         }
         Task existingTask = taskRepository.findById(taskDTO.getId()).orElse(null);
+        Task oldTask = null;
+        if (existingTask != null) {
+            oldTask = new Task();
+            oldTask.setAssignee(existingTask.getAssignee());
+            oldTask.setStatus(existingTask.getStatus());
+            oldTask.setTitle(existingTask.getTitle());
+        }
         TaskStatus oldStatus = existingTask != null ? existingTask.getStatus() : null;
         Task task = taskMapper.toEntity(taskDTO);
         task.setUpdatedAt(java.time.Instant.now());
         task = taskRepository.save(task);
         notifyStatusChangeIfNeeded(existingTask, task, oldStatus);
         recalculateParentStatuses(existingTask, task);
+        checkAndNotifyTaskChanges(oldTask, task);
         return taskMapper.toDto(task);
     }
 
@@ -133,6 +147,11 @@ public class TaskService {
         return taskRepository
             .findById(taskDTO.getId())
             .map(existingTask -> {
+                Task oldTask = new Task();
+                oldTask.setAssignee(existingTask.getAssignee());
+                oldTask.setStatus(existingTask.getStatus());
+                oldTask.setTitle(existingTask.getTitle());
+
                 TaskStatus oldStatus = existingTask.getStatus();
                 Long oldSprintId = existingTask.getSprint() != null ? existingTask.getSprint().getId() : null;
                 Long oldEpicId = existingTask.getEpic() != null ? existingTask.getEpic().getId() : null;
@@ -141,6 +160,7 @@ public class TaskService {
                 Task savedTask = taskRepository.save(existingTask);
                 notifyStatusChangeIfNeeded(existingTask, savedTask, oldStatus);
                 recalculateParentStatuses(oldSprintId, oldEpicId, savedTask);
+                checkAndNotifyTaskChanges(oldTask, savedTask);
                 return savedTask;
             })
             .map(taskMapper::toDto);
@@ -298,7 +318,8 @@ public class TaskService {
      */
     public TaskDTO createForProject(TaskDTO taskDTO, Long projectId) {
         LOG.debug("Request to save Task for Project {} : {}", projectId, taskDTO);
-        // See save(): creation is ADMIN/PROJET_MANAGER-only, never a plain MEMBER/DEVELOPER.
+        // See save(): creation is OWNER/MANAGER-on-the-project only (ADMIN bypasses, plain
+        // MEMBER/DEVELOPER never), even when invoked through the project-scoped endpoint.
         projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER);
         Task task = taskMapper.toEntity(taskDTO);
         String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
@@ -322,6 +343,7 @@ public class TaskService {
         }
         task = taskRepository.save(task);
         recalculateParentStatuses(task);
+        checkAndNotifyTaskChanges(null, task);
         return taskMapper.toDto(task);
     }
 
@@ -357,10 +379,53 @@ public class TaskService {
                 ProjectMember member = projectMemberRepository
                     .findByProjectIdAndUserId(task.getProject().getId(), user.getId())
                     .orElseThrow(() -> new RuntimeException("User is not a member of the project for this task"));
+
+                Task oldTask = new Task();
+                oldTask.setAssignee(task.getAssignee());
+                oldTask.setStatus(task.getStatus());
+                oldTask.setTitle(task.getTitle());
+
                 task.setAssignee(user);
-                return taskRepository.save(task);
+                Task saved = taskRepository.save(task);
+                checkAndNotifyTaskChanges(oldTask, saved);
+                return saved;
             })
             .map(taskMapper::toDto)
             .orElseThrow(() -> new RuntimeException("Task not found with id " + taskId));
+    }
+
+    private void checkAndNotifyTaskChanges(Task oldTask, Task newTask) {
+        String currentLogin = SecurityUtils.getCurrentUserLogin().orElse(null);
+
+        // 1. Check Assignee Change
+        User oldAssignee = oldTask != null ? oldTask.getAssignee() : null;
+        User newAssignee = newTask.getAssignee();
+        if (newAssignee != null && (oldAssignee == null || !oldAssignee.getId().equals(newAssignee.getId()))) {
+            if (currentLogin == null || !currentLogin.equals(newAssignee.getLogin())) {
+                notificationService.createNotification(
+                    newAssignee,
+                    "Vous avez été assigné à la tâche \"" + newTask.getTitle() + "\"",
+                    newTask.getTitle(),
+                    newTask
+                );
+            }
+        }
+
+        // 2. Check Status Change
+        TaskStatus oldStatus = oldTask != null ? oldTask.getStatus() : null;
+        TaskStatus newStatus = newTask.getStatus();
+        if (newStatus != null && oldStatus != null && !oldStatus.equals(newStatus)) {
+            User currentAssignee = newTask.getAssignee();
+            if (currentAssignee != null) {
+                if (currentLogin == null || !currentLogin.equals(currentAssignee.getLogin())) {
+                    notificationService.createNotification(
+                        currentAssignee,
+                        "Le statut de la tâche \"" + newTask.getTitle() + "\" a changé pour " + newStatus,
+                        newTask.getTitle(),
+                        newTask
+                    );
+                }
+            }
+        }
     }
 }

@@ -4,18 +4,20 @@ import com.gestiontaches.domain.enumeration.TaskStatus;
 import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.repository.TaskRepository;
+import com.gestiontaches.security.SecurityUtils;
+import com.gestiontaches.service.ProjectPermissionService;
 import com.gestiontaches.service.dto.DashboardKpiDTO;
 import com.gestiontaches.service.dto.DashboardKpiDTO.ProjectProgressDTO;
 import com.gestiontaches.service.dto.DashboardKpiDTO.TaskStatusCountDTO;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/dashboard")
@@ -26,15 +28,18 @@ public class DashboardResource {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
+    private final ProjectPermissionService projectPermissionService;
 
     public DashboardResource(
         TaskRepository taskRepository,
         ProjectRepository projectRepository,
-        ProjectMemberRepository projectMemberRepository
+        ProjectMemberRepository projectMemberRepository,
+        ProjectPermissionService projectPermissionService
     ) {
         this.taskRepository = taskRepository;
         this.projectRepository = projectRepository;
         this.projectMemberRepository = projectMemberRepository;
+        this.projectPermissionService = projectPermissionService;
     }
 
     @GetMapping("/kpis")
@@ -42,21 +47,48 @@ public class DashboardResource {
     public DashboardKpiDTO getKpis() {
         LOG.debug("REST request to get Dashboard KPIs");
 
+        // Only ADMIN has global (cross-project) access. Every other role — including
+        // PROJET_MANAGER — sees KPIs scoped to the projects they own or belong to.
+        List<Long> projectIds = null;
+        if (!projectPermissionService.hasGlobalProjectAccess()) {
+            String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.FORBIDDEN, "Current user not found")
+            );
+            projectIds = projectRepository.findProjectIdsByOwnerLoginOrMemberLogin(login);
+        }
+
         DashboardKpiDTO dto = new DashboardKpiDTO();
 
-        dto.setTotalProjects(projectRepository.count());
-        dto.setTeamMembers(projectMemberRepository.countDistinctUsers());
+        if (projectIds != null && projectIds.isEmpty()) {
+            return emptyKpis();
+        }
 
-        long totalTasks = taskRepository.count();
+        dto.setTotalProjects(projectIds != null ? projectIds.size() : projectRepository.count());
+        dto.setTeamMembers(
+            projectIds != null
+                ? projectMemberRepository.countDistinctUsersByProjectIds(projectIds)
+                : projectMemberRepository.countDistinctUsers()
+        );
+
+        long totalTasks = projectIds != null ? taskRepository.countByProjectIdIn(projectIds) : taskRepository.count();
         dto.setTotalTasks(totalTasks);
 
-        long completedTasks = taskRepository.countByStatus(TaskStatus.DONE);
+        long completedTasks =
+            projectIds != null
+                ? taskRepository.countByStatusAndProjectIdIn(TaskStatus.DONE, projectIds)
+                : taskRepository.countByStatus(TaskStatus.DONE);
         dto.setCompletedTasks(completedTasks);
 
-        long overdueTasks = taskRepository.countByStatusNotIn(List.of(TaskStatus.DONE));
+        long overdueTasks =
+            projectIds != null
+                ? taskRepository.countByStatusNotInAndProjectIdIn(List.of(TaskStatus.DONE), projectIds)
+                : taskRepository.countByStatusNotIn(List.of(TaskStatus.DONE));
         dto.setOverdueTasks(overdueTasks);
 
-        List<Object[]> projectStats = taskRepository.countTasksGroupByProject();
+        List<Object[]> projectStats =
+            projectIds != null
+                ? taskRepository.countTasksGroupByProjectInProjectIds(projectIds)
+                : taskRepository.countTasksGroupByProject();
         long activeProjects = projectStats
             .stream()
             .filter(row -> {
@@ -87,13 +119,21 @@ public class DashboardResource {
             .toList();
         dto.setProjectProgress(progress);
 
-        List<Object[]> statusStats = taskRepository.countTasksGroupByStatus();
+        List<Object[]> statusStats =
+            projectIds != null ? taskRepository.countTasksGroupByStatusInProjectIds(projectIds) : taskRepository.countTasksGroupByStatus();
         List<TaskStatusCountDTO> distribution = statusStats
             .stream()
             .map(row -> new TaskStatusCountDTO(((TaskStatus) row[0]).name(), ((Number) row[1]).longValue()))
             .toList();
         dto.setTaskDistribution(distribution);
 
+        return dto;
+    }
+
+    private DashboardKpiDTO emptyKpis() {
+        DashboardKpiDTO dto = new DashboardKpiDTO();
+        dto.setProjectProgress(List.of());
+        dto.setTaskDistribution(List.of());
         return dto;
     }
 }

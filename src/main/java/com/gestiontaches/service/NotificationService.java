@@ -12,7 +12,6 @@ import com.gestiontaches.service.dto.NotificationDTO;
 import com.gestiontaches.service.mapper.NotificationMapper;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,21 +33,35 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
     private final UserRepository userRepository;
-    private final NotificationSseService notificationSseService;
+    private final SimpMessageSendingOperations messagingTemplate;
     private final TaskRepository taskRepository;
 
     public NotificationService(
         NotificationRepository notificationRepository,
         NotificationMapper notificationMapper,
         UserRepository userRepository,
-        NotificationSseService notificationSseService,
+        SimpMessageSendingOperations messagingTemplate,
         TaskRepository taskRepository
     ) {
         this.notificationRepository = notificationRepository;
         this.notificationMapper = notificationMapper;
         this.userRepository = userRepository;
-        this.notificationSseService = notificationSseService;
+        this.messagingTemplate = messagingTemplate;
         this.taskRepository = taskRepository;
+    }
+
+    public void createNotification(User recipient, String message, String taskTitle, Task task) {
+        Notification notification = new Notification();
+        notification.setMessage(message);
+        notification.setTask(task);
+        notification.setTaskTitle(taskTitle);
+        notification.setUser(recipient);
+        notification.setIsRead(false);
+        notification.setCreatedAt(Instant.now());
+        notification = notificationRepository.save(notification);
+
+        NotificationDTO dto = notificationMapper.toDto(notification);
+        messagingTemplate.convertAndSendToUser(recipient.getLogin(), "/queue/notifications", dto);
     }
 
     public NotificationDTO save(NotificationDTO notificationDTO) {
@@ -56,7 +70,9 @@ public class NotificationService {
         notification = notificationRepository.save(notification);
         NotificationDTO saved = notificationMapper.toDto(notification);
         if (saved.getUserId() != null) {
-            notificationSseService.sendNotification(saved.getUserId(), saved);
+            userRepository.findById(saved.getUserId()).ifPresent(user -> {
+                messagingTemplate.convertAndSendToUser(user.getLogin(), "/queue/notifications", saved);
+            });
         }
         return saved;
     }
@@ -107,12 +123,7 @@ public class NotificationService {
         List<User> admins = userRepository.findAllActivatedByAuthorityNames(List.of(AuthoritiesConstants.ADMIN));
         String message = "New user registered: " + newUser.getLogin() + " (" + newUser.getEmail() + ")";
         for (User admin : admins) {
-            Notification notification = new Notification();
-            notification.setMessage(message);
-            notification.setUser(admin);
-            notification.setIsRead(false);
-            notification.setCreatedAt(Instant.now());
-            notificationRepository.save(notification);
+            createNotification(admin, message, null, null);
         }
         LOG.debug("Sent new user registration notification to {} admin(s)", admins.size());
     }
@@ -130,14 +141,7 @@ public class NotificationService {
                 ")";
         }
         for (User admin : admins) {
-            Notification notification = new Notification();
-            notification.setMessage(message);
-            notification.setTask(task);
-            notification.setTaskTitle(task.getTitle());
-            notification.setUser(admin);
-            notification.setIsRead(false);
-            notification.setCreatedAt(Instant.now());
-            notificationRepository.save(notification);
+            createNotification(admin, message, task.getTitle(), task);
         }
         LOG.debug("Sent task history notification to {} admin(s) for task {}", admins.size(), task.getId());
     }
@@ -161,19 +165,19 @@ public class NotificationService {
                 recipients.add(task.getAssignee());
             }
             for (User recipient : recipients) {
-                Notification notification = new Notification();
-                notification.setMessage(message);
-                notification.setTask(task);
-                notification.setTaskTitle(task.getTitle());
-                notification.setUser(recipient);
-                notification.setIsRead(false);
-                notification.setCreatedAt(Instant.now());
-                notificationRepository.save(notification);
-                notificationSseService.sendNotification(recipient.getId(), notificationMapper.toDto(notification));
+                createNotification(recipient, message, task.getTitle(), task);
             }
         }
         if (!overdueTasks.isEmpty()) {
             LOG.debug("Created overdue notifications for {} task(s)", overdueTasks.size());
         }
+    }
+
+    @Scheduled(cron = "0 0 3 * * ?") // 3h du matin
+    @Transactional
+    public void purgeOldNotifications() {
+        Instant threshold = Instant.now().minus(15, ChronoUnit.DAYS);
+        int deleted = notificationRepository.deleteByCreatedAtBefore(threshold);
+        LOG.info("Purged {} notifications older than 15 days", deleted);
     }
 }

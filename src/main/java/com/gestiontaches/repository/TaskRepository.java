@@ -67,13 +67,27 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
 
     long countByStatusNotIn(java.util.Collection<TaskStatus> statuses);
 
+    long countByProjectIdIn(Collection<Long> projectIds);
+
+    long countByStatusAndProjectIdIn(TaskStatus status, Collection<Long> projectIds);
+
+    long countByStatusNotInAndProjectIdIn(Collection<TaskStatus> statuses, Collection<Long> projectIds);
+
     @Query(
         "SELECT t.project.id, t.project.name, COUNT(t), SUM(CASE WHEN t.status = com.gestiontaches.domain.enumeration.TaskStatus.DONE THEN 1 ELSE 0 END) FROM Task t WHERE t.project IS NOT NULL GROUP BY t.project.id, t.project.name ORDER BY t.project.name"
     )
     List<Object[]> countTasksGroupByProject();
 
+    @Query(
+        "SELECT t.project.id, t.project.name, COUNT(t), SUM(CASE WHEN t.status = com.gestiontaches.domain.enumeration.TaskStatus.DONE THEN 1 ELSE 0 END) FROM Task t WHERE t.project.id IN :projectIds GROUP BY t.project.id, t.project.name ORDER BY t.project.name"
+    )
+    List<Object[]> countTasksGroupByProjectInProjectIds(@Param("projectIds") Collection<Long> projectIds);
+
     @Query("SELECT t.status, COUNT(t) FROM Task t GROUP BY t.status")
     List<Object[]> countTasksGroupByStatus();
+
+    @Query("SELECT t.status, COUNT(t) FROM Task t WHERE t.project.id IN :projectIds GROUP BY t.status")
+    List<Object[]> countTasksGroupByStatusInProjectIds(@Param("projectIds") Collection<Long> projectIds);
 
     long countByAssigneeId(Long assigneeId);
 

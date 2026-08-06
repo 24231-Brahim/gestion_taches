@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { TranslateModule } from '@ngx-translate/core';
 import { HttpParams, httpResource } from '@angular/common/http';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
+import { AccountService } from 'app/core/auth/account.service';
 import { KpiCardComponent } from './kpi-card.component';
 import { DashboardChartsComponent } from './charts.component';
 import { DashboardListsComponent } from './lists.component';
@@ -81,7 +82,7 @@ export interface DashboardKpis {
           </div>
         </div>
       }
-      <jhi-dashboard-lists [recentProjects]="recentProjects()" [recentTasks]="recentTasks()" seeAllTasksRoute="/admin/tasks" />
+      <jhi-dashboard-lists [recentProjects]="recentProjects()" [recentTasks]="recentTasks()" [seeAllTasksRoute]="seeAllTasksRoute()" />
       <div class="bottom-grid">
         <jhi-dashboard-timeline [tasks]="recentTasks()" />
       </div>
@@ -206,7 +207,14 @@ export class DashboardComponent {
   readonly loading = computed(() => this.kpisResource.isLoading() || this.projectsResource.isLoading() || this.tasksResource.isLoading());
   readonly error = computed(() => this.kpisResource.error() ?? this.projectsResource.error() ?? this.tasksResource.error());
 
+  readonly isAdmin = computed(() => this.accountService.account()?.authorities.some(a => a === 'ROLE_ADMIN') ?? false);
+
+  // The admin task-management page is admin-only; other roles (e.g. PROJET_MANAGER) fall back
+  // to their own task list.
+  readonly seeAllTasksRoute = computed(() => (this.isAdmin() ? '/admin/tasks' : '/my-tasks'));
+
   private readonly applicationConfigService = inject(ApplicationConfigService);
+  private readonly accountService = inject(AccountService);
   private readonly kpisResource = httpResource<DashboardKpis>(() => ({
     url: this.applicationConfigService.getEndpointFor('api/dashboard/kpis'),
   }));
@@ -214,10 +222,28 @@ export class DashboardComponent {
     url: this.applicationConfigService.getEndpointFor('api/projects'),
     params: new HttpParams().set('page', '0').set('size', '5').set('sort', 'createdAt,desc'),
   }));
-  private readonly tasksResource = httpResource<any[]>(() => ({
-    url: this.applicationConfigService.getEndpointFor('api/tasks'),
-    params: new HttpParams().set('page', '0').set('size', '5').set('sort', 'updatedAt,desc'),
-  }));
+  private readonly tasksResource = httpResource<any[]>(() => {
+    if (this.isAdmin()) {
+      return {
+        url: this.applicationConfigService.getEndpointFor('api/tasks'),
+        params: new HttpParams().set('page', '0').set('size', '5').set('sort', 'updatedAt,desc'),
+      };
+    }
+    // Non-admin users (e.g. PROJET_MANAGER) only have access to the projects they own or belong
+    // to: scope the "recent tasks" request to those projects instead of the whole system.
+    const projects = this.projectsResource.value() ?? [];
+    if (projects.length === 0) {
+      return undefined;
+    }
+    let params = new HttpParams().set('page', '0').set('size', '5').set('sort', 'updatedAt,desc');
+    for (const p of projects) {
+      params = params.append('projectId.in', String(p.id));
+    }
+    return {
+      url: this.applicationConfigService.getEndpointFor('api/tasks'),
+      params,
+    };
+  });
 
   formatTime(seconds: number): string {
     if (seconds < 60) return `${seconds}s`;

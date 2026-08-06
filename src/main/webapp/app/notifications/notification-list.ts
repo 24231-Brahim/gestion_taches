@@ -1,5 +1,5 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 
@@ -7,6 +7,8 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
+
+import { Subscription } from 'rxjs';
 
 import { NotificationService, INotification } from 'app/core/util/notification.service';
 import { ItemCount } from 'app/shared/pagination';
@@ -20,7 +22,7 @@ import { NotificationDetailModal } from 'app/notifications/notification-detail-m
   styleUrl: './notification-list.scss',
   imports: [FontAwesomeModule, TranslateModule, DatePipe, NgbPagination, ItemCount],
 })
-export default class NotificationListComponent implements OnInit {
+export default class NotificationListComponent implements OnInit, OnDestroy {
   readonly notifications = signal<INotification[]>([]);
   readonly page = signal(0);
   readonly size = signal(ITEMS_PER_PAGE);
@@ -28,9 +30,18 @@ export default class NotificationListComponent implements OnInit {
   readonly notificationService = inject(NotificationService);
   private readonly router = inject(Router);
   private readonly modalService = inject(NgbModal);
+  private readonly realTimeSubscription: Subscription;
+
+  constructor() {
+    this.realTimeSubscription = this.notificationService.notificationReceived$.subscribe(() => this.loadPage());
+  }
 
   ngOnInit(): void {
     this.loadPage();
+  }
+
+  ngOnDestroy(): void {
+    this.realTimeSubscription.unsubscribe();
   }
 
   loadPage(page?: number): void {
@@ -53,6 +64,7 @@ export default class NotificationListComponent implements OnInit {
     if (!notification.isRead) {
       this.notificationService.markAsRead(notification.id).subscribe(() => {
         this.loadPage();
+        this.notificationService.refresh();
       });
     }
   }
@@ -60,6 +72,7 @@ export default class NotificationListComponent implements OnInit {
   markAllAsRead(): void {
     this.notificationService.markAllAsRead().subscribe(() => {
       this.loadPage();
+      this.notificationService.refresh();
     });
   }
 }

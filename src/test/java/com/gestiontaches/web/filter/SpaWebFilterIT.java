@@ -37,6 +37,12 @@ class SpaWebFilterIT {
     }
 
     @Test
+    @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
+    void testFilterDoesNotForwardToIndexForWebsocket() throws Exception {
+        mockMvc.perform(get("/websocket/tracker/info")).andExpect(status().isOk()).andExpect(forwardedUrl(null));
+    }
+
+    @Test
     void testFilterDoesNotForwardToIndexForDotFile() throws Exception {
         mockMvc.perform(get("/file.js")).andExpect(status().isNotFound());
     }
