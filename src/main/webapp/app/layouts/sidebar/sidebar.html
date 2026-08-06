@@ -65,6 +65,17 @@
           <fa-icon icon="list-check" [fixedWidth]="true" />
           <span class="sidebar-label" jhiTranslate="global.menu.entities.task">Tasks</span>
         </a>
+
+        <a
+          class="sidebar-item"
+          [routerLink]="['/project', projectKey, 'chat']"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="closeMobile()"
+        >
+          <fa-icon icon="comments" [fixedWidth]="true" />
+          <span class="sidebar-label" jhiTranslate="global.menu.entities.chat">Discussion</span>
+        </a>
       } @else {
         <a
           class="sidebar-item"

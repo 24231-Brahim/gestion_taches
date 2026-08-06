@@ -14,6 +14,7 @@
         "epic": "Epic",
         "task": "Tasks",
         "kanban": "Kanban",
+        "chat": "Chat",
         "members": "Members",
         "comment": "Comment",
         "attachment": "Attachment",
@@ -42,7 +43,10 @@
       },
       "language": "Language",
       "theme": "Theme",
-      "notifications": "Notifications"
+      "notifications": "Notifications",
+      "search": {
+        "placeholder": "Search..."
+      }
     },
     "form": {
       "username.label": "Username",

@@ -29,7 +29,7 @@
 
   /* Teal — même teinte qu'en mode clair, éclaircie pour rester lisible sur fond sombre */
   --color-secondary: #2dd4bf; /* 9.9:1 sur fond sombre ✓ */
-  --color-secondary-container: #0f766e;
+  --color-secondary-container: #55e1ff;
   --color-on-secondary: #00201c;
   --color-on-secondary-container: #ffffff;
 
@@ -77,7 +77,7 @@
   --color-secondary-fixed: #ccfbf1;
   --color-secondary-fixed-dim: #2dd4bf;
   --color-on-secondary-fixed: #00201c;
-  --color-on-secondary-fixed-variant: #0f766e;
+  --color-on-secondary-fixed-variant: #55e1ff;
   --color-tertiary-fixed: #ede9fe;
   --color-tertiary-fixed-dim: #c4b5fd;
   --color-on-tertiary-fixed: #2e1065;
@@ -166,8 +166,8 @@
   --color-link: #0074c2; /* texte/liens cliquables — 4.9:1 sur blanc ✓ */
 
   /* Teal — même teinte que le dark mode, assombrie pour le fond clair */
-  --color-secondary: #0f766e; /* 5.6:1 sur blanc ✓ */
-  --color-secondary-container: #0f766e;
+  --color-secondary: #55e1ff; /* 5.6:1 sur blanc ✓ */
+  --color-secondary-container: #55e1ff;
   --color-on-secondary: #ffffff;
   --color-on-secondary-container: #ffffff;
 
@@ -216,7 +216,7 @@
   --color-secondary-fixed: #ccfbf1;
   --color-secondary-fixed-dim: #5eead4;
   --color-on-secondary-fixed: #00201c;
-  --color-on-secondary-fixed-variant: #0f766e;
+  --color-on-secondary-fixed-variant: #55e1ff;
   --color-tertiary-fixed: #ede9fe;
   --color-tertiary-fixed-dim: #c4b5fd;
   --color-on-tertiary-fixed: #2e1065;
@@ -232,7 +232,7 @@
   --color-sidebar-active-indicator: var(--color-on-brand);
 
   /* CTA — bouton "créer", vert distinct du vert de statut */
-  --color-cta: #0f766e; /* 5.5:1 avec --color-on-cta ✓ */
+  --color-cta: #55e1ff; /* 5.5:1 avec --color-on-cta ✓ */
   --color-cta-hover: #115e59; /* 7.6:1 avec --color-on-cta ✓ */
   --color-on-cta: #ffffff;
 
@@ -265,7 +265,7 @@
   --color-info: var(--color-brand-blue);
 
   /* Tags libres */
-  --color-tag-teal-fg: #0f766e;
+  --color-tag-teal-fg: #55e1ff;
   --color-tag-blue-bg: #e3f4ff;
   --color-tag-blue-fg: #0074c2;
 }
@@ -305,12 +305,13 @@
 
   /* Spacing — base 8px */
   --unit: 8px;
-  --gutter: 24px;
-  --margin-page: 32px;
+  --gutter: 20px;
+  --margin-page: 24px;
   --stack-xs: 4px;
-  --stack-sm: 12px;
-  --stack-md: 20px;
-  --stack-lg: 40px;
+  --stack-sm: 8px;
+  --stack-md: 16px;
+  --stack-lg: 24px;
+  --stack-xl: 32px;
 
   /* Border radius */
   --radius-sm: 6px;
@@ -373,6 +374,14 @@ h6 {
   font-weight: 600;
   text-transform: none;
   letter-spacing: -0.01em;
+}
+
+h1,
+h2,
+.page-heading,
+.page-title,
+[id*='heading'] {
+  color: var(--color-brand-blue, #079dfe);
 }
 
 h1 {

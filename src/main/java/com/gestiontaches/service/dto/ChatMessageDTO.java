@@ -1,0 +1,172 @@
+package com.gestiontaches.service.dto;
+
+import jakarta.validation.constraints.*;
+import java.io.Serializable;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+/**
+ * A DTO for the {@link com.gestiontaches.domain.ChatMessage} entity.
+ */
+@SuppressWarnings("common-java:DuplicatedBlocks")
+public class ChatMessageDTO implements Serializable {
+
+    private Long id;
+
+    @NotNull
+    @Size(min = 1, max = 5000)
+    private String content;
+
+    private Instant createdAt;
+
+    private Instant editedAt;
+
+    private Boolean deleted = false;
+
+    private Long conversationId;
+
+    private UserDTO sender;
+
+    /** Id of the message this one replies to (threads — architecture only). */
+    private Long parentMessageId;
+
+    /** User ids mentioned in the content (mention notifications — architecture). */
+    private Set<Long> mentions = new HashSet<>();
+
+    /** Reactions (architecture only, not wired to endpoints yet). */
+    private List<MessageReactionDTO> reactions = new ArrayList<>();
+
+    /** Attachments (architecture only, not wired to upload yet). */
+    private List<ChatAttachmentDTO> attachments = new ArrayList<>();
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Instant getEditedAt() {
+        return editedAt;
+    }
+
+    public void setEditedAt(Instant editedAt) {
+        this.editedAt = editedAt;
+    }
+
+    public Boolean getDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
+    public Long getConversationId() {
+        return conversationId;
+    }
+
+    public void setConversationId(Long conversationId) {
+        this.conversationId = conversationId;
+    }
+
+    public UserDTO getSender() {
+        return sender;
+    }
+
+    public void setSender(UserDTO sender) {
+        this.sender = sender;
+    }
+
+    public Long getParentMessageId() {
+        return parentMessageId;
+    }
+
+    public void setParentMessageId(Long parentMessageId) {
+        this.parentMessageId = parentMessageId;
+    }
+
+    public Set<Long> getMentions() {
+        return mentions;
+    }
+
+    public void setMentions(Set<Long> mentions) {
+        this.mentions = mentions;
+    }
+
+    public List<MessageReactionDTO> getReactions() {
+        return reactions;
+    }
+
+    public void setReactions(List<MessageReactionDTO> reactions) {
+        this.reactions = reactions;
+    }
+
+    public List<ChatAttachmentDTO> getAttachments() {
+        return attachments;
+    }
+
+    public void setAttachments(List<ChatAttachmentDTO> attachments) {
+        this.attachments = attachments;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ChatMessageDTO)) {
+            return false;
+        }
+
+        ChatMessageDTO that = (ChatMessageDTO) o;
+        if (this.id == null) {
+            return false;
+        }
+        return Objects.equals(this.id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return (
+            "ChatMessageDTO{" +
+            "id=" +
+            getId() +
+            ", content='" +
+            getContent() +
+            "'" +
+            ", createdAt='" +
+            getCreatedAt() +
+            "'" +
+            ", deleted=" +
+            getDeleted() +
+            "}"
+        );
+    }
+}

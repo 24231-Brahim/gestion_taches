@@ -135,39 +135,44 @@ public class EpicService {
     }
 
     /**
-     * Recompute the status of an epic based on its tasks.
-     * An epic with no tasks is never marked DONE, and a CANCELLED epic is never overwritten.
+     * Recalculate and update the status of an epic based on its tasks.
+     * Rule: any task IN_PROGRESS or READY_FOR_TEST → IN_PROGRESS ; all tasks DONE → DONE ;
+     * otherwise (no in-progress task, mix of NEW/TODO, or no task at all) → TODO as default.
+     * A manually CANCELLED epic is never overwritten.
      *
      * @param epicId the id of the epic.
      */
-    public void recomputeStatus(Long epicId) {
-        LOG.debug("Request to recompute status of Epic : {}", epicId);
-        Epic epic = epicRepository.findById(epicId).orElse(null);
-        if (epic == null || epic.getStatus() == EpicStatus.CANCELLED) {
+    @Transactional
+    public void recalculateStatus(Long epicId) {
+        LOG.debug("Request to recalculate status of Epic : {}", epicId);
+        Epic epic = epicRepository.findById(epicId).orElseThrow(() -> new RuntimeException("Epic not found"));
+        if (epic.getStatus() == EpicStatus.CANCELLED) {
             return;
         }
         List<Task> tasks = taskRepository.findByEpicId(epicId);
-        if (tasks.isEmpty()) {
-            return;
-        }
-        boolean allDone = tasks.stream().allMatch(t -> t.getStatus() == TaskStatus.DONE);
+        boolean hasInProgress = tasks.stream().anyMatch(t -> isInProgress(t.getStatus()));
+        boolean allDone = !tasks.isEmpty() && tasks.stream().allMatch(t -> t.getStatus() == TaskStatus.DONE);
+
         EpicStatus newStatus;
-        if (allDone) {
+        if (hasInProgress) {
+            newStatus = EpicStatus.IN_PROGRESS;
+        } else if (allDone) {
             newStatus = EpicStatus.DONE;
         } else {
-            boolean anyActive = tasks
-                .stream()
-                .anyMatch(t -> t.getStatus() == TaskStatus.IN_PROGRESS || t.getStatus() == TaskStatus.READY_FOR_TEST);
-            newStatus = anyActive ? EpicStatus.IN_PROGRESS : EpicStatus.TODO;
+            newStatus = EpicStatus.TODO;
         }
         if (newStatus != epic.getStatus()) {
             epic.setStatus(newStatus);
-            epicRepository.save(epic);
+            epic = epicRepository.save(epic);
             Long projectId = epic.getProject() != null ? epic.getProject().getId() : null;
             entityEventSseService.sendEvent(
                 new EntityChangeEvent(EntityEventType.ENTITY_EPIC, EntityEventType.UPDATED, epic.getId(), projectId)
             );
         }
+    }
+
+    private static boolean isInProgress(TaskStatus status) {
+        return status == TaskStatus.IN_PROGRESS || status == TaskStatus.READY_FOR_TEST;
     }
 
     private void validateEpicStatusTransition(EpicDTO epicDTO) {

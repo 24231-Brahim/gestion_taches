@@ -14,7 +14,7 @@
       }
     }
 
-    <div class="app-body" [class.app-body-no-nav]="account() === null" [class.app-body-error]="isErrorPage()">
+    <div class="app-body" [class.app-body-no-nav]="account() === null || isErrorPage()">
       @if (!isErrorPage()) {
         @if (account() !== null) {
           <jhi-sidebar />
@@ -22,7 +22,7 @@
       }
 
       <main class="app-content" [class.app-content-full]="account() === null || isErrorPage()">
-        @if (!isErrorPage()) {
+        @if (!isErrorPage() && account() !== null) {
           <jhi-breadcrumb />
         }
         <router-outlet />

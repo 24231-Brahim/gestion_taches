@@ -57,6 +57,14 @@ const projectRoute: Routes = [
     loadChildren: () => import('../sprint/sprint.routes'),
   },
   {
+    path: ':key/chat',
+    loadComponent: () => import('../chat/chat').then(m => m.Chat),
+    resolve: {
+      project: ProjectResolve,
+    },
+    canActivate: [UserRouteAccessService],
+  },
+  {
     path: ':key/epic',
     resolve: {
       project: ProjectResolve,

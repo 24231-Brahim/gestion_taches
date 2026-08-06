@@ -16,6 +16,7 @@
         "sprint": "السبرنت",
         "epic": "الإيبك",
         "task": "المهام",
+        "chat": "المحادثة",
         "comment": "التعليقات",
         "attachment": "المرفقات"
       },
@@ -42,7 +43,10 @@
       },
       "language": "اللغة",
       "theme": "المظهر",
-      "notifications": "الإشعارات"
+      "notifications": "الإشعارات",
+      "search": {
+        "placeholder": "بحث..."
+      }
     },
     "form": {
       "username.label": "اسم المستخدم",

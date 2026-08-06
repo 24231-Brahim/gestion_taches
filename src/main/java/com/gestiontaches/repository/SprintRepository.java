@@ -39,7 +39,16 @@ public interface SprintRepository extends JpaRepository<Sprint, Long>, JpaSpecif
     @Query("select sprint from Sprint sprint left join fetch sprint.project where sprint.id =:id")
     Optional<Sprint> findOneWithToOneRelationships(@Param("id") Long id);
 
-    Optional<Sprint> findByProjectIdAndStatus(Long projectId, SprintStatus status);
+    /**
+     * Finds the most recently created sprint for the given project and status.
+     *
+     * <p>Uses {@code findFirst ... OrderByIdDesc} so that the generated SQL applies a
+     * {@code LIMIT 1} and returns an {@link Optional}. Unlike an {@code Optional} derived
+     * from a plain {@code findBy...} method, this never throws a
+     * {@code NonUniqueResultException} when the database temporarily holds duplicate
+     * rows for the same (project, status) pair (e.g. two ACTIVE sprints).
+     */
+    Optional<Sprint> findFirstByProjectIdAndStatusOrderByIdDesc(Long projectId, SprintStatus status);
 
     @Query(
         "SELECT s FROM Sprint s LEFT JOIN FETCH s.project WHERE s.project.id IN :projectIds AND (LOWER(s.name) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(s.goal) LIKE LOWER(CONCAT('%', :query, '%')))"

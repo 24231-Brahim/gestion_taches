@@ -1,0 +1,35 @@
+<div class="chat-member-label" jhiTranslate="chat.sidebar.members">Membres</div>
+
+@for (member of members(); track trackMember($index, member)) {
+  @if (member.userId !== null) {
+    <button
+      type="button"
+      class="chat-member"
+      (click)="openDirect.emit(member.userId!)"
+      [title]="('chat.sidebar.openDirect' | translate) + ' ' + member.userLogin"
+    >
+      <span class="chat-member-avatar">
+        {{ initials(member.userLogin) }}
+        <span class="chat-member-dot" [class.online]="member.online" [class.self]="isSelf(member)"></span>
+      </span>
+      <span class="chat-member-info">
+        <span class="chat-member-login">
+          {{ member.userLogin }}
+          @if (isSelf(member)) {
+            <span class="chat-member-self" jhiTranslate="chat.members.you">(vous)</span>
+          }
+        </span>
+        <span class="chat-member-status">
+          @if (member.online) {
+            <span class="chat-member-online" jhiTranslate="chat.members.online">En ligne</span>
+          } @else {
+            <span jhiTranslate="chat.members.offline">Hors ligne</span>
+          }
+        </span>
+      </span>
+      @if (member.role) {
+        <span class="chat-member-role">{{ member.role }}</span>
+      }
+    </button>
+  }
+}

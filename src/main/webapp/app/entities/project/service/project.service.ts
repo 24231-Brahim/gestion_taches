@@ -1,8 +1,8 @@
-import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
+import { HttpClient, HttpResponse, HttpErrorResponse, httpResource } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
-import { Observable, map } from 'rxjs';
+import { Observable, catchError, map, throwError } from 'rxjs';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
@@ -115,7 +115,12 @@ export class ProjectService extends ProjectsService {
   }
 
   getProjectCardStats(): Observable<IProjectCardStats[]> {
-    return this.http.get<IProjectCardStats[]>(`${this.resourceUrl}/progress`);
+    return this.http.get<IProjectCardStats[]>(`${this.resourceUrl}/progress`).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('Failed to load project card stats:', error);
+        return throwError(() => error);
+      }),
+    );
   }
 
   addMember(projectId: number, userId: number): Observable<undefined> {

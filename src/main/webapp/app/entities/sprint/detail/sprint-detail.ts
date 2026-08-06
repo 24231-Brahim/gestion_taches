@@ -366,12 +366,22 @@ export class SprintDetail {
     }
   }
 
+  private refreshSprint(): void {
+    const sp = this._currentSprint();
+    if (sp?.id) {
+      this.sprintService.find(sp.id).subscribe({
+        next: updated => this._currentSprint.set(updated),
+      });
+    }
+  }
+
   onStatusChange(event: { taskId: number; status: string }): void {
     this.isSaving.set(true);
     this.taskService.partialUpdate({ id: event.taskId, status: event.status as any }).subscribe({
       next: () => {
         this.isSaving.set(false);
         this.refreshTasks();
+        this.refreshSprint();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -387,6 +397,7 @@ export class SprintDetail {
       next: () => {
         this.isSaving.set(false);
         this.refreshTasks();
+        this.refreshSprint();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);
@@ -402,6 +413,7 @@ export class SprintDetail {
       next: () => {
         this.isSaving.set(false);
         this.refreshTasks();
+        this.refreshSprint();
       },
       error: (err: HttpErrorResponse) => {
         this.isSaving.set(false);

@@ -1,4 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { NgOptimizedImage } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -27,6 +28,7 @@ import { RegisterService } from './register.service';
     PasswordStrengthBar,
     FontAwesomeModule,
     FindLanguageFromKeyPipe,
+    NgOptimizedImage,
   ],
   templateUrl: './register.html',
   styleUrl: './register.component.scss',

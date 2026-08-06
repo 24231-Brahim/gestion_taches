@@ -54,6 +54,13 @@
     </div>
   }
 
+  @if (cardStatsError() && projects().length > 0) {
+    <div class="alert alert-warning" role="alert">
+      <fa-icon icon="exclamation-triangle" class="me-1" />
+      <span jhiTranslate="gestionTachesApp.project.home.statsLoadFailed"> Impossible de charger l'avancement des projets. </span>
+    </div>
+  }
+
   @if (projects().length === 0 && !isLoading() && !error()) {
     <div class="empty-state" id="no-result">
       <fa-icon icon="folder-open" class="empty-state-icon" />

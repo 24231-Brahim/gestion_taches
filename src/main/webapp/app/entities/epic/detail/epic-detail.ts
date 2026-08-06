@@ -13,6 +13,7 @@ import { TranslateDirective } from 'app/shared/language';
 import { TaskService } from 'app/entities/task/service/task.service';
 import { ITask } from 'app/entities/task/task.model';
 import { TaskKanbanBoard } from 'app/entities/task/kanban/task-kanban-board';
+import { EpicService } from '../service/epic.service';
 import { EpicBurndownChart } from '../burndown/epic-burndown-chart';
 import { IEpic } from '../epic.model';
 
@@ -308,6 +309,7 @@ export class EpicDetail {
   readonly activeTab = signal<Tab>('tasks');
   readonly tasks = signal<ITask[]>([]);
 
+  readonly currentEpic = signal<IEpic | null>(null);
   readonly currentProjectKey = signal<string | null>(null);
 
   protected readonly taskService = inject(TaskService);
@@ -315,6 +317,11 @@ export class EpicDetail {
   protected readonly translateService = inject(TranslateService);
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly accountService = inject(AccountService);
+  protected readonly epicService = inject(EpicService);
+
+  private epicSyncEffect = effect(() => {
+    this.currentEpic.set(this.epic());
+  });
 
   // ADMIN/PROJET_MANAGER bypass only — this page doesn't have the project's member list loaded,
   // so a non-admin OWNER/MANAGER won't see this link either (safe default: never shown to anyone
@@ -451,10 +458,20 @@ export class EpicDetail {
 
   onStatusChange(event: { taskId: number; status: string }): void {
     this.taskService.partialUpdate({ id: event.taskId, status: event.status as any }).subscribe({
+      next: () => this.refreshEpic(),
       error: (err: HttpErrorResponse) => {
         const message = err.error?.detail ?? err.message ?? this.translateService.instant('error.general');
         this.alertService.addAlert({ type: 'danger', message });
       },
     });
+  }
+
+  private refreshEpic(): void {
+    const ep = this.currentEpic();
+    if (ep?.id) {
+      this.epicService.find(ep.id).subscribe({
+        next: updated => this.currentEpic.set(updated),
+      });
+    }
   }
 }

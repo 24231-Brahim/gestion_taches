@@ -9,20 +9,20 @@ jhi-home {
 .home-welcome {
   border: 1px solid var(--color-outline-variant);
   background-color: var(--color-surface-container);
-  padding: var(--stack-lg);
+  padding: 1.5rem;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  margin-bottom: var(--stack-lg);
+  margin-bottom: 1.5rem;
 }
 
 .home-title {
   font-family: var(--font-inter);
   font-weight: 600;
   font-size: var(--headline-md-size);
-  color: var(--color-on-surface);
-  margin-bottom: var(--stack-md);
+  color: var(--color-brand-blue, #079dfe);
+  margin-bottom: var(--stack-sm);
   border-bottom: 1px solid var(--color-outline-variant);
-  padding-bottom: var(--stack-md);
+  padding-bottom: var(--stack-sm);
   text-transform: none;
   letter-spacing: 0;
 }
@@ -31,7 +31,7 @@ jhi-home {
   font-family: var(--font-inter);
   font-size: var(--body-lg-size);
   color: var(--color-muted);
-  margin-bottom: var(--stack-lg);
+  margin-bottom: var(--stack-md);
 }
 
 .home-logged-message {

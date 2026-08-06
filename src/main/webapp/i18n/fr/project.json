@@ -10,7 +10,8 @@
         "emptyTitle": "Aucun projet pour l'instant",
         "emptyText": "Créez votre premier projet pour commencer à organiser sprints, epics et tâches.",
         "scopeMine": "Mes projets",
-        "scopeAll": "Tous les projets"
+        "scopeAll": "Tous les projets",
+        "statsLoadFailed": "Impossible de charger l'avancement des projets."
       },
       "card": {
         "noDescription": "Pas encore de description.",

@@ -1,0 +1,104 @@
+<div class="chat-page">
+  @if (loadError(); as error) {
+    <div class="chat-error">
+      <fa-icon icon="exclamation-circle" />
+      <span jhiTranslate="chat.error.load">Impossible de charger la discussion.</span>
+      <a [routerLink]="['/project', projectKey(), 'view']">
+        <span jhiTranslate="chat.error.back">Retour au projet</span>
+      </a>
+    </div>
+  } @else {
+    @if (isMobile()) {
+      @if (showConversationList()) {
+        <aside class="chat-panel chat-panel-sidebar">
+          @if (loadingConversations()) {
+            <div class="chat-loading">
+              <fa-icon icon="spinner" animation="spin" />
+            </div>
+          } @else {
+            <div class="chat-list-scroll">
+              <jhi-conversation-list
+                [conversations]="conversations()"
+                [selectedId]="selectedConversation()?.id ?? null"
+                [currentUserLogin]="currentUserLogin()"
+                (selectConversation)="selectConversation($event)"
+              />
+              <div class="chat-member-scroll">
+                <jhi-member-list [members]="members()" [currentUserLogin]="currentUserLogin()" (openDirect)="openDirect($event)" />
+              </div>
+            </div>
+          }
+        </aside>
+      } @else {
+        <section class="chat-panel chat-panel-main">
+          @if (selectedConversation(); as conversation) {
+            <jhi-chat-header
+              [conversation]="conversation"
+              [members]="members()"
+              [currentUserLogin]="currentUserLogin()"
+              [showBack]="true"
+              (back)="backToList()"
+            />
+            <jhi-chat-message-list
+              [messages]="messages()"
+              [loadingOlder]="loadingOlder()"
+              [hasMore]="hasMore()"
+              [currentUserLogin]="currentUserLogin()"
+              (loadOlder)="loadOlder()"
+              (atBottomChange)="onAtBottomChange($event)"
+              (edit)="onEditMessage($event)"
+              (delete)="onDeleteMessage($event)"
+            />
+            <jhi-chat-composer [disabled]="loadingMessages()" [sending]="sending()" (send)="send($event)" />
+          }
+        </section>
+      }
+    } @else {
+      <aside class="chat-panel chat-panel-sidebar">
+        @if (loadingConversations()) {
+          <div class="chat-loading">
+            <fa-icon icon="spinner" animation="spin" />
+          </div>
+        } @else {
+          <div class="chat-list-scroll">
+            <jhi-conversation-list
+              [conversations]="conversations()"
+              [selectedId]="selectedConversation()?.id ?? null"
+              [currentUserLogin]="currentUserLogin()"
+              (selectConversation)="selectConversation($event)"
+            />
+          </div>
+        }
+      </aside>
+
+      <section class="chat-panel chat-panel-main">
+        @if (selectedConversation(); as conversation) {
+          <jhi-chat-header [conversation]="conversation" [members]="members()" [currentUserLogin]="currentUserLogin()" />
+          @if (loadingMessages()) {
+            <div class="chat-loading chat-loading-main">
+              <fa-icon icon="spinner" animation="spin" />
+            </div>
+          } @else {
+            <jhi-chat-message-list
+              [messages]="messages()"
+              [loadingOlder]="loadingOlder()"
+              [hasMore]="hasMore()"
+              [currentUserLogin]="currentUserLogin()"
+              (loadOlder)="loadOlder()"
+              (atBottomChange)="onAtBottomChange($event)"
+              (edit)="onEditMessage($event)"
+              (delete)="onDeleteMessage($event)"
+            />
+          }
+          <jhi-chat-composer [disabled]="loadingMessages()" [sending]="sending()" (send)="send($event)" />
+        }
+      </section>
+
+      <aside class="chat-panel chat-panel-members">
+        <div class="chat-member-scroll">
+          <jhi-member-list [members]="members()" [currentUserLogin]="currentUserLogin()" (openDirect)="openDirect($event)" />
+        </div>
+      </aside>
+    }
+  }
+</div>

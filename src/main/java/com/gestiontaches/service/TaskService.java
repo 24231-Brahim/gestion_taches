@@ -14,7 +14,9 @@ import com.gestiontaches.service.dto.NotificationDTO;
 import com.gestiontaches.service.dto.TaskDTO;
 import com.gestiontaches.service.mapper.TaskMapper;
 import java.time.Instant;
+import java.util.LinkedHashSet;
 import java.util.Optional;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -44,13 +46,19 @@ public class TaskService {
 
     private final NotificationService notificationService;
 
+    private final SprintService sprintService;
+
+    private final EpicService epicService;
+
     public TaskService(
         TaskRepository taskRepository,
         TaskMapper taskMapper,
         UserRepository userRepository,
         ProjectMemberRepository projectMemberRepository,
         ProjectPermissionService projectPermissionService,
-        NotificationService notificationService
+        NotificationService notificationService,
+        SprintService sprintService,
+        EpicService epicService
     ) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
@@ -58,6 +66,8 @@ public class TaskService {
         this.projectMemberRepository = projectMemberRepository;
         this.projectPermissionService = projectPermissionService;
         this.notificationService = notificationService;
+        this.sprintService = sprintService;
+        this.epicService = epicService;
     }
 
     /**
@@ -83,6 +93,7 @@ public class TaskService {
             task.setCreatedBy(currentUser);
         }
         task = taskRepository.save(task);
+        recalculateParentStatuses(task);
         return taskMapper.toDto(task);
     }
 
@@ -103,6 +114,7 @@ public class TaskService {
         task.setUpdatedAt(java.time.Instant.now());
         task = taskRepository.save(task);
         notifyStatusChangeIfNeeded(existingTask, task, oldStatus);
+        recalculateParentStatuses(existingTask, task);
         return taskMapper.toDto(task);
     }
 
@@ -122,13 +134,51 @@ public class TaskService {
             .findById(taskDTO.getId())
             .map(existingTask -> {
                 TaskStatus oldStatus = existingTask.getStatus();
+                Long oldSprintId = existingTask.getSprint() != null ? existingTask.getSprint().getId() : null;
+                Long oldEpicId = existingTask.getEpic() != null ? existingTask.getEpic().getId() : null;
                 taskMapper.partialUpdate(existingTask, taskDTO);
                 existingTask.setUpdatedAt(java.time.Instant.now());
                 Task savedTask = taskRepository.save(existingTask);
                 notifyStatusChangeIfNeeded(existingTask, savedTask, oldStatus);
+                recalculateParentStatuses(oldSprintId, oldEpicId, savedTask);
                 return savedTask;
             })
             .map(taskMapper::toDto);
+    }
+
+    private void recalculateParentStatuses(Task task) {
+        recalculateParentStatuses((Long) null, null, task);
+    }
+
+    private void recalculateParentStatuses(Task before, Task after) {
+        Long oldSprintId = before != null && before.getSprint() != null ? before.getSprint().getId() : null;
+        Long oldEpicId = before != null && before.getEpic() != null ? before.getEpic().getId() : null;
+        recalculateParentStatuses(oldSprintId, oldEpicId, after);
+    }
+
+    private void recalculateParentStatuses(Long oldSprintId, Long oldEpicId, Task after) {
+        Set<Long> sprintIds = new LinkedHashSet<>();
+        Set<Long> epicIds = new LinkedHashSet<>();
+        if (oldSprintId != null) {
+            sprintIds.add(oldSprintId);
+        }
+        if (oldEpicId != null) {
+            epicIds.add(oldEpicId);
+        }
+        if (after != null) {
+            if (after.getSprint() != null && after.getSprint().getId() != null) {
+                sprintIds.add(after.getSprint().getId());
+            }
+            if (after.getEpic() != null && after.getEpic().getId() != null) {
+                epicIds.add(after.getEpic().getId());
+            }
+        }
+        for (Long sprintId : sprintIds) {
+            sprintService.recalculateStatus(sprintId);
+        }
+        for (Long epicId : epicIds) {
+            epicService.recalculateStatus(epicId);
+        }
     }
 
     /**
@@ -271,6 +321,7 @@ public class TaskService {
             }
         }
         task = taskRepository.save(task);
+        recalculateParentStatuses(task);
         return taskMapper.toDto(task);
     }
 
@@ -286,6 +337,7 @@ public class TaskService {
         // even for a task they created or are assigned to).
         projectPermissionService.requireProjectRole(task.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
         taskRepository.deleteById(id);
+        recalculateParentStatuses(task, null);
     }
 
     /**

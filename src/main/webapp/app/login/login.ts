@@ -1,4 +1,5 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnInit, inject, signal, viewChild } from '@angular/core';
+import { NgOptimizedImage } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
@@ -16,7 +17,15 @@ import FindLanguageFromKeyPipe from 'app/shared/language/find-language-from-key.
 @Component({
   selector: 'jhi-login',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslateDirective, TranslateModule, ReactiveFormsModule, RouterLink, FontAwesomeModule, FindLanguageFromKeyPipe],
+  imports: [
+    TranslateDirective,
+    TranslateModule,
+    ReactiveFormsModule,
+    RouterLink,
+    FontAwesomeModule,
+    FindLanguageFromKeyPipe,
+    NgOptimizedImage,
+  ],
   templateUrl: './login.html',
   styleUrl: './login.component.scss',
 })

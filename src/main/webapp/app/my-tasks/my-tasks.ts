@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { forkJoin } from 'rxjs';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -10,10 +9,6 @@ import { TaskKanbanBoard } from 'app/entities/task/kanban/task-kanban-board';
 import { TaskDetailPanel } from 'app/entities/task/detail/task-detail-panel';
 import { TaskService } from 'app/entities/task/service/task.service';
 import { ITask } from 'app/entities/task/task.model';
-import { ProjectService } from 'app/entities/project/service/project.service';
-import { ProjectRole } from 'app/entities/enumerations/project-role.model';
-
-const MANAGED_ROLES: ProjectRole[] = [ProjectRole.OWNER, ProjectRole.MANAGER];
 
 type ViewMode = 'list' | 'kanban';
 const VIEW_MODE_KEY = 'myTasksViewMode';
@@ -127,7 +122,6 @@ export default class MyTasks {
 
   private readonly accountService = inject(AccountService);
   private readonly taskService = inject(TaskService);
-  private readonly projectService = inject(ProjectService);
 
   constructor() {
     this.loadTasks();
@@ -162,50 +156,12 @@ export default class MyTasks {
   private loadTasks(): void {
     const account = this.accountService.account();
     if (!account) {
+      this.tasks.set([]);
+      this.isLoading.set(false);
       return;
     }
 
     this.isLoading.set(true);
-    const authorities = account.authorities;
-    const isAdmin = authorities.includes('ROLE_ADMIN');
-    const isProjectManager = authorities.includes('ROLE_PROJET_MANAGER');
-
-    if (isAdmin) {
-      this.taskService.query({ size: 500, sort: 'updatedAt,desc' }).subscribe({
-        next: res => {
-          this.tasks.set(res.body ?? []);
-          this.isLoading.set(false);
-        },
-        error: () => this.isLoading.set(false),
-      });
-      return;
-    }
-
-    if (isProjectManager) {
-      this.projectService.getMyRoles().subscribe({
-        next: roles => {
-          const managedProjectIds = roles.filter(r => r.role && MANAGED_ROLES.includes(r.role)).map(r => r.projectId);
-          if (managedProjectIds.length === 0) {
-            this.tasks.set([]);
-            this.isLoading.set(false);
-            return;
-          }
-          forkJoin(
-            managedProjectIds.map(projectId =>
-              this.taskService.query({ 'projectId.equals': projectId, size: 500, sort: 'updatedAt,desc' }),
-            ),
-          ).subscribe({
-            next: responses => {
-              this.tasks.set(responses.flatMap(res => res.body ?? []));
-              this.isLoading.set(false);
-            },
-            error: () => this.isLoading.set(false),
-          });
-        },
-        error: () => this.isLoading.set(false),
-      });
-      return;
-    }
 
     const currentUserId = account.id;
     if (currentUserId == null) {
@@ -213,12 +169,16 @@ export default class MyTasks {
       this.isLoading.set(false);
       return;
     }
+
     this.taskService.query({ 'assigneeId.equals': currentUserId, size: 500, sort: 'updatedAt,desc' }).subscribe({
       next: res => {
         this.tasks.set(res.body ?? []);
         this.isLoading.set(false);
       },
-      error: () => this.isLoading.set(false),
+      error: () => {
+        this.isLoading.set(false);
+        this.tasks.set([]);
+      },
     });
   }
 }

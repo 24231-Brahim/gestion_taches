@@ -693,7 +693,7 @@ ngb-progressbar {
   font-family: var(--font-display);
   font-size: var(--headline-md-size);
   font-weight: 700;
-  color: var(--color-on-surface);
+  color: var(--color-brand-blue, #079dfe);
   margin-bottom: var(--stack-md);
   padding-bottom: var(--stack-sm);
   border-bottom: 1px solid var(--color-outline-variant);
@@ -759,6 +759,10 @@ ngb-progressbar {
    App Layout
    ═══════════════════════════════════════════════════════════ */
 
+router-outlet {
+  display: none;
+}
+
 .app-shell {
   display: flex;
   flex-direction: column;
@@ -782,10 +786,25 @@ ngb-progressbar {
   flex-direction: column;
   transition: margin-inline-start var(--transition-base);
   min-width: 0;
+
+  > :not(jhi-breadcrumb):not(router-outlet) {
+    padding-inline: var(--margin-page, 24px);
+    padding-block-start: var(--stack-md, 16px);
+    padding-block-end: var(--stack-lg, 24px);
+    width: 100%;
+    box-sizing: border-box;
+  }
 }
 
 .app-content-full {
   margin-inline-start: 0 !important;
+  padding-bottom: 0 !important;
+
+  > :not(jhi-breadcrumb):not(router-outlet) {
+    padding-inline: 0 !important;
+    padding-block-start: 0 !important;
+    padding-block-end: 0 !important;
+  }
 }
 
 jhi-sidebar.collapsed ~ .app-content {
@@ -796,6 +815,12 @@ jhi-sidebar.collapsed ~ .app-content {
   .app-content {
     margin-inline-start: 0 !important;
     padding-bottom: 72px;
+
+    > :not(jhi-breadcrumb):not(router-outlet) {
+      padding-inline: var(--stack-md, 16px);
+      padding-block-start: var(--stack-sm, 8px);
+      padding-block-end: var(--stack-md, 16px);
+    }
   }
 
   .app-body-no-nav {
@@ -882,21 +907,23 @@ ngb-input-datepicker {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: var(--stack-lg) var(--margin-page);
+  padding: 1.5rem 1.25rem;
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .split-screen-theme-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   background: var(--color-surface-container);
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-md);
   color: var(--color-on-surface);
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   cursor: pointer;
   transition:
     color var(--transition-fast),
@@ -912,11 +939,12 @@ ngb-input-datepicker {
 
 .split-screen-top-actions {
   position: absolute;
-  top: var(--stack-md);
-  right: var(--stack-md);
+  top: 1rem;
+  right: 1.25rem;
   display: flex;
   align-items: center;
   gap: var(--stack-sm);
+  z-index: 10;
 }
 
 .split-screen-lang-toggle {
@@ -930,7 +958,7 @@ ngb-input-datepicker {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.45rem 0.7rem;
+  padding: 0.4rem 0.65rem;
   background: var(--color-surface-container);
   border: none;
   color: var(--color-muted);
@@ -1003,11 +1031,11 @@ ngb-input-datepicker {
 }
 
 .split-screen-logo {
-  margin-bottom: var(--stack-lg);
+  margin-bottom: 1.25rem;
   text-align: center;
 
   img {
-    height: 56px;
+    height: 48px;
     width: auto;
     display: inline-block;
   }
@@ -1015,7 +1043,7 @@ ngb-input-datepicker {
 
 .split-screen-card {
   width: 100%;
-  max-width: 960px;
+  max-width: 880px;
   background: var(--color-surface-container);
   border: 1px solid var(--color-outline-variant);
   border-radius: var(--radius-lg);
@@ -1036,8 +1064,8 @@ ngb-input-datepicker {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 3rem 2rem;
-  min-height: 420px;
+  padding: 2rem 1.75rem;
+  min-height: 380px;
 }
 
 .split-screen-left-content {
@@ -1047,19 +1075,19 @@ ngb-input-datepicker {
 
   h1 {
     font-family: var(--font-inter);
-    font-size: var(--text-2xl);
+    font-size: var(--text-xl);
     font-weight: 700;
     color: var(--color-on-primary-container);
     text-transform: none;
     letter-spacing: -0.01em;
-    margin: 0 0 var(--stack-md);
+    margin: 0 0 var(--stack-sm);
   }
 
   p {
     font-family: var(--font-inter);
     font-size: var(--text-sm);
     color: color-mix(in srgb, var(--color-on-primary-container) 85%, transparent);
-    line-height: 1.6;
+    line-height: 1.5;
     margin: 0;
   }
 }
@@ -1067,7 +1095,7 @@ ngb-input-datepicker {
 .split-screen-right {
   flex: 1 1 0%;
   min-width: 0;
-  padding: 3rem;
+  padding: 2rem 2.25rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -1076,20 +1104,21 @@ ngb-input-datepicker {
 .split-screen-form-title {
   font-family: var(--font-inter);
   text-transform: none;
-  font-size: var(--headline-md-size);
+  font-size: 1.25rem;
   font-weight: 600;
   letter-spacing: 0;
   color: var(--color-on-surface);
-  margin: 0 0 var(--stack-lg);
-  padding-bottom: var(--stack-sm);
+  margin: 0 0 1.25rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--color-outline-variant);
 }
 
 .split-screen-right .form-label {
   font-size: var(--text-xs);
+  margin-bottom: 0.35rem;
 }
 .split-screen-right .form-control {
-  padding: 0.6rem 0.85rem;
+  padding: 0.55rem 0.8rem;
   font-size: var(--text-sm);
 }
 
@@ -1099,7 +1128,7 @@ ngb-input-datepicker {
   justify-content: center;
   gap: 0.5rem;
   width: 100%;
-  padding: 0.7rem 1.5rem;
+  padding: 0.65rem 1.25rem;
   font-family: var(--font-inter);
   font-weight: 600;
   font-size: var(--text-sm);
@@ -1144,7 +1173,7 @@ ngb-input-datepicker {
 
 .split-screen-link {
   text-align: center;
-  margin-top: var(--stack-md);
+  margin-top: 1rem;
   font-size: var(--text-sm);
 
   a {
@@ -1161,8 +1190,8 @@ ngb-input-datepicker {
 }
 
 .split-screen-footer {
-  margin-top: var(--stack-md);
-  padding-top: var(--stack-md);
+  margin-top: 1rem;
+  padding-top: 0.75rem;
   border-top: 1px solid var(--color-outline-variant);
   text-align: center;
   font-size: var(--text-sm);
@@ -1181,13 +1210,13 @@ ngb-input-datepicker {
 /* Mobile: hide left panel, full-width form */
 @media (max-width: 767.98px) {
   .split-screen-wrapper {
-    padding: var(--stack-md);
+    padding: 1.25rem 1rem;
     min-height: auto;
     align-items: center;
   }
 
   .split-screen-logo {
-    margin-bottom: var(--stack-md);
+    margin-bottom: 1rem;
 
     img {
       height: 40px;
@@ -1201,7 +1230,7 @@ ngb-input-datepicker {
     display: none !important;
   }
   .split-screen-right {
-    padding: 2rem 1.5rem;
+    padding: 1.5rem 1.25rem;
     border-radius: var(--radius-lg);
   }
 }
@@ -1209,14 +1238,14 @@ ngb-input-datepicker {
 /* Tablet fine-tuning */
 @media (min-width: 768px) and (max-width: 991.98px) {
   .split-screen-left {
-    padding: 2rem 1.5rem;
-    min-height: 360px;
+    padding: 1.5rem 1.25rem;
+    min-height: 340px;
   }
   .split-screen-left-content h1 {
-    font-size: var(--text-xl);
+    font-size: var(--text-lg);
   }
   .split-screen-right {
-    padding: 2rem;
+    padding: 1.5rem 1.75rem;
   }
 }
 

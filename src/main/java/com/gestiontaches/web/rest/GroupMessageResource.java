@@ -2,6 +2,7 @@ package com.gestiontaches.web.rest;
 
 import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.ProjectMemberRepository;
+import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
 import com.gestiontaches.service.GroupMessageService;
 import com.gestiontaches.service.UserService;
@@ -73,9 +74,11 @@ public class GroupMessageResource {
             )
             .orElseThrow(() -> new BadRequestAlertException("User not found", ENTITY_NAME, "usernotfound"));
 
-        projectMemberRepository
-            .findByProjectIdAndUserId(projectId, currentUser.getId())
-            .orElseThrow(() -> new BadRequestAlertException("You are not a member of this project", ENTITY_NAME, "notprojectmember"));
+        if (!SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN, AuthoritiesConstants.PROJET_MANAGER)) {
+            projectMemberRepository
+                .findByProjectIdAndUserId(projectId, currentUser.getId())
+                .orElseThrow(() -> new BadRequestAlertException("You are not a member of this project", ENTITY_NAME, "notprojectmember"));
+        }
 
         groupMessageDTO.setSender(new UserDTO(currentUser));
         groupMessageDTO.setProject(new ProjectDTO());
@@ -107,9 +110,11 @@ public class GroupMessageResource {
             )
             .orElseThrow(() -> new BadRequestAlertException("User not found", ENTITY_NAME, "usernotfound"));
 
-        projectMemberRepository
-            .findByProjectIdAndUserId(projectId, currentUser.getId())
-            .orElseThrow(() -> new BadRequestAlertException("You are not a member of this project", ENTITY_NAME, "notprojectmember"));
+        if (!SecurityUtils.hasCurrentUserAnyOfAuthorities(AuthoritiesConstants.ADMIN, AuthoritiesConstants.PROJET_MANAGER)) {
+            projectMemberRepository
+                .findByProjectIdAndUserId(projectId, currentUser.getId())
+                .orElseThrow(() -> new BadRequestAlertException("You are not a member of this project", ENTITY_NAME, "notprojectmember"));
+        }
 
         List<GroupMessageDTO> messages = groupMessageService.findVisibleMessages(projectId, currentUser.getId());
         return ResponseEntity.ok(messages);

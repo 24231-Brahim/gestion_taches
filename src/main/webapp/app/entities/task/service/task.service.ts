@@ -2,11 +2,13 @@ import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
-import { Observable, map } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
+import { SprintService } from 'app/entities/sprint/service/sprint.service';
+import { EpicService } from 'app/entities/epic/service/epic.service';
 import { ITask, NewTask } from '../task.model';
 import { IUser } from 'app/entities/user/user.model';
 
@@ -69,31 +71,41 @@ export class TasksService {
 @Injectable({ providedIn: 'root' })
 export class TaskService extends TasksService {
   protected readonly http = inject(HttpClient);
+  protected readonly sprintService = inject(SprintService);
+  protected readonly epicService = inject(EpicService);
 
   create(task: NewTask): Observable<ITask> {
     const copy = this.convertValueFromClient(task);
-    return this.http.post<RestTask>(this.resourceUrl, copy).pipe(map(res => this.convertResponseFromServer(res)));
+    return this.http.post<RestTask>(this.resourceUrl, copy).pipe(
+      map(res => this.convertResponseFromServer(res)),
+      tap(() => this.refreshSprintAndEpicStatuses()),
+    );
   }
 
   createForProject(projectId: number, task: NewTask): Observable<ITask> {
     const copy = this.convertValueFromClient(task);
     return this.http
       .post<RestTask>(`${this.applicationConfigService.getEndpointFor('api/tasks/projects')}/${encodeURIComponent(projectId)}/tasks`, copy)
-      .pipe(map(res => this.convertResponseFromServer(res)));
+      .pipe(
+        map(res => this.convertResponseFromServer(res)),
+        tap(() => this.refreshSprintAndEpicStatuses()),
+      );
   }
 
   update(task: ITask): Observable<ITask> {
     const copy = this.convertValueFromClient(task);
-    return this.http
-      .put<RestTask>(`${this.resourceUrl}/${encodeURIComponent(this.getTaskIdentifier(task))}`, copy)
-      .pipe(map(res => this.convertResponseFromServer(res)));
+    return this.http.put<RestTask>(`${this.resourceUrl}/${encodeURIComponent(this.getTaskIdentifier(task))}`, copy).pipe(
+      map(res => this.convertResponseFromServer(res)),
+      tap(() => this.refreshSprintAndEpicStatuses()),
+    );
   }
 
   partialUpdate(task: PartialUpdateTask): Observable<ITask> {
     const copy = this.convertValueFromClient(task);
-    return this.http
-      .patch<RestTask>(`${this.resourceUrl}/${encodeURIComponent(this.getTaskIdentifier(task))}`, copy)
-      .pipe(map(res => this.convertResponseFromServer(res)));
+    return this.http.patch<RestTask>(`${this.resourceUrl}/${encodeURIComponent(this.getTaskIdentifier(task))}`, copy).pipe(
+      map(res => this.convertResponseFromServer(res)),
+      tap(() => this.refreshSprintAndEpicStatuses()),
+    );
   }
 
   find(id: number): Observable<ITask> {
@@ -163,5 +175,10 @@ export class TaskService extends TasksService {
 
   protected convertResponseArrayFromServer(res: RestTask[]): ITask[] {
     return res.map(item => this.convertValueFromServer(item));
+  }
+
+  private refreshSprintAndEpicStatuses(): void {
+    this.sprintService.refresh();
+    this.epicService.refresh();
   }
 }

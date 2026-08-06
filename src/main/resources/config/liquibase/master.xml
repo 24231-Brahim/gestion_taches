@@ -53,4 +53,5 @@
     <include file="config/liquibase/changelog/20260722000000_revert_task_status_enum.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260724000000_added_attachment_uploaded_by.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260803000000_added_task_story_points.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260805000001_added_chat.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

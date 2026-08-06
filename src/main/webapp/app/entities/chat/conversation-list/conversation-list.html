@@ -1,0 +1,41 @@
+<div class="chat-conv-section-label" jhiTranslate="chat.sidebar.conversations">Conversations</div>
+
+@for (conversation of conversationsByType().general; track trackConversation($index, conversation)) {
+  <button
+    type="button"
+    class="chat-conv-item"
+    [class.active]="conversation.id === selectedId()"
+    (click)="selectConversation.emit(conversation)"
+  >
+    <fa-icon icon="comments" class="chat-conv-icon" [fixedWidth]="true" />
+    <span class="chat-conv-name">
+      <span>{{ displayName(conversation) }}</span>
+      @if ((conversation.unreadCount ?? 0) > 0) {
+        <span class="chat-conv-unread">{{ conversation.unreadCount }}</span>
+      }
+    </span>
+    @if (conversation.lastMessageAt) {
+      <span class="chat-conv-preview">{{ conversation.lastMessagePreview }}</span>
+    }
+  </button>
+}
+
+@for (conversation of conversationsByType().direct; track trackConversation($index, conversation)) {
+  <button
+    type="button"
+    class="chat-conv-item"
+    [class.active]="conversation.id === selectedId()"
+    (click)="selectConversation.emit(conversation)"
+  >
+    <span class="chat-conv-avatar chat-conv-icon">{{ initial(conversation) }}</span>
+    <span class="chat-conv-name">
+      <span>{{ displayName(conversation) }}</span>
+      @if ((conversation.unreadCount ?? 0) > 0) {
+        <span class="chat-conv-unread">{{ conversation.unreadCount }}</span>
+      }
+    </span>
+    @if (conversation.lastMessageAt) {
+      <span class="chat-conv-preview">{{ conversation.lastMessagePreview }}</span>
+    }
+  </button>
+}

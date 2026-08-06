@@ -1,0 +1,39 @@
+{
+  "chat": {
+    "sidebar": {
+      "conversations": "المحادثات",
+      "members": "الأعضاء",
+      "openDirect": "فتح محادثة مع"
+    },
+    "members": {
+      "you": "(أنت)",
+      "online": "متصل",
+      "offline": "غير متصل"
+    },
+    "header": {
+      "membersCount": "{{count}} أعضاء",
+      "onlineCount": "{{count}} متصل"
+    },
+    "messages": {
+      "loadOlder": "الرسائل السابقة",
+      "empty": "لا توجد رسائل بعد. ابدأ المحادثة!"
+    },
+    "message": {
+      "deleted": "تم حذف الرسالة",
+      "edit": "تعديل",
+      "delete": "حذف",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "edited": "(تم التعديل)"
+    },
+    "composer": {
+      "placeholder": "اكتب رسالتك...",
+      "send": "إرسال",
+      "hint": "Enter للإرسال، Shift+Enter لسطر جديد"
+    },
+    "error": {
+      "load": "تعذر تحميل المحادثة.",
+      "back": "العودة إلى المشروع"
+    }
+  }
+}

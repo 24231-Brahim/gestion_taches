@@ -1,0 +1,39 @@
+{
+  "chat": {
+    "sidebar": {
+      "conversations": "Conversations",
+      "members": "Membres",
+      "openDirect": "Ouvrir une conversation avec"
+    },
+    "members": {
+      "you": "(vous)",
+      "online": "En ligne",
+      "offline": "Hors ligne"
+    },
+    "header": {
+      "membersCount": "{{count}} membres",
+      "onlineCount": "{{count}} en ligne"
+    },
+    "messages": {
+      "loadOlder": "Messages précédents",
+      "empty": "Aucun message pour l'instant. Commencez la discussion !"
+    },
+    "message": {
+      "deleted": "Message supprimé",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "edited": "(modifié)"
+    },
+    "composer": {
+      "placeholder": "Écrivez votre message...",
+      "send": "Envoyer",
+      "hint": "Entrée pour envoyer, Maj+Entrée pour un saut de ligne"
+    },
+    "error": {
+      "load": "Impossible de charger la discussion.",
+      "back": "Retour au projet"
+    }
+  }
+}

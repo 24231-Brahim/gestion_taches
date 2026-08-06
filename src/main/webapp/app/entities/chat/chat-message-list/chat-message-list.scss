@@ -1,0 +1,60 @@
+:host {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.chat-message-scroll {
+  height: 100%;
+  overflow-y: auto;
+  scroll-behavior: auto;
+}
+
+.chat-message-inner {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0 16px;
+}
+
+.chat-message-loading,
+.chat-message-load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  color: var(--color-text-muted);
+}
+
+.chat-message-load-more {
+  margin: 0 auto;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-container);
+  color: var(--color-text);
+  font: var(--label-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.chat-message-load-more:hover {
+  background: var(--color-surface-container-high);
+}
+
+.chat-message-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin: 48px auto;
+  padding: 24px;
+  color: var(--color-text-muted);
+  font: var(--body-md);
+  text-align: center;
+}
+
+.chat-message-empty fa-icon {
+  font-size: 2rem;
+  color: var(--color-primary);
+}

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, effect, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgOptimizedImage } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -30,6 +30,7 @@ import { TranslateDirective } from 'app/shared/language';
     TranslateDirective,
     TranslateModule,
     DatePipe,
+    NgOptimizedImage,
   ],
 })
 export default class Navbar implements OnDestroy {

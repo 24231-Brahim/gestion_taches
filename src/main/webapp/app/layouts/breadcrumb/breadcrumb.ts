@@ -71,13 +71,15 @@ export default class Breadcrumb implements OnInit {
       const fullUrl = snapshot.url.map(segment => segment.path).join('/');
       const segments = fullUrl.split('/');
 
-      if (segments[0] === 'sprint' || segments[0] === 'epic' || segments[0] === 'task') {
+      if (segments[0] === 'sprint' || segments[0] === 'epic' || segments[0] === 'task' || segments[0] === 'chat') {
         const entityLabel =
           segments[0] === 'task'
             ? 'global.menu.entities.task'
             : segments[0] === 'sprint'
               ? 'global.menu.entities.sprint'
-              : 'global.menu.entities.epic';
+              : segments[0] === 'chat'
+                ? 'global.menu.entities.chat'
+                : 'global.menu.entities.epic';
         const entityRoute = `/project/${key}/${segments[0]}`;
 
         if (segments.length === 1 || (segments.length === 2 && segments[1] !== 'new')) {

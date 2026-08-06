@@ -61,7 +61,7 @@ class EpicServiceTest {
     }
 
     @Test
-    void recomputeStatus_allTasksDone_marksEpicDone() {
+    void recalculateStatus_allTasksDone_marksEpicDone() {
         when(epicRepository.findById(10L)).thenReturn(Optional.of(epic));
 
         Task doneTask = new Task();
@@ -75,30 +75,31 @@ class EpicServiceTest {
         when(taskRepository.findByEpicId(10L)).thenReturn(List.of(doneTask, cancelledTask));
         when(epicRepository.save(any(Epic.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        epicService.recomputeStatus(10L);
+        epicService.recalculateStatus(10L);
 
         assertThat(epic.getStatus()).isEqualTo(EpicStatus.DONE);
         verify(entityEventSseService).sendEvent(any());
     }
 
     @Test
-    void recomputeStatus_noTasks_keepsCurrentStatus() {
-        epic.setStatus(EpicStatus.TODO);
+    void recalculateStatus_noTasks_setsTodo() {
+        epic.setStatus(EpicStatus.IN_PROGRESS);
         when(epicRepository.findById(10L)).thenReturn(Optional.of(epic));
         when(taskRepository.findByEpicId(10L)).thenReturn(List.of());
+        when(epicRepository.save(any(Epic.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        epicService.recomputeStatus(10L);
+        epicService.recalculateStatus(10L);
 
         assertThat(epic.getStatus()).isEqualTo(EpicStatus.TODO);
-        verify(epicRepository, never()).save(any());
+        verify(epicRepository).save(any());
     }
 
     @Test
-    void recomputeStatus_cancelledEpic_isNotOverwritten() {
+    void recalculateStatus_cancelledEpic_isNotOverwritten() {
         epic.setStatus(EpicStatus.CANCELLED);
         when(epicRepository.findById(10L)).thenReturn(Optional.of(epic));
 
-        epicService.recomputeStatus(10L);
+        epicService.recalculateStatus(10L);
 
         assertThat(epic.getStatus()).isEqualTo(EpicStatus.CANCELLED);
         verify(epicRepository, never()).save(any());
@@ -106,7 +107,7 @@ class EpicServiceTest {
     }
 
     @Test
-    void recomputeStatus_activeTasks_marksEpicInProgress() {
+    void recalculateStatus_inProgressTask_marksEpicInProgress() {
         epic.setStatus(EpicStatus.TODO);
         when(epicRepository.findById(10L)).thenReturn(Optional.of(epic));
 
@@ -117,14 +118,32 @@ class EpicServiceTest {
         when(taskRepository.findByEpicId(10L)).thenReturn(List.of(inProgressTask));
         when(epicRepository.save(any(Epic.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        epicService.recomputeStatus(10L);
+        epicService.recalculateStatus(10L);
 
         assertThat(epic.getStatus()).isEqualTo(EpicStatus.IN_PROGRESS);
         verify(entityEventSseService).sendEvent(any());
     }
 
     @Test
-    void recomputeStatus_noActiveTasksButNotAllDone_marksEpicTodo() {
+    void recalculateStatus_readyForTestTask_marksEpicInProgress() {
+        epic.setStatus(EpicStatus.TODO);
+        when(epicRepository.findById(10L)).thenReturn(Optional.of(epic));
+
+        Task readyForTestTask = new Task();
+        readyForTestTask.setId(201L);
+        readyForTestTask.setStatus(TaskStatus.READY_FOR_TEST);
+
+        when(taskRepository.findByEpicId(10L)).thenReturn(List.of(readyForTestTask));
+        when(epicRepository.save(any(Epic.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        epicService.recalculateStatus(10L);
+
+        assertThat(epic.getStatus()).isEqualTo(EpicStatus.IN_PROGRESS);
+        verify(entityEventSseService).sendEvent(any());
+    }
+
+    @Test
+    void recalculateStatus_noActiveTasksButNotAllDone_marksEpicTodo() {
         epic.setStatus(EpicStatus.IN_PROGRESS);
         when(epicRepository.findById(10L)).thenReturn(Optional.of(epic));
 
@@ -135,9 +154,22 @@ class EpicServiceTest {
         when(taskRepository.findByEpicId(10L)).thenReturn(List.of(todoTask));
         when(epicRepository.save(any(Epic.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        epicService.recomputeStatus(10L);
+        epicService.recalculateStatus(10L);
 
         assertThat(epic.getStatus()).isEqualTo(EpicStatus.TODO);
         verify(entityEventSseService).sendEvent(any());
+    }
+
+    @Test
+    void recalculateStatus_doneEpicWithoutTasks_returnsToTodo() {
+        epic.setStatus(EpicStatus.DONE);
+        when(epicRepository.findById(10L)).thenReturn(Optional.of(epic));
+        when(taskRepository.findByEpicId(10L)).thenReturn(List.of());
+        when(epicRepository.save(any(Epic.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        epicService.recalculateStatus(10L);
+
+        assertThat(epic.getStatus()).isEqualTo(EpicStatus.TODO);
+        verify(epicRepository).save(any());
     }
 }

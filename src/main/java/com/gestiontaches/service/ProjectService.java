@@ -184,7 +184,7 @@ public class ProjectService {
                 long[] counts = taskCountsByProjectId.getOrDefault(project.getId(), new long[] { 0, 0 });
                 dto.setTotalTasks(counts[0]);
                 dto.setDoneTasks(counts[1]);
-                sprintRepository.findByProjectIdAndStatus(project.getId(), SprintStatus.ACTIVE).ifPresent(sprint -> {
+                sprintRepository.findFirstByProjectIdAndStatusOrderByIdDesc(project.getId(), SprintStatus.ACTIVE).ifPresent(sprint -> {
                     dto.setActiveSprintId(sprint.getId());
                     dto.setActiveSprintName(sprint.getName());
                 });

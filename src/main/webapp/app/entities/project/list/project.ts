@@ -56,6 +56,7 @@ export class Project implements OnInit {
   readonly error = signal<string | null>(null);
   readonly scope = signal<ProjectScope>('all');
   readonly cardStats = signal<Map<number, IProjectCardStats>>(new Map());
+  readonly cardStatsError = signal(false);
   readonly userProjectRoles = signal<Map<number, ProjectRole>>(new Map());
 
   private readonly csvDownloadService = inject(CsvDownloadService);
@@ -181,12 +182,15 @@ export class Project implements OnInit {
     if (this.projects().length === 0) {
       return;
     }
-    this.projectService.getProjectCardStats().subscribe(stats => {
-      const map = new Map<number, IProjectCardStats>();
-      for (const s of stats) {
-        map.set(s.projectId, s);
-      }
-      this.cardStats.set(map);
+    this.projectService.getProjectCardStats().subscribe({
+      next: stats => {
+        const map = new Map<number, IProjectCardStats>();
+        for (const s of stats) {
+          map.set(s.projectId, s);
+        }
+        this.cardStats.set(map);
+      },
+      error: () => this.cardStatsError.set(true),
     });
   }
 

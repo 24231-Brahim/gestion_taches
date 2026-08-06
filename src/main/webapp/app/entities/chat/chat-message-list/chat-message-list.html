@@ -1,0 +1,30 @@
+<div #scrollContainer class="chat-message-scroll" (scroll)="onScroll()">
+  <div class="chat-message-inner">
+    @if (loadingOlder()) {
+      <div class="chat-message-loading">
+        <fa-icon icon="spinner" animation="spin" />
+      </div>
+    } @else if (hasMore()) {
+      <button type="button" class="chat-message-load-more" (click)="loadOlder.emit()">
+        <fa-icon icon="chevron-up" />
+        <span jhiTranslate="chat.messages.loadOlder">Messages précédents</span>
+      </button>
+    }
+
+    @if (messages().length === 0) {
+      <div class="chat-message-empty">
+        <fa-icon icon="comments" />
+        <span jhiTranslate="chat.messages.empty">Aucun message pour l'instant. Commencez la discussion !</span>
+      </div>
+    }
+
+    @for (message of messages(); track trackMessage($index, message)) {
+      <jhi-chat-message
+        [message]="message"
+        [mine]="message.sender?.login === currentUserLogin()"
+        (edit)="edit.emit($event)"
+        (delete)="delete.emit($event)"
+      />
+    }
+  </div>
+</div>

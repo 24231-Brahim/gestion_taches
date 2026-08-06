@@ -141,7 +141,7 @@ class SprintServiceTest {
         activeSprint.setProject(project);
 
         when(sprintRepository.findById(10L)).thenReturn(Optional.of(sprint));
-        when(sprintRepository.findByProjectIdAndStatus(1L, SprintStatus.ACTIVE)).thenReturn(Optional.of(activeSprint));
+        when(sprintRepository.findFirstByProjectIdAndStatusOrderByIdDesc(1L, SprintStatus.ACTIVE)).thenReturn(Optional.of(activeSprint));
 
         assertThatThrownBy(() -> sprintService.startSprint(10L))
             .isInstanceOf(RuntimeException.class)
@@ -270,7 +270,7 @@ class SprintServiceTest {
     }
 
     @Test
-    void recomputeStatus_allTasksDone_marksSprintCompleted() {
+    void recalculateStatus_allTasksDone_marksSprintCompleted() {
         sprint.setStatus(SprintStatus.ACTIVE);
         when(sprintRepository.findById(10L)).thenReturn(Optional.of(sprint));
 
@@ -285,37 +285,38 @@ class SprintServiceTest {
         when(taskRepository.findBySprintId(10L)).thenReturn(List.of(doneTask, cancelledTask));
         when(sprintRepository.save(any(Sprint.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        sprintService.recomputeStatus(10L);
+        sprintService.recalculateStatus(10L);
 
         assertThat(sprint.getStatus()).isEqualTo(SprintStatus.COMPLETED);
         verify(entityEventSseService).sendEvent(any());
     }
 
     @Test
-    void recomputeStatus_noTasks_doesNotCompleteSprint() {
+    void recalculateStatus_noTasks_setsPlanned() {
         sprint.setStatus(SprintStatus.ACTIVE);
         when(sprintRepository.findById(10L)).thenReturn(Optional.of(sprint));
         when(taskRepository.findBySprintId(10L)).thenReturn(List.of());
+        when(sprintRepository.save(any(Sprint.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        sprintService.recomputeStatus(10L);
+        sprintService.recalculateStatus(10L);
 
-        assertThat(sprint.getStatus()).isEqualTo(SprintStatus.ACTIVE);
-        verify(sprintRepository, never()).save(any());
+        assertThat(sprint.getStatus()).isEqualTo(SprintStatus.PLANNED);
+        verify(sprintRepository).save(any());
     }
 
     @Test
-    void recomputeStatus_cancelledSprint_isNotOverwritten() {
+    void recalculateStatus_cancelledSprint_isNotOverwritten() {
         sprint.setStatus(SprintStatus.CANCELLED);
         when(sprintRepository.findById(10L)).thenReturn(Optional.of(sprint));
 
-        sprintService.recomputeStatus(10L);
+        sprintService.recalculateStatus(10L);
 
         assertThat(sprint.getStatus()).isEqualTo(SprintStatus.CANCELLED);
         verify(sprintRepository, never()).save(any());
     }
 
     @Test
-    void recomputeStatus_tasksRemaining_doesNotCompleteSprint() {
+    void recalculateStatus_tasksRemaining_setsPlanned() {
         sprint.setStatus(SprintStatus.ACTIVE);
         when(sprintRepository.findById(10L)).thenReturn(Optional.of(sprint));
 
@@ -328,10 +329,82 @@ class SprintServiceTest {
         todoTask.setStatus(TaskStatus.NEW);
 
         when(taskRepository.findBySprintId(10L)).thenReturn(List.of(doneTask, todoTask));
+        when(sprintRepository.save(any(Sprint.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        sprintService.recomputeStatus(10L);
+        sprintService.recalculateStatus(10L);
+
+        assertThat(sprint.getStatus()).isEqualTo(SprintStatus.PLANNED);
+        verify(sprintRepository).save(any());
+    }
+
+    @Test
+    void recalculateStatus_inProgressTask_marksSprintActive() {
+        sprint.setStatus(SprintStatus.PLANNED);
+        when(sprintRepository.findById(10L)).thenReturn(Optional.of(sprint));
+
+        Task inProgressTask = new Task();
+        inProgressTask.setId(800L);
+        inProgressTask.setStatus(TaskStatus.IN_PROGRESS);
+
+        when(taskRepository.findBySprintId(10L)).thenReturn(List.of(inProgressTask));
+        when(sprintRepository.save(any(Sprint.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        sprintService.recalculateStatus(10L);
 
         assertThat(sprint.getStatus()).isEqualTo(SprintStatus.ACTIVE);
+        verify(sprintRepository).save(any());
+    }
+
+    @Test
+    void recalculateStatus_readyForTestTask_marksSprintActive() {
+        sprint.setStatus(SprintStatus.PLANNED);
+        when(sprintRepository.findById(10L)).thenReturn(Optional.of(sprint));
+
+        Task readyForTestTask = new Task();
+        readyForTestTask.setId(801L);
+        readyForTestTask.setStatus(TaskStatus.READY_FOR_TEST);
+
+        when(taskRepository.findBySprintId(10L)).thenReturn(List.of(readyForTestTask));
+        when(sprintRepository.save(any(Sprint.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        sprintService.recalculateStatus(10L);
+
+        assertThat(sprint.getStatus()).isEqualTo(SprintStatus.ACTIVE);
+        verify(sprintRepository).save(any());
+    }
+
+    @Test
+    void recalculateStatus_completedSprint_isNotDowngradedToPlanned() {
+        sprint.setStatus(SprintStatus.COMPLETED);
+        when(sprintRepository.findById(10L)).thenReturn(Optional.of(sprint));
+
+        Task reopenedTask = new Task();
+        reopenedTask.setId(802L);
+        reopenedTask.setStatus(TaskStatus.NEW);
+
+        when(taskRepository.findBySprintId(10L)).thenReturn(List.of(reopenedTask));
+
+        sprintService.recalculateStatus(10L);
+
+        assertThat(sprint.getStatus()).isEqualTo(SprintStatus.COMPLETED);
         verify(sprintRepository, never()).save(any());
+    }
+
+    @Test
+    void recalculateStatus_completedSprint_returnsToActiveWhenTaskInProgress() {
+        sprint.setStatus(SprintStatus.COMPLETED);
+        when(sprintRepository.findById(10L)).thenReturn(Optional.of(sprint));
+
+        Task reopenedTask = new Task();
+        reopenedTask.setId(803L);
+        reopenedTask.setStatus(TaskStatus.IN_PROGRESS);
+
+        when(taskRepository.findBySprintId(10L)).thenReturn(List.of(reopenedTask));
+        when(sprintRepository.save(any(Sprint.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        sprintService.recalculateStatus(10L);
+
+        assertThat(sprint.getStatus()).isEqualTo(SprintStatus.ACTIVE);
+        verify(sprintRepository).save(any());
     }
 }

@@ -170,7 +170,10 @@ public class SprintService {
             throw new BadRequestAlertException("Only a PLANNED sprint can be started", "sprint", "invalidstatus");
         }
 
-        Optional<Sprint> existingActive = sprintRepository.findByProjectIdAndStatus(sprint.getProject().getId(), SprintStatus.ACTIVE);
+        Optional<Sprint> existingActive = sprintRepository.findFirstByProjectIdAndStatusOrderByIdDesc(
+            sprint.getProject().getId(),
+            SprintStatus.ACTIVE
+        );
         if (existingActive.isPresent() && !existingActive.get().getId().equals(sprintId)) {
             throw new BadRequestAlertException("A project can only have one active sprint at a time", "sprint", "activeexists");
         }
@@ -249,25 +252,39 @@ public class SprintService {
     }
 
     /**
-     * Recompute the status of a sprint based on its tasks.
-     * A sprint with no tasks is never marked COMPLETED, and a COMPLETED or CANCELLED sprint is never overwritten.
+     * Recalculate and update the status of a sprint based on its tasks.
+     * Rule: any task IN_PROGRESS or READY_FOR_TEST → ACTIVE ; all tasks DONE → COMPLETED ;
+     * otherwise (no in-progress task, mix of NEW/TODO, or no task at all) → PLANNED as default.
+     * A manually CANCELLED sprint is never overwritten, and a COMPLETED sprint is never downgraded
+     * back to PLANNED (it may however return to ACTIVE if a task is put back in progress).
      *
      * @param sprintId the id of the sprint.
      */
-    public void recomputeStatus(Long sprintId) {
-        LOG.debug("Request to recompute status of Sprint : {}", sprintId);
-        Sprint sprint = sprintRepository.findById(sprintId).orElse(null);
-        if (sprint == null || sprint.getStatus() == SprintStatus.COMPLETED || sprint.getStatus() == SprintStatus.CANCELLED) {
+    @Transactional
+    public void recalculateStatus(Long sprintId) {
+        LOG.debug("Request to recalculate status of Sprint : {}", sprintId);
+        Sprint sprint = sprintRepository.findById(sprintId).orElseThrow(() -> new RuntimeException("Sprint not found"));
+        if (sprint.getStatus() == SprintStatus.CANCELLED) {
             return;
         }
         List<Task> tasks = taskRepository.findBySprintId(sprintId);
-        if (tasks.isEmpty()) {
-            return;
+        boolean hasInProgress = tasks.stream().anyMatch(t -> isInProgress(t.getStatus()));
+        boolean allDone = !tasks.isEmpty() && tasks.stream().allMatch(t -> t.getStatus() == TaskStatus.DONE);
+
+        SprintStatus newStatus;
+        if (hasInProgress) {
+            newStatus = SprintStatus.ACTIVE;
+        } else if (allDone) {
+            newStatus = SprintStatus.COMPLETED;
+        } else if (sprint.getStatus() == SprintStatus.COMPLETED) {
+            newStatus = SprintStatus.COMPLETED;
+        } else {
+            newStatus = SprintStatus.PLANNED;
         }
-        boolean allDone = tasks.stream().allMatch(t -> t.getStatus() == TaskStatus.DONE);
-        if (allDone) {
-            sprint.setStatus(SprintStatus.COMPLETED);
-            sprintRepository.save(sprint);
+
+        if (newStatus != sprint.getStatus()) {
+            sprint.setStatus(newStatus);
+            sprint = sprintRepository.save(sprint);
             Long projectId = sprint.getProject() != null ? sprint.getProject().getId() : null;
             entityEventSseService.sendEvent(
                 new EntityChangeEvent(EntityEventType.ENTITY_SPRINT, EntityEventType.UPDATED, sprint.getId(), projectId)
@@ -275,9 +292,13 @@ public class SprintService {
         }
     }
 
+    private static boolean isInProgress(TaskStatus status) {
+        return status == TaskStatus.IN_PROGRESS || status == TaskStatus.READY_FOR_TEST;
+    }
+
     private void validateSingleActiveSprint(SprintDTO sprintDTO) {
         if (sprintDTO.getStatus() == SprintStatus.ACTIVE && sprintDTO.getProject() != null && sprintDTO.getProject().getId() != null) {
-            Optional<Sprint> existingActive = sprintRepository.findByProjectIdAndStatus(
+            Optional<Sprint> existingActive = sprintRepository.findFirstByProjectIdAndStatusOrderByIdDesc(
                 sprintDTO.getProject().getId(),
                 SprintStatus.ACTIVE
             );

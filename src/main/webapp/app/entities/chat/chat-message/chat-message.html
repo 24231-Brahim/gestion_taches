@@ -1,0 +1,48 @@
+<div class="chat-msg" [class.mine]="mine()">
+  @if (!mine()) {
+    <span class="chat-msg-avatar">{{ initials(senderLogin()) }}</span>
+  }
+
+  <div class="chat-msg-body">
+    @if (!mine()) {
+      <div class="chat-msg-meta">
+        <span class="chat-msg-author">{{ senderLogin() }}</span>
+        @if (message().createdAt) {
+          <span class="chat-msg-time">{{ message().createdAt | formatMediumDatetime }}</span>
+        }
+      </div>
+    }
+
+    @if (message().deleted) {
+      <div class="chat-msg-deleted" jhiTranslate="chat.message.deleted">Message supprimé</div>
+    } @else if (editing()) {
+      <textarea class="chat-msg-edit" [(ngModel)]="draft" rows="2" (keydown)="onEditKeydown($event)"></textarea>
+      <div class="chat-msg-edit-actions">
+        <button type="button" class="chat-btn" (click)="saveEdit()">
+          <fa-icon icon="check" /> <span jhiTranslate="chat.message.save">Enregistrer</span>
+        </button>
+        <button type="button" class="chat-btn chat-btn-ghost" (click)="cancelEdit()">
+          <span jhiTranslate="chat.message.cancel">Annuler</span>
+        </button>
+      </div>
+    } @else {
+      <div class="chat-msg-content">{{ message().content }}</div>
+      @if (message().editedAt) {
+        <span class="chat-msg-edited" jhiTranslate="chat.message.edited">(modifié)</span>
+      }
+    }
+
+    @if (mine() && !message().deleted) {
+      <div class="chat-msg-actions">
+        @if (!editing()) {
+          <button type="button" class="chat-msg-action" (click)="startEdit()" [title]="'chat.message.edit' | translate">
+            <fa-icon icon="pencil-alt" />
+          </button>
+          <button type="button" class="chat-msg-action" (click)="confirmDelete()" [title]="'chat.message.delete' | translate">
+            <fa-icon icon="trash" />
+          </button>
+        }
+      </div>
+    }
+  </div>
+</div>

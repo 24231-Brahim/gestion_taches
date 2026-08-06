@@ -1,0 +1,21 @@
+<div class="chat-composer">
+  <textarea
+    #input
+    class="chat-composer-input"
+    rows="1"
+    [disabled]="disabled()"
+    [value]="content()"
+    [placeholder]="'chat.composer.placeholder' | translate"
+    (input)="content.set($any($event.target).value); autoResize()"
+    (keydown)="onKeydown($event)"
+  ></textarea>
+  <button type="button" class="chat-composer-send" [disabled]="disabled() || sending() || content().trim() === ''" (click)="submit()">
+    @if (sending()) {
+      <fa-icon icon="spinner" animation="spin" />
+    } @else {
+      <fa-icon icon="paper-plane" />
+    }
+    <span class="chat-composer-send-label" jhiTranslate="chat.composer.send">Envoyer</span>
+  </button>
+</div>
+<div class="chat-composer-hint" jhiTranslate="chat.composer.hint">Entrée pour envoyer, Maj+Entrée pour un saut de ligne</div>

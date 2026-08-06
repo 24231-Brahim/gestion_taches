@@ -10,7 +10,8 @@
         "emptyTitle": "No projects yet",
         "emptyText": "Create your first project to start organizing sprints, epics and tasks.",
         "scopeMine": "My projects",
-        "scopeAll": "All projects"
+        "scopeAll": "All projects",
+        "statsLoadFailed": "Failed to load project progress."
       },
       "card": {
         "noDescription": "No description yet.",

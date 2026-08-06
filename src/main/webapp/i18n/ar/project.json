@@ -6,7 +6,8 @@
         "refreshListLabel": "تحديث القائمة",
         "createLabel": "إنشاء مشروع جديد",
         "createOrEditLabel": "إنشاء أو تعديل مشروع",
-        "notFound": "لم يتم العثور على مشاريع"
+        "notFound": "لم يتم العثور على مشاريع",
+        "statsLoadFailed": "تعذر تحميل تقدم المشاريع."
       },
       "created": "تم إنشاء مشروع جديد بالمعرف {{ param }}",
       "updated": "تم تحديث المشروع بالمعرف {{ param }}",
