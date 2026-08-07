@@ -94,9 +94,10 @@ export class ProjectDetail {
     if (!account) {
       return null;
     }
-    // Matches the backend's ProjectPermissionService.hasGlobalProjectAccess(): ADMIN and
-    // PROJET_MANAGER get an implicit OWNER-equivalent bypass, independent of project membership.
-    if (account.authorities.includes('ROLE_ADMIN') || account.authorities.includes('ROLE_PROJET_MANAGER')) {
+    // Matches the backend's ProjectPermissionService.hasGlobalProjectAccess(): only ADMIN gets an
+    // implicit OWNER-equivalent bypass. PROJET_MANAGER and every other role are scoped to the
+    // project role they actually hold as a ProjectMember.
+    if (account.authorities.includes('ROLE_ADMIN')) {
       return ProjectRole.OWNER;
     }
     const member = this.members().find(m => m.userLogin === account.login);
@@ -117,7 +118,7 @@ export class ProjectDetail {
 
   readonly isAdminNotExplicitMember = computed(() => {
     const account = this.accountService.account();
-    if (!account?.authorities?.includes('ROLE_ADMIN') && !account?.authorities?.includes('ROLE_PROJET_MANAGER')) {
+    if (!account?.authorities?.includes('ROLE_ADMIN')) {
       return false;
     }
     return !this.members().some(m => m.userLogin === account.login);

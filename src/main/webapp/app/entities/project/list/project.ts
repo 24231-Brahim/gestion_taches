@@ -114,8 +114,9 @@ export class Project implements OnInit {
   }
 
   load(): void {
+    // queryBackend() sets projectsParams, which already triggers the httpResource reload.
+    // Calling refresh() here would fire a second, redundant GET on every page load.
     this.queryBackend();
-    this.projectService.refresh();
   }
 
   setScope(scope: ProjectScope): void {
@@ -126,8 +127,11 @@ export class Project implements OnInit {
     this.load();
   }
 
+  // Only ADMIN has implicit global access. PROJET_MANAGER and every other role are scoped to the
+  // projects they belong to, with the role held on each project (matches the backend's
+  // ProjectPermissionService.hasGlobalProjectAccess()).
   canManage(project: IProject): boolean {
-    if (this.isAdmin() || this.isProjectManager()) {
+    if (this.isAdmin()) {
       return true;
     }
     const role = this.userProjectRoles().get(project.id);
@@ -137,7 +141,7 @@ export class Project implements OnInit {
   // Deletion is stricter than edit: OWNER only (matches
   // ProjectService.delete()'s requireProjectRole(id, ProjectRole.OWNER)).
   canDelete(project: IProject): boolean {
-    if (this.isAdmin() || this.isProjectManager()) {
+    if (this.isAdmin()) {
       return true;
     }
     return this.userProjectRoles().get(project.id) === ProjectRole.OWNER;

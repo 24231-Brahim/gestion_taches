@@ -235,7 +235,7 @@ public class ProjectService {
         for (ProjectMember member : members) {
             User recipient = member.getUser();
             if (currentLogin == null || !currentLogin.equals(recipient.getLogin())) {
-                notificationService.createNotification(recipient, message, "Projet: " + project.getName(), null);
+                notificationService.createNotification(recipient, message, "Projet: " + project.getKey(), null);
             }
         }
 
@@ -269,7 +269,7 @@ public class ProjectService {
             notificationService.createNotification(
                 user,
                 "Vous avez été ajouté au projet " + project.getName(),
-                "Projet: " + project.getName(),
+                "Projet: " + project.getKey(),
                 null
             );
         }
