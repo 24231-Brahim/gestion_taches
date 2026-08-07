@@ -2,7 +2,7 @@ import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -52,6 +52,11 @@ export class TaskUpdate implements OnInit {
   protected alertService = inject(AlertService);
   protected translateService = inject(TranslateService);
   protected destroyRef = inject(DestroyRef);
+  protected router = inject(Router);
+
+  private hasContextQueryParams = false;
+  private contextSprintId: number | null = null;
+  private contextEpicId: number | null = null;
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: TaskFormGroup = this.taskFormService.createTaskFormGroup();
@@ -85,6 +90,13 @@ export class TaskUpdate implements OnInit {
   }
 
   ngOnInit(): void {
+    const query = this.activatedRoute.snapshot.queryParamMap;
+    const sprintId = query.get('sprintId');
+    const epicId = query.get('epicId');
+    this.hasContextQueryParams = sprintId !== null || epicId !== null;
+    this.contextSprintId = sprintId ? Number(sprintId) : null;
+    this.contextEpicId = epicId ? Number(epicId) : null;
+
     this.activatedRoute.data.subscribe(({ task }) => {
       this.task = task;
       if (task) {
@@ -97,23 +109,32 @@ export class TaskUpdate implements OnInit {
         }
       }
 
-      this.loadRelationshipsOptions();
-    });
-
-    // Pre-select project from parent route :key param (e.g. when coming from project-detail)
-    this.activatedRoute.parent?.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
-      const projectKey = params.get('key');
-      if (projectKey && !this.task) {
-        this.projectService.findByKey(projectKey).subscribe(project => {
-          if (project) {
-            this.editForm.patchValue({ project });
-            this.loadProjectMembers(project.id!);
-            this.loadProjectScopedOptions(project.id!);
-            this.isProjectContext.set(true);
-          }
-        });
+      if (!this.hasContextQueryParams) {
+        this.loadRelationshipsOptions();
       }
     });
+
+    // When arriving with sprintId/epicId query params (from Sprint/Epic detail pages), pre-select
+    // the Sprint/Epic (and the project) after the project context has been resolved, so that the
+    // project valueChanges handler (which clears sprint/epic) does not wipe the pre-selection.
+    if (this.hasContextQueryParams) {
+      this.applyQueryParamSelections();
+    } else {
+      // Pre-select project from parent route :key param (e.g. when coming from project-detail)
+      this.activatedRoute.parent?.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+        const projectKey = params.get('key');
+        if (projectKey && !this.task) {
+          this.projectService.findByKey(projectKey).subscribe(project => {
+            if (project) {
+              this.editForm.patchValue({ project });
+              this.loadProjectMembers(project.id!);
+              this.loadProjectScopedOptions(project.id!);
+              this.isProjectContext.set(true);
+            }
+          });
+        }
+      });
+    }
 
     // Watch for project changes to load members and filter sprints/epics
     this.editForm
@@ -162,6 +183,20 @@ export class TaskUpdate implements OnInit {
 
   protected onSaveSuccess(): void {
     this.taskService.refresh();
+    if (this.hasContextQueryParams) {
+      const sprint = this.editForm.get('sprint')?.value as ISprint | null;
+      const epic = this.editForm.get('epic')?.value as IEpic | null;
+      const project = this.editForm.get('project')?.value as IProject | null;
+      const projectKey = project?.key;
+      if (sprint?.id && projectKey) {
+        this.router.navigate(['/project', projectKey, 'sprint', sprint.id, 'view']);
+        return;
+      }
+      if (epic?.id && projectKey) {
+        this.router.navigate(['/project', projectKey, 'epic', epic.id, 'view']);
+        return;
+      }
+    }
     this.previousState();
   }
 
@@ -208,5 +243,61 @@ export class TaskUpdate implements OnInit {
           this.loadProjectMembers(projectId);
         }
       });
+  }
+
+  /**
+   * Applies the sprintId/projectId/epicId query params in creation mode: the project is patched
+   * first (its valueChanges handler clears sprint/epic), then the linked Sprint/Epic are loaded and
+   * pre-selected. The fields stay fully editable afterwards.
+   */
+  private applyQueryParamSelections(): void {
+    if (this.task) {
+      return;
+    }
+    const parentKey = this.activatedRoute.parent?.snapshot.paramMap.get('key') ?? null;
+    const projectId = this.activatedRoute.snapshot.queryParamMap.get('projectId');
+
+    const resolveProject = (project: IProject | null): void => {
+      if (this.task) {
+        return;
+      }
+      if (project) {
+        this.editForm.patchValue({ project });
+        this.projectsSharedCollection.update(projects => this.projectService.addProjectToCollectionIfMissing(projects, project));
+        this.loadProjectMembers(project.id);
+        this.loadProjectScopedOptions(project.id);
+        this.isProjectContext.set(true);
+      }
+      this.preSelectSprint();
+      this.preSelectEpic();
+    };
+
+    if (parentKey) {
+      this.projectService.findByKey(parentKey).subscribe(project => resolveProject(project));
+    } else if (projectId) {
+      this.projectService.find(Number(projectId)).subscribe(project => resolveProject(project));
+    } else {
+      resolveProject(null);
+    }
+  }
+
+  private preSelectSprint(): void {
+    if (this.task || this.contextSprintId === null) {
+      return;
+    }
+    this.sprintService.find(this.contextSprintId).subscribe(sprint => {
+      this.sprintsSharedCollection.update(sprints => this.sprintService.addSprintToCollectionIfMissing(sprints, sprint));
+      this.editForm.patchValue({ sprint });
+    });
+  }
+
+  private preSelectEpic(): void {
+    if (this.task || this.contextEpicId === null) {
+      return;
+    }
+    this.epicService.find(this.contextEpicId).subscribe(epic => {
+      this.epicsSharedCollection.update(epics => this.epicService.addEpicToCollectionIfMissing(epics, epic));
+      this.editForm.patchValue({ epic });
+    });
   }
 }

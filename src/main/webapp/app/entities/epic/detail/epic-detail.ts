@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import dayjs from 'dayjs/esm';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -318,6 +318,7 @@ export class EpicDetail {
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly accountService = inject(AccountService);
   protected readonly epicService = inject(EpicService);
+  protected readonly router = inject(Router);
 
   private epicSyncEffect = effect(() => {
     this.currentEpic.set(this.epic());
@@ -450,6 +451,19 @@ export class EpicDetail {
 
   setTab(tab: Tab): void {
     this.activeTab.set(tab);
+  }
+
+  openCreateTaskModal(): void {
+    const ep = this.currentEpic();
+    if (!ep) {
+      return;
+    }
+    this.router.navigate(['/project', this.currentProjectKey(), 'task', 'new'], {
+      queryParams: {
+        epicId: ep.id,
+        projectId: ep.project?.id,
+      },
+    });
   }
 
   previousState(): void {

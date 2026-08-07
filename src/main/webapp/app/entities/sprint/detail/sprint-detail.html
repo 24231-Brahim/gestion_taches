@@ -20,6 +20,11 @@
       </div>
       <div class="sprint-header-actions">
         @if (canManageSprints()) {
+          <button class="btn btn-primary btn-sm" (click)="openCreateTaskModal()">
+            <fa-icon icon="plus" /> {{ 'gestionTachesApp.task.home.createLabel' | translate }}
+          </button>
+        }
+        @if (canManageSprints()) {
           <a [routerLink]="['/project', projectKey(), 'sprint', sp.id, 'edit']" class="btn btn-outline-primary btn-sm">
             <fa-icon icon="pencil" /> {{ 'entity.action.edit' | translate }}
           </a>
@@ -101,11 +106,6 @@
       @case ('tasks') {
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h5 class="mb-0">{{ 'gestionTachesApp.sprint.tasks.title' | translate }}</h5>
-          @if (canManageSprints()) {
-            <button class="btn btn-primary btn-sm" (click)="openCreateTaskModal()">
-              <fa-icon icon="plus" /> {{ 'gestionTachesApp.task.home.createLabel' | translate }}
-            </button>
-          }
         </div>
         @if (tasks().length === 0) {
           <div class="alert alert-warning">

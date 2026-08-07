@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vitest } from 'vitest';
 import { HttpResponse } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, ActivatedRouteSnapshot, Router, convertToParamMap, provideRouter } from '@angular/router';
 
 import { TranslateModule } from '@ngx-translate/core';
 import { Subject, from, of } from 'rxjs';
@@ -28,16 +28,21 @@ describe('Task Management Update Component', () => {
   let sprintService: SprintService;
   let epicService: EpicService;
   let projectService: ProjectService;
+  let router: Router;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot()],
       providers: [
         provideHttpClientTesting(),
+        provideRouter([]),
         {
           provide: ActivatedRoute,
           useValue: {
             params: from([{}]),
+            snapshot: {
+              queryParamMap: convertToParamMap({}),
+            },
           },
         },
       ],
@@ -50,6 +55,7 @@ describe('Task Management Update Component', () => {
     sprintService = TestBed.inject(SprintService);
     epicService = TestBed.inject(EpicService);
     projectService = TestBed.inject(ProjectService);
+    router = TestBed.inject(Router);
 
     comp = fixture.componentInstance;
   });
@@ -199,6 +205,130 @@ describe('Task Management Update Component', () => {
       // THEN
       expect(taskService.update).toHaveBeenCalled();
       expect(comp.isSaving()).toEqual(false);
+    });
+  });
+
+  describe('query param pre-selection', () => {
+    const project: IProject = { id: 10300, key: 'KEY', name: 'Proj' };
+    const sprint: ISprint = { id: 19154, name: 'Sprint 1' };
+    const epic: IEpic = { id: 5106, title: 'Epic 1' };
+
+    beforeEach(() => {
+      activatedRoute.snapshot = {
+        queryParamMap: convertToParamMap({
+          sprintId: '19154',
+          epicId: '5106',
+          projectId: '10300',
+        }),
+      } as unknown as ActivatedRouteSnapshot;
+      activatedRoute.data = of({ task: null });
+      vitest.spyOn(projectService, 'find').mockReturnValue(of(project));
+      vitest.spyOn(sprintService, 'find').mockReturnValue(of(sprint));
+      vitest.spyOn(epicService, 'find').mockReturnValue(of(epic));
+      vitest.spyOn(projectService, 'getMembers').mockReturnValue(of([]));
+      vitest.spyOn(sprintService, 'query').mockReturnValue(of(new HttpResponse({ body: [] })));
+      vitest.spyOn(epicService, 'query').mockReturnValue(of(new HttpResponse({ body: [] })));
+    });
+
+    it('should pre-select project, sprint and epic in creation mode', () => {
+      comp.ngOnInit();
+
+      expect(comp.editForm.get('project')?.value).toEqual(project);
+      expect(comp.editForm.get('sprint')?.value).toEqual(sprint);
+      expect(comp.editForm.get('epic')?.value).toEqual(epic);
+    });
+
+    it('should keep pre-selected fields editable', () => {
+      comp.ngOnInit();
+
+      comp.editForm.patchValue({ sprint: { id: 999, name: 'Autre sprint' }, epic: null });
+
+      expect(comp.editForm.get('sprint')?.value).toEqual({ id: 999, name: 'Autre sprint' });
+      expect(comp.editForm.get('epic')?.value).toBeNull();
+    });
+  });
+
+  describe('redirect after save with query params', () => {
+    it('should navigate to the finally selected sprint detail page', () => {
+      const saveSubject = new Subject<ITask>();
+      const navigateSpy = vitest.spyOn(router, 'navigate').mockResolvedValue(true);
+      activatedRoute.snapshot = {
+        queryParamMap: convertToParamMap({
+          sprintId: '19154',
+          projectId: '10300',
+        }),
+      } as unknown as ActivatedRouteSnapshot;
+      activatedRoute.data = of({ task: null });
+      vitest.spyOn(projectService, 'find').mockReturnValue(of({ id: 10300, key: 'KEY', name: 'Proj' }));
+      vitest.spyOn(sprintService, 'find').mockReturnValue(of({ id: 19154, name: 'Sprint 1' }));
+      vitest.spyOn(projectService, 'getMembers').mockReturnValue(of([]));
+      vitest.spyOn(sprintService, 'query').mockReturnValue(of(new HttpResponse({ body: [] })));
+      vitest.spyOn(epicService, 'query').mockReturnValue(of(new HttpResponse({ body: [] })));
+      vitest.spyOn(taskFormService, 'getTask').mockReturnValue({ id: null });
+      vitest.spyOn(taskService, 'createForProject').mockReturnValue(saveSubject);
+
+      comp.ngOnInit();
+      comp.save();
+      saveSubject.next({ id: 6256 });
+      saveSubject.complete();
+
+      expect(navigateSpy).toHaveBeenCalledWith(['/project', 'KEY', 'sprint', 19154, 'view']);
+    });
+
+    it('should navigate to the finally selected epic detail page when the sprint was cleared', () => {
+      const saveSubject = new Subject<ITask>();
+      const navigateSpy = vitest.spyOn(router, 'navigate').mockResolvedValue(true);
+      activatedRoute.snapshot = {
+        queryParamMap: convertToParamMap({
+          sprintId: '19154',
+          projectId: '10300',
+        }),
+      } as unknown as ActivatedRouteSnapshot;
+      activatedRoute.data = of({ task: null });
+      vitest.spyOn(projectService, 'find').mockReturnValue(of({ id: 10300, key: 'KEY', name: 'Proj' }));
+      vitest.spyOn(sprintService, 'find').mockReturnValue(of({ id: 19154, name: 'Sprint 1' }));
+      vitest.spyOn(projectService, 'getMembers').mockReturnValue(of([]));
+      vitest.spyOn(sprintService, 'query').mockReturnValue(of(new HttpResponse({ body: [] })));
+      vitest.spyOn(epicService, 'query').mockReturnValue(of(new HttpResponse({ body: [] })));
+      vitest.spyOn(taskFormService, 'getTask').mockReturnValue({ id: null });
+      vitest.spyOn(taskService, 'createForProject').mockReturnValue(saveSubject);
+
+      comp.ngOnInit();
+      comp.editForm.patchValue({ sprint: null, epic: { id: 5106, title: 'Epic choisi' } });
+      comp.save();
+      saveSubject.next({ id: 6256 });
+      saveSubject.complete();
+
+      expect(navigateSpy).toHaveBeenCalledWith(['/project', 'KEY', 'epic', 5106, 'view']);
+    });
+
+    it('should keep the classic previousState navigation when no sprint/epic is selected', () => {
+      const saveSubject = new Subject<ITask>();
+      const navigateSpy = vitest.spyOn(router, 'navigate');
+      const backSpy = vitest.spyOn(globalThis.history, 'back');
+      activatedRoute.snapshot = {
+        queryParamMap: convertToParamMap({
+          sprintId: '19154',
+          projectId: '10300',
+        }),
+      } as unknown as ActivatedRouteSnapshot;
+      activatedRoute.data = of({ task: null });
+      vitest.spyOn(projectService, 'find').mockReturnValue(of({ id: 10300, key: 'KEY', name: 'Proj' }));
+      vitest.spyOn(sprintService, 'find').mockReturnValue(of({ id: 19154, name: 'Sprint 1' }));
+      vitest.spyOn(projectService, 'getMembers').mockReturnValue(of([]));
+      vitest.spyOn(sprintService, 'query').mockReturnValue(of(new HttpResponse({ body: [] })));
+      vitest.spyOn(epicService, 'query').mockReturnValue(of(new HttpResponse({ body: [] })));
+      vitest.spyOn(taskFormService, 'getTask').mockReturnValue({ id: null });
+      vitest.spyOn(taskService, 'createForProject').mockReturnValue(saveSubject);
+
+      comp.ngOnInit();
+      comp.editForm.patchValue({ sprint: null, epic: null });
+      comp.save();
+      saveSubject.next({ id: 6256 });
+      saveSubject.complete();
+
+      expect(navigateSpy).not.toHaveBeenCalled();
+      expect(backSpy).toHaveBeenCalled();
     });
   });
 

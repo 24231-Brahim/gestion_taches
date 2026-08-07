@@ -338,7 +338,16 @@ export class SprintDetail {
   }
 
   openCreateTaskModal(): void {
-    this.router.navigate(['/project', this.projectKey(), 'task', 'new']);
+    const sp = this._currentSprint();
+    if (!sp) {
+      return;
+    }
+    this.router.navigate(['/project', this.projectKey(), 'task', 'new'], {
+      queryParams: {
+        sprintId: sp.id,
+        projectId: sp.project?.id,
+      },
+    });
   }
 
   openEditTaskModal(task: ITask): void {
