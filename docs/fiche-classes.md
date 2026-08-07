@@ -88,13 +88,6 @@ classDiagram
         +Instant createdAt
     }
 
-    class TaskTransition {
-        +String fromStatus
-        +String toStatus
-        +Long timeSpentInSeconds
-        +Instant createdAt
-    }
-
     class Notification {
         +String message
         +String taskTitle
@@ -155,13 +148,11 @@ classDiagram
     Task "1" --> "*" Comment : reçoit
     Task "1" --> "*" Attachment : contient
     Task "1" --> "*" TaskHistory : trace
-    Task "1" --> "*" TaskTransition : trace
     Task "1" --> "*" Notification : déclenche
     User "1" --> "*" Task : assigné (assignee)
     User "1" --> "*" Task : crée (createdBy)
     User "1" --> "*" Comment : écrit (author)
     User "1" --> "*" TaskHistory : effectue
-    User "1" --> "*" TaskTransition : effectue
     User "1" --> "*" Notification : reçoit
     User "1" --> "*" UserAuthority : possède
     Authority "1" --> "*" UserAuthority : associé à
@@ -486,20 +477,6 @@ Trace d'audit détaillant chaque modification d'une tâche. Enregistre l'action 
 | `task_id` | `bigint` | FK → `task(id)`, NOT NULL |
 | `user_id` | `bigint` | FK → `jhi_user(id)`, NOT NULL |
 
-### `task_transition`
-
-Trace chaque changement de statut d'une tâche (`fromStatus` → `toStatus`), avec le temps passé dans le statut précédent et l'utilisateur à l'origine du changement.
-
-| Colonne | Type | Contraintes |
-|---------|------|-------------|
-| `id` | `bigint` | PRIMARY KEY |
-| `from_status` | `varchar(50)` | |
-| `to_status` | `varchar(50)` | NOT NULL |
-| `time_spent_in_seconds` | `bigint` | |
-| `created_at` | `datetime` | NOT NULL |
-| `task_id` | `bigint` | FK → `task(id)`, NOT NULL |
-| `user_id` | `bigint` | FK → `jhi_user(id)` |
-
 ### `notification`
 
 Notification in-app pour informer un utilisateur (ex: assignation à une tâche). Contient un message, une référence vers la tâche et un statut de lecture.
@@ -532,16 +509,15 @@ Notification in-app pour informer un utilisateur (ex: assignation à une tâche)
 
 | Table | Dépend de | Est utilisé par |
 |-------|-----------|-----------------|
-| jhi_user | — | Project (owner), ProjectMember, Task (assignee, createdBy), Comment (author), TaskHistory (user), TaskTransition (user), Notification (user) |
+| jhi_user | — | Project (owner), ProjectMember, Task (assignee, createdBy), Comment (author), TaskHistory (user), Notification (user) |
 | jhi_authority | — | jhi_user_authority |
 | jhi_user_authority | jhi_user, jhi_authority | — |
 | project | jhi_user (owner) | Sprint, Epic, Task, ProjectMember |
 | project_member | project, jhi_user | — |
 | sprint | project | Task |
 | epic | project | Task |
-| task | project, sprint, epic, jhi_user (assignee, createdBy) | Comment, Attachment, TaskHistory, TaskTransition, Notification |
+| task | project, sprint, epic, jhi_user (assignee, createdBy) | Comment, Attachment, TaskHistory, Notification |
 | comment | task, jhi_user (author) | — |
 | attachment | task | — |
 | task_history | task, jhi_user (user) | — |
-| task_transition | task, jhi_user (user) | — |
 | notification | task, jhi_user (user) | — |

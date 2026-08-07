@@ -52,7 +52,7 @@ public class ChatMessage implements Serializable {
      * Message this one replies to (threads). Architecture only — not wired to the UI yet.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = { "conversation", "sender", "parentMessage", "reactions", "attachments" }, allowSetters = true)
+    @JsonIgnoreProperties(value = { "conversation", "sender", "parentMessage" }, allowSetters = true)
     private ChatMessage parentMessage;
 
     @NotNull
@@ -74,16 +74,6 @@ public class ChatMessage implements Serializable {
     @CollectionTable(name = "chat_message_mentions", joinColumns = @JoinColumn(name = "message_id"))
     @Column(name = "user_id")
     private Set<Long> mentions = new HashSet<>();
-
-    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "message" }, allowSetters = true)
-    private Set<MessageReaction> reactions = new HashSet<>();
-
-    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-    @JsonIgnoreProperties(value = { "message" }, allowSetters = true)
-    private Set<ChatAttachment> attachments = new HashSet<>();
 
     public Long getId() {
         return this.id;
@@ -200,34 +190,6 @@ public class ChatMessage implements Serializable {
     public ChatMessage mentions(Set<Long> mentions) {
         this.setMentions(mentions);
         return this;
-    }
-
-    public Set<MessageReaction> getReactions() {
-        return this.reactions;
-    }
-
-    public void setReactions(Set<MessageReaction> messageReactions) {
-        if (this.reactions != null) {
-            this.reactions.forEach(i -> i.setMessage(null));
-        }
-        if (messageReactions != null) {
-            messageReactions.forEach(i -> i.setMessage(this));
-        }
-        this.reactions = messageReactions;
-    }
-
-    public Set<ChatAttachment> getAttachments() {
-        return this.attachments;
-    }
-
-    public void setAttachments(Set<ChatAttachment> chatAttachments) {
-        if (this.attachments != null) {
-            this.attachments.forEach(i -> i.setMessage(null));
-        }
-        if (chatAttachments != null) {
-            chatAttachments.forEach(i -> i.setMessage(this));
-        }
-        this.attachments = chatAttachments;
     }
 
     @Override

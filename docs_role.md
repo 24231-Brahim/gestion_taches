@@ -826,7 +826,7 @@ Projet
         ├── Assigné à → Utilisateur
         ├── Commentaires (Comment) ──→ Auteur (Utilisateur)
         ├── Pièces jointes (Attachment)
-        └── Historique (TaskHistory / TaskTransition)
+        └── Historique (TaskHistory)
 ```
 
 ### Statuts des entités

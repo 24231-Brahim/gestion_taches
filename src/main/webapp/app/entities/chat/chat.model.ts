@@ -45,26 +45,6 @@ export interface IUserPresence {
   lastActiveAt?: dayjs.Dayjs | null;
 }
 
-export interface IMessageReaction {
-  id: number | null;
-  emoji?: string | null;
-  messageId?: number | null;
-  userId?: number | null;
-  userLogin?: string | null;
-  createdAt?: dayjs.Dayjs | null;
-}
-
-export interface IChatAttachment {
-  id: number | null;
-  messageId?: number | null;
-  fileName?: string | null;
-  fileType?: string | null;
-  fileSize?: number | null;
-  filePath?: string | null;
-  uploadedByLogin?: string | null;
-  uploadedAt?: dayjs.Dayjs | null;
-}
-
 export interface IChatMessage {
   id: number;
   content: string;
@@ -75,6 +55,4 @@ export interface IChatMessage {
   sender?: IChatUser | null;
   parentMessageId?: number | null;
   mentions?: Set<number> | null;
-  reactions?: IMessageReaction[] | null;
-  attachments?: IChatAttachment[] | null;
 }

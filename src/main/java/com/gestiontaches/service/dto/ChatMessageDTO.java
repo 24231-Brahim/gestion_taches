@@ -3,9 +3,7 @@ package com.gestiontaches.service.dto;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -36,12 +34,6 @@ public class ChatMessageDTO implements Serializable {
 
     /** User ids mentioned in the content (mention notifications — architecture). */
     private Set<Long> mentions = new HashSet<>();
-
-    /** Reactions (architecture only, not wired to endpoints yet). */
-    private List<MessageReactionDTO> reactions = new ArrayList<>();
-
-    /** Attachments (architecture only, not wired to upload yet). */
-    private List<ChatAttachmentDTO> attachments = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -113,22 +105,6 @@ public class ChatMessageDTO implements Serializable {
 
     public void setMentions(Set<Long> mentions) {
         this.mentions = mentions;
-    }
-
-    public List<MessageReactionDTO> getReactions() {
-        return reactions;
-    }
-
-    public void setReactions(List<MessageReactionDTO> reactions) {
-        this.reactions = reactions;
-    }
-
-    public List<ChatAttachmentDTO> getAttachments() {
-        return attachments;
-    }
-
-    public void setAttachments(List<ChatAttachmentDTO> attachments) {
-        this.attachments = attachments;
     }
 
     @Override

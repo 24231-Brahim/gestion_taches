@@ -77,13 +77,6 @@ entity TaskHistory {
   createdAt Instant required
 }
 
-entity TaskTransition {
-  fromStatus String maxlength(50),
-  toStatus String required maxlength(50),
-  timeSpentInSeconds Long,
-  createdAt Instant required
-}
-
 // =========================================================
 // Enumérations
 // =========================================================
@@ -120,7 +113,6 @@ relationship ManyToOne {
   Task{createdBy} to User
   Comment{author} to User
   TaskHistory{user} to User
-  TaskTransition{user} to User
 }
 
 // =========================================================
@@ -138,14 +130,13 @@ relationship OneToMany {
   Task{attachment} to Attachment{task}
   Task{notification} to Notification{task}
   Task{history} to TaskHistory{task required}
-  Task{transition} to TaskTransition{task required}
 }
 
 // ─────────────────────────────────────────────
 //  OPTIONS
 // ─────────────────────────────────────────────
 
-paginate Project, Sprint, Epic, Task, Comment, Attachment, Notification, TaskHistory, TaskTransition with pagination
+paginate Project, Sprint, Epic, Task, Comment, Attachment, Notification, TaskHistory with pagination
 dto Project, Sprint, Epic, Task with mapstruct
-service Project, ProjectMember, Sprint, Epic, Task, Comment, Attachment, Notification, TaskHistory, TaskTransition with serviceImpl
+service Project, ProjectMember, Sprint, Epic, Task, Comment, Attachment, Notification, TaskHistory with serviceImpl
 filter Project, Sprint, Epic, Task
