@@ -12,17 +12,22 @@ Système de gestion de projet (type Jira) généré avec **JHipster 9.1.0**.
 
 ### Entités
 
-| Entité            | Description                                               |
-| ----------------- | --------------------------------------------------------- |
-| **Project**       | Projet racine contenant sprints, epics et tasks           |
-| **Sprint**        | Itération de développement                                |
-| **Epic**          | Fonctionnalité transverse                                 |
-| **Task**          | Unité de travail (Story, Bug, Task, Subtask, Improvement) |
-| **Comment**       | Commentaire sur une tâche (avec auteur)                   |
-| **Attachment**    | Fichier joint à une tâche                                 |
-| **TaskHistory**   | Audit des modifications d'une tâche                       |
-| **Notification**  | Notification in-app (assignation, rappel)                 |
-| **ProjectMember** | Membre d'un projet avec rôle (OWNER/MANAGER/MEMBER)       |
+| Entité                 | Description                                                 |
+| ---------------------- | ----------------------------------------------------------- |
+| **Project**            | Projet racine contenant sprints, epics et tasks             |
+| **Sprint**             | Itération de développement                                  |
+| **Epic**               | Fonctionnalité transverse                                   |
+| **Task**               | Unité de travail (Story, Bug, Task, Subtask, Improvement)   |
+| **Comment**            | Commentaire sur une tâche (avec auteur)                     |
+| **Attachment**         | Fichier joint à une tâche (avec uploader)                   |
+| **TaskHistory**        | Audit des modifications d'une tâche                         |
+| **Notification**       | Notification in-app (assignation, rappel)                   |
+| **ProjectMember**      | Membre d'un projet avec rôle (OWNER/MANAGER/MEMBER)         |
+| **GroupMessage**       | Message de messagerie de groupe lié à un projet             |
+| **Conversation**       | Conversation de chat (canal GENERAL ou DIRECT)              |
+| **ConversationMember** | Membre d'une conversation (horodatage de dernière lecture)  |
+| **ChatMessage**        | Message d'une conversation (threads, mentions, soft-delete) |
+| **UserPresence**       | Présence en ligne d'un utilisateur pour le chat             |
 
 Documentation et aide : [https://www.jhipster.tech/documentation-archive/v9.1.0](https://www.jhipster.tech/documentation-archive/v9.1.0).
 
@@ -34,6 +39,7 @@ gestion_taches/
 │   ├── Attachment.json
 │   ├── Comment.json
 │   ├── Epic.json
+│   ├── GroupMessage.json
 │   ├── Project.json
 │   └── Sprint.json
 ├── src/
@@ -43,22 +49,25 @@ gestion_taches/
 │   │   │   └── com/gestiontaches/
 │   │   │       ├── aop/        # Aspects (logging)
 │   │   │       ├── config/     # Configuration Spring
-│   │   │       ├── domain/     # Entités JPA
+│   │   │       ├── domain/     # Entités JPA (dont chat : Conversation, ChatMessage, ...)
+│   │   │       │   └── enumeration/  # Enums (TaskStatus, Priority, ConversationType, ...)
 │   │   │       ├── management/ # Monitoring (actuator)
 │   │   │       ├── repository/ # Accès aux données
 │   │   │       ├── security/   # Authentification JWT
-│   │   │       ├── service/    # Logique métier
-│   │   │       └── web/        # Contrôleurs REST
+│   │   │       ├── service/    # Logique métier (dont ChatService, NotificationService)
+│   │   │       └── web/        # Contrôleurs REST (dont ChatResource)
 │   │   ├── resources/          # Config YAML, i18n, données SQL
 │   │   └── webapp/app/         # Frontend Angular
 │   │       ├── account/        # Gestion de compte
 │   │       ├── admin/          # Administration
 │   │       ├── config/         # Configuration Angular
 │   │       ├── core/           # Services centraux
-│   │       ├── entities/       # CRUD générés
+│   │       ├── entities/       # CRUD générés (task, project, sprint, chat, ...)
 │   │       ├── home/           # Page d'accueil
-│   │       ├── layouts/        # Navbar, footer
+│   │       ├── layouts/        # Navbar, sidebar, footer
 │   │       ├── login/          # Connexion
+│   │       ├── my-tasks/       # Mes tâches (assignées)
+│   │       ├── notifications/  # Notifications in-app
 │   │       └── shared/         # Composants réutilisables
 │   └── test/
 │       ├── java/               # Tests Java (JUnit)
