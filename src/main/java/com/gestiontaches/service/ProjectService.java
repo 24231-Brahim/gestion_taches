@@ -5,9 +5,17 @@ import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.domain.enumeration.SprintStatus;
+import com.gestiontaches.repository.AttachmentRepository;
+import com.gestiontaches.repository.ChatMessageRepository;
+import com.gestiontaches.repository.CommentRepository;
+import com.gestiontaches.repository.ConversationMemberRepository;
+import com.gestiontaches.repository.ConversationRepository;
+import com.gestiontaches.repository.EpicRepository;
+import com.gestiontaches.repository.NotificationRepository;
 import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.repository.SprintRepository;
+import com.gestiontaches.repository.TaskHistoryRepository;
 import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.SecurityUtils;
@@ -55,6 +63,22 @@ public class ProjectService {
 
     private final SprintRepository sprintRepository;
 
+    private final EpicRepository epicRepository;
+
+    private final CommentRepository commentRepository;
+
+    private final AttachmentRepository attachmentRepository;
+
+    private final TaskHistoryRepository taskHistoryRepository;
+
+    private final NotificationRepository notificationRepository;
+
+    private final ConversationRepository conversationRepository;
+
+    private final ConversationMemberRepository conversationMemberRepository;
+
+    private final ChatMessageRepository chatMessageRepository;
+
     private final NotificationService notificationService;
 
     public ProjectService(
@@ -66,6 +90,14 @@ public class ProjectService {
         ProjectPermissionService projectPermissionService,
         TaskRepository taskRepository,
         SprintRepository sprintRepository,
+        EpicRepository epicRepository,
+        CommentRepository commentRepository,
+        AttachmentRepository attachmentRepository,
+        TaskHistoryRepository taskHistoryRepository,
+        NotificationRepository notificationRepository,
+        ConversationRepository conversationRepository,
+        ConversationMemberRepository conversationMemberRepository,
+        ChatMessageRepository chatMessageRepository,
         NotificationService notificationService
     ) {
         this.projectRepository = projectRepository;
@@ -76,6 +108,14 @@ public class ProjectService {
         this.projectPermissionService = projectPermissionService;
         this.taskRepository = taskRepository;
         this.sprintRepository = sprintRepository;
+        this.epicRepository = epicRepository;
+        this.commentRepository = commentRepository;
+        this.attachmentRepository = attachmentRepository;
+        this.taskHistoryRepository = taskHistoryRepository;
+        this.notificationRepository = notificationRepository;
+        this.conversationRepository = conversationRepository;
+        this.conversationMemberRepository = conversationMemberRepository;
+        this.chatMessageRepository = chatMessageRepository;
         this.notificationService = notificationService;
     }
 
@@ -222,6 +262,10 @@ public class ProjectService {
     /**
      * Delete the project by id.
      *
+     * <p>Deletes all the children (chat, tasks and their comments/attachments/history/
+     * notifications, sprints, epics, members) in dependency order before removing the
+     * project itself, because the FK constraints are not {@code ON DELETE CASCADE}.</p>
+     *
      * @param id the id of the entity.
      */
     public void delete(Long id) {
@@ -238,6 +282,23 @@ public class ProjectService {
                 notificationService.createNotification(recipient, message, "Projet: " + project.getKey(), null);
             }
         }
+
+        // Chat data: mentions -> messages -> conversation members -> conversations (project FK)
+        chatMessageRepository.deleteMentionsByProjectId(id);
+        chatMessageRepository.deleteByProjectId(id);
+        conversationMemberRepository.deleteByProjectId(id);
+        conversationRepository.deleteByProjectId(id);
+
+        // Task children: notifications/comments/attachments/history reference tasks
+        notificationRepository.deleteByTaskProjectId(id);
+        taskHistoryRepository.deleteByTaskProjectId(id);
+        commentRepository.deleteByTaskProjectId(id);
+        attachmentRepository.deleteByTaskProjectId(id);
+
+        // Tasks reference sprint/epic/project; sprints and epics reference project
+        taskRepository.deleteByProjectId(id);
+        sprintRepository.deleteByProjectId(id);
+        epicRepository.deleteByProjectId(id);
 
         projectMemberRepository.deleteAll(members);
         projectRepository.delete(project);

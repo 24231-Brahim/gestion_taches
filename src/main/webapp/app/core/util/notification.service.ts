@@ -14,8 +14,14 @@ export interface INotification {
   projectKey?: string;
   userId: number;
   userLogin?: string;
+  relatedUserLogin?: string;
   isRead: boolean;
   createdAt: string;
+}
+
+export interface NotificationTarget {
+  route: (string | number)[];
+  queryParams?: Record<string, string | number>;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -72,11 +78,30 @@ export class NotificationService {
     return this.http.patch(`${this.resourceUrl}/read-all`, {});
   }
 
+  resolveNotificationTarget(notification: INotification): NotificationTarget | null {
+    if (notification.taskId && notification.projectKey) {
+      if (notification.taskTitle?.startsWith('Sprint:')) {
+        return { route: ['/project', notification.projectKey, 'sprint', notification.taskId, 'view'] };
+      }
+      return { route: ['/project', notification.projectKey, 'task', notification.taskId, 'view'] };
+    }
+
+    if (notification.projectKey) {
+      return { route: ['/project', notification.projectKey, 'view'] };
+    }
+
+    if (notification.relatedUserLogin) {
+      return { route: ['/admin', 'user-management', notification.relatedUserLogin, 'detail'] };
+    }
+
+    return null;
+  }
+
   private connectWebSocket(): void {
-    if (this.stompClient?.connected) {
+    if (this.stompClient) {
       return;
     }
-    const url = this.applicationConfigService.getEndpointFor('websocket/tracker');
+    const url = this.applicationConfigService.getEndpointFor('/websocket/tracker');
     const token = this.stateStorageService.getAuthenticationToken();
 
     this.stompClient = new Client({
@@ -107,8 +132,9 @@ export class NotificationService {
 
   private disconnectWebSocket(): void {
     if (this.stompClient) {
-      this.stompClient.deactivate();
+      const client = this.stompClient;
       this.stompClient = null;
+      client.deactivate();
     }
   }
 }

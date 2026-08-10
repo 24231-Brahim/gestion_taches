@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vitest } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { Router, provideRouter, withComponentInputBinding } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
@@ -48,5 +48,15 @@ describe('Epic Management Detail Component', () => {
       // THEN
       expect(instance.epic()).toEqual(expect.objectContaining({ id: 5106 }));
     });
+  });
+
+  it('should navigate to the task detail page when a task is selected', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = vitest.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    comp.currentProjectKey.set('KEY');
+    comp.onSelectTask({ id: 123, title: 'Task 123' });
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/project', 'KEY', 'task', 123, 'view']);
   });
 });

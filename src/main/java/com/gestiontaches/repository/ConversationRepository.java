@@ -18,6 +18,10 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
 
     List<Conversation> findByProjectIdOrderByCreatedAtAsc(Long projectId);
 
+    @Modifying
+    @Query("DELETE FROM Conversation c WHERE c.project.id = :projectId")
+    int deleteByProjectId(@Param("projectId") Long projectId);
+
     @Query(
         "SELECT c FROM Conversation c WHERE c.project.id = :projectId AND c.type = :type AND EXISTS (" +
             "SELECT m FROM ConversationMember m WHERE m.conversation = c AND m.user.id = :userId" +

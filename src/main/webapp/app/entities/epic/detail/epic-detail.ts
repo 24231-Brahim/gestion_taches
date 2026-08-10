@@ -211,6 +211,9 @@ interface EpicStats {
       .task-table tr:hover {
         background: rgba(255, 255, 255, 0.03);
       }
+      .task-table tbody tr {
+        cursor: pointer;
+      }
       .assignee-initials {
         width: 22px;
         height: 22px;
@@ -468,6 +471,13 @@ export class EpicDetail {
 
   previousState(): void {
     globalThis.history.back();
+  }
+
+  onSelectTask(task: ITask): void {
+    const key = this.currentProjectKey();
+    if (key) {
+      this.router.navigate(['/project', key, 'task', task.id, 'view']);
+    }
   }
 
   onStatusChange(event: { taskId: number; status: string }): void {

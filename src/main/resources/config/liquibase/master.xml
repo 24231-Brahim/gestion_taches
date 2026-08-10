@@ -55,4 +55,5 @@
     <include file="config/liquibase/changelog/20260803000000_added_task_story_points.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260805000001_added_chat.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260807000000_remove_unused_entities.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260807000001_added_notification_navigation_fields.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

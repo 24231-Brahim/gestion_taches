@@ -35,6 +35,10 @@ public interface EpicRepository extends JpaRepository<Epic, Long>, JpaSpecificat
     @Query("select epic from Epic epic left join fetch epic.project where epic.id =:id")
     Optional<Epic> findOneWithToOneRelationships(@Param("id") Long id);
 
+    @Modifying
+    @Query("DELETE FROM Epic e WHERE e.project.id = :projectId")
+    int deleteByProjectId(@Param("projectId") Long projectId);
+
     @Query(
         "SELECT e FROM Epic e LEFT JOIN FETCH e.project WHERE e.project.id IN :projectIds AND (LOWER(e.title) LIKE LOWER(CONCAT('%', :query, '%')) OR LOWER(e.description) LIKE LOWER(CONCAT('%', :query, '%')))"
     )

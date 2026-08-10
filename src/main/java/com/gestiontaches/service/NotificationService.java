@@ -64,6 +64,24 @@ public class NotificationService {
         messagingTemplate.convertAndSendToUser(recipient.getLogin(), "/queue/notifications", dto);
     }
 
+    public void createNotification(User recipient, String message, String taskTitle, Task task, User relatedUser) {
+        Notification notification = new Notification();
+        notification.setMessage(message);
+        notification.setTask(task);
+        notification.setTaskTitle(taskTitle);
+        notification.setUser(recipient);
+        if (relatedUser != null) {
+            notification.setRelatedUserId(relatedUser.getId());
+            notification.setRelatedUserLogin(relatedUser.getLogin());
+        }
+        notification.setIsRead(false);
+        notification.setCreatedAt(Instant.now());
+        notification = notificationRepository.save(notification);
+
+        NotificationDTO dto = notificationMapper.toDto(notification);
+        messagingTemplate.convertAndSendToUser(recipient.getLogin(), "/queue/notifications", dto);
+    }
+
     public NotificationDTO save(NotificationDTO notificationDTO) {
         LOG.debug("Request to save Notification : {}", notificationDTO);
         Notification notification = notificationMapper.toEntity(notificationDTO);
@@ -123,7 +141,7 @@ public class NotificationService {
         List<User> admins = userRepository.findAllActivatedByAuthorityNames(List.of(AuthoritiesConstants.ADMIN));
         String message = "New user registered: " + newUser.getLogin() + " (" + newUser.getEmail() + ")";
         for (User admin : admins) {
-            createNotification(admin, message, null, null);
+            createNotification(admin, message, null, null, newUser);
         }
         LOG.debug("Sent new user registration notification to {} admin(s)", admins.size());
     }

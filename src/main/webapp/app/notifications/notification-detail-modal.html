@@ -41,24 +41,6 @@
         <span jhiTranslate="global.messages.markAsRead">Marquer comme lu</span>
       </button>
     }
-    @if (notification.taskId && notification.projectKey && !notification.taskTitle?.startsWith('Sprint:')) {
-      <button type="button" class="btn btn-primary" (click)="goToTask()">
-        <fa-icon icon="external-link-alt" />
-        <span jhiTranslate="global.messages.notificationDetail.viewTask">Voir la tâche</span>
-      </button>
-    }
-    @if (!notification.taskId && notification.projectKey) {
-      <button type="button" class="btn btn-primary" (click)="goToProject()">
-        <fa-icon icon="external-link-alt" />
-        <span>Voir le projet</span>
-      </button>
-    }
-    @if (notification.taskId && notification.projectKey && notification.taskTitle?.startsWith('Sprint:')) {
-      <button type="button" class="btn btn-primary" (click)="goToSprint()">
-        <fa-icon icon="external-link-alt" />
-        <span>Voir le sprint</span>
-      </button>
-    }
     <button type="button" class="btn btn-secondary" (click)="close()" jhiTranslate="entity.action.close">Fermer</button>
   </div>
 </div>

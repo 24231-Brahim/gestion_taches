@@ -132,7 +132,7 @@
             </thead>
             <tbody>
               @for (task of tasks(); track task.id) {
-                <tr>
+                <tr (click)="onSelectTask(task)">
                   <td>
                     {{ task.title }}
                   </td>
@@ -174,7 +174,7 @@
         }
       }
       @case ('kanban') {
-        <jhi-task-kanban-board [tasks]="tasks()" />
+        <jhi-task-kanban-board [tasks]="tasks()" (selectTask)="onSelectTask($event)" />
       }
       @case ('burndown') {
         <jhi-epic-burndown-chart [totalStoryPoints]="epicStats().totalStoryPoints" [doneStoryPoints]="epicStats().doneStoryPoints" />

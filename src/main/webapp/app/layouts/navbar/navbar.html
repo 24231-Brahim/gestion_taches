@@ -35,7 +35,7 @@
                 class="dropdown-item notification-item"
                 [class.unread]="!notif.isRead"
                 href="javascript:void(0)"
-                (click)="markNotificationRead(notif); collapseNavbar()"
+                (click)="onNotificationClick(notif); collapseNavbar()"
               >
                 <div class="notification-message">{{ notif.message }}</div>
                 <small class="notification-date text-muted">{{ notif.createdAt | date: 'short' }}</small>

@@ -9,17 +9,50 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gestiontaches.IntegrationTest;
+import com.gestiontaches.domain.Attachment;
+import com.gestiontaches.domain.Authority;
+import com.gestiontaches.domain.ChatMessage;
+import com.gestiontaches.domain.Comment;
+import com.gestiontaches.domain.Conversation;
+import com.gestiontaches.domain.ConversationMember;
+import com.gestiontaches.domain.Epic;
+import com.gestiontaches.domain.Notification;
 import com.gestiontaches.domain.Project;
+import com.gestiontaches.domain.ProjectMember;
+import com.gestiontaches.domain.Sprint;
+import com.gestiontaches.domain.Task;
+import com.gestiontaches.domain.TaskHistory;
+import com.gestiontaches.domain.User;
+import com.gestiontaches.domain.enumeration.ConversationType;
+import com.gestiontaches.domain.enumeration.EpicStatus;
+import com.gestiontaches.domain.enumeration.Priority;
+import com.gestiontaches.domain.enumeration.ProjectRole;
+import com.gestiontaches.domain.enumeration.SprintStatus;
+import com.gestiontaches.domain.enumeration.TaskStatus;
+import com.gestiontaches.repository.AttachmentRepository;
+import com.gestiontaches.repository.ChatMessageRepository;
+import com.gestiontaches.repository.CommentRepository;
+import com.gestiontaches.repository.ConversationMemberRepository;
+import com.gestiontaches.repository.ConversationRepository;
+import com.gestiontaches.repository.EpicRepository;
+import com.gestiontaches.repository.NotificationRepository;
+import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.ProjectRepository;
+import com.gestiontaches.repository.SprintRepository;
+import com.gestiontaches.repository.TaskHistoryRepository;
+import com.gestiontaches.repository.TaskRepository;
+import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.service.dto.ProjectDTO;
 import com.gestiontaches.service.dto.ProjectMemberDTO;
 import com.gestiontaches.service.mapper.ProjectMapper;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,6 +104,42 @@ class ProjectResourceIT {
 
     @Autowired
     private MockMvc restProjectMockMvc;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ProjectMemberRepository projectMemberRepository;
+
+    @Autowired
+    private SprintRepository sprintRepository;
+
+    @Autowired
+    private EpicRepository epicRepository;
+
+    @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
+    private CommentRepository commentRepository;
+
+    @Autowired
+    private AttachmentRepository attachmentRepository;
+
+    @Autowired
+    private TaskHistoryRepository taskHistoryRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
+    private ConversationRepository conversationRepository;
+
+    @Autowired
+    private ConversationMemberRepository conversationMemberRepository;
+
+    @Autowired
+    private ChatMessageRepository chatMessageRepository;
 
     private Project project;
 
@@ -462,6 +531,125 @@ class ProjectResourceIT {
 
         // Validate the database contains one less item
         assertDecrementedRepositoryCount(databaseSizeBeforeDelete);
+    }
+
+    @Test
+    @Transactional
+    void deleteProjectWithChildrenCascades() throws Exception {
+        User owner = createUser("del-owner");
+        User member = createUser("del-member");
+        em.flush();
+
+        Project p = createEntity().key("DELP").name("Delete Me");
+        em.persist(p);
+        em.flush();
+        p.setOwner(owner);
+
+        ProjectMember ownerMember = new ProjectMember().project(p).user(owner).role(ProjectRole.OWNER).joinedAt(Instant.now());
+        ProjectMember memberMember = new ProjectMember().project(p).user(member).role(ProjectRole.MEMBER).joinedAt(Instant.now());
+        em.persist(ownerMember);
+        em.persist(memberMember);
+
+        Sprint sprint = new Sprint().name("Sprint 1").status(SprintStatus.PLANNED).project(p);
+        em.persist(sprint);
+
+        Epic epic = new Epic().title("Epic 1").status(EpicStatus.TODO).priority(Priority.MEDIUM).createdAt(Instant.now()).project(p);
+        em.persist(epic);
+
+        Task task = new Task()
+            .title("Task 1")
+            .status(TaskStatus.NEW)
+            .priority(Priority.MEDIUM)
+            .createdAt(Instant.now())
+            .project(p)
+            .sprint(sprint)
+            .epic(epic)
+            .assignee(member);
+        em.persist(task);
+
+        Comment comment = new Comment().content("A comment").createdAt(Instant.now()).task(task).author(member);
+        em.persist(comment);
+
+        Attachment attachment = new Attachment()
+            .fileName("file.txt")
+            .filePath("file.txt")
+            .uploadedAt(Instant.now())
+            .task(task)
+            .uploadedBy(member);
+        em.persist(attachment);
+
+        TaskHistory history = new TaskHistory();
+        history.setTask(task);
+        history.setUser(member);
+        history.setAction("STATUS_CHANGE");
+        history.setCreatedAt(Instant.now());
+        em.persist(history);
+
+        Notification notification = new Notification()
+            .message("Task update")
+            .task(task)
+            .user(member)
+            .isRead(false)
+            .createdAt(Instant.now());
+        em.persist(notification);
+
+        Conversation conversation = new Conversation().type(ConversationType.GENERAL).project(p).createdAt(Instant.now());
+        em.persist(conversation);
+
+        ConversationMember convMember = new ConversationMember().conversation(conversation).user(owner).joinedAt(Instant.now());
+        em.persist(convMember);
+
+        ChatMessage message = new ChatMessage()
+            .content("Hello")
+            .conversation(conversation)
+            .sender(owner)
+            .createdAt(Instant.now())
+            .deleted(false);
+        message.setMentions(new HashSet<>(List.of(member.getId())));
+        em.persist(message);
+        em.flush();
+        em.clear();
+
+        Long projectId = p.getId();
+
+        restProjectMockMvc
+            .perform(delete(ENTITY_API_URL_ID, projectId).accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNoContent());
+
+        em.flush();
+
+        assertThat(projectRepository.findById(projectId)).isEmpty();
+        assertThat(projectMemberRepository.findById(ownerMember.getId())).isEmpty();
+        assertThat(projectMemberRepository.findById(memberMember.getId())).isEmpty();
+        assertThat(sprintRepository.findById(sprint.getId())).isEmpty();
+        assertThat(epicRepository.findById(epic.getId())).isEmpty();
+        assertThat(taskRepository.findById(task.getId())).isEmpty();
+        assertThat(commentRepository.findById(comment.getId())).isEmpty();
+        assertThat(attachmentRepository.findById(attachment.getId())).isEmpty();
+        assertThat(taskHistoryRepository.findById(history.getId())).isEmpty();
+        assertThat(notificationRepository.findById(notification.getId())).isEmpty();
+        assertThat(conversationRepository.findById(conversation.getId())).isEmpty();
+        assertThat(conversationMemberRepository.findById(convMember.getId())).isEmpty();
+        assertThat(chatMessageRepository.findById(message.getId())).isEmpty();
+    }
+
+    private User createUser(String login) {
+        User user = new User();
+        user.setLogin(login);
+        user.setPassword(RandomStringUtils.insecure().nextAlphanumeric(60));
+        user.setEmail(login + "@test.com");
+        user.setActivated(true);
+        user.setFirstName(login);
+        user.setLastName(login);
+        Authority userAuth = em.find(Authority.class, "ROLE_USER");
+        if (userAuth == null) {
+            userAuth = new Authority().name("ROLE_USER");
+            em.persist(userAuth);
+        }
+        user.setAuthorities(new HashSet<>(List.of(userAuth)));
+        em.persist(user);
+        em.flush();
+        return user;
     }
 
     protected long getRepositoryCount() {

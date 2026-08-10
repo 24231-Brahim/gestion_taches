@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="20260807000001-1" author="brahim">
+        <comment>Add related_user_id and related_user_login to notification for navigation support</comment>
+        <addColumn tableName="notification">
+            <column name="related_user_id" type="bigint"/>
+            <column name="related_user_login" type="varchar(50)"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="20260807000001-2" author="brahim">
+        <comment>Add foreign key on notification.related_user_id to jhi_user.id</comment>
+        <addForeignKeyConstraint
+            baseTableName="notification"
+            baseColumnNames="related_user_id"
+            constraintName="fk_notification_related_user_id"
+            referencedTableName="jhi_user"
+            referencedColumnNames="id"
+        />
+    </changeSet>
+</databaseChangeLog>

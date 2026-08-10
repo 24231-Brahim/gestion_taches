@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import dayjs from 'dayjs/esm';
 import { filter, tap } from 'rxjs/operators';
@@ -329,6 +329,7 @@ export class Sprint implements OnInit {
   readonly doneStoryPoints = computed(() => 0);
 
   protected readonly activatedRoute = inject(ActivatedRoute);
+  protected readonly router = inject(Router);
   protected readonly projectService = inject(ProjectService);
   protected readonly sprintService = inject(SprintService);
   protected readonly taskService = inject(TaskService);
@@ -528,8 +529,11 @@ export class Sprint implements OnInit {
     this.velocityReport.set(null);
   }
 
-  onSelectTask(_task: ITask): void {
-    // no-op for now
+  onSelectTask(task: ITask): void {
+    const key = this.currentProjectKey();
+    if (key) {
+      this.router.navigate(['/project', key, 'task', task.id, 'view']);
+    }
   }
 
   setTab(tab: Tab): void {

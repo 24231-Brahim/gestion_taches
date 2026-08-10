@@ -16,6 +16,8 @@ import { ITEM_DELETED_EVENT } from 'app/config/navigation.constants';
 import { TaskService } from 'app/entities/task/service/task.service';
 import { ITask } from 'app/entities/task/task.model';
 import { TaskDeleteDialog } from 'app/entities/task/delete/task-delete-dialog';
+import { IProjectMember } from 'app/entities/project/project.model';
+import { ProjectService } from 'app/entities/project/service/project.service';
 import { SprintActiveBoard } from '../active-board/sprint-active-board';
 import { SprintBacklogPlanning } from '../backlog-planning/sprint-backlog-planning';
 import { SprintBurndownChart } from '../burndown/sprint-burndown-chart';
@@ -68,6 +70,12 @@ type Tab = 'board' | 'planning' | 'tasks' | 'timeline';
         color: var(--color-text);
         font-size: 0.9rem;
         margin: 4px 0;
+      }
+      .sprint-tasks-table tbody tr {
+        cursor: pointer;
+      }
+      .sprint-tasks-table tbody tr:hover {
+        background: var(--color-surface-container);
       }
       .status-badge {
         display: inline-block;
@@ -235,16 +243,19 @@ export class SprintDetail {
   readonly tasks = signal<ITask[]>([]);
   readonly projectTasks = signal<ITask[]>([]);
 
+  readonly members = signal<IProjectMember[]>([]);
+  readonly membersLoading = signal(false);
+
   readonly userProjectRole = computed<ProjectRole | null>(() => {
     const account = this.accountService.account();
     if (!account) {
       return null;
     }
-    // Matches the backend's ProjectPermissionService.hasGlobalProjectAccess().
-    if (account.authorities.includes('ROLE_ADMIN') || account.authorities.includes('ROLE_PROJET_MANAGER')) {
+    if (account.authorities.includes('ROLE_ADMIN')) {
       return ProjectRole.OWNER;
     }
-    return null;
+    const member = this.members().find(m => m.userLogin === account.login);
+    return member?.role ?? null;
   });
 
   readonly canManageSprints = computed(() => {
@@ -303,6 +314,7 @@ export class SprintDetail {
   protected readonly alertService = inject(AlertService);
   protected readonly translateService = inject(TranslateService);
   protected readonly accountService = inject(AccountService);
+  protected readonly projectService = inject(ProjectService);
   protected readonly router = inject(Router);
   private readonly modalService = inject(NgbModal);
 
@@ -310,6 +322,23 @@ export class SprintDetail {
 
   private sprintSyncEffect = effect(() => {
     this._currentSprint.set(this.sprint());
+  });
+
+  private membersEffect = effect(() => {
+    const sp = this._currentSprint();
+    if (sp?.project?.id) {
+      this.membersLoading.set(true);
+      this.projectService.getMembers(sp.project.id).subscribe({
+        next: members => {
+          this.members.set(members);
+          this.membersLoading.set(false);
+        },
+        error: () => {
+          this.members.set([]);
+          this.membersLoading.set(false);
+        },
+      });
+    }
   });
 
   private tasksEffect = effect(() => {
@@ -333,8 +362,11 @@ export class SprintDetail {
     }
   });
 
-  onSelectTask(_task: ITask): void {
-    // no-op for now
+  onSelectTask(task: ITask): void {
+    const key = this.projectKey();
+    if (key) {
+      this.router.navigate(['/project', key, 'task', task.id, 'view']);
+    }
   }
 
   openCreateTaskModal(): void {

@@ -58,6 +58,10 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
 
     List<Task> findByProjectIdAndSprintIsNull(Long projectId);
 
+    @Modifying
+    @Query("DELETE FROM Task t WHERE t.project.id = :projectId")
+    int deleteByProjectId(@Param("projectId") Long projectId);
+
     @Query(
         "SELECT t FROM Task t LEFT JOIN FETCH t.sprint LEFT JOIN FETCH t.epic LEFT JOIN FETCH t.project LEFT JOIN FETCH t.assignee LEFT JOIN FETCH t.createdBy WHERE t.project.id = :projectId AND t.sprint IS NULL"
     )

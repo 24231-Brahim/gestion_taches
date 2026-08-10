@@ -60,6 +60,16 @@ export default class NotificationListComponent implements OnInit, OnDestroy {
     modalRef.dismissed.subscribe(() => this.loadPage());
   }
 
+  onNotificationClick(notification: INotification): void {
+    this.markAsRead(notification);
+    const target = this.notificationService.resolveNotificationTarget(notification);
+    if (target) {
+      this.router.navigate(target.route, target.queryParams);
+    } else {
+      this.showDetails(notification);
+    }
+  }
+
   markAsRead(notification: INotification): void {
     if (!notification.isRead) {
       this.notificationService.markAsRead(notification.id).subscribe(() => {

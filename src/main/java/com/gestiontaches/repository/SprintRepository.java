@@ -39,6 +39,10 @@ public interface SprintRepository extends JpaRepository<Sprint, Long>, JpaSpecif
     @Query("select sprint from Sprint sprint left join fetch sprint.project where sprint.id =:id")
     Optional<Sprint> findOneWithToOneRelationships(@Param("id") Long id);
 
+    @Modifying
+    @Query("DELETE FROM Sprint s WHERE s.project.id = :projectId")
+    int deleteByProjectId(@Param("projectId") Long projectId);
+
     /**
      * Finds the most recently created sprint for the given project and status.
      *

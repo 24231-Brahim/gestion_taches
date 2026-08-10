@@ -17,6 +17,12 @@ public interface ConversationMemberRepository extends JpaRepository<Conversation
 
     List<ConversationMember> findByConversationId(Long conversationId);
 
+    @Modifying
+    @Query(
+        "DELETE FROM ConversationMember cm WHERE cm.conversation.id IN (SELECT c.id FROM Conversation c WHERE c.project.id = :projectId)"
+    )
+    int deleteByProjectId(@Param("projectId") Long projectId);
+
     List<ConversationMember> findByUserId(Long userId);
 
     @Query(

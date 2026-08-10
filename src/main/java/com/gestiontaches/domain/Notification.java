@@ -38,6 +38,12 @@ public class Notification implements Serializable {
     @JsonIgnoreProperties(value = { "authorities" }, allowSetters = true)
     private User user;
 
+    @Column(name = "related_user_id")
+    private Long relatedUserId;
+
+    @Column(name = "related_user_login")
+    private String relatedUserLogin;
+
     @NotNull
     @Column(name = "is_read", nullable = false)
     private Boolean isRead = false;
@@ -111,6 +117,32 @@ public class Notification implements Serializable {
         return this;
     }
 
+    public Long getRelatedUserId() {
+        return relatedUserId;
+    }
+
+    public void setRelatedUserId(Long relatedUserId) {
+        this.relatedUserId = relatedUserId;
+    }
+
+    public Notification relatedUserId(Long relatedUserId) {
+        this.setRelatedUserId(relatedUserId);
+        return this;
+    }
+
+    public String getRelatedUserLogin() {
+        return relatedUserLogin;
+    }
+
+    public void setRelatedUserLogin(String relatedUserLogin) {
+        this.relatedUserLogin = relatedUserLogin;
+    }
+
+    public Notification relatedUserLogin(String relatedUserLogin) {
+        this.setRelatedUserLogin(relatedUserLogin);
+        return this;
+    }
+
     public Boolean getIsRead() {
         return isRead;
     }
@@ -160,6 +192,9 @@ public class Notification implements Serializable {
             "'" +
             ", taskTitle='" +
             getTaskTitle() +
+            "'" +
+            ", relatedUserLogin='" +
+            getRelatedUserLogin() +
             "'" +
             ", isRead=" +
             getIsRead() +

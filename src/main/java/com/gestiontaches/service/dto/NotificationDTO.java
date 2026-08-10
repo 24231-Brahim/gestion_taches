@@ -20,6 +20,10 @@ public class NotificationDTO implements Serializable {
 
     private String projectKey;
 
+    private Long relatedUserId;
+
+    private String relatedUserLogin;
+
     @NotNull
     private Boolean isRead;
 
@@ -99,6 +103,22 @@ public class NotificationDTO implements Serializable {
 
     public Long getUserId() {
         return this.user != null ? this.user.getId() : null;
+    }
+
+    public void setRelatedUserId(Long relatedUserId) {
+        this.relatedUserId = relatedUserId;
+    }
+
+    public Long getRelatedUserId() {
+        return relatedUserId;
+    }
+
+    public void setRelatedUserLogin(String relatedUserLogin) {
+        this.relatedUserLogin = relatedUserLogin;
+    }
+
+    public String getRelatedUserLogin() {
+        return relatedUserLogin;
     }
 
     public Boolean getIsRead() {

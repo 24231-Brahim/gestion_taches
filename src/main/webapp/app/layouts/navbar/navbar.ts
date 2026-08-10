@@ -1,17 +1,19 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, effect, inject, signal } from '@angular/core';
 import { DatePipe, NgOptimizedImage } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { TranslateModule } from '@ngx-translate/core';
 import { environment } from 'environments/environment';
 
 import { AccountService } from 'app/core/auth/account.service';
 
-import { INotification, NotificationService } from 'app/core/util/notification.service';
+import { INotification, NotificationService, NotificationTarget } from 'app/core/util/notification.service';
 import { EntityEventService } from 'app/core/util/entity-event.service';
 import { SearchService } from 'app/layouts/search/search.service';
+import { NotificationDetailModal } from 'app/notifications/notification-detail-modal';
 
 import { TranslateDirective } from 'app/shared/language';
 
@@ -40,6 +42,8 @@ export default class Navbar implements OnDestroy {
   readonly notificationService = inject(NotificationService);
   readonly entityEventService = inject(EntityEventService);
   private readonly searchService = inject(SearchService);
+  private readonly router = inject(Router);
+  private readonly modalService = inject(NgbModal);
 
   constructor() {
     const { VERSION } = environment;
@@ -76,6 +80,20 @@ export default class Navbar implements OnDestroy {
       this.notificationService.markAsRead(notification.id).subscribe(() => {
         this.notificationService.refresh();
       });
+    }
+  }
+
+  onNotificationClick(notification: INotification): void {
+    this.markNotificationRead(notification);
+    const target = this.notificationService.resolveNotificationTarget(notification);
+    if (target) {
+      this.router.navigate(target.route, target.queryParams).then(() => this.collapseNavbar());
+    } else {
+      const modalRef = this.modalService.open(NotificationDetailModal, { size: 'lg' });
+      modalRef.componentInstance.notification = notification;
+      modalRef.closed.subscribe(() => this.notificationService.refresh());
+      modalRef.dismissed.subscribe(() => this.notificationService.refresh());
+      this.collapseNavbar();
     }
   }
 

@@ -17,7 +17,7 @@
   }
 
   @for (notif of notifications(); track notif.id) {
-    <div class="notification-card" [class.unread]="!notif.isRead" (click)="showDetails(notif)" role="button" tabindex="0">
+    <div class="notification-card" [class.unread]="!notif.isRead" (click)="onNotificationClick(notif)" role="button" tabindex="0">
       <div class="notification-indicator">
         @if (!notif.isRead) {
           <span class="unread-dot"></span>

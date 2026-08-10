@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vitest } from 'vitest';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { CUSTOM_ELEMENTS_SCHEMA, signal } from '@angular/core';
 import { of, Subject } from 'rxjs';
 
@@ -69,15 +69,19 @@ describe('Sprint Component', () => {
 
   const parentParamMap = of(convertToParamMap({ key: 'test-key' }));
 
+  const mockRouter = { navigate: vitest.fn() };
+
   beforeEach(() => {
     mockSprints.set([]);
     mockRefresh.mockClear();
+    mockRouter.navigate.mockClear();
 
     TestBed.configureTestingModule({
       imports: [TranslateModule.forRoot()],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
         { provide: ActivatedRoute, useValue: { parent: { paramMap: parentParamMap }, paramMap: parentParamMap } },
+        { provide: Router, useValue: mockRouter },
         { provide: SprintService, useValue: mockSprintService },
         { provide: TaskService, useValue: mockTaskService },
         { provide: ProjectService, useValue: mockProjectService },
@@ -215,5 +219,12 @@ describe('Sprint Component', () => {
     ]);
     fixture.detectChanges();
     expect(comp.sprintProgress()).toBe(100);
+  });
+
+  it('should navigate to the task detail page when a task is selected', () => {
+    comp.currentProjectKey.set('test-key');
+    comp.onSelectTask({ id: 42, title: 'Task 42' });
+
+    expect(mockRouter.navigate).toHaveBeenCalledWith(['/project', 'test-key', 'task', 42, 'view']);
   });
 });
