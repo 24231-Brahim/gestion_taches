@@ -34,23 +34,6 @@
           "reset": "Reset filters"
         }
       },
-      "planning": {
-        "tab": "Planning",
-        "backlog": "Backlog",
-        "sprint": "Sprint",
-        "noBacklog": "All tasks are assigned to a sprint",
-        "noTasks": "No tasks in this sprint",
-        "searchPlaceholder": "Search tasks..."
-      },
-      "burndown": {
-        "tab": "Burndown",
-        "total": "Total",
-        "done": "Done",
-        "remaining": "Remaining",
-        "velocity": "Velocity",
-        "days": "Days",
-        "tasks": "Tasks"
-      },
       "action": {
         "start": "Start Sprint",
         "complete": "Complete Sprint",

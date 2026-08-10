@@ -79,11 +79,10 @@ public class TaskService {
     public TaskDTO save(TaskDTO taskDTO) {
         LOG.debug("Request to save Task : {}", taskDTO);
         if (taskDTO.getProject() != null && taskDTO.getProject().getId() != null) {
-            // Task creation is a management action: only a project-level OWNER/MANAGER may create
-            // tasks. ADMIN bypasses the role check (implicit OWNER), but a PROJET_MANAGER must hold
-            // the OWNER or MANAGER role on this specific project. A plain MEMBER (the role every
-            // DEVELOPER gets added to a project with) must not.
-            projectPermissionService.requireProjectRole(taskDTO.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
+            // Task creation is open to any project member (ADMIN bypasses, PROJECT_MANAGER,
+            // DEVELOPER and USER are covered by their ProjectMember role). Only reassignment
+            // and deletion remain management actions (OWNER/MANAGER).
+            projectPermissionService.requireProjectAccess(taskDTO.getProject().getId());
         }
         Task oldTask = null;
         if (taskDTO.getId() != null) {
@@ -96,6 +95,12 @@ public class TaskService {
                 .findOneByLogin(currentLogin)
                 .orElseThrow(() -> new RuntimeException("User not found: " + currentLogin));
             task.setCreatedBy(currentUser);
+            if (task.getStatus() == null) {
+                task.setStatus(TaskStatus.NEW);
+            }
+            if (task.getAssignee() != null && task.getProject() != null) {
+                checkAssigneePermission(currentUser, task.getProject().getId(), task.getAssignee().getId());
+            }
         }
         task = taskRepository.save(task);
         recalculateParentStatuses(task);
@@ -202,33 +207,56 @@ public class TaskService {
     }
 
     /**
+     * Task assignment permission: only OWNER/MANAGER (or ADMIN) may set an assignee other than
+     * themselves. A plain MEMBER (DEVELOPER/USER) may only self-assign. The assignee must be a
+     * member of the project.
+     */
+    private void checkAssigneePermission(User currentUser, Long projectId, Long assigneeId) {
+        if (assigneeId == null) {
+            return;
+        }
+        projectMemberRepository
+            .findByProjectIdAndUserId(projectId, assigneeId)
+            .orElseThrow(() -> new RuntimeException("Assignee must be a member of the project"));
+        ProjectRole currentRole = projectPermissionService.getCurrentUserRole(projectId);
+        if (currentRole != ProjectRole.OWNER && currentRole != ProjectRole.MANAGER) {
+            if (!currentUser.getId().equals(assigneeId)) {
+                throw new AccessDeniedException("Access denied: only OWNER/MANAGER can assign a task");
+            }
+        }
+    }
+
+    /**
      * Task edit permission: ADMIN/PROJET_MANAGER (or a project-level OWNER/MANAGER delegate) may
-     * edit any task in the project. A plain MEMBER (every DEVELOPER's project role) may only edit
-     * a task they are personally assigned to — and even then, may not change who it's assigned to;
+     * edit any task in the project. Any other project member (DEVELOPER/USER with a MEMBER project
+     * role) may only edit the tasks they created, and may not change who a task is assigned to —
      * reassignment is a management action reserved for OWNER/MANAGER, whether attempted through the
      * dedicated /assign endpoint or smuggled in via this generic update/patch payload.
      */
     private void checkTaskUpdatePermission(Long taskId, TaskDTO incoming) {
         Task existing = taskRepository.findById(taskId).orElseThrow(() -> new RuntimeException("Task not found"));
         Long projectId = existing.getProject().getId();
-        Long currentUserId = projectPermissionService.resolveCurrentUserId();
         ProjectRole role = projectPermissionService.getCurrentUserRole(projectId);
         if (role == ProjectRole.OWNER || role == ProjectRole.MANAGER) {
             return;
         }
-        boolean isAssignee = existing.getAssignee() != null && existing.getAssignee().getId().equals(currentUserId);
-        if (role == ProjectRole.MEMBER && isAssignee) {
+        if (role == ProjectRole.MEMBER) {
+            Long currentUserId = projectPermissionService.resolveCurrentUserId();
+            boolean isCreator = existing.getCreatedBy() != null && existing.getCreatedBy().getId().equals(currentUserId);
+            if (!isCreator) {
+                throw new AccessDeniedException("Access denied: you can only edit tasks you created");
+            }
             // A merge-patch payload that simply omits `assignee` (the common case for a status/
             // description/priority-only edit) must NOT be treated as "unassign" — only an explicitly
             // provided, *different* assignee counts as a (blocked) reassignment attempt.
-            Long existingAssigneeId = existing.getAssignee().getId();
+            Long existingAssigneeId = existing.getAssignee() != null ? existing.getAssignee().getId() : null;
             Long incomingAssigneeId = incoming.getAssignee() != null ? incoming.getAssignee().getId() : null;
             if (incomingAssigneeId != null && !incomingAssigneeId.equals(existingAssigneeId)) {
                 throw new AccessDeniedException("Access denied: only OWNER/MANAGER can reassign a task");
             }
             return;
         }
-        throw new AccessDeniedException("Access denied: you can only update your own assigned tasks");
+        throw new AccessDeniedException("Access denied: you are not a member of this project");
     }
 
     private void notifyStatusChangeIfNeeded(Task existingTask, Task savedTask, TaskStatus oldStatus) {
@@ -318,9 +346,10 @@ public class TaskService {
      */
     public TaskDTO createForProject(TaskDTO taskDTO, Long projectId) {
         LOG.debug("Request to save Task for Project {} : {}", projectId, taskDTO);
-        // See save(): creation is OWNER/MANAGER-on-the-project only (ADMIN bypasses, plain
-        // MEMBER/DEVELOPER never), even when invoked through the project-scoped endpoint.
-        projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER);
+        // Task creation is open to any project member (ADMIN bypasses, PROJECT_MANAGER,
+        // DEVELOPER and USER are covered by their ProjectMember role). Only reassignment
+        // and deletion remain management actions (OWNER/MANAGER).
+        projectPermissionService.requireProjectAccess(projectId);
         Task task = taskMapper.toEntity(taskDTO);
         String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
         User currentUser = userRepository
@@ -336,9 +365,7 @@ public class TaskService {
         if (task.getAssignee() != null) {
             Long assigneeId = task.getAssignee().getId();
             if (assigneeId != null) {
-                projectMemberRepository
-                    .findByProjectIdAndUserId(projectId, assigneeId)
-                    .orElseThrow(() -> new RuntimeException("Assignee must be a member of the project"));
+                checkAssigneePermission(currentUser, projectId, assigneeId);
             }
         }
         task = taskRepository.save(task);

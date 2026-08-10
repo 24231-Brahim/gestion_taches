@@ -21,12 +21,11 @@ import { TranslateDirective } from 'app/shared/language';
 import { IProject } from 'app/entities/project/project.model';
 import { ProjectService } from 'app/entities/project/service/project.service';
 import { SprintActiveBoard } from '../active-board/sprint-active-board';
-import { SprintBacklogPlanning } from '../backlog-planning/sprint-backlog-planning';
 import { SprintService, VelocityReport } from '../service/sprint.service';
 import { ISprint } from '../sprint.model';
 import { SprintFormModal } from '../update/sprint-form-modal';
 
-type Tab = 'board' | 'planning';
+type Tab = 'board';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -237,16 +236,7 @@ type Tab = 'board' | 'planning';
       }
     `,
   ],
-  imports: [
-    RouterLink,
-    FormsModule,
-    FontAwesomeModule,
-    TranslateDirective,
-    TranslateModule,
-    FormatMediumDatePipe,
-    SprintActiveBoard,
-    SprintBacklogPlanning,
-  ],
+  imports: [RouterLink, FormsModule, FontAwesomeModule, TranslateDirective, TranslateModule, FormatMediumDatePipe, SprintActiveBoard],
 })
 export class Sprint implements OnInit {
   readonly currentProjectKey = signal<string | null>(null);

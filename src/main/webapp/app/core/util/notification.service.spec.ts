@@ -62,4 +62,17 @@ describe('Notification Service', () => {
     req.flush({});
     httpMock.verify();
   });
+
+  it('should resolve notification target for new user to user-management detail', () => {
+    const target = service.resolveNotificationTarget({
+      id: 1,
+      message: 'Nouvel utilisateur',
+      userId: 1,
+      isRead: false,
+      createdAt: '2026-08-06T00:00:00Z',
+      relatedUserLogin: 'johndoe',
+    });
+
+    expect(target).toEqual({ route: ['/user-management', 'johndoe', 'detail'] });
+  });
 });

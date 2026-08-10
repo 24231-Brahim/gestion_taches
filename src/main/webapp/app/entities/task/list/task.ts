@@ -154,7 +154,7 @@ export class Task implements OnInit {
   readonly statusBadges = STATUS_BADGES;
   readonly userProjectRoles = signal<Map<number, ProjectRole>>(new Map());
   readonly currentUserLogin = computed(() => this.accountService.account()?.login ?? null);
-  readonly isAdmin = computed(() => this.accountService.account()?.authorities?.includes('ROLE_ADMIN') ?? false);
+  readonly isAdmin = computed(() => this.accountService.account()?.authorities.includes('ROLE_ADMIN') ?? false);
 
   protected readonly appConfig = inject(ApplicationConfigService);
   protected readonly activatedRoute = inject(ActivatedRoute);
@@ -188,17 +188,29 @@ export class Task implements OnInit {
     });
   }
 
-  // This pencil icon routes to the full CRUD form (sprint/epic/project/assignee included), which
-  // is management-only (matches the route guard on /task/:id/edit and TaskService.delete()'s
-  // requireProjectRole(OWNER, MANAGER)). An assignee edits their own task's status/description/
-  // priority inline via the row click → task-detail-panel drawer instead, not through this link.
+  // A project member (DEVELOPER/USER included) may create tasks and edit only the tasks they
+  // created. Reassignment stays OWNER/MANAGER-only and is rejected server-side. Deletion remains
+  // a management action (OWNER/MANAGER/ADMIN).
   canEditTask(task: ITask): boolean {
+    if (this.isAdmin()) {
+      return true;
+    }
     const role = this.userProjectRoles().get(task.project?.id ?? -1);
-    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
+    if (role === ProjectRole.OWNER || role === ProjectRole.MANAGER) {
+      return true;
+    }
+    if (role == null) {
+      return false;
+    }
+    return task.createdBy?.login === this.currentUserLogin();
   }
 
   canDeleteTask(task: ITask): boolean {
-    return this.canEditTask(task);
+    if (this.isAdmin()) {
+      return true;
+    }
+    const role = this.userProjectRoles().get(task.project?.id ?? -1);
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
   }
 
   canCreateTask(): boolean {
@@ -206,8 +218,11 @@ export class Task implements OnInit {
     if (!project) {
       return false;
     }
+    if (this.isAdmin()) {
+      return true;
+    }
     const role = this.userProjectRoles().get(project.id);
-    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
+    return role != null;
   }
 
   exportCsv(): void {

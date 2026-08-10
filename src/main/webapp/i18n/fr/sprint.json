@@ -34,23 +34,6 @@
           "reset": "Réinitialiser"
         }
       },
-      "planning": {
-        "tab": "Planification",
-        "backlog": "Backlog",
-        "sprint": "Sprint",
-        "noBacklog": "Toutes les tâches sont affectées à un sprint",
-        "noTasks": "Aucune tâche dans ce sprint",
-        "searchPlaceholder": "Rechercher des tâches..."
-      },
-      "burndown": {
-        "tab": "Burndown",
-        "total": "Total",
-        "done": "Terminé",
-        "remaining": "Restant",
-        "velocity": "Vélocité",
-        "days": "Jours",
-        "tasks": "Tâches"
-      },
       "action": {
         "start": "Démarrer",
         "complete": "Terminer",

@@ -28,7 +28,7 @@ const taskRoute: Routes = [
     resolve: {
       task: TaskResolve,
     },
-    data: { authorities: ['ROLE_ADMIN', 'ROLE_PROJET_MANAGER'] },
+    data: { authorities: ['ROLE_ADMIN', 'ROLE_PROJET_MANAGER', 'ROLE_DEVELOPER', 'ROLE_USER'] },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -37,10 +37,9 @@ const taskRoute: Routes = [
     resolve: {
       task: TaskResolve,
     },
-    // The full CRUD form exposes sprint/epic/project/assignee reassignment — management-only.
-    // A DEVELOPER edits their own assigned task's status/description/priority inline via the
-    // Kanban drawer / task-detail-panel (PATCH), never through this page.
-    data: { authorities: ['ROLE_ADMIN', 'ROLE_PROJET_MANAGER'] },
+    // Any authenticated project member may edit a task (status/description/priority/title etc.).
+    // Reassignment (changing the assignee) stays OWNER/MANAGER-only and is rejected server-side.
+    data: { authorities: ['ROLE_ADMIN', 'ROLE_PROJET_MANAGER', 'ROLE_DEVELOPER', 'ROLE_USER'] },
     canActivate: [UserRouteAccessService],
   },
 ];

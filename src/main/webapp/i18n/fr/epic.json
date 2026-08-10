@@ -53,15 +53,7 @@
       "tab": {
         "tasks": "Tâches",
         "kanban": "Kanban",
-        "burndown": "Burndown",
         "timeline": "Timeline"
-      },
-      "burndown": {
-        "total": "Total Tâches",
-        "done": "Fait",
-        "remaining": "Restant",
-        "time": "Temps",
-        "tasks": "Tâches"
       },
       "validation": {
         "endDateAfterStartDate": "La date de fin doit être postérieure à la date de début."

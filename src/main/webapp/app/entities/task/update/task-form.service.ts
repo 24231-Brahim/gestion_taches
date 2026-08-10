@@ -29,7 +29,7 @@ type TaskFormRawValue = FormValueOf<ITask>;
 
 type NewTaskFormRawValue = FormValueOf<NewTask>;
 
-type TaskFormDefaults = Pick<NewTask, 'id' | 'createdAt' | 'updatedAt'>;
+type TaskFormDefaults = Pick<NewTask, 'id' | 'createdAt' | 'updatedAt' | 'status'>;
 
 type TaskFormGroupContent = {
   id: FormControl<TaskFormRawValue['id'] | NewTask['id']>;
@@ -110,6 +110,7 @@ export class TaskFormService {
       id: null,
       createdAt: currentTime,
       updatedAt: currentTime,
+      status: 'NEW',
     };
   }
 

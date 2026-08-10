@@ -91,7 +91,7 @@ export class NotificationService {
     }
 
     if (notification.relatedUserLogin) {
-      return { route: ['/admin', 'user-management', notification.relatedUserLogin, 'detail'] };
+      return { route: ['/user-management', notification.relatedUserLogin, 'detail'] };
     }
 
     return null;

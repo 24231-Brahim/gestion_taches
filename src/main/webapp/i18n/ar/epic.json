@@ -52,15 +52,7 @@
       "tab": {
         "tasks": "المهام",
         "kanban": "كانبان",
-        "burndown": "مخطط الحرق",
         "timeline": "الجدول الزمني"
-      },
-      "burndown": {
-        "total": "إجمالي المهام",
-        "done": "المكتملة",
-        "remaining": "المتبقية",
-        "time": "الوقت",
-        "tasks": "المهام"
       },
       "validation": {
         "endDateAfterStartDate": "يجب أن يكون تاريخ النهاية بعد تاريخ البداية."

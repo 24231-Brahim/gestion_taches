@@ -99,7 +99,6 @@ class TaskServiceTest {
     void partialUpdate_recalculatesParentSprintAndEpic() {
         Task existing = taskInParents();
         when(taskRepository.findById(10L)).thenReturn(Optional.of(existing));
-        when(projectPermissionService.resolveCurrentUserId()).thenReturn(5L);
         when(projectPermissionService.getCurrentUserRole(1L)).thenReturn(ProjectRole.OWNER);
         when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
         TaskDTO dto = new TaskDTO();
@@ -115,7 +114,6 @@ class TaskServiceTest {
     void partialUpdate_taskMovedBetweenSprints_recalculatesOldAndNewSprint() {
         Task existing = taskInParents();
         when(taskRepository.findById(10L)).thenReturn(Optional.of(existing));
-        when(projectPermissionService.resolveCurrentUserId()).thenReturn(5L);
         when(projectPermissionService.getCurrentUserRole(1L)).thenReturn(ProjectRole.OWNER);
         when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -147,7 +145,6 @@ class TaskServiceTest {
         existing.setStatus(TaskStatus.NEW);
         existing.setProject(project);
         when(taskRepository.findById(10L)).thenReturn(Optional.of(existing));
-        when(projectPermissionService.resolveCurrentUserId()).thenReturn(5L);
         when(projectPermissionService.getCurrentUserRole(1L)).thenReturn(ProjectRole.OWNER);
         when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -184,6 +181,22 @@ class TaskServiceTest {
 
         verify(sprintService).recalculateStatus(10L);
         verify(epicService).recalculateStatus(20L);
+    }
+
+    @Test
+    void save_newTask_defaultsStatusToNew() {
+        Task task = new Task();
+        task.setProject(project);
+        authenticateAs("admin");
+        when(taskMapper.toEntity(any(TaskDTO.class))).thenReturn(task);
+        when(userRepository.findOneByLogin("admin")).thenReturn(Optional.of(currentUser));
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(taskMapper.toDto(any(Task.class))).thenReturn(new TaskDTO());
+
+        taskService.save(new TaskDTO());
+
+        assertThat(task.getStatus()).isEqualTo(TaskStatus.NEW);
+        assertThat(task.getCreatedBy()).isEqualTo(currentUser);
     }
 
     @Test

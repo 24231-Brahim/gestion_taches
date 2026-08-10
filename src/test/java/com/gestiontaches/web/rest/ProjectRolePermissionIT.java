@@ -131,13 +131,18 @@ class ProjectRolePermissionIT {
     }
 
     private com.gestiontaches.domain.Task persistTask(User assignee) {
+        return persistTask(assignee, assignee);
+    }
+
+    private com.gestiontaches.domain.Task persistTask(User assignee, User createdBy) {
         com.gestiontaches.domain.Task task = new com.gestiontaches.domain.Task()
             .title("Test Task")
             .status(com.gestiontaches.domain.enumeration.TaskStatus.NEW)
             .priority(com.gestiontaches.domain.enumeration.Priority.MEDIUM)
             .createdAt(Instant.now())
             .project(project)
-            .assignee(assignee);
+            .assignee(assignee)
+            .createdBy(createdBy);
         em.persist(task);
         em.flush();
         return task;
@@ -332,7 +337,8 @@ class ProjectRolePermissionIT {
     @Test
     @WithMockUser(username = "member-user")
     @Transactional
-    void member_cannot_create_task() throws Exception {
+    void member_can_create_task() throws Exception {
+        // Any project member (DEVELOPER/USER with a MEMBER project role) may create tasks.
         TaskDTO dto = new TaskDTO();
         dto.setTitle("Test Task");
         dto.setStatus(com.gestiontaches.domain.enumeration.TaskStatus.NEW);
@@ -345,7 +351,7 @@ class ProjectRolePermissionIT {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(om.writeValueAsString(dto))
             )
-            .andExpect(status().isForbidden());
+            .andExpect(status().isCreated());
     }
 
     @Test
@@ -570,9 +576,9 @@ class ProjectRolePermissionIT {
     @Test
     @WithMockUser(username = "member-user", roles = { "USER", "DEVELOPER" })
     @Transactional
-    void member_cannot_edit_task_assigned_to_someone_else() throws Exception {
-        // Task is assigned to the owner, not to member-user — a plain MEMBER may only edit a task
-        // they are personally assigned to.
+    void member_cannot_edit_task_created_by_someone_else() throws Exception {
+        // Task was created (and is assigned to) the owner — a plain MEMBER may only edit the tasks
+        // they created themselves.
         com.gestiontaches.domain.Task task = persistTask(ownerUser);
         String patchBody = "{\"id\":" + task.getId() + ",\"status\":\"IN_PROGRESS\"}";
         mockMvc

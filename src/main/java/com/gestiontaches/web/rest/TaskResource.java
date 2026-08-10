@@ -165,6 +165,8 @@ public class TaskResource {
             AuthoritiesConstants.PROJET_MANAGER +
             "', '" +
             AuthoritiesConstants.DEVELOPER +
+            "', '" +
+            AuthoritiesConstants.USER +
             "')"
     )
     public ResponseEntity<TaskDTO> createTask(@Valid @RequestBody TaskDTO taskDTO) throws URISyntaxException {
@@ -196,6 +198,8 @@ public class TaskResource {
             AuthoritiesConstants.PROJET_MANAGER +
             "', '" +
             AuthoritiesConstants.DEVELOPER +
+            "', '" +
+            AuthoritiesConstants.USER +
             "')"
     )
     public ResponseEntity<TaskDTO> updateTask(
@@ -239,6 +243,8 @@ public class TaskResource {
             AuthoritiesConstants.PROJET_MANAGER +
             "', '" +
             AuthoritiesConstants.DEVELOPER +
+            "', '" +
+            AuthoritiesConstants.USER +
             "')"
     )
     public ResponseEntity<TaskDTO> partialUpdateTask(

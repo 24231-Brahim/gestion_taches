@@ -7,7 +7,6 @@ import { of, Subject } from 'rxjs';
 import { FaIconLibrary } from '@fortawesome/angular-fontawesome';
 import {
   faCheck,
-  faClipboardList,
   faFolder,
   faPencil,
   faPlay,
@@ -95,7 +94,7 @@ describe('Sprint Component', () => {
     modalService = TestBed.inject(NgbModal);
 
     const library = TestBed.inject(FaIconLibrary);
-    library.addIcons(faCheck, faClipboardList, faFolder, faPencil, faPlay, faPlus, faChartLine, faTableColumns, faListCheck, faTable);
+    library.addIcons(faCheck, faFolder, faPencil, faPlay, faPlus, faChartLine, faTableColumns, faListCheck, faTable);
 
     fixture.detectChanges();
   });
@@ -109,14 +108,6 @@ describe('Sprint Component', () => {
   });
 
   it('should have board tab as default', () => {
-    expect(comp.activeTab()).toBe('board');
-  });
-
-  it('should switch tabs', () => {
-    comp.setTab('planning');
-    expect(comp.activeTab()).toBe('planning');
-
-    comp.setTab('board');
     expect(comp.activeTab()).toBe('board');
   });
 

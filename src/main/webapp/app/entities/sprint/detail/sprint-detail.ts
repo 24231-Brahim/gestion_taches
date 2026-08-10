@@ -19,13 +19,11 @@ import { TaskDeleteDialog } from 'app/entities/task/delete/task-delete-dialog';
 import { IProjectMember } from 'app/entities/project/project.model';
 import { ProjectService } from 'app/entities/project/service/project.service';
 import { SprintActiveBoard } from '../active-board/sprint-active-board';
-import { SprintBacklogPlanning } from '../backlog-planning/sprint-backlog-planning';
-import { SprintBurndownChart } from '../burndown/sprint-burndown-chart';
 import { SprintService, VelocityReport } from '../service/sprint.service';
 import { SprintTimeline } from '../timeline/sprint-timeline';
 import { ISprint } from '../sprint.model';
 
-type Tab = 'board' | 'planning' | 'tasks' | 'timeline';
+type Tab = 'board' | 'tasks' | 'timeline';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -218,17 +216,7 @@ type Tab = 'board' | 'planning' | 'tasks' | 'timeline';
       }
     `,
   ],
-  imports: [
-    RouterLink,
-    FontAwesomeModule,
-    TranslateDirective,
-    TranslateModule,
-    FormatMediumDatePipe,
-    SprintActiveBoard,
-    SprintBacklogPlanning,
-    SprintBurndownChart,
-    SprintTimeline,
-  ],
+  imports: [RouterLink, FontAwesomeModule, TranslateDirective, TranslateModule, FormatMediumDatePipe, SprintActiveBoard, SprintTimeline],
 })
 export class SprintDetail {
   readonly sprint = input<ISprint | null>(null);

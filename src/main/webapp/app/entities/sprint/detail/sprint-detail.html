@@ -69,9 +69,6 @@
       <button class="tab-item" [class.active]="activeTab() === 'board'" (click)="setTab('board')">
         <fa-icon icon="table-columns" class="me-1" /> {{ 'gestionTachesApp.sprint.board.tab' | translate }}
       </button>
-      <button class="tab-item" [class.active]="activeTab() === 'planning'" (click)="setTab('planning')">
-        <fa-icon icon="clipboard-list" class="me-1" /> {{ 'gestionTachesApp.sprint.planning.tab' | translate }}
-      </button>
       <button class="tab-item" [class.active]="activeTab() === 'tasks'" (click)="setTab('tasks')">
         <fa-icon icon="list" class="me-1" /> {{ 'gestionTachesApp.sprint.tasks.tab' | translate }}
       </button>
@@ -90,17 +87,6 @@
           (statusChange)="onStatusChange($event)"
           (startSprint)="onStartSprint()"
           (completeSprint)="onCompleteSprint()"
-        />
-      }
-      @case ('planning') {
-        <jhi-sprint-backlog-planning
-          [sprint]="sp"
-          [allTasks]="projectTasks()"
-          [sprintTasksInput]="tasks()"
-          [canManage]="canManageSprints()"
-          [sprintStatus]="sp.status ?? 'PLANNED'"
-          (assignToSprint)="onAssignToSprint($event)"
-          (removeFromSprint)="onRemoveFromSprint($event)"
         />
       }
       @case ('tasks') {
