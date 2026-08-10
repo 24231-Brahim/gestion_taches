@@ -57,6 +57,11 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiJ9...
 | Token standard | 24 heures (`86400` s) |
 | Remember-me | 30 jours (`2592000` s) |
 
+**Algorithme et claims** :
+
+- Algorithme de signature : **HS512** (`MacAlgorithm.HS512`, secret HMAC).
+- Claims : `sub` (login), `auth` (autorités séparées par des espaces), `userId` (ID de l'utilisateur), `iat`/`exp`.
+
 ### Rôles / Autorités
 
 | Rôle | Description |
@@ -123,8 +128,8 @@ Le profile `api-docs` active `springdoc-openapi`. En développement, ce profile 
 
 L'interface Swagger est accessible à l'URL standard de springdoc-openapi 3.x :
 
-- **Swagger UI** : `/swagger-ui/index.html` (valeur par défaut, non confirmée dans la configuration du projet)
-- **OpenAPI JSON** : `/v3/api-docs`
+- **Swagger UI** : `/swagger-ui/index.html` (autorisé sans authentification via `SecurityConfiguration`)
+- **OpenAPI JSON** : `/v3/api-docs` (réservé à `ROLE_ADMIN`)
 
 > Note : l'activation effective dépend du profile Spring actif au lancement de l'application.
 
@@ -148,6 +153,8 @@ Un endpoint WebSocket est configuré pour les notifications temps réel :
 
 ## Fichiers de documentation
 
+### Ressources métier
+
 - [README.md](./README.md) — Sommaire général (ce fichier)
 - [project.md](./project.md) — Projects
 - [sprint.md](./sprint.md) — Sprints
@@ -159,3 +166,14 @@ Un endpoint WebSocket est configuré pour les notifications temps réel :
 - [notification.md](./notification.md) — Notifications
 - [project-member.md](./project-member.md) — Project Members
 - [chat.md](./chat.md) — Chat (Conversations, Messages, Présence)
+- [group-message.md](./group-message.md) — Group Messages
+
+### Comptes, utilisateurs et autorités
+
+- [account.md](./account.md) — Inscription, activation, compte, mots de passe
+- [users.md](./users.md) — Administration des utilisateurs et des autorités
+
+### Statistiques, recherche et export
+
+- [dashboard.md](./dashboard.md) — KPIs dashboard, statistiques développeur et admin
+- [recherche-export.md](./recherche-export.md) — Recherche globale, événements SSE, export CSV

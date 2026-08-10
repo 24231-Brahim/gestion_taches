@@ -1,89 +1,45 @@
-# Documentation technique — Gestion Tâches
-
-Ce dossier contient la documentation technique officielle du projet **Gestion Tâches**, destinée aux développeurs qui rejoignent le projet.
-
-## Stack technique confirmée
-
-| Couche | Technologie | Version |
-|--------|-------------|---------|
-| Backend | Spring Boot (JHipster) | 4.0.6 |
-| Frontend | Angular | 21.2.14 |
-| Base de données | PostgreSQL | 18.4 |
-| Build backend | Maven | (via `mvnw`) |
-| Build frontend | npm / Angular CLI | 21.2.12 |
-| Sécurité | Spring Security + JWT (OAuth2 Resource Server) | HS512 |
-| Cache | Caffeine + Hibernate second-level cache | — |
-| Messaging | Spring WebSocket + STOMP + SockJS | — |
-| Monitoring | Prometheus + Grafana + Actuator | — |
-| Qualité | SonarQube | 26.5.0 |
+# Documentation technique — GestionTâches
 
 ## Sommaire
 
-| Fichier | Description |
-|---------|-------------|
-| [architecture.md](./architecture.md) | Architecture globale, couches backend, structure frontend |
-| [modele-donnees.md](./modele-donnees.md) | Modèle de données, entités, enums, relations |
-| [securite.md](./securite.md) | Authentification JWT, rôles, CORS, endpoints publics/protégés |
-| [frontend.md](./frontend.md) | Structure Angular, routing, state management, composants |
-| [chat-temps-reel.md](./chat-temps-reel.md) | WebSocket/STOMP, canaux, polling REST, présence |
-| [infrastructure.md](./infrastructure.md) | Docker Compose, services, monitoring, variables d'environnement |
-| [environnements.md](./environnements.md) | Profils dev/prod, configuration PostgreSQL, variables sensibles |
-| [deploiement.md](./deploiement.md) | Build, packaging Docker, déploiement, monitoring |
+Cette documentation technique s'adresse aux développeurs qui rejoignent le projet. Elle décrit l'architecture, le modèle de données, la sécurité, le frontend, le temps réel, l'infrastructure, les environnements et le déploiement.
 
-## Arborescence rapide du projet
+### Fiches disponibles
 
-```
-.
-├── src/
-│   ├── main/
-│   │   ├── java/com/gestiontaches/
-│   │   │   ├── config/          # Config Spring (sécurité, cache, DB, WebSocket)
-│   │   │   ├── domain/         # Entités JPA
-│   │   │   ├── repository/     # Spring Data JPA repositories
-│   │   │   ├── service/        # Services métier + DTOs + critères
-│   │   │   ├── web/rest/       # Contrôleurs REST
-│   │   │   └── security/       # Security utils, UserDetailsService
-│   │   ├── resources/
-│   │   │   ├── config/         # application.yml, application-dev.yml, application-prod.yml
-│   │   │   └── db/             # Liquibase changelogs
-│   │   └── webapp/
-│   │       └── app/
-│   │           ├── core/       # Auth, interceptors, config
-│   │           ├── shared/     # Composants partagés (pagination, tri, dates)
-│   │           ├── entities/   # Modules métier (project, sprint, epic, task, chat...)
-│   │           ├── layouts/    # Navbar, sidebar, error pages
-│   │           ├── home/       # Dashboard
-│   │           ├── login/      # Authentification
-│   │           └── account/    # Gestion de compte
-│   └── test/
-├── docs/
-│   ├── api/                    # Documentation API REST
-│   └── technique/              # Documentation technique (ce dossier)
-├── src/main/docker/            # Docker Compose files
-├── pom.xml                     # Maven (backend)
-├── package.json                # npm (frontend)
-└── project-management.jdl      # Modèle de données JDL
-```
+1. [Architecture globale](./architecture.md)
+2. [Modèle de données](./modele-donnees.md)
+3. [Sécurité](./securite.md)
+4. [Frontend Angular](./frontend.md)
+5. [Chat temps réel](./chat-temps-reel.md)
+6. [Infrastructure Docker](./infrastructure.md)
+7. [Environnements (dev / prod)](./environnements.md)
+8. [Déploiement](./deploiement.md)
 
-## Commandes utiles
+### Stack technique
 
-```bash
-# Backend
-./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
-./mvnw verify -Pprod                    # Build JAR production
-./mvnw verify -Pprod jib:dockerBuild    # Build Docker image
+| Couche | Technologie | Version |
+|--------|------------|---------|
+| Backend | Spring Boot | 4.0.6 |
+| Langage backend | Java | 21 |
+| Frontend | Angular | 21.2.14 |
+| Base de données | PostgreSQL | 16 (18.4 dans Docker) |
+| Build backend | Maven | 3.2.5+ |
+| Build frontend | npm | 11.15.0 (Node v24.16.0) |
+| ORM | Hibernate | (via Spring Boot) |
+| Migration DB | Liquibase | (via JHipster) |
+| Sécurité | Spring Security + JWT (HS512) | |
+| Temps réel | WebSocket / STOMP / SockJS | |
+| Cache | Caffeine + JCache | |
+| Monitoring | Micrometer + Prometheus | |
+| Image Docker | Jib (eclipse-temurin:25-jre-noble) | |
 
-# Frontend
-npm start                                # Dev server Angular (port 4200)
-npm run webapp:build:prod                # Build production
+### Génération du projet
 
-# Docker
-docker compose -f src/main/docker/postgresql.yml up --wait
-docker compose -f src/main/docker/app.yml up --wait
-docker compose -f src/main/docker/services.yml up --wait
+Le projet a été généré avec **JHipster 9.1.0**. Le modèle de domaine est défini dans `project-management.jdl`.
 
-# Tests
-npm run backend:unit:test
-npm run ci:frontend:test
-npm run e2e:dev
-```
+### Conventions de nommage
+
+- Packages Java : `com.gestiontaches.{couche}` (`domain`, `repository`, `service`, `web.rest`, `config`, `security`)
+- Tables PostgreSQL : snake_case (ex: `chat_message`, `task_history`)
+- Entités JPA : PascalCase correspondant (ex: `ChatMessage`, `TaskHistory`)
+- Composants Angular : kebab-case avec préfixe `jhi-` (ex: `jhi-task-detail-panel`)
