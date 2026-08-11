@@ -77,14 +77,14 @@ jhi-sidebar {
 
 .sidebar-toggle {
   position: absolute;
-  top: 12px;
-  inset-inline-end: -14px;
+  top: 0px;
+  inset-inline-end: -4px;
   width: 28px;
   height: 28px;
   background: var(--color-surface-container);
   border: 1px solid var(--color-outline-variant);
-  border-radius: 9999px;
   color: var(--color-muted);
+  border-radius: 2px;
   cursor: pointer;
   display: flex;
   align-items: center;

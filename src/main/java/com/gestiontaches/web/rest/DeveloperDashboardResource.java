@@ -30,6 +30,8 @@ public class DeveloperDashboardResource {
             AuthoritiesConstants.PROJET_MANAGER +
             "', '" +
             AuthoritiesConstants.DEVELOPER +
+            "', '" +
+            AuthoritiesConstants.USER +
             "')"
     )
     public ResponseEntity<DeveloperDashboardStatisticsDTO> getStatistics() {

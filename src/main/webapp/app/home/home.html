@@ -2,6 +2,8 @@
   <jhi-dashboard />
 } @else if (isDeveloper()) {
   <jhi-developer-dashboard />
+} @else if (isUser()) {
+  <jhi-developer-dashboard [showRecentProjects]="true" [hideTaskStats]="true" />
 } @else {
   <div class="row home-row">
     <div class="col-12 col-md-9">

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { HttpParams, httpResource } from '@angular/common/http';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
@@ -64,15 +64,17 @@ const ACTIVITY_COLORS = [
         </div>
       }
       <div class="kpi-grid">
-        <jhi-kpi-card label="{{ 'dashboard.kpi.myAssignedTasks' | translate }}" [value]="assignedTasksTotal()" icon="tasks" />
+        @if (!hideTaskStats()) {
+          <jhi-kpi-card label="{{ 'dashboard.kpi.myAssignedTasks' | translate }}" [value]="assignedTasksTotal()" icon="tasks" />
+          <jhi-kpi-card label="{{ 'dashboard.kpi.overdueTasks' | translate }}" [value]="overdueTasks()" icon="exclamation-circle" />
+        }
         <jhi-kpi-card label="{{ 'dashboard.kpi.inProgressTasks' | translate }}" [value]="inProgressTasks()" icon="sync" />
         <jhi-kpi-card label="{{ 'dashboard.kpi.completedTasks' | translate }}" [value]="doneTasks()" icon="check-circle" />
-        <jhi-kpi-card label="{{ 'dashboard.kpi.overdueTasks' | translate }}" [value]="overdueTasks()" icon="exclamation-circle" />
         <jhi-kpi-card label="{{ 'dashboard.kpi.myProjects' | translate }}" [value]="memberProjectsCount()" icon="folder" />
       </div>
-      <jhi-dashboard-quick-actions variant="developer" [firstProjectKey]="firstProjectKey()" />
+      <jhi-dashboard-quick-actions [variant]="variant()" [firstProjectKey]="firstProjectKey()" />
       <jhi-dashboard-charts [taskDistribution]="taskDistribution()" [projectProgress]="projectProgress()" />
-      <jhi-dashboard-lists [recentTasks]="recentTasks()" [showRecentProjects]="false" />
+      <jhi-dashboard-lists [recentProjects]="recentProjects()" [recentTasks]="recentTasks()" [showRecentProjects]="showRecentProjects()" />
       <div class="bottom-grid">
         <jhi-dashboard-timeline [activitiesOverride]="recentActivity()" />
       </div>
@@ -127,6 +129,11 @@ const ACTIVITY_COLORS = [
   ],
 })
 export class DeveloperDashboardComponent {
+  readonly showRecentProjects = input(false);
+  readonly hideTaskStats = input(false);
+
+  readonly variant = computed<'developer' | 'user'>(() => (this.hideTaskStats() ? 'user' : 'developer'));
+
   readonly assignedTasksTotal = computed(() => this.statisticsResource.value()?.assignedTasksTotal ?? 0);
   readonly inProgressTasks = computed(() => this.statisticsResource.value()?.inProgressTasks ?? 0);
   readonly doneTasks = computed(() => this.statisticsResource.value()?.doneTasks ?? 0);
@@ -135,6 +142,8 @@ export class DeveloperDashboardComponent {
   readonly taskDistribution = computed(() => this.statisticsResource.value()?.taskDistribution ?? []);
 
   readonly firstProjectKey = computed(() => this.myProjectsResource.value()?.[0]?.key ?? null);
+
+  readonly recentProjects = computed<MemberProject[]>(() => this.myProjectsResource.value() ?? []);
 
   readonly projectProgress = computed(() => {
     const projects = this.myProjectsResource.value() ?? [];
