@@ -59,6 +59,15 @@
     <jhi-filter [filters]="filters" />
   </div>
 
+  <div class="roadmap-legend">
+    @for (entry of statusColors | keyvalue; track entry.key) {
+      <span class="roadmap-legend-item">
+        <span class="legend-dot" [style.background]="entry.value"></span>
+        <span>{{ 'gestionTachesApp.EpicStatus.' + entry.key | translate }}</span>
+      </span>
+    }
+  </div>
+
   @if (epicsWithProgress().length === 0) {
     <div class="alert alert-warning">
       <span jhiTranslate="gestionTachesApp.epic.home.notFound"></span>
@@ -103,15 +112,6 @@
           </div>
         }
       </div>
-    </div>
-
-    <div class="roadmap-legend">
-      @for (entry of statusColors | keyvalue; track entry.key) {
-        <span class="roadmap-legend-item">
-          <span class="legend-dot" [style.background]="entry.value"></span>
-          <span>{{ 'gestionTachesApp.EpicStatus.' + entry.key | translate }}</span>
-        </span>
-      }
     </div>
   }
 </div>

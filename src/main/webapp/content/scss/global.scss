@@ -163,6 +163,27 @@ select.form-control {
   appearance: auto;
 }
 
+.roadmap-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+
+  .roadmap-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+
+    select {
+      flex: 1 1 0;
+      width: 100%;
+      min-width: 0; // évite que les selects débordent en flex
+    }
+  }
+}
+
 /* ─── Buttons ─── */
 .btn {
   font-family: var(--font-display);
