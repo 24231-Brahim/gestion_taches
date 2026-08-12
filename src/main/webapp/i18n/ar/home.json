@@ -5,16 +5,12 @@
     "logged": {
       "message": "أنت مسجل الدخول كمستخدم \"{{username}}\"."
     },
-    "question": "إذا كان لديك أي أسئلة حول JHipster:",
-    "link": {
-      "homepage": "موقع JHipster",
-      "stackoverflow": "JHipster على Stack Overflow",
-      "bugtracker": "متتبع أخطاء JHipster",
-      "chat": "غرفة الدردشة العامة لـ JHipster",
-      "follow": "متابعة @jhipster على تويتر"
-    },
-    "like": "إذا أعجبك JHipster، لا تنسَ منحنا نجمة على",
-    "github": "GitHub"
+    "welcome": "مرحبًا",
+    "myTasks": "مهامي",
+    "projects": "المشاريع",
+    "sprints": "السباقات",
+    "tasks": "المهام",
+    "description": "مرحبًا بك في مساحة مشروعك. تابع تقدم مشاريعك في الوقت الفعلي، اطّلع على المهام الجارية، وتواصل مباشرة مع فريقك عبر التعليقات. كل ما تحتاجه لتبقى على اطّلاع، في مكان واحد."
   },
   "dashboard": {
     "noData": "لا توجد بيانات",

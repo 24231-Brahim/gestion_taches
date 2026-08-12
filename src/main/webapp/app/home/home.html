@@ -3,5 +3,23 @@
 } @else if (isDeveloper()) {
   <jhi-developer-dashboard />
 } @else {
-  <div class="row home-row"></div>
+  <div class="row home-row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+      <div class="home-welcome text-center">
+        <h1 class="home-title" data-cy="home-title">{{ 'home.welcome' | translate }}</h1>
+        <p class="home-subtitle" data-cy="home-subtitle">{{ account()?.firstName }} {{ account()?.lastName }}</p>
+        <p class="home-description" data-cy="home-description">{{ 'home.description' | translate }}</p>
+        <div class="home-cards">
+          <a routerLink="/my-tasks" class="home-card" data-cy="home-my-tasks">
+            <fa-icon icon="tasks" class="home-card-icon"></fa-icon>
+            <span class="home-card-label">{{ 'home.myTasks' | translate }}</span>
+          </a>
+          <a routerLink="/project" class="home-card" data-cy="home-projects">
+            <fa-icon icon="folder" class="home-card-icon"></fa-icon>
+            <span class="home-card-label">{{ 'home.projects' | translate }}</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
 }

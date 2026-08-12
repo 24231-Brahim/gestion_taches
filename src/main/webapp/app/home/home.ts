@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { AccountService } from 'app/core/auth/account.service';
@@ -13,7 +14,7 @@ import { DeveloperDashboardComponent } from 'app/home/dashboard/developer-dashbo
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './home.html',
   styleUrl: './home.scss',
-  imports: [TranslateDirective, TranslateModule, RouterLink, DashboardComponent, DeveloperDashboardComponent],
+  imports: [TranslateDirective, TranslateModule, RouterLink, FontAwesomeModule, DashboardComponent, DeveloperDashboardComponent],
 })
 export default class Home {
   public readonly account = inject(AccountService).account;

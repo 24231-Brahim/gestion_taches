@@ -9,10 +9,10 @@ jhi-home {
 .home-welcome {
   border: 1px solid var(--color-outline-variant);
   background-color: var(--color-surface-container);
-  padding: 1.5rem;
+  padding: var(--stack-xl);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  margin-bottom: 1.5rem;
+  text-align: center;
 }
 
 .home-title {
@@ -34,33 +34,61 @@ jhi-home {
   margin-bottom: var(--stack-md);
 }
 
-.home-logged-message {
+.home-description {
   font-family: var(--font-inter);
+  font-size: var(--body-md-size);
+  color: var(--color-muted);
+  max-width: 640px;
+  margin: 0 auto var(--stack-xl);
+  line-height: 1.6;
 }
 
-.home-links {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.home-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--stack-md);
+}
 
-  li {
-    padding: var(--stack-sm) 0;
-    border-bottom: 1px solid var(--color-outline-variant);
+.home-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--stack-sm);
+  padding: var(--stack-lg);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+  color: var(--color-on-surface);
+  transition:
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast),
+    border-color var(--transition-fast);
 
-    &:last-child {
-      border-bottom: none;
-    }
+  &:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    border-color: var(--color-brand-blue);
+    color: var(--color-link);
   }
+}
 
-  a {
-    font-family: var(--font-inter);
-    font-weight: 500;
-    font-size: var(--text-sm);
-    color: var(--color-link, var(--color-primary));
-    transition: color var(--transition-fast);
+.home-card-icon {
+  font-size: 1.75rem;
+  color: var(--color-brand-blue);
+}
 
-    &:hover {
-      color: var(--color-secondary);
-    }
+.home-card-label {
+  font-family: var(--font-inter);
+  font-weight: 500;
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+@media (max-width: 575px) {
+  .home-cards {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
