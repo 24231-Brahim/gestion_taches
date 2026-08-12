@@ -21,7 +21,6 @@ export default class Home {
     () => this.account()?.authorities.some(a => a === 'ROLE_ADMIN' || a === 'ROLE_PROJET_MANAGER') ?? false,
   );
   readonly isDeveloper = computed(() => this.account()?.authorities.some(a => a === 'ROLE_DEVELOPER') ?? false);
-  readonly isUser = computed(() => this.account()?.authorities.some(a => a === 'ROLE_USER') ?? false);
 
   private readonly router = inject(Router);
 
