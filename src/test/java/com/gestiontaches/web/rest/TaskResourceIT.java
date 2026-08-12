@@ -193,6 +193,68 @@ class TaskResourceIT {
 
     @Test
     @Transactional
+    @WithMockUser(authorities = { "ROLE_DEVELOPER" })
+    void createTask_asDeveloper_shouldForbid() throws Exception {
+        TaskDTO taskDTO = taskMapper.toDto(task);
+        restTaskMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(taskDTO)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_USER" })
+    void createTask_asUser_shouldForbid() throws Exception {
+        TaskDTO taskDTO = taskMapper.toDto(task);
+        restTaskMockMvc
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(taskDTO)))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_DEVELOPER" })
+    void createTaskForProject_asDeveloper_shouldForbid() throws Exception {
+        TaskDTO taskDTO = taskMapper.toDto(task);
+        restTaskMockMvc
+            .perform(
+                post("/api/tasks/projects/{projectId}/tasks", task.getProject().getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(om.writeValueAsBytes(taskDTO))
+            )
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_USER" })
+    void createTaskForProject_asUser_shouldForbid() throws Exception {
+        TaskDTO taskDTO = taskMapper.toDto(task);
+        restTaskMockMvc
+            .perform(
+                post("/api/tasks/projects/{projectId}/tasks", task.getProject().getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(om.writeValueAsBytes(taskDTO))
+            )
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @Transactional
+    @WithMockUser(authorities = { "ROLE_PROJET_MANAGER" })
+    void createTaskForProject_asProjetManager_withoutMembership_shouldForbid() throws Exception {
+        TaskDTO taskDTO = taskMapper.toDto(task);
+        restTaskMockMvc
+            .perform(
+                post("/api/tasks/projects/{projectId}/tasks", task.getProject().getId())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(om.writeValueAsBytes(taskDTO))
+            )
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @Transactional
     void checkTitleIsRequired() throws Exception {
         long databaseSizeBeforeTest = getRepositoryCount();
         // set the field null

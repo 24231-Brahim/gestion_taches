@@ -28,7 +28,7 @@ const taskRoute: Routes = [
     resolve: {
       task: TaskResolve,
     },
-    data: { authorities: ['ROLE_ADMIN', 'ROLE_PROJET_MANAGER', 'ROLE_DEVELOPER', 'ROLE_USER'] },
+    data: { authorities: ['ROLE_ADMIN', 'ROLE_PROJET_MANAGER'] },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -37,9 +37,10 @@ const taskRoute: Routes = [
     resolve: {
       task: TaskResolve,
     },
-    // Any authenticated project member may edit a task (status/description/priority/title etc.).
-    // Reassignment (changing the assignee) stays OWNER/MANAGER-only and is rejected server-side.
-    data: { authorities: ['ROLE_ADMIN', 'ROLE_PROJET_MANAGER', 'ROLE_DEVELOPER', 'ROLE_USER'] },
+    // Any ADMIN/PROJET_MANAGER/DEVELOPER project member may edit a task (status/description/
+    // priority/title etc.). Reassignment (changing the assignee) stays OWNER/MANAGER-only and is
+    // rejected server-side. Bare USER accounts are read-only and never see the edit page.
+    data: { authorities: ['ROLE_ADMIN', 'ROLE_PROJET_MANAGER', 'ROLE_DEVELOPER'] },
     canActivate: [UserRouteAccessService],
   },
 ];

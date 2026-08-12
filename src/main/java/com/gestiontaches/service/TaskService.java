@@ -79,10 +79,9 @@ public class TaskService {
     public TaskDTO save(TaskDTO taskDTO) {
         LOG.debug("Request to save Task : {}", taskDTO);
         if (taskDTO.getProject() != null && taskDTO.getProject().getId() != null) {
-            // Task creation is open to any project member (ADMIN bypasses, PROJECT_MANAGER,
-            // DEVELOPER and USER are covered by their ProjectMember role). Only reassignment
-            // and deletion remain management actions (OWNER/MANAGER).
-            projectPermissionService.requireProjectAccess(taskDTO.getProject().getId());
+            // Task creation is a management action: only ADMIN (bypass) or a project-level
+            // OWNER/MANAGER may create tasks. DEVELOPER/USER (MEMBER role) are not allowed.
+            projectPermissionService.requireProjectRole(taskDTO.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
         }
         Task oldTask = null;
         if (taskDTO.getId() != null) {
@@ -241,6 +240,11 @@ public class TaskService {
             return;
         }
         if (role == ProjectRole.MEMBER) {
+            // A plain USER account (no ADMIN/PROJET_MANAGER/DEVELOPER authority) may not edit
+            // tasks at all — only read them. DEVELOPER accounts may still edit tasks they created.
+            if (!hasElevatedAuthority()) {
+                throw new AccessDeniedException("Access denied: USER accounts cannot edit tasks");
+            }
             Long currentUserId = projectPermissionService.resolveCurrentUserId();
             boolean isCreator = existing.getCreatedBy() != null && existing.getCreatedBy().getId().equals(currentUserId);
             if (!isCreator) {
@@ -317,6 +321,18 @@ public class TaskService {
     }
 
     /**
+     * Whether the current user holds a task-management authority (ADMIN, PROJET_MANAGER or
+     * DEVELOPER). A bare USER account has none of these and is read-only.
+     */
+    private boolean hasElevatedAuthority() {
+        return SecurityUtils.hasCurrentUserAnyOfAuthorities(
+            AuthoritiesConstants.ADMIN,
+            AuthoritiesConstants.PROJET_MANAGER,
+            AuthoritiesConstants.DEVELOPER
+        );
+    }
+
+    /**
      * Get all the tasks with eager load of many-to-many relationships.
      *
      * @return the list of entities.
@@ -346,10 +362,9 @@ public class TaskService {
      */
     public TaskDTO createForProject(TaskDTO taskDTO, Long projectId) {
         LOG.debug("Request to save Task for Project {} : {}", projectId, taskDTO);
-        // Task creation is open to any project member (ADMIN bypasses, PROJECT_MANAGER,
-        // DEVELOPER and USER are covered by their ProjectMember role). Only reassignment
-        // and deletion remain management actions (OWNER/MANAGER).
-        projectPermissionService.requireProjectAccess(projectId);
+        // Task creation is a management action: only ADMIN (bypass) or a project-level
+        // OWNER/MANAGER may create tasks. DEVELOPER/USER (MEMBER role) are not allowed.
+        projectPermissionService.requireProjectRole(projectId, ProjectRole.OWNER, ProjectRole.MANAGER);
         Task task = taskMapper.toEntity(taskDTO);
         String currentLogin = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("Current user not found"));
         User currentUser = userRepository

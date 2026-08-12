@@ -1,90 +1,87 @@
 # Gestion de Tâches
 
-Système de gestion de projet (type Jira) généré avec **JHipster 9.1.0**.
+Système de gestion de projet agile (type Jira) généré avec **JHipster 9.1.0**.
 
 | Technologie      | Choix                        |
 | ---------------- | ---------------------------- |
 | Backend          | Spring Boot 4.0.6 (Java 21)  |
 | Frontend         | Angular 21.2.14              |
 | Base de données  | PostgreSQL 16                |
-| Build            | Maven                        |
+| Build            | Maven + npm                  |
 | Authentification | JWT (OAuth2 Resource Server) |
+| Temps réel       | WebSocket / STOMP / SockJS   |
+| Cache            | Caffeine                     |
 
 ### Entités
 
-| Entité                 | Description                                                 |
-| ---------------------- | ----------------------------------------------------------- |
-| **Project**            | Projet racine contenant sprints, epics et tasks             |
-| **Sprint**             | Itération de développement                                  |
-| **Epic**               | Fonctionnalité transverse                                   |
-| **Task**               | Unité de travail (Story, Bug, Task, Subtask, Improvement)   |
-| **Comment**            | Commentaire sur une tâche (avec auteur)                     |
-| **Attachment**         | Fichier joint à une tâche (avec uploader)                   |
-| **TaskHistory**        | Audit des modifications d'une tâche                         |
-| **Notification**       | Notification in-app (assignation, rappel)                   |
-| **ProjectMember**      | Membre d'un projet avec rôle (OWNER/MANAGER/MEMBER)         |
-| **GroupMessage**       | Message de messagerie de groupe lié à un projet             |
-| **Conversation**       | Conversation de chat (canal GENERAL ou DIRECT)              |
-| **ConversationMember** | Membre d'une conversation (horodatage de dernière lecture)  |
-| **ChatMessage**        | Message d'une conversation (threads, mentions, soft-delete) |
-| **UserPresence**       | Présence en ligne d'un utilisateur pour le chat             |
-
-Documentation et aide : [https://www.jhipster.tech/documentation-archive/v9.1.0](https://www.jhipster.tech/documentation-archive/v9.1.0).
+| Entité                 | Description                                                  |
+| ---------------------- | ------------------------------------------------------------ |
+| **Project**            | Projet racine avec clé unique, owner et membres              |
+| **ProjectMember**      | Membre d'un projet avec rôle (OWNER / MANAGER / MEMBER)      |
+| **Sprint**             | Itération de développement (PLANNED / ACTIVE / COMPLETED)    |
+| **Epic**               | Fonctionnalité transverse (TODO / IN_PROGRESS / DONE)        |
+| **Task**               | Unité de travail (NEW / IN_PROGRESS / READY_FOR_TEST / DONE) |
+| **Comment**            | Commentaire sur une tâche                                    |
+| **Attachment**         | Fichier joint à une tâche                                    |
+| **TaskHistory**        | Audit des modifications d'une tâche                          |
+| **Notification**       | Notification in-app (assignation, rappel, etc.)              |
+| **GroupMessage**       | Message de messagerie de groupe lié à un projet              |
+| **Conversation**       | Conversation de chat (GENERAL ou DIRECT)                     |
+| **ConversationMember** | Membre d'une conversation avec suivi de dernière lecture     |
+| **ChatMessage**        | Message de chat (threads, mentions, soft-delete)             |
+| **UserPresence**       | Présence en ligne d'un utilisateur                           |
 
 ## Project Structure
 
 ```
 gestion_taches/
-├── .jhipster/                  # Configuration JHipster des entités
+├── .jhipster/                     # Configuration JHipster des entités générées
 │   ├── Attachment.json
 │   ├── Comment.json
 │   ├── Epic.json
 │   ├── GroupMessage.json
 │   ├── Project.json
 │   └── Sprint.json
+├── .yo-rc.json                    # Configuration du générateur JHipster
+├── project-management.jdl         # Modèle de données JDL (source de vérité)
+├── pom.xml                        # Build Maven
+├── package.json                   # Dépendances npm
+├── angular.json                   # Configuration Angular
+├── cypress.config.ts              # Tests E2E
+├── docs/                          # Documentation du projet
+│   ├── fiche-classes.md           # Diagrammes UML et ER
+│   ├── role.md                    # Rôles et permissions détaillés
+│   ├── fonctionnel/               # Spécifications fonctionnelles
+│   ├── technique/                 # Documentation technique
+│   ├── api/                       # Documentation API REST
+│   └── utilisateur/               # Guides utilisateur
 ├── src/
 │   ├── main/
-│   │   ├── docker/             # Docker Compose (DB, Sonar, etc.)
-│   │   ├── java/
-│   │   │   └── com/gestiontaches/
-│   │   │       ├── aop/        # Aspects (logging)
-│   │   │       ├── config/     # Configuration Spring
-│   │   │       ├── domain/     # Entités JPA (dont chat : Conversation, ChatMessage, ...)
-│   │   │       │   └── enumeration/  # Enums (TaskStatus, Priority, ConversationType, ...)
-│   │   │       ├── management/ # Monitoring (actuator)
-│   │   │       ├── repository/ # Accès aux données
-│   │   │       ├── security/   # Authentification JWT
-│   │   │       ├── service/    # Logique métier (dont ChatService, NotificationService)
-│   │   │       └── web/        # Contrôleurs REST (dont ChatResource)
-│   │   ├── resources/          # Config YAML, i18n, données SQL
-│   │   └── webapp/app/         # Frontend Angular
-│   │       ├── account/        # Gestion de compte
-│   │       ├── admin/          # Administration
-│   │       ├── config/         # Configuration Angular
-│   │       ├── core/           # Services centraux
-│   │       ├── entities/       # CRUD générés (task, project, sprint, chat, ...)
-│   │       ├── home/           # Page d'accueil
-│   │       ├── layouts/        # Navbar, sidebar, footer
-│   │       ├── login/          # Connexion
-│   │       ├── my-tasks/       # Mes tâches (assignées)
-│   │       ├── notifications/  # Notifications in-app
-│   │       └── shared/         # Composants réutilisables
-│   └── test/
-│       ├── java/               # Tests Java (JUnit)
-│       ├── javascript/         # Tests Angular (Vitest, Cypress)
-│       └── resources/          # Données de test
-├── pom.xml                     # Build Maven
-├── package.json                # Dépendances npm
-├── angular.json                # Configuration Angular
-├── cypress.config.ts           # Tests E2E
-├── project-management.jdl      # Modèle de données JDL
-├── .yo-rc.json                 # Configuration JHipster
-└── tsconfig.json               # Configuration TypeScript
+│   │   ├── docker/                # Docker Compose (DB, Sonar, monitoring)
+│   │   ├── java/com/gestiontaches/
+│   │   │   ├── domain/            # Entités JPA et enums
+│   │   │   ├── repository/        # Accès aux données (JPA)
+│   │   │   ├── service/           # Logique métier
+│   │   │   ├── web/rest/          # Contrôleurs REST
+│   │   │   ├── security/          # Authentification JWT
+│   │   │   └── config/            # Configuration Spring
+│   │   ├── resources/             # Config YAML, i18n, données SQL
+│   │   └── webapp/app/            # Frontend Angular
+│   │       ├── entities/          # Modules métier (task, project, sprint, chat, ...)
+│   │       ├── home/              # Dashboard admin et développeur
+│   │       ├── my-tasks/          # Mes tâches assignées
+│   │       ├── notifications/     # Notifications in-app
+│   │       ├── layouts/           # Navbar, sidebar, footer
+│   │       └── core/              # Services centraux, intercepteurs
+│   └── test/                      # Tests Java et frontend
+├── seed-data.sql                  # Données de démonstration PostgreSQL
+├── seed-data.sh                   # Script de peuplement via API
+└── uploads/                       # Fichiers uploadés
 ```
 
 ## Prérequis
 
-Pour le développement, PostgreSQL 16 doit être installé et configuré localement :
+Pour le développement, PostgreSQL 16 doit être installé localement :
 
 | Élément         | Valeur          |
 | --------------- | --------------- |
@@ -95,284 +92,174 @@ Pour le développement, PostgreSQL 16 doit être installé et configuré localem
 | Utilisateur     | `gestionTaches` |
 | Mot de passe    | `gestionTaches` |
 
-Étapes préalables au lancement :
+Étapes préalables :
 
 1. Installer PostgreSQL 16.
 2. Créer la base de données `gestionTaches` :
    ```sql
    CREATE DATABASE "gestionTaches";
    ```
-3. Vérifier que l'utilisateur `gestionTaches` peut se connecter sur `localhost:5432` (voir `src/main/resources/config/application-dev.yml` pour les identifiants exacts).
-   Si l'authentification échoue, vérifier le fichier `pg_hba.conf` et s'assurer que la ligne pour `127.0.0.1/32` utilise la méthode `trust` :
+3. Vérifier la connexion de l'utilisateur `gestionTaches` sur `localhost:5432` (voir `src/main/resources/config/application-dev.yml`).
+   Si l'authentification échoue, modifier `pg_hba.conf` :
    ```
    host  all  all  127.0.0.1/32  trust
    ```
-   Puis redémarrer le service PostgreSQL.
+   Puis redémarrer PostgreSQL.
 
-## Development
-
-The build system will install automatically the recommended version of Node and npm.
-
-We provide a wrapper to launch npm.
-You will only need to run this command when dependencies change in [package.json](package.json).
+## Démarrage rapide
 
 ```bash
+# Installer les dépendances frontend
 ./npmw install
-```
 
-We use npm scripts and [Angular CLI](https://angular.dev/tools/cli) with esbuild as our build system.
-
-Run the following commands in two separate terminals to create a blissful development experience where your browser
-auto-refreshes when files change on your hard drive.
-
-```bash
+# Terminal 1 : lancer le backend (Spring Boot)
 ./npmw run backend:start
+
+# Terminal 2 : lancer le frontend (Angular dev server)
 ./npmw run start
 ```
 
-Npm is also used to manage CSS and JavaScript dependencies used in this application. You can upgrade dependencies by
-specifying a newer version in [package.json](package.json). You can also run `./npmw update` and `./npmw install` to manage dependencies.
-Add the `help` flag on any command to see how you can use it. For example, `./npmw help update`.
+L'application est accessible sur [http://localhost:9000](http://localhost:9000).
 
-The `./npmw run` command will list all the scripts available to run for this project.
-
-### PWA Support
-
-JHipster ships with PWA (Progressive Web App) support, and it's turned off by default. One of the main components of a PWA is a service worker.
-
-The service worker initialization code is disabled by default. To enable it, uncomment the following code in `src/main/webapp/app/app.config.ts`:
-
-```typescript
-ServiceWorkerModule.register('ngsw-worker.js', { enabled: false }),
-```
-
-### Managing dependencies
-
-For example, to add [Leaflet](https://leafletjs.com/) library as a runtime dependency of your application, you would run the following command:
+## Scripts utiles
 
 ```bash
-./npmw install --save --save-exact leaflet
+./npmw run backend:start        # Démarrer le backend seul
+./npmw run start                # Démarrer le frontend seul
+./npmw run watch                # Backend + frontend en parallèle
+./npmw run build                # Build de production
+./mvnw verify                   # Tests backend + frontend
+./npmw test                     # Tests unitaires frontend (Vitest)
+./npmw e2e                      # Tests E2E (Cypress)
+./npmw lint                     # Lint ESLint
+./npmw prettier:check           # Vérification du formatage
 ```
 
-To benefit from TypeScript type definitions from [DefinitelyTyped](https://definitelytyped.org/) repository in development, you would run the following command:
-
-```bash
-./npmw install --save-dev --save-exact @types/leaflet
-```
-
-Then you would import the JS and CSS files specified in library's installation instructions so that [esbuild][] knows about them:
-Edit [src/main/webapp/app/app.config.ts](src/main/webapp/app/app.config.ts) file:
-
-```typescript
-import 'leaflet/dist/leaflet.js';
-```
-
-Edit [src/main/webapp/content/scss/vendor.scss](src/main/webapp/content/scss/vendor.scss) file:
-
-```typescript
-@import 'leaflet/dist/leaflet.css';
-```
-
-Note: There are still a few other things remaining to do for Leaflet that we won't detail here.
-
-For further instructions on how to develop with JHipster, have a look at [Using JHipster in development](https://www.jhipster.tech/development/).
-
-### Using Angular CLI
-
-You can also use [Angular CLI](https://angular.dev/tools/cli) to generate some custom client code.
-
-For example, the following command:
-
-```bash
-ng generate component my-component
-```
-
-will generate few files:
-
-```bash
-create src/main/webapp/app/my-component/my-component.html
-create src/main/webapp/app/my-component/my-component.ts
-update src/main/webapp/app/app.config.ts
-```
-
-## Building for production
-
-### Packaging as jar
-
-To build the final jar and optimize the gestionTaches application for production, run:
+## Build production
 
 ```bash
 ./mvnw -Pprod clean verify
-```
-
-This will concatenate and minify the client CSS and JavaScript files. It will also modify `index.html` so it references these new files.
-To ensure everything worked, run:
-
-```bash
 java -jar target/*.jar
 ```
 
-Then navigate to [http://localhost:8080](http://localhost:8080) in your browser.
+L'application est accessible sur [http://localhost:8080](http://localhost:8080).
 
-Refer to [Using JHipster in production][] for more details.
+## Tests
 
-### Packaging as war
-
-To package your application as a war in order to deploy it to an application server, run:
-
-```bash
-./mvnw -Pprod,war clean verify
-```
-
-### JHipster Control Center
-
-JHipster Control Center can help you manage and control your application(s). You can start a local control center server (accessible on http://localhost:7419) with:
-
-```bash
-docker compose -f src/main/docker/jhipster-control-center.yml up
-```
-
-## Testing
-
-### Spring Boot tests
-
-To launch your application's tests, run:
+### Backend
 
 ```bash
 ./mvnw verify
 ```
 
-### Client tests
-
-Unit tests are run by Vitest. They're located near components and can be run with:
+### Frontend (unitaires)
 
 ```bash
 ./npmw test
 ```
 
-#### E2E tests
-
-UI end-to-end tests are powered by [Cypress][]. They're located in [src/test/javascript/cypress/](src/test/javascript/cypress/)
-and can be run by starting Spring Boot in one terminal (`./npmw run app:start`) and running the tests (`./npmw run e2e`) in a second one.
-
-Before running Cypress tests, it's possible to specify user credentials by overriding the `CYPRESS_E2E_USERNAME` and `CYPRESS_E2E_PASSWORD` environment variables.
+### E2E (Cypress)
 
 ```bash
-export CYPRESS_E2E_USERNAME="<your-username>"
-export CYPRESS_E2E_PASSWORD="<your-password>"
+# Terminal 1
+./npmw run app:start
+
+# Terminal 2
+./npmw run e2e
 ```
 
-See Cypress documentation for setting OS [environment variables](https://docs.cypress.io/app/references/environment-variables#Setting) to learn more.
+## Docker
 
-#### Lighthouse audits
-
-You can execute automated [Lighthouse audits](https://developer.chrome.com/docs/lighthouse/overview) with [cypress-audit](https://github.com/mfrachet/cypress-audit) by running `./npmw run e2e:cypress:audits`.
-
-You should only run the audits when your application is packaged with the production profile.
-
-The Lighthouse report is created in `target/cypress/lhreport.html`.
-
-## Others
-
-### Code quality using Sonar
-
-Sonar is used to analyse code quality. You can start a local Sonar server (accessible on http://localhost:9001) with:
-
-```bash
-docker compose -f src/main/docker/sonar.yml up -d
-```
-
-Note: we have turned off forced authentication redirect for UI in [src/main/docker/sonar.yml](src/main/docker/sonar.yml) for out of the box experience while trying out SonarQube, for real use cases turn it back on.
-
-You can run a Sonar analysis with using the [sonar-scanner](https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner) or by using the maven plugin.
-
-Then, run a Sonar analysis:
-
-```bash
-./mvnw -Pprod clean verify sonar:sonar -Dsonar.login=admin -Dsonar.password=admin
-```
-
-If you need to re-run the Sonar phase, please be sure to specify at least the `initialize` phase since Sonar properties are loaded from the sonar-project.properties file.
-
-```bash
-./mvnw initialize sonar:sonar -Dsonar.login=admin -Dsonar.password=admin
-```
-
-Additionally, Instead of passing `sonar.password` and `sonar.login` as CLI arguments, these parameters can be configured from [sonar-project.properties](sonar-project.properties) as shown below:
-
-```bash
-sonar.login=admin
-sonar.password=admin
-```
-
-For more information, refer to the [Code quality page][].
-
-### Docker Compose support
-
-JHipster generates a number of Docker Compose configuration files in the [src/main/docker/](src/main/docker/) folder to launch required third party services.
-
-For example, to start required services in Docker containers, run:
+### Services dépendants (PostgreSQL, etc.)
 
 ```bash
 docker compose -f src/main/docker/services.yml up -d
-```
-
-To stop and remove the containers, run:
-
-```bash
 docker compose -f src/main/docker/services.yml down
 ```
 
-[Spring Docker Compose Integration](https://docs.spring.io/spring-boot/reference/features/dev-services.html) is enabled by default. It's possible to disable it in `application.yml`:
-
-```yaml
-spring:
-  ...
-  docker:
-    compose:
-      enabled: false
-```
-
-You can also fully dockerize your application and all the services that it depends on.
-To achieve this, first build a Docker image of your app by running:
+### Image Docker de l'application
 
 ```bash
-npm run java:docker
+./mvnw -ntp verify -DskipTests -Pprod jib:dockerBuild
+docker compose -f src/main/docker/app.yml up
 ```
 
-Or build an arm64 Docker image when using an arm64 processor OS, i.e., Apple Silicon chips (M\*), running:
+## Authentification et rôles
+
+L'application utilise **JWT** avec 4 rôles globaux :
+
+| Rôle               | Login     | Mot de passe | Description                           |
+| ------------------ | --------- | ------------ | ------------------------------------- |
+| **ADMIN**          | `admin`   | `admin`      | Administrateur système, accès complet |
+| **PROJET_MANAGER** | `manager` | `user`       | Chef de projet, gère les projets      |
+| **DEVELOPER**      | `dev`     | `user`       | Développeur, travaille sur les tâches |
+| **USER**           | `user`    | `user`       | Utilisateur, consulte et commente     |
+
+Des rôles par projet (OWNER / MANAGER / MEMBER) sont gérés via `ProjectMember`.
+
+## Fonctionnalités principales
+
+- **Projets** : CRUD, membres, rôles, export CSV
+- **Sprints** : PLANNED → ACTIVE → COMPLETED, backlog, clôture automatique
+- **Epics** : Regroupement de tâches, roadmap, statuts automatiques
+- **Tâches** : Kanban, assignation, story points, cycle de vie complet
+- **Commentaires & pièces jointes** : Collaboration sur les tâches
+- **Chat** : Conversations GENERAL et DIRECT par projet, mentions, threads, présence en ligne
+- **Notifications** : Alertes en temps réel (SSE), assignation, rappels
+- **Recherche et exports** : Recherche plein texte, export CSV projets/tâches/utilisateurs
+- **Dashboards** : KPIs admin/manager, dashboard développeur
+- **Audit** : Historique des modifications (TaskHistory)
+
+## Documentation
+
+| Document                                        | Description                               |
+| ----------------------------------------------- | ----------------------------------------- |
+| [docs/fiche-classes.md](docs/fiche-classes.md)  | Diagrammes UML et ER                      |
+| [docs/role.md](docs_role.md)                    | Rôles, permissions et matrice d'accès     |
+| [docs/fonctionnel/](docs/fonctionnel/README.md) | Spécifications fonctionnelles             |
+| [docs/technique/](docs/technique/README.md)     | Architecture, déploiement, infrastructure |
+| [docs/api/](docs/api/README.md)                 | Endpoints REST                            |
+| [docs/utilisateur/](docs/utilisateur/README.md) | Guides utilisateur                        |
+
+## Monitoring
 
 ```bash
-npm run java:docker:arm64
+# SonarQube
+docker compose -f src/main/docker/sonar.yml up -d
+./mvnw -Pprod clean verify sonar:sonar
+
+# JHipster Control Center
+docker compose -f src/main/docker/jhipster-control-center.yml up
 ```
 
-Then run:
+## Qualité de code
 
 ```bash
-docker compose -f src/main/docker/app.yml up -d
+./npmw lint                        # ESLint
+./npmw prettier:check              # Vérification du formatage
+./mvnw checkstyle:check            # Checkstyle Java
 ```
 
-For more information refer to [Docker and Docker-Compose](https://www.jhipster.tech/documentation-archive/v9.1.0/docker-compose/), this page also contains information on the Docker Compose sub-generator (`jhipster docker-compose`), which is able to generate Docker configurations for one or several JHipster applications.
+##stack technique détaillée
 
-## Continuous Integration (optional)
+| Couche          | Technologie                        |
+| --------------- | ---------------------------------- |
+| Backend         | Spring Boot 4.0.6, Java 21         |
+| Frontend        | Angular 21.2.14, TypeScript 5.9    |
+| Base de données | PostgreSQL 16, Liquibase           |
+| Sécurité        | Spring Security, JWT (HS512)       |
+| Temps réel      | WebSocket, STOMP, SockJS, SSE      |
+| Cache           | Caffeine, JCache                   |
+| Monitoring      | Micrometer, Prometheus, Grafana    |
+| Build backend   | Maven 3.2.5+                       |
+| Build frontend  | Node v24.16.0, npm 11.15.0         |
+| Tests backend   | JUnit 5, ArchUnit, Testcontainers  |
+| Tests frontend  | Vitest, Cypress                    |
+| Qualité         | Checkstyle, Spotless, SonarQube    |
+| Image Docker    | Jib (eclipse-temurin:25-jre-noble) |
 
-To configure CI for your project, run the ci-cd sub-generator (`jhipster ci-cd`), this will let you generate configuration files for a number of Continuous Integration systems. Consult the [Setting up Continuous Integration](https://www.jhipster.tech/documentation-archive/v9.1.0/setting-up-ci/) page for more information.
+## Remarques
 
-## References
-
-- [JHipster Homepage and latest documentation](https://www.jhipster.tech/)
-- [JHipster 9.1.0 archive](https://www.jhipster.tech/documentation-archive/v9.1.0)
-- [Using JHipster in development](https://www.jhipster.tech/documentation-archive/v9.1.0/development/)
-- [Using Docker and Docker-Compose](https://www.jhipster.tech/documentation-archive/v9.1.0/docker-compose)
-- [Using JHipster in production](https://www.jhipster.tech/documentation-archive/v9.1.0/production/)
-- [Running tests page](https://www.jhipster.tech/documentation-archive/v9.1.0/running-tests/)
-- [Code quality page](https://www.jhipster.tech/documentation-archive/v9.1.0/code-quality/)
-- [Setting up Continuous Integration](https://www.jhipster.tech/documentation-archive/v9.1.0/setting-up-ci/)
-- [Node.js](https://nodejs.org/)
-- [NPM](https://www.npmjs.com/)
-- [BrowserSync](https://www.browsersync.io/)
-- [Jest](https://jestjs.io)
-- [Leaflet](https://leafletjs.com/)
-- [DefinitelyTyped](https://definitelytyped.org/)
-- [Angular CLI](https://angular.dev/tools/cli)
-- [Cypress](https://www.cypress.io/)
+- Le chat utilise **REST polling** pour les messages (intervalle 5s) et la présence (intervalle 30s), via WebSocket pour le tracking uniquement.
+- L'entité `Task` n'a pas de champ `type` (pas de distinction Story/Bug/Task/Subtask/Improvement).
+- Les migrations de base de données sont gérées par Liquibase.

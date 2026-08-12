@@ -212,6 +212,7 @@ class TaskServiceTest {
 
         TaskDTO result = taskService.createForProject(new TaskDTO(), 1L);
 
+        verify(projectPermissionService).requireProjectRole(1L, ProjectRole.OWNER, ProjectRole.MANAGER);
         assertThat(result).isNotNull();
         assertThat(task.getCreatedBy()).isEqualTo(currentUser);
         verify(sprintService).recalculateStatus(10L);

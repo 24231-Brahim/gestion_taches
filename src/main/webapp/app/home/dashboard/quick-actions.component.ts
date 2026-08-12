@@ -25,9 +25,9 @@ import { RouterLink } from '@angular/router';
             <span class="qa-icon">✓</span>
             <span jhiTranslate="dashboard.quickActions.myTasks">My Tasks</span>
           </a>
-          <a [routerLink]="createTaskLink()" class="qa-btn">
-            <span class="qa-icon">+</span>
-            <span jhiTranslate="dashboard.quickActions.newTask">New Task</span>
+          <a [routerLink]="backlogLink()" class="qa-btn">
+            <span class="qa-icon">☰</span>
+            <span jhiTranslate="dashboard.quickActions.viewBacklog">View Backlog</span>
           </a>
         } @else {
           <a [routerLink]="['/my-tasks']" class="qa-btn">
@@ -105,6 +105,4 @@ export class DashboardQuickActionsComponent {
   readonly firstProjectKey = input<string | null>(null);
 
   readonly backlogLink = computed(() => (this.firstProjectKey() ? ['/project', this.firstProjectKey(), 'sprint'] : ['/project']));
-
-  readonly createTaskLink = computed(() => (this.firstProjectKey() ? ['/project', this.firstProjectKey(), 'task', 'new'] : ['/project']));
 }

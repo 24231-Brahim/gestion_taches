@@ -155,6 +155,12 @@ export class Task implements OnInit {
   readonly userProjectRoles = signal<Map<number, ProjectRole>>(new Map());
   readonly currentUserLogin = computed(() => this.accountService.account()?.login ?? null);
   readonly isAdmin = computed(() => this.accountService.account()?.authorities.includes('ROLE_ADMIN') ?? false);
+  // ADMIN/PROJET_MANAGER/DEVELOPER may edit; a bare USER account is read-only.
+  readonly isElevatedUser = computed(
+    () =>
+      this.accountService.account()?.authorities.some(a => a === 'ROLE_ADMIN' || a === 'ROLE_PROJET_MANAGER' || a === 'ROLE_DEVELOPER') ??
+      false,
+  );
 
   protected readonly appConfig = inject(ApplicationConfigService);
   protected readonly activatedRoute = inject(ActivatedRoute);
@@ -188,8 +194,9 @@ export class Task implements OnInit {
     });
   }
 
-  // A project member (DEVELOPER/USER included) may create tasks and edit only the tasks they
-  // created. Reassignment stays OWNER/MANAGER-only and is rejected server-side. Deletion remains
+  // Task creation is a management action (ADMIN/PROJET_MANAGER or a project OWNER/MANAGER).
+  // Editing is restricted to ADMIN/PROJET_MANAGER/DEVELOPER accounts; a bare USER account is
+  // read-only. Reassignment stays OWNER/MANAGER-only and is rejected server-side. Deletion remains
   // a management action (OWNER/MANAGER/ADMIN).
   canEditTask(task: ITask): boolean {
     if (this.isAdmin()) {
@@ -198,6 +205,9 @@ export class Task implements OnInit {
     const role = this.userProjectRoles().get(task.project?.id ?? -1);
     if (role === ProjectRole.OWNER || role === ProjectRole.MANAGER) {
       return true;
+    }
+    if (!this.isElevatedUser()) {
+      return false;
     }
     if (role == null) {
       return false;
@@ -222,7 +232,7 @@ export class Task implements OnInit {
       return true;
     }
     const role = this.userProjectRoles().get(project.id);
-    return role != null;
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
   }
 
   exportCsv(): void {

@@ -142,9 +142,11 @@
         </div>
 
         <div class="task-drawer-actions">
-          <a [routerLink]="['/project', tsk.project?.key, 'task', tsk.id, 'edit']" class="btn btn-primary btn-sm w-100">
-            <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit"></span>
-          </a>
+          @if (canEdit()) {
+            <a [routerLink]="['/project', tsk.project?.key, 'task', tsk.id, 'edit']" class="btn btn-primary btn-sm w-100">
+              <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit"></span>
+            </a>
+          }
         </div>
       </div>
     </div>

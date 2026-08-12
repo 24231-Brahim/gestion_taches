@@ -224,6 +224,13 @@ export class TaskDetailPanel {
       false,
   );
 
+  // Bare USER accounts are read-only: they never see the edit button in the drawer.
+  readonly canEdit = computed(
+    () =>
+      this.accountService.account()?.authorities.some(a => a === 'ROLE_ADMIN' || a === 'ROLE_PROJET_MANAGER' || a === 'ROLE_DEVELOPER') ??
+      false,
+  );
+
   // A plain project member viewing a colleague's task (allowed, read-only, "for context") must not
   // be able to edit its status — only the assignee themself, or ADMIN/PROJET_MANAGER/OWNER/MANAGER.
   canEditStatus(task: ITask): boolean {

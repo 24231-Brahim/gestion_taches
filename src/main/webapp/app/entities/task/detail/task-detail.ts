@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
+import { AccountService } from 'app/core/auth/account.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { FormatMediumDatetimePipe } from 'app/shared/date';
@@ -73,7 +74,16 @@ export class TaskDetail {
   readonly task = input<ITask | null>(null);
   readonly activeTab = signal('details');
 
+  protected readonly accountService = inject(AccountService);
+
   readonly currentProjectKey = computed(() => this.task()?.project?.key ?? null);
+
+  // Bare USER accounts are read-only: they never see the edit button.
+  readonly canEdit = computed(
+    () =>
+      this.accountService.account()?.authorities.some(a => a === 'ROLE_ADMIN' || a === 'ROLE_PROJET_MANAGER' || a === 'ROLE_DEVELOPER') ??
+      false,
+  );
 
   setTab(tab: string): void {
     this.activeTab.set(tab);
