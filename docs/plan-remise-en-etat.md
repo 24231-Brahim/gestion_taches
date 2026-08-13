@@ -48,6 +48,10 @@
 > Les messages répétés `Failed to load resource ... /api/tasks/2985 ... 500` dans la console =
 > des `DELETE` qui échouent (chaque clic retente). Ce n'est **pas** un problème de permissions.
 
+> ⚠️ **Nuance `group_message`** : son changelog `20260723000000_added_entity_GroupMessage.xml` est **absent
+> de `master.xml`** → sur une base fraîche la table n'existe pas. Le 500 « projet » ci-dessus ne concerne que
+> l'actuelle base dev (table créée avant le retrait du changelog de `master.xml`).
+
 ### 2.2 Retrait d'un membre du projet (Opération A)
 
 `ProjectService.removeMember` supprime seulement la ligne `project_member`. Les tâches du projet
@@ -145,19 +149,29 @@ et `chat_message_mentions` sont retirés. La base dev est recréée à zéro (vo
   - retirer `recentActivity?: ITaskHistoryEntry[];` (ligne 24) et l'interface `ITaskHistoryEntry` (lignes 50-58)
 - `src/main/webapp/app/entities/admin/user-management/user-admin-detail/user-admin-detail.html`
   - retirer la section « Activité récente » (lignes 169-211)
-- vérifier `user-admin-detail.ts` : retirer toute dépendance à `recentActivity` / `findDetail` si elle ne sert plus
+- `user-admin-detail.ts` : **GARDER** `findDetail` et le composant tels quels — ils servent encore aux
+  sections Tâches/Projets/informations ; ne retirer que la section HTML ci-dessus.
+- `src/main/webapp/app/home/dashboard/timeline.component.ts`
+  - retirer l'input `activitiesOverride` (lignes 106-109) + son traitement dans `activities()`
+    et le commentaire ligne 110 (« e.g. TaskHistory entries ») : deviennent **morts** une fois
+    que `developer-dashboard` passe à `[tasks]`.
 
 **i18n :**
 - SUPPRIMER `src/main/webapp/i18n/en/actionHistory.json` et `src/main/webapp/i18n/fr/actionHistory.json`
-- `global.json` (en/fr/ar) : retirer la clé `"actionHistory"` (ligne 21) si elle n'est plus utilisée
+- `global.json` (fr/en) : retirer la clé `"actionHistory"` (ligne 21) si elle n'est plus utilisée
+  (la clé n'existe **pas** dans `ar/global.json` → rien à faire en ar)
 - `task.json` (en/fr/ar) : retirer les clés devenues mortes : `task.detail.history`, `task.detail.noHistory`,
   `task.detail.tab.history`, `task.history`, `task.system`
+- `user-management.json` (fr/en/ar) : retirer les clés mortes `userManagement.adminDetail.activity`
+  et `userManagement.adminDetail.noActivity` (lignes 44-45) — plus de section « Activité récente »
 
 **Tests à adapter :**
 - `src/test/java/com/gestiontaches/service/SprintServiceTest.java` : retirer le mock `TaskHistoryRepository`
   et les `verify(taskHistoryRepository, ...)` / `verify(...notifyAdminsOfTaskHistory...)` ; adapter si nouvelle notification
 - `src/test/java/com/gestiontaches/service/NotificationServiceTest.java` : adapter/retirer les 3 tests utilisant `TaskHistory`
-- `src/test/java/com/gestiontaches/web/rest/ProjectResourceIT.java` : retirer la persistance + l'assertion `task_history` (lignes 581-586, 629)
+- `src/test/java/com/gestiontaches/web/rest/ProjectResourceIT.java` : retirer la persistance + l'assertion
+  `task_history` (lignes 581-586, 629) **et** la ligne `message.setMentions(new HashSet<>(...))` (ligne 608,
+  casse la compilation après A.4 — garder l'import `HashSet`, utilisé aussi ligne 649)
 
 **Liquibase / seed / JDL :**
 - Supprimer `src/main/resources/config/liquibase/changelog/20260714000001_added_entity_TaskHistory.xml`
@@ -316,12 +330,17 @@ Dans `service/ProjectService.java` → `removeMember(Long projectId, Long userId
 
 Après validation du code, mettre à jour les fichiers markdown qui citent les entités supprimées :
 - `README.md` (lignes 26-32, 42, 207-211, 263) — `GroupMessage`, `TaskHistory`, présence, mentions
-- `docs/fiche-classes.md`, `docs_role.md`
+  (+ optionnel : aligner la section Base de données, lignes 89-102, qui documente `gestionTaches` ≠ `gestion_taches`/`postgres` réel)
+- `docs/fiche-classes.md`, `docs_role.md` (lignes 92, 242, 584-589, 840 — onglet Historique / TaskHistory)
 - `docs/api/group-message.md` (SUPPRIMER), `docs/api/task-history.md` (SUPPRIMER), `docs/api/chat.md`,
-  `docs/api/README.md`, `docs/api/users.md`, `docs/api/notification.md`
+  `docs/api/README.md`, `docs/api/users.md`, `docs/api/notification.md`, `docs/api/sprint.md` (ligne 343)
 - `docs/technique/README.md`, `docs/technique/modele-donnees.md`, `docs/technique/chat-temps-reel.md`,
   `docs/technique/architecture.md`
-- `docs/fonctionnel/README.md`, `docs/fonctionnel/audit.md`, `docs/fonctionnel/roles-et-permissions.md`, `docs/fonctionnel/chat.md`
+- `docs/fonctionnel/README.md`, `docs/fonctionnel/audit.md` (**SUPPRIMER** : toute la fonctionnalité `TaskHistory`
+  disparaît), `docs/fonctionnel/roles-et-permissions.md` (ligne 137), `docs/fonctionnel/chat.md`,
+  `docs/fonctionnel/notifications.md` (lignes 24, 71), `docs/fonctionnel/cycle-de-vie-sprint.md` (lignes 70, 118)
+- `docs/utilisateur/messagerie.md` (lignes 22, 69-75 — présence), `docs/utilisateur/demarrage.md` (ligne 34),
+  `docs/utilisateur/gestion-taches.md` (lignes 43, 105-109, 132 — onglet Historique)
 
 ---
 
@@ -330,7 +349,7 @@ Après validation du code, mettre à jour les fichiers markdown qui citent les e
 ```bash
 # 1. Références orphelines (doit remonter seulement les docs/README restants avant nettoyage)
 rg -ri "groupmessage|group-message|taskhistory|task-history|userpresence|chat_user_presence|presence|mentions" \
-   src project-management.jdl .jhipster seed-data.sql --type-add 'all:*.{java,ts,tsx,html,json,jdl,xml,scss}' -t all
+   src src/test project-management.jdl .jhipster seed-data.sql --type-add 'all:*.{java,ts,tsx,html,json,jdl,xml,scss}' -t all
 
 # 2. Backend : compile + tests
 ./mvnw clean verify
@@ -368,10 +387,10 @@ Ordre de travail recommandé (chaque étape est suivie d'une recompilation pour 
 1. Supprimer les 6 fichiers backend + dossiers/fichiers frontend (`task-history/`, `task-activity-feed*`, `task-history-tab*`).
 2. Modifier `SprintService`, `NotificationService` (ajouter la notification équivalente), `ProjectService`,
    `UserResource`, `UserAdminDetailDTO`, `UserAdminDetailMapper`.
-3. Frontend : `task-detail.ts/html`, `developer-dashboard.component.ts`, `user-management.service.ts`,
-   `user-admin-detail.html`.
-4. i18n (`actionHistory.json`, `global.json`, `task.json`).
-5. Tests : `SprintServiceTest`, `NotificationServiceTest`, `ProjectResourceIT`.
+3. Frontend : `task-detail.ts/html`, `developer-dashboard.component.ts`, `timeline.component.ts` (retirer
+   `activitiesOverride`), `user-management.service.ts`, `user-admin-detail.html`.
+4. i18n (`actionHistory.json`, `global.json`, `task.json`, `user-management.json`).
+5. Tests : `SprintServiceTest`, `NotificationServiceTest`, `ProjectResourceIT` (lignes 581-586, 608, 629).
 6. Liquibase + `master.xml` + `seed-data.sql` + `project-management.jdl`.
 7. Recompiler + tests : `./mvnw clean verify`.
 
