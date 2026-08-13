@@ -212,7 +212,7 @@ export class Task implements OnInit {
     if (role == null) {
       return false;
     }
-    return task.createdBy?.login === this.currentUserLogin();
+    return task.createdBy?.login === this.currentUserLogin() || task.assignee?.login === this.currentUserLogin();
   }
 
   canDeleteTask(task: ITask): boolean {
@@ -232,7 +232,7 @@ export class Task implements OnInit {
       return true;
     }
     const role = this.userProjectRoles().get(project.id);
-    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER;
+    return role === ProjectRole.OWNER || role === ProjectRole.MANAGER || this.isElevatedUser();
   }
 
   exportCsv(): void {

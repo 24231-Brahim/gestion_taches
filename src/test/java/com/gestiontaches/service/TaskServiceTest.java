@@ -209,10 +209,11 @@ class TaskServiceTest {
         when(userRepository.findOneByLogin("admin")).thenReturn(Optional.of(currentUser));
         when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
         when(taskMapper.toDto(any(Task.class))).thenReturn(new TaskDTO());
+        when(projectPermissionService.getCurrentUserRole(1L)).thenReturn(ProjectRole.OWNER);
 
         TaskDTO result = taskService.createForProject(new TaskDTO(), 1L);
 
-        verify(projectPermissionService).requireProjectRole(1L, ProjectRole.OWNER, ProjectRole.MANAGER);
+        verify(projectPermissionService).getCurrentUserRole(1L);
         assertThat(result).isNotNull();
         assertThat(task.getCreatedBy()).isEqualTo(currentUser);
         verify(sprintService).recalculateStatus(10L);

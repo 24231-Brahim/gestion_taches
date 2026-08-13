@@ -477,7 +477,7 @@ Le développeur **travaille sur les tâches**. Il peut créer, modifier et assig
 #### Gestion des tâches
 
 - **Créer** une tâche
-- **Modifier** une tâche (si créateur ou OWNER/MANAGER du projet)
+- **Modifier** une tâche (si créateur, assigné ou OWNER/MANAGER du projet)
 - **Supprimer** une tâche (si créateur ou OWNER/MANAGER du projet)
 - **Assigner** un membre à une tâche
 - Changer le statut d'une tâche
@@ -538,6 +538,17 @@ Le développeur **travaille sur les tâches**. Il peut créer, modifier et assig
 3. Le panneau de détail s'ouvre
 4. Clique "Éditer"
 5. Modifie les champs souhaités
+6. Clique "Sauvegarder"
+```
+
+#### Modifier une tâche qui lui est assignée
+
+```
+1. Page /project/PRJ/task
+2. Clique sur le titre d'une tâche qui lui est assignée
+3. Le panneau de détail s'ouvre
+4. Clique "Éditer"
+5. Modifie les champs souhaités (statut, description, priorité, etc.)
 6. Clique "Sauvegarder"
 ```
 
@@ -794,7 +805,7 @@ PAS de liens : Utilisateurs, Métriques, Diagnostics, Configuration, Logs, API, 
 
 > \* Selon les permissions backend (vérification par `@PreAuthorize`)
 > \*\* Uniquement si OWNER ou MANAGER du projet \*** Les USER ne peuvent pas créer de tâches via le formulaire standard
-> \*\*** Selon la vérification côté frontend (créateur de la tâche ou OWNER/MANAGER du projet)
+> \*\*** Selon la vérification côté frontend (créateur de la tâche, assigné, ou OWNER/MANAGER du projet)
 
 ### 7.2 Permissions par rôle projet (dans un projet)
 
