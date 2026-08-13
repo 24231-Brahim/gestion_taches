@@ -6,7 +6,8 @@
 > 2. la correction des erreurs `500` lors des suppressions (tâche / utilisateur / projet),
 > 3. l'**Opération A** : retrait d'un membre d'un projet → ses tâches sont automatiquement désassignées,
 > 4. la remise en état de la base de données (dev, vide — recréation),
-> 5. le nettoyage de la documentation.
+> 5. le nettoyage de la documentation,
+> 6. la correction des **bugs complémentaires** découverts lors de l'audit (Partie D).
 >
 > **Aucun changement de code n'est effectué tant que l'utilisateur n'a pas validé ce plan.**
 
@@ -63,7 +64,7 @@ restent assignées à un membre qui n'est plus dans le projet → état incohér
 ### 2.3 Tables orphelines en base dev
 
 Les changelogs de `task_history`, `group_message` (orphelin — absent de `master.xml`), `chat_user_presence`
-et `chat_message_mentions` sont retirés. La base dev est recréée à zéro (voir §6).
+et `chat_message_mentions` sont retirés. La base dev est recréée à zéro (voir §7).
 
 ---
 
@@ -312,7 +313,100 @@ Dans `service/ProjectService.java` → `removeMember(Long projectId, Long userId
 
 ---
 
-## 6. Base de données (dev)
+## 6. Partie D — Autres bugs détectés lors de l'audit du code
+
+> Complément découvert pendant l'audit complet (sous-agents backend / frontend / tests & config).
+> Certains relèvent de la Partie A/B déjà planifiée, d'autres sont des correctifs autonomes.
+
+### D.1 Suppression d'un Sprint / d'une Épic → 500 (hors plan)
+
+| Fichier | Lignes | Cause | Conséquence |
+|---|---|---|---|
+| `service/SprintService.java` | 368-377 | `delete` sans nettoyage : FK `task.sprint_id` (RESTRICT) | **500** si des tâches sont liées au sprint |
+| `service/EpicService.java` | 226-233 | idem : FK `task.epic_id` (RESTRICT) | **500** si des tâches sont liées à l'épic |
+
+- Le plan (Partie B) ne couvre **que** task/user/project → **ajouter** ces 2 corrections.
+- Décision à prendre : désassigner (`sprint = null` / `epic = null`) ou supprimer les tâches ? (proposition : désassigner, cohérent avec l'Opération A).
+
+### D.2 `UserService.removeNotActivatedUsers` — suppression sans nettoyage
+
+- `service/UserService.java:326-334` (`removeNotActivatedUsers`) + `:132-140` (`removeNonActivatedUser`)
+  font un `delete` brut → même risque de FK que la Partie B.2 (risque faible : utilisateurs non activés,
+  mais à aligner sur B.2 pour être sûr).
+
+### D.3 `TechnicalStructureTest` — 23 violations ArchUnit (tests backend en échec)
+
+- `src/test/java/com/gestiontaches/TechnicalStructureTest.java` échoue (23 violations) : les services
+  (`ChatService` lignes 120, 455…, `ProjectService`, `EpicService`, `SprintService`, `TaskService`…)
+  appellent `web.rest.errors.BadRequestAlertException`, classée dans la couche **Web** par la règle
+  « Web may only be accessed by Config ».
+- **Fix à choisir** : (a) autoriser la dépendance `service → web.rest.errors` dans la règle ArchUnit,
+  ou (b) déplacer/dupliquer l'exception dans un paquet service. (Le plan référence d'ailleurs un
+  « §3.2.1 » inexistant à la ligne 117 — à corriger.)
+
+### D.4 Échecs de tests backend (surefire)
+
+1. **`TaskResourceIT.putExistingTask` (l.373) + `fullUpdateTaskWithPatch` (l.487)** :
+   `TaskService.update`/`partialUpdate` forcent `Instant.now()` ; `TaskAsserts.java:55` compare à
+   `UPDATED_UPDATED_AT` (précis au `MILLIS`) → mismatch de précision. Fix : arrondir la valeur attendue
+   (`Instant.now().truncatedTo(MILLIS)`) ou comparer par fenêtre.
+2. **`TaskStatusNotificationIT` (4 FAIL)** : double notification — `TaskService.checkAndNotifyTaskChanges`
+   (l.435-462, « Le statut… a changé pour DONE ») **et** `notifyStatusChangeIfNeeded` (l.261-295,
+   « que vous avez créée est passée à DONE »). Fix : ne pas notifier deux fois (garder UNE des deux, décision métier).
+3. **`AttachmentResourceIT.uploadAttachment_asUser_shouldSucceed` (l.536)** : FAIL 403 — le test
+   `@WithMockUser(ROLE_USER)` alors que `AttachmentResource:81-90` exige ADMIN/PROJET_MANAGER/DEVELOPER.
+   Incohérence test/implémentation : aligner l'un sur l'autre (décision : la sécurité semble voulue).
+4. **`ProjectRolePermissionIT.owner_can_create_task` (l.321) + `member_can_create_task` (l.340)** : FAIL 403 —
+   `@WithMockUser` sans autorités globales alors que `TaskResource:125-134` exige
+   `hasAnyAuthority(ADMIN, PROJET_MANAGER, DEVELOPER)`. Doc `roles-et-permissions.md` l.74 : « Créer une
+   tâche : OWNER/MANAGER requis » → le comportement attendu doit être tranché (ajouter l'autorité globale
+   dans les tests, ou assouplir `TaskResource`).
+5. **`UserResourceIT.deleteUserCannotDeleteLastAdmin`** : ERROR au `@AfterEach` — le cleanup supprime le
+   dernier admin restant → `LastAdminException`. Fix : restaurer un admin dans le cleanup.
+
+### D.5 Compilation des tests frontend — `home.spec.ts`
+
+- `src/main/webapp/app/home/home.spec.ts:95` appelle `comp.isUser()` (méthode inexistante ; `Home` n'a
+  que `isManagerOrAdmin`/`isDeveloper` dans `home.ts:21-24`) → `ng test` ne compile pas. Fix : corriger
+  l'appel dans le spec.
+
+### D.6 Config frontend — `angular.json` + `vitest.temp.config.ts`
+
+- `angular.json:112-115` : `buildTarget: "::development"` non supporté par `@angular/build:unit-test`
+  avec le builder `@angular-builders/custom-esbuild:application` (`angular.json:21`).
+- `vitest.temp.config.ts` à la racine : config de test temporaire à supprimer.
+
+### D.7 Code mort / dépréciations frontend
+
+- Imports inutilisés : `layouts/navbar/navbar.ts:27` (`RouterLinkActive`),
+  `notifications/notification-list.ts:23` (`ItemCount`), `admin/metrics/blocks/metrics-endpoints-requests.ts:12`
+  et `metrics-system.ts:14` (`TranslateDirective`).
+- `?? 0` morts dans `entities/admin/user-management/list/user-management.html:35,43`
+  (`usersByRole` non-optional, déjà sous `@if (stats())` l.21).
+- Sass `@import` déprécié : `admin/docs/docs.scss:4-5`, `content/scss/global.scss:4`, `content/scss/vendor.scss:1-3`.
+
+### D.8 Changelogs Liquibase orphelins
+
+Ignorés de `master.xml`, aucune référence dans le code :
+- `20260624093355_added_entity_ActionHistory.xml`
+- `20260703000000_added_action_history_user.xml`
+- `20260714000002_added_entity_TaskTransition.xml`
+
+→ à supprimer (base dev vide) si aucune table ni donnée n'en dépend (à vérifier).
+
+### D.9 Gaps de traduction i18n
+
+- Clé `actionHistory` présente dans `global.json` fr/en mais **pas en ar** ; `actionHistory.json` jamais
+  référencé ; `ar/actionHistory.json` absent. (Deviendra caduque avec la Partie A.2.)
+
+### D.10 Désalignement JDL / `.jhipster` / domain
+
+- `project-management.jdl`, `.jhipster/*.json` et le domaine contiennent encore les déchets de la Partie A
+  (`TaskHistory`, `GroupMessage`) → réaligner après A.1/A.2.
+
+---
+
+## 7. Base de données (dev)
 
 1. **Recréer la base** (elle est vide en dev) :
    ```bash
@@ -326,7 +420,7 @@ Dans `service/ProjectService.java` → `removeMember(Long projectId, Long userId
 
 ---
 
-## 7. Documentation à nettoyer
+## 8. Documentation à nettoyer
 
 Après validation du code, mettre à jour les fichiers markdown qui citent les entités supprimées :
 - `README.md` (lignes 26-32, 42, 207-211, 263) — `GroupMessage`, `TaskHistory`, présence, mentions
@@ -344,7 +438,7 @@ Après validation du code, mettre à jour les fichiers markdown qui citent les e
 
 ---
 
-## 8. Vérification finale
+## 9. Vérification finale
 
 ```bash
 # 1. Références orphelines (doit remonter seulement les docs/README restants avant nettoyage)
@@ -364,11 +458,11 @@ Critères de fin :
 - `./npmw run build` et `./npmw test` OK.
 - Plus de 500 sur `DELETE /api/tasks/{id}`, `DELETE /api/admin/users/{login}`, `DELETE /api/projects/{id}`.
 - Retrait d'un membre → ses tâches du projet réapparaissent sans assignee.
-- `rg` ci-dessus ne remonte que les fichiers de docs restants (ou plus rien après §7).
+- `rg` ci-dessus ne remonte que les fichiers de docs restants (ou plus rien après §8).
 
 ---
 
-## 9. Guide d'exécution pour l'assistant
+## 10. Guide d'exécution pour l'assistant
 
 Ordre de travail recommandé (chaque étape est suivie d'une recompilation pour détecter les références cassées) :
 
@@ -417,17 +511,28 @@ Ordre de travail recommandé (chaque étape est suivie d'une recompilation pour 
 1. `TaskRepository.unassignTasksInProject` + `ProjectService.removeMember`.
 2. Recompiler.
 
-### Étape 8 — Base de données
-- Recréer la base (§6) puis lancer l'app pour laisser Liquibase créer le schéma.
+### Étape 8 — Partie D (bugs d'audit)
+1. D.1 : `SprintService.delete` + `EpicService.delete` — désassigner les tâches avant suppression (décision métier à confirmer).
+2. D.2 : aligner `UserService.removeNotActivatedUsers`/`removeNonActivatedUser` sur B.2.
+3. D.3 : `TechnicalStructureTest` — autoriser `service → web.rest.errors` (ou déplacer l'exception).
+4. D.4 : corriger les 5 tests backend (TaskResourceIT, TaskStatusNotificationIT, AttachmentResourceIT, ProjectRolePermissionIT, UserResourceIT).
+5. D.5 : corriger `home.spec.ts` (appel `isUser()`).
+6. D.6 : `angular.json` (buildTarget) + supprimer `vitest.temp.config.ts`.
+7. D.7 : nettoyer les imports inutilisés, `?? 0` morts, Sass `@import`.
+8. D.8 : supprimer les 3 changelogs orphelins (ActionHistory, action_history_user, TaskTransition).
+9. Recompiler + `./mvnw clean verify` + `./npmw test`.
+
+### Étape 9 — Base de données
+- Recréer la base (§7) puis lancer l'app pour laisser Liquibase créer le schéma.
 - Vérifier qu'aucune table `task_history`, `group_message`, `chat_user_presence`, `chat_message_mentions` n'existe.
 
-### Étape 9 — Vérification finale (§8)
+### Étape 10 — Vérification finale (§9)
 - `./mvnw clean verify`
 - `./npmw run build` + `./npmw test`
 - `rg` des références orphelines
 
-### Étape 10 — Documentation (§7)
-- Mettre à jour `README.md`, `docs/*` selon la liste §7.
+### Étape 11 — Documentation (§8)
+- Mettre à jour `README.md`, `docs/*` selon la liste §8.
 
 > Règle : **aucune hypothèse silencieuse**. Tout comportement métier ambigu est signalé à l'utilisateur
 > avant d'implémenter. Garder le style de code existant (nommage, structure des packages).
