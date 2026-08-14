@@ -3,7 +3,15 @@ package com.gestiontaches.service;
 import com.gestiontaches.config.Constants;
 import com.gestiontaches.domain.Authority;
 import com.gestiontaches.domain.User;
+import com.gestiontaches.repository.AttachmentRepository;
 import com.gestiontaches.repository.AuthorityRepository;
+import com.gestiontaches.repository.ChatMessageRepository;
+import com.gestiontaches.repository.CommentRepository;
+import com.gestiontaches.repository.ConversationMemberRepository;
+import com.gestiontaches.repository.ConversationRepository;
+import com.gestiontaches.repository.NotificationRepository;
+import com.gestiontaches.repository.ProjectMemberRepository;
+import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
@@ -41,16 +49,48 @@ public class UserService {
 
     private final CacheManager cacheManager;
 
+    private final NotificationRepository notificationRepository;
+
+    private final ProjectMemberRepository projectMemberRepository;
+
+    private final TaskRepository taskRepository;
+
+    private final CommentRepository commentRepository;
+
+    private final AttachmentRepository attachmentRepository;
+
+    private final ChatMessageRepository chatMessageRepository;
+
+    private final ConversationMemberRepository conversationMemberRepository;
+
+    private final ConversationRepository conversationRepository;
+
     public UserService(
         UserRepository userRepository,
         PasswordEncoder passwordEncoder,
         AuthorityRepository authorityRepository,
-        CacheManager cacheManager
+        CacheManager cacheManager,
+        NotificationRepository notificationRepository,
+        ProjectMemberRepository projectMemberRepository,
+        TaskRepository taskRepository,
+        CommentRepository commentRepository,
+        AttachmentRepository attachmentRepository,
+        ChatMessageRepository chatMessageRepository,
+        ConversationMemberRepository conversationMemberRepository,
+        ConversationRepository conversationRepository
     ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authorityRepository = authorityRepository;
         this.cacheManager = cacheManager;
+        this.notificationRepository = notificationRepository;
+        this.projectMemberRepository = projectMemberRepository;
+        this.taskRepository = taskRepository;
+        this.commentRepository = commentRepository;
+        this.attachmentRepository = attachmentRepository;
+        this.chatMessageRepository = chatMessageRepository;
+        this.conversationMemberRepository = conversationMemberRepository;
+        this.conversationRepository = conversationRepository;
     }
 
     public Optional<User> activateRegistration(String key) {
@@ -249,6 +289,16 @@ public class UserService {
                     throw new LastAdminException();
                 }
             }
+            Long userId = user.getId();
+            notificationRepository.deleteByUser_IdOrRelatedUserId(userId, userId);
+            projectMemberRepository.deleteByUserId(userId);
+            taskRepository.unassignTasksByUserId(userId);
+            taskRepository.nullifyCreatedBy(userId);
+            commentRepository.nullifyAuthor(userId);
+            attachmentRepository.nullifyUploadedBy(userId);
+            chatMessageRepository.deleteBySenderId(userId);
+            conversationMemberRepository.deleteByUserId(userId);
+            conversationRepository.nullifyCreatedBy(userId);
             userRepository.delete(user);
             this.clearUserCaches(user);
             LOG.debug("Deleted User: {}", user);

@@ -21,7 +21,6 @@ import { UserService } from 'app/entities/user/service/user.service';
 import { IUser } from 'app/entities/user/user.model';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
 import { ProjectDeleteDialog } from '../delete/project-delete-dialog';
-import { GroupMessageListComponent } from 'app/entities/group-message/list/group-message-list';
 
 export interface DisplayMember extends IProjectMember {
   isSynthetic?: boolean;
@@ -31,54 +30,10 @@ export interface DisplayMember extends IProjectMember {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'jhi-project-detail',
   templateUrl: './project-detail.html',
-  styles: [
-    `
-      .tab-bar {
-        display: flex;
-        gap: 0;
-        border-bottom: 1px solid var(--color-outline-variant);
-        margin-bottom: 20px;
-      }
-      .tab-item {
-        padding: 10px 24px;
-        cursor: pointer;
-        font-family: var(--font-inter);
-        font-size: 0.85rem;
-        text-transform: none;
-        letter-spacing: 0;
-        border: none;
-        background: transparent;
-        color: var(--color-text-muted);
-        border-bottom: 2px solid transparent;
-        margin-bottom: -1px;
-        transition:
-          color var(--transition-fast),
-          border-color var(--transition-fast);
-      }
-      .tab-item:hover {
-        color: var(--color-text);
-      }
-      .tab-item.active {
-        color: var(--color-primary);
-        border-bottom-color: var(--color-primary);
-      }
-    `,
-  ],
-  imports: [
-    FontAwesomeModule,
-    Alert,
-    AlertError,
-    TranslateDirective,
-    TranslateModule,
-    RouterLink,
-    FormatMediumDatetimePipe,
-    FormsModule,
-    GroupMessageListComponent,
-  ],
+  imports: [FontAwesomeModule, Alert, AlertError, TranslateDirective, TranslateModule, RouterLink, FormatMediumDatetimePipe, FormsModule],
 })
 export class ProjectDetail {
   readonly project = input<IProject | null>(null);
-  readonly activeTab = signal<'details' | 'members' | 'discussion'>('details');
 
   readonly members = signal<IProjectMember[]>([]);
   readonly membersLoading = signal(false);
@@ -248,9 +203,5 @@ export class ProjectDetail {
         }),
       )
       .subscribe();
-  }
-
-  setTab(tab: 'details' | 'members' | 'discussion'): void {
-    this.activeTab.set(tab);
   }
 }

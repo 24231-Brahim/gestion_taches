@@ -23,10 +23,6 @@
             <fa-icon icon="paperclip" class="me-1" />
             <span jhiTranslate="gestionTachesApp.task.detail.tab.attachments">Attachments</span>
           </button>
-          <button class="tab-item" [class.active]="activeTab() === 'history'" (click)="setTab('history')">
-            <fa-icon icon="history" class="me-1" />
-            <span jhiTranslate="gestionTachesApp.task.detail.tab.history">History</span>
-          </button>
         </div>
 
         @switch (activeTab()) {
@@ -46,8 +42,10 @@
                   {
                     null: '',
                     NEW: 'NEW',
+                    TODO: 'TODO',
                     IN_PROGRESS: 'IN_PROGRESS',
                     READY_FOR_TEST: 'READY_FOR_TEST',
+                    IN_REVIEW: 'IN_REVIEW',
                     DONE: 'DONE',
                     NEEDS_INFO: 'NEEDS_INFO',
                   }[taskRef.status ?? 'null']
@@ -114,9 +112,6 @@
           }
           @case ('attachments') {
             <jhi-task-attachments-tab [taskId]="taskRef.id" />
-          }
-          @case ('history') {
-            <jhi-task-history-tab [taskId]="taskRef.id" />
           }
         }
 

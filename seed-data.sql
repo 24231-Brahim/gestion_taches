@@ -25,9 +25,9 @@
 -- ============================================================================
 -- NETTOYAGE: Suppression des données existantes (ordre inverse des FK)
 -- ============================================================================
-TRUNCATE task_history, comment, task,
+TRUNCATE comment, task,
          sprint, epic, project_member, project,
-         notification, attachment, group_message,
+         notification, attachment,
          jhi_user_authority, jhi_user, jhi_authority
 CASCADE;
 

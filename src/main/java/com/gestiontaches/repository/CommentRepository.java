@@ -15,6 +15,14 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByTaskIdOrderByCreatedAtDesc(Long taskId);
 
     @Modifying
+    @Query("DELETE FROM Comment c WHERE c.task.id = :taskId")
+    int deleteByTaskId(@Param("taskId") Long taskId);
+
+    @Modifying
+    @Query("UPDATE Comment c SET c.author = NULL WHERE c.author.id = :userId")
+    int nullifyAuthor(@Param("userId") Long userId);
+
+    @Modifying
     @Query("DELETE FROM Comment c WHERE c.task.id IN (SELECT t.id FROM Task t WHERE t.project.id = :projectId)")
     int deleteByTaskProjectId(@Param("projectId") Long projectId);
 }

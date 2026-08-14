@@ -170,8 +170,10 @@ export class DashboardListsComponent {
       DONE: 'var(--color-success)',
       IN_PROGRESS: 'var(--color-info)',
       READY_FOR_TEST: 'var(--color-status-in-review)',
+      IN_REVIEW: 'var(--color-status-in-review)',
       NEEDS_INFO: 'var(--color-danger)',
       NEW: 'var(--color-muted)',
+      TODO: 'var(--color-muted)',
     };
     return map[status] ?? 'var(--color-on-surface)';
   }

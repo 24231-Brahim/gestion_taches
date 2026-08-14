@@ -21,13 +21,10 @@
         "title": "المهمة",
         "comments": "التعليقات",
         "noComments": "لا توجد تعليقات بعد.",
-        "history": "السجل",
-        "noHistory": "لا يوجد سجل بعد.",
         "tab": {
           "details": "التفاصيل",
           "comments": "التعليقات",
-          "attachments": "المرفقات",
-          "history": "السجل"
+          "attachments": "المرفقات"
         }
       },
       "id": "المعرف",
@@ -40,13 +37,11 @@
       "updatedAt": "تاريخ التحديث",
       "comments": "التعليقات",
       "attachments": "المرفقات",
-      "history": "السجل",
       "sprint": "السبرنت",
       "epic": "الإيبك",
       "project": "المشروع",
       "assignee": "المُعيَّن",
-      "createdBy": "أنشئ بواسطة",
-      "system": "النظام"
+      "createdBy": "أنشئ بواسطة"
     }
   }
 }

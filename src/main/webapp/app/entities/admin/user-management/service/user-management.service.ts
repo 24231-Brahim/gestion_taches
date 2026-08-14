@@ -21,7 +21,6 @@ export interface IUserAdminDetail {
   authorities?: string[];
   tasks?: ITaskSummary[];
   projects?: IProjectMembership[];
-  recentActivity?: ITaskHistoryEntry[];
 }
 
 export interface ITaskSummary {
@@ -45,16 +44,6 @@ export interface IProjectMembership {
   projectKey?: string;
   role?: string;
   joinedAt?: Date;
-}
-
-export interface ITaskHistoryEntry {
-  id?: number | null;
-  action?: string;
-  oldValue?: string;
-  newValue?: string;
-  createdAt?: Date;
-  taskId?: number | null;
-  taskTitle?: string;
 }
 
 @Injectable({ providedIn: 'root' })

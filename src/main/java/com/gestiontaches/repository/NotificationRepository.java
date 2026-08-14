@@ -33,6 +33,14 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     int deleteByCreatedAtBefore(java.time.Instant limit);
 
     @Modifying
+    @Query("DELETE FROM Notification n WHERE n.task.id = :taskId")
+    int deleteByTaskId(@Param("taskId") Long taskId);
+
+    @Modifying
+    @Query("DELETE FROM Notification n WHERE n.user.id = :userId OR n.relatedUserId = :userId")
+    int deleteByUser_IdOrRelatedUserId(@Param("userId") Long userId, @Param("relatedUserId") Long relatedUserId);
+
+    @Modifying
     @Query("DELETE FROM Notification n WHERE n.task IS NOT NULL AND n.task.id IN (SELECT t.id FROM Task t WHERE t.project.id = :projectId)")
     int deleteByTaskProjectId(@Param("projectId") Long projectId);
 }

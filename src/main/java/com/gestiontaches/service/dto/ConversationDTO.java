@@ -35,7 +35,7 @@ public class ConversationDTO implements Serializable {
     /** Number of unread messages for the requesting user. */
     private long unreadCount;
 
-    /** Members of the conversation (with role/presence), empty for the listing endpoint. */
+    /** Members of the conversation, empty for the listing endpoint. */
     private List<ChatMemberDTO> participants = new ArrayList<>();
 
     public Long getId() {

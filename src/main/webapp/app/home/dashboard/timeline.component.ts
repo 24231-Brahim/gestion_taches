@@ -106,15 +106,8 @@ export interface TimelineItem {
 })
 export class DashboardTimelineComponent {
   readonly tasks = input<any[]>([]);
-  // When set, used verbatim instead of deriving a feed from `tasks` — for callers (like the
-  // developer dashboard) that already have a real activity feed (e.g. TaskHistory entries).
-  readonly activitiesOverride = input<TimelineItem[] | null>(null);
 
   readonly activities = computed<TimelineItem[]>(() => {
-    const override = this.activitiesOverride();
-    if (override) {
-      return override;
-    }
     const colors = [
       'var(--color-success)',
       'var(--color-status-backlog)',

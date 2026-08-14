@@ -2,7 +2,6 @@ package com.gestiontaches.service;
 
 import com.gestiontaches.domain.Notification;
 import com.gestiontaches.domain.Task;
-import com.gestiontaches.domain.TaskHistory;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.NotificationRepository;
 import com.gestiontaches.repository.TaskRepository;
@@ -146,22 +145,13 @@ public class NotificationService {
         LOG.debug("Sent new user registration notification to {} admin(s)", admins.size());
     }
 
-    public void notifyAdminsOfTaskHistory(TaskHistory history) {
+    public void notifyAdminsOfTaskMovedToBacklog(Task task, String oldSprintName) {
         List<User> admins = userRepository.findAllActivatedByAuthorityNames(List.of(AuthoritiesConstants.ADMIN));
-        Task task = history.getTask();
-        String message = "Task \"" + task.getTitle() + "\" — " + history.getAction();
-        if (history.getOldValue() != null || history.getNewValue() != null) {
-            message +=
-                " (" +
-                (history.getOldValue() != null ? history.getOldValue() : "") +
-                " → " +
-                (history.getNewValue() != null ? history.getNewValue() : "") +
-                ")";
-        }
+        String message = "Task \"" + task.getTitle() + "\" — TASK_MOVED_TO_BACKLOG (Sprint: " + oldSprintName + " → Backlog)";
         for (User admin : admins) {
             createNotification(admin, message, task.getTitle(), task);
         }
-        LOG.debug("Sent task history notification to {} admin(s) for task {}", admins.size(), task.getId());
+        LOG.debug("Sent task moved to backlog notification to {} admin(s) for task {}", admins.size(), task.getId());
     }
 
     @Scheduled(cron = "0 0 8 * * ?")

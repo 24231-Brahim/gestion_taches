@@ -7,7 +7,6 @@ import com.gestiontaches.service.UserService;
 import com.gestiontaches.service.dto.ChatMemberDTO;
 import com.gestiontaches.service.dto.ChatMessageDTO;
 import com.gestiontaches.service.dto.ConversationDTO;
-import com.gestiontaches.service.dto.UserPresenceDTO;
 import com.gestiontaches.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -20,13 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * REST controller managing the project chat.
- *
- * <p>All endpoints live under {@code /api/projects/{projectId}/chat} and require an
- * authenticated user who is a member of the project. Private conversations are only
- * reachable by their participants (enforced in {@link ChatService}).</p>
- */
 @RestController
 @RequestMapping("/api/projects/{projectId}/chat")
 public class ChatResource {
@@ -46,10 +38,6 @@ public class ChatResource {
         this.userService = userService;
     }
 
-    /**
-     * {@code GET /api/projects/{projectId}/chat/conversations} : lists the conversations of
-     * the current user in the project (# General first, then the direct conversations).
-     */
     @GetMapping("/conversations")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ConversationDTO>> getConversations(@PathVariable("projectId") Long projectId) {
@@ -58,10 +46,6 @@ public class ChatResource {
         return ResponseEntity.ok(chatService.getConversations(projectId, currentUser.getId()));
     }
 
-    /**
-     * {@code POST /api/projects/{projectId}/chat/conversations/direct/{userId}} : returns the
-     * existing direct conversation with the given member, or creates it.
-     */
     @PostMapping("/conversations/direct/{userId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ConversationDTO> openDirectConversation(
@@ -74,11 +58,6 @@ public class ChatResource {
         return ResponseEntity.created(new URI("/api/projects/" + projectId + "/chat/conversations/" + dto.getId())).body(dto);
     }
 
-    /**
-     * {@code GET /api/projects/{projectId}/chat/conversations/{conversationId}/messages} :
-     * returns a page of messages (oldest first). Pass {@code beforeId} to load the previous
-     * page (infinite scroll), {@code limit} defaults to 30.
-     */
     @GetMapping("/conversations/{conversationId}/messages")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ChatMessageDTO>> getMessages(
@@ -92,10 +71,6 @@ public class ChatResource {
         return ResponseEntity.ok(chatService.getMessages(projectId, conversationId, beforeId, limit, currentUser.getId()));
     }
 
-    /**
-     * {@code POST /api/projects/{projectId}/chat/conversations/{conversationId}/messages} :
-     * sends a new message.
-     */
     @PostMapping("/conversations/{conversationId}/messages")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ChatMessageDTO> sendMessage(
@@ -114,10 +89,6 @@ public class ChatResource {
         ).body(result);
     }
 
-    /**
-     * {@code PATCH /api/projects/{projectId}/chat/messages/{messageId}} : edits the content of
-     * one of the current user's messages.
-     */
     @PatchMapping("/messages/{messageId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ChatMessageDTO> updateMessage(
@@ -130,10 +101,6 @@ public class ChatResource {
         return ResponseEntity.ok(chatService.updateMessage(projectId, messageId, currentUser.getId(), chatMessageDTO.getContent()));
     }
 
-    /**
-     * {@code DELETE /api/projects/{projectId}/chat/messages/{messageId}} : soft-deletes one of
-     * the current user's messages.
-     */
     @DeleteMapping("/messages/{messageId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> deleteMessage(@PathVariable("projectId") Long projectId, @PathVariable("messageId") Long messageId) {
@@ -143,26 +110,18 @@ public class ChatResource {
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * {@code POST /api/projects/{projectId}/chat/conversations/{conversationId}/read} : marks
-     * the conversation as read for the current user.
-     */
     @PostMapping("/conversations/{conversationId}/read")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> markConversationRead(
         @PathVariable("projectId") Long projectId,
         @PathVariable("conversationId") Long conversationId
     ) {
-        LOG.debug("REST request to mark conversation {} as read in project {}", conversationId, projectId);
+        LOG.debug("REST request to mark conversation {} as read for project {}", conversationId, projectId);
         User currentUser = currentUser();
         chatService.markConversationRead(projectId, conversationId, currentUser.getId());
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * {@code GET /api/projects/{projectId}/chat/members} : lists the project members with
-     * their role and presence (online / last activity).
-     */
     @GetMapping("/members")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ChatMemberDTO>> getMembers(@PathVariable("projectId") Long projectId) {
@@ -171,10 +130,6 @@ public class ChatResource {
         return ResponseEntity.ok(chatService.getMembers(projectId, currentUser.getId()));
     }
 
-    /**
-     * {@code GET /api/projects/{projectId}/chat/search} : searches messages across the
-     * conversations the current user can access in the project.
-     */
     @GetMapping("/search")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ChatMessageDTO>> searchMessages(
@@ -185,30 +140,6 @@ public class ChatResource {
         LOG.debug("REST request to search chat messages in project : {}", projectId);
         User currentUser = currentUser();
         return ResponseEntity.ok(chatService.searchMessages(projectId, currentUser.getId(), query, limit));
-    }
-
-    /**
-     * {@code POST /api/projects/{projectId}/chat/presence} : heartbeat, refreshes the current
-     * user's last activity so the presence indicator stays accurate.
-     */
-    @PostMapping("/presence")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<UserPresenceDTO> updatePresence(@PathVariable("projectId") Long projectId) {
-        LOG.debug("REST request to refresh chat presence in project : {}", projectId);
-        User currentUser = currentUser();
-        return ResponseEntity.ok(chatService.updatePresence(projectId, currentUser.getId()));
-    }
-
-    /**
-     * {@code GET /api/projects/{projectId}/chat/presence} : returns the presence of the
-     * project members.
-     */
-    @GetMapping("/presence")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<UserPresenceDTO>> getPresence(@PathVariable("projectId") Long projectId) {
-        LOG.debug("REST request to get chat presence in project : {}", projectId);
-        User currentUser = currentUser();
-        return ResponseEntity.ok(chatService.getPresence(projectId, currentUser.getId()));
     }
 
     private User currentUser() {

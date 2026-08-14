@@ -15,12 +15,6 @@
     </div>
     <div class="chat-header-meta">
       <span>{{ 'chat.header.membersCount' | translate: { count: members().length } }}</span>
-      @if (onlineCount() > 0) {
-        <span class="chat-header-online">
-          <span class="chat-header-dot"></span>
-          {{ 'chat.header.onlineCount' | translate: { count: onlineCount() } }}
-        </span>
-      }
     </div>
   </div>
 </div>

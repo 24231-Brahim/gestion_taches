@@ -17,15 +17,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
     @Modifying
-    @Query(
-        value = "DELETE FROM chat_message_mentions WHERE message_id IN (SELECT m.id FROM chat_message m JOIN chat_conversation c ON m.conversation_id = c.id WHERE c.project_id = :projectId)",
-        nativeQuery = true
-    )
-    int deleteMentionsByProjectId(@Param("projectId") Long projectId);
-
-    @Modifying
     @Query("DELETE FROM ChatMessage m WHERE m.conversation.id IN (SELECT c.id FROM Conversation c WHERE c.project.id = :projectId)")
     int deleteByProjectId(@Param("projectId") Long projectId);
+
+    @Modifying
+    @Query("DELETE FROM ChatMessage m WHERE m.sender.id = :userId")
+    int deleteBySenderId(@Param("userId") Long userId);
 
     @Query(
         "SELECT m FROM ChatMessage m LEFT JOIN FETCH m.sender WHERE m.conversation.id = :conversationId " +

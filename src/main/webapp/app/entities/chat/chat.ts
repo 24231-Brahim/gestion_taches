@@ -22,7 +22,6 @@ import { ChatComposer } from './chat-composer/chat-composer';
 
 const MESSAGE_PAGE_SIZE = 30;
 const MESSAGE_POLL_INTERVAL = 5000;
-const PRESENCE_POLL_INTERVAL = 30000;
 
 @Component({
   selector: 'jhi-chat',
@@ -99,12 +98,6 @@ export class Chat implements OnInit {
     interval(MESSAGE_POLL_INTERVAL)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.refreshConversations());
-    interval(PRESENCE_POLL_INTERVAL)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => {
-        this.heartbeat();
-        this.loadMembers();
-      });
 
     window.addEventListener('resize', this.onResize);
     this.destroyRef.onDestroy(() => window.removeEventListener('resize', this.onResize));
@@ -167,14 +160,6 @@ export class Chat implements OnInit {
       },
       error: () => undefined,
     });
-  }
-
-  heartbeat(): void {
-    const projectId = this.projectId();
-    if (!projectId) {
-      return;
-    }
-    this.chatService.updatePresence(projectId).subscribe({ error: () => undefined });
   }
 
   selectConversation(conversation: IConversation): void {

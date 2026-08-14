@@ -228,6 +228,7 @@ public class EpicService {
         Epic epic = epicRepository.findById(id).orElseThrow(() -> new BadRequestAlertException("Epic not found", "epic", "idnotfound"));
         projectPermissionService.requireProjectRole(epic.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
         Long projectId = epic.getProject().getId();
+        taskRepository.unassignByEpicId(id);
         epicRepository.deleteById(id);
         entityEventSseService.sendEvent(new EntityChangeEvent(EntityEventType.ENTITY_EPIC, EntityEventType.DELETED, id, projectId));
     }

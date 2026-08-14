@@ -15,7 +15,6 @@ import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.domain.enumeration.SprintStatus;
 import com.gestiontaches.domain.enumeration.TaskStatus;
 import com.gestiontaches.repository.SprintRepository;
-import com.gestiontaches.repository.TaskHistoryRepository;
 import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.service.dto.SprintDTO;
@@ -46,9 +45,6 @@ class SprintServiceTest {
 
     @Mock
     private TaskRepository taskRepository;
-
-    @Mock
-    private TaskHistoryRepository taskHistoryRepository;
 
     @Mock
     private NotificationService notificationService;
@@ -186,8 +182,7 @@ class SprintServiceTest {
         assertThat(inProgressTask.getSprint()).isNull();
         assertThat(doneTask.getSprint()).isNotNull();
 
-        verify(taskHistoryRepository, times(2)).save(any());
-        verify(notificationService, times(2)).notifyAdminsOfTaskHistory(any());
+        verify(notificationService, times(2)).notifyAdminsOfTaskMovedToBacklog(any(), eq("Sprint 1"));
     }
 
     @Test
@@ -222,7 +217,7 @@ class SprintServiceTest {
         assertThat(report.getPourcentage()).isEqualTo(100);
         assertThat(report.getTachesReportees()).isEqualTo(0);
 
-        verify(notificationService, never()).notifyAdminsOfTaskHistory(any());
+        verify(notificationService, never()).notifyAdminsOfTaskMovedToBacklog(any(), any());
     }
 
     @Test
@@ -248,7 +243,7 @@ class SprintServiceTest {
         assertThat(report.getPourcentage()).isEqualTo(0);
         assertThat(report.getTachesReportees()).isEqualTo(1);
 
-        verify(notificationService, times(1)).notifyAdminsOfTaskHistory(any());
+        verify(notificationService, times(1)).notifyAdminsOfTaskMovedToBacklog(any(), eq("Sprint 1"));
     }
 
     @Test

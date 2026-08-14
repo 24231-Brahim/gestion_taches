@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import com.gestiontaches.domain.Task;
-import com.gestiontaches.domain.TaskHistory;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.NotificationRepository;
 import com.gestiontaches.repository.TaskRepository;
@@ -46,7 +45,6 @@ class NotificationServiceTest {
     private User admin1;
     private User admin2;
     private Task task;
-    private TaskHistory history;
 
     @BeforeEach
     void setUp() {
@@ -61,22 +59,14 @@ class NotificationServiceTest {
         task = new Task();
         task.setId(100L);
         task.setTitle("Fix login bug");
-
-        history = new TaskHistory();
-        history.setId(1L);
-        history.setTask(task);
-        history.setAction("STATUS_CHANGED");
-        history.setOldValue("TODO");
-        history.setNewValue("IN_PROGRESS");
-        history.setCreatedAt(java.time.Instant.now());
     }
 
     @Test
-    void notifyAdminsOfTaskHistory_shouldCreateNotificationForEachAdmin() {
+    void notifyAdminsOfTaskMovedToBacklog_shouldCreateNotificationForEachAdmin() {
         when(userRepository.findAllActivatedByAuthorityNames(List.of(AuthoritiesConstants.ADMIN))).thenReturn(List.of(admin1, admin2));
         when(notificationRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        notificationService.notifyAdminsOfTaskHistory(history);
+        notificationService.notifyAdminsOfTaskMovedToBacklog(task, "Sprint Alpha");
 
         verify(notificationRepository, times(2)).save(any());
 
@@ -86,8 +76,9 @@ class NotificationServiceTest {
         List<com.gestiontaches.domain.Notification> saved = captor.getAllValues();
 
         assertThat(saved.get(0).getMessage()).contains("Fix login bug");
-        assertThat(saved.get(0).getMessage()).contains("STATUS_CHANGED");
-        assertThat(saved.get(0).getMessage()).contains("TODO → IN_PROGRESS");
+        assertThat(saved.get(0).getMessage()).contains("TASK_MOVED_TO_BACKLOG");
+        assertThat(saved.get(0).getMessage()).contains("Sprint Alpha");
+        assertThat(saved.get(0).getMessage()).contains("Backlog");
         assertThat(saved.get(0).getTask()).isEqualTo(task);
         assertThat(saved.get(0).getTaskTitle()).isEqualTo("Fix login bug");
         assertThat(saved.get(0).getUser()).isEqualTo(admin1);
@@ -100,28 +91,10 @@ class NotificationServiceTest {
     }
 
     @Test
-    void notifyAdminsOfTaskHistory_shouldOmitArrowWhenNoOldOrNewValue() {
-        when(userRepository.findAllActivatedByAuthorityNames(List.of(AuthoritiesConstants.ADMIN))).thenReturn(List.of(admin1));
-        when(notificationRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
-
-        history.setOldValue(null);
-        history.setNewValue(null);
-
-        notificationService.notifyAdminsOfTaskHistory(history);
-
-        ArgumentCaptor<com.gestiontaches.domain.Notification> captor = ArgumentCaptor.forClass(com.gestiontaches.domain.Notification.class);
-        verify(notificationRepository, times(1)).save(captor.capture());
-
-        com.gestiontaches.domain.Notification saved = captor.getValue();
-        assertThat(saved.getMessage()).contains("STATUS_CHANGED");
-        assertThat(saved.getMessage()).doesNotContain("→");
-    }
-
-    @Test
-    void notifyAdminsOfTaskHistory_shouldNotCreateNotificationWhenNoAdmins() {
+    void notifyAdminsOfTaskMovedToBacklog_shouldNotCreateNotificationWhenNoAdmins() {
         when(userRepository.findAllActivatedByAuthorityNames(List.of(AuthoritiesConstants.ADMIN))).thenReturn(List.of());
 
-        notificationService.notifyAdminsOfTaskHistory(history);
+        notificationService.notifyAdminsOfTaskMovedToBacklog(task, "Sprint Alpha");
 
         verify(notificationRepository, never()).save(any());
     }

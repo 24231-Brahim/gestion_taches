@@ -7,7 +7,7 @@ import { AccountService } from 'app/core/auth/account.service';
 import { KpiCardComponent } from './kpi-card.component';
 import { DashboardChartsComponent } from './charts.component';
 import { DashboardListsComponent } from './lists.component';
-import { DashboardTimelineComponent, TimelineItem } from './timeline.component';
+import { DashboardTimelineComponent } from './timeline.component';
 import { DashboardQuickActionsComponent } from './quick-actions.component';
 
 export interface DeveloperDashboardStatistics {
@@ -30,14 +30,6 @@ interface ProjectProgressStats {
   totalTasks: number;
   doneTasks: number;
 }
-
-const ACTIVITY_COLORS = [
-  'var(--color-success)',
-  'var(--color-status-backlog)',
-  'var(--color-warning)',
-  'var(--color-status-in-review)',
-  'var(--color-secondary)',
-];
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -76,7 +68,7 @@ const ACTIVITY_COLORS = [
       <jhi-dashboard-charts [taskDistribution]="taskDistribution()" [projectProgress]="projectProgress()" />
       <jhi-dashboard-lists [recentProjects]="recentProjects()" [recentTasks]="recentTasks()" [showRecentProjects]="showRecentProjects()" />
       <div class="bottom-grid">
-        <jhi-dashboard-timeline [activitiesOverride]="recentActivity()" />
+        <jhi-dashboard-timeline [tasks]="recentTasks()" />
       </div>
     </div>
   `,
@@ -157,24 +149,12 @@ export class DeveloperDashboardComponent {
 
   readonly recentTasks = computed<any[]>(() => this.recentTasksResource.value() ?? []);
 
-  readonly recentActivity = computed<TimelineItem[]>(() => {
-    const histories = this.recentActivityResource.value() ?? [];
-    return histories.slice(0, 5).map((h, i) => ({
-      id: h.id,
-      title: h.task?.title ?? '—',
-      status: h.action,
-      date: this.formatDate(h.createdAt),
-      color: ACTIVITY_COLORS[i % ACTIVITY_COLORS.length],
-    }));
-  });
-
   readonly loading = computed(
     () =>
       this.statisticsResource.isLoading() ||
       this.myProjectsResource.isLoading() ||
       this.projectStatsResource.isLoading() ||
-      this.recentTasksResource.isLoading() ||
-      this.recentActivityResource.isLoading(),
+      this.recentTasksResource.isLoading(),
   );
 
   readonly error = computed(
@@ -182,8 +162,7 @@ export class DeveloperDashboardComponent {
       this.statisticsResource.error() ??
       this.myProjectsResource.error() ??
       this.projectStatsResource.error() ??
-      this.recentTasksResource.error() ??
-      this.recentActivityResource.error(),
+      this.recentTasksResource.error(),
   );
 
   private readonly applicationConfigService = inject(ApplicationConfigService);
@@ -217,15 +196,4 @@ export class DeveloperDashboardComponent {
       params: new HttpParams().set('assigneeId.equals', userId).set('page', '0').set('size', '5').set('sort', 'updatedAt,desc'),
     };
   });
-
-  private readonly recentActivityResource = httpResource<any[]>(() => ({
-    url: this.applicationConfigService.getEndpointFor('api/task-histories/mine'),
-  }));
-
-  private formatDate(value: string | undefined): string {
-    if (!value) {
-      return '—';
-    }
-    return new Date(value).toLocaleString(this.translateService.getCurrentLang());
-  }
 }

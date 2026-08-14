@@ -21,7 +21,6 @@ import com.gestiontaches.domain.Project;
 import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.Sprint;
 import com.gestiontaches.domain.Task;
-import com.gestiontaches.domain.TaskHistory;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.domain.enumeration.ConversationType;
 import com.gestiontaches.domain.enumeration.EpicStatus;
@@ -39,7 +38,6 @@ import com.gestiontaches.repository.NotificationRepository;
 import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.repository.SprintRepository;
-import com.gestiontaches.repository.TaskHistoryRepository;
 import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.service.dto.ProjectDTO;
@@ -125,9 +123,6 @@ class ProjectResourceIT {
 
     @Autowired
     private AttachmentRepository attachmentRepository;
-
-    @Autowired
-    private TaskHistoryRepository taskHistoryRepository;
 
     @Autowired
     private NotificationRepository notificationRepository;
@@ -578,13 +573,6 @@ class ProjectResourceIT {
             .uploadedBy(member);
         em.persist(attachment);
 
-        TaskHistory history = new TaskHistory();
-        history.setTask(task);
-        history.setUser(member);
-        history.setAction("STATUS_CHANGE");
-        history.setCreatedAt(Instant.now());
-        em.persist(history);
-
         Notification notification = new Notification()
             .message("Task update")
             .task(task)
@@ -605,7 +593,6 @@ class ProjectResourceIT {
             .sender(owner)
             .createdAt(Instant.now())
             .deleted(false);
-        message.setMentions(new HashSet<>(List.of(member.getId())));
         em.persist(message);
         em.flush();
         em.clear();
@@ -626,7 +613,6 @@ class ProjectResourceIT {
         assertThat(taskRepository.findById(task.getId())).isEmpty();
         assertThat(commentRepository.findById(comment.getId())).isEmpty();
         assertThat(attachmentRepository.findById(attachment.getId())).isEmpty();
-        assertThat(taskHistoryRepository.findById(history.getId())).isEmpty();
         assertThat(notificationRepository.findById(notification.getId())).isEmpty();
         assertThat(conversationRepository.findById(conversation.getId())).isEmpty();
         assertThat(conversationMemberRepository.findById(convMember.getId())).isEmpty();

@@ -9,8 +9,7 @@ import java.util.Objects;
  * A member of the chat for a given project.
  *
  * <p>Combines project membership ({@link com.gestiontaches.domain.ProjectMember}) with
- * presence ({@link com.gestiontaches.domain.UserPresence}) and the per-conversation read
- * state. Used both for the members sidebar and for conversation participants.</p>
+ * the per-conversation read state. Used both for the members sidebar and for conversation participants.</p>
  */
 public class ChatMemberDTO implements Serializable {
 
@@ -24,10 +23,6 @@ public class ChatMemberDTO implements Serializable {
 
     /** Read state of this member inside a conversation (null outside a conversation context). */
     private Instant lastReadAt;
-
-    private boolean online;
-
-    private Instant lastActiveAt;
 
     public Long getUserId() {
         return userId;
@@ -69,22 +64,6 @@ public class ChatMemberDTO implements Serializable {
         this.lastReadAt = lastReadAt;
     }
 
-    public boolean isOnline() {
-        return online;
-    }
-
-    public void setOnline(boolean online) {
-        this.online = online;
-    }
-
-    public Instant getLastActiveAt() {
-        return lastActiveAt;
-    }
-
-    public void setLastActiveAt(Instant lastActiveAt) {
-        this.lastActiveAt = lastActiveAt;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -104,19 +83,6 @@ public class ChatMemberDTO implements Serializable {
 
     @Override
     public String toString() {
-        return (
-            "ChatMemberDTO{" +
-            "userId=" +
-            getUserId() +
-            ", userLogin='" +
-            getUserLogin() +
-            "'" +
-            ", role='" +
-            getRole() +
-            "'" +
-            ", online=" +
-            isOnline() +
-            "}"
-        );
+        return ("ChatMemberDTO{" + "userId=" + getUserId() + ", userLogin='" + getUserLogin() + "'" + ", role='" + getRole() + "'" + "}");
     }
 }

@@ -6,27 +6,22 @@ import { Observable, map } from 'rxjs';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 
-import { IChatMember, IChatMessage, IConversation, IUserPresence } from '../chat.model';
+import { IChatMember, IChatMessage, IConversation } from '../chat.model';
 
 type RestChatMessage = Omit<IChatMessage, 'createdAt' | 'editedAt'> & {
   createdAt?: string | null;
   editedAt?: string | null;
 };
 
-type RestChatMember = Omit<IChatMember, 'joinedAt' | 'lastReadAt' | 'lastActiveAt'> & {
+type RestChatMember = Omit<IChatMember, 'joinedAt' | 'lastReadAt'> & {
   joinedAt?: string | null;
   lastReadAt?: string | null;
-  lastActiveAt?: string | null;
 };
 
 type RestConversation = Omit<IConversation, 'createdAt' | 'lastMessageAt' | 'participants'> & {
   createdAt?: string | null;
   lastMessageAt?: string | null;
   participants?: RestChatMember[] | null;
-};
-
-type RestUserPresence = Omit<IUserPresence, 'lastActiveAt'> & {
-  lastActiveAt?: string | null;
 };
 
 @Injectable({ providedIn: 'root' })
@@ -89,24 +84,11 @@ export class ChatService {
       .pipe(map(items => items.map(item => this.convertMessageFromServer(item))));
   }
 
-  updatePresence(projectId: number): Observable<IUserPresence> {
-    return this.http
-      .post<RestUserPresence>(`${this.resourceUrl(projectId)}/presence`, null)
-      .pipe(map(item => this.convertPresenceFromServer(item)));
-  }
-
-  getPresence(projectId: number): Observable<IUserPresence[]> {
-    return this.http
-      .get<RestUserPresence[]>(`${this.resourceUrl(projectId)}/presence`)
-      .pipe(map(items => items.map(item => this.convertPresenceFromServer(item))));
-  }
-
   protected convertMessageFromServer(rest: RestChatMessage): IChatMessage {
     return {
       ...rest,
       createdAt: rest.createdAt ? dayjs(rest.createdAt) : undefined,
       editedAt: rest.editedAt ? dayjs(rest.editedAt) : undefined,
-      mentions: rest.mentions ? new Set(rest.mentions) : undefined,
     };
   }
 
@@ -124,14 +106,6 @@ export class ChatService {
       ...rest,
       joinedAt: rest.joinedAt ? dayjs(rest.joinedAt) : undefined,
       lastReadAt: rest.lastReadAt ? dayjs(rest.lastReadAt) : undefined,
-      lastActiveAt: rest.lastActiveAt ? dayjs(rest.lastActiveAt) : undefined,
-    };
-  }
-
-  protected convertPresenceFromServer(rest: RestUserPresence): IUserPresence {
-    return {
-      ...rest,
-      lastActiveAt: rest.lastActiveAt ? dayjs(rest.lastActiveAt) : undefined,
     };
   }
 

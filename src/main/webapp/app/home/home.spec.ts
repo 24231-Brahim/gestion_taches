@@ -88,7 +88,7 @@ describe('Home Component', () => {
       expect(devDashboard.componentInstance.showRecentProjects()).toBe(false);
     });
 
-    it('should render the developer dashboard with the projects list for ROLE_USER', () => {
+    it('should render the welcome message for ROLE_USER', () => {
       accountSignal.set(createAccount(['ROLE_USER']));
       fixture.detectChanges();
 
@@ -96,10 +96,9 @@ describe('Home Component', () => {
       expect(comp.isDeveloper()).toBe(false);
       expect(comp.isManagerOrAdmin()).toBe(false);
 
-      const devDashboard = fixture.debugElement.query(By.css('jhi-developer-dashboard'));
-      expect(devDashboard).toBeTruthy();
-      expect(devDashboard.componentInstance.showRecentProjects()).toBe(true);
-      expect(devDashboard.componentInstance.hideTaskStats()).toBe(true);
+      expect(fixture.debugElement.query(By.css('jhi-dashboard'))).toBeNull();
+      expect(fixture.debugElement.query(By.css('jhi-developer-dashboard'))).toBeNull();
+      expect(fixture.debugElement.query(By.css('.home-row'))).toBeTruthy();
     });
 
     it('should render the welcome message for anonymous users', () => {

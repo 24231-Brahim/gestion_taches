@@ -6,13 +6,10 @@
       "openDirect": "فتح محادثة مع"
     },
     "members": {
-      "you": "(أنت)",
-      "online": "متصل",
-      "offline": "غير متصل"
+      "you": "(أنت)"
     },
     "header": {
-      "membersCount": "{{count}} أعضاء",
-      "onlineCount": "{{count}} متصل"
+      "membersCount": "{{count}} أعضاء"
     },
     "messages": {
       "loadOlder": "الرسائل السابقة",

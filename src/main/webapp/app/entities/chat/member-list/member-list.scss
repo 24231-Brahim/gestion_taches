@@ -47,21 +47,6 @@
   flex-shrink: 0;
 }
 
-.chat-member-dot {
-  position: absolute;
-  right: -1px;
-  bottom: -1px;
-  width: 10px;
-  height: 10px;
-  border-radius: var(--radius-pill);
-  border: 2px solid var(--color-surface);
-  background: var(--color-outline);
-}
-
-.chat-member-dot.online {
-  background: var(--color-success);
-}
-
 .chat-member-info {
   display: flex;
   flex-direction: column;
@@ -83,10 +68,6 @@
 .chat-member-status {
   font: var(--body-sm);
   color: var(--color-text-muted);
-}
-
-.chat-member-online {
-  color: var(--color-success);
 }
 
 .chat-member-role {

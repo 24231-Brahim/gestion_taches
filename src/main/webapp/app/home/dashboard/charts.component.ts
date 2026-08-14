@@ -205,10 +205,12 @@ export class DashboardChartsComponent {
   readonly totalTasks = computed(() => this.taskDistribution().reduce((sum, d) => sum + d.count, 0));
 
   readonly chartTaskDistribution = computed<ChartTaskStatusCount[]>(() => {
-    const statuses = ['NEW', 'IN_PROGRESS', 'READY_FOR_TEST', 'DONE', 'NEEDS_INFO'];
+    const statuses = ['NEW', 'TODO', 'IN_PROGRESS', 'READY_FOR_TEST', 'IN_REVIEW', 'DONE', 'NEEDS_INFO'];
     const colors = [
       'var(--color-status-backlog)',
+      'var(--color-status-backlog)',
       'var(--color-status-in-progress)',
+      'var(--color-status-in-review)',
       'var(--color-status-in-review)',
       'var(--color-status-done)',
       'var(--color-status-cancelled)',

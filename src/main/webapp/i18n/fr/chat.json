@@ -6,13 +6,10 @@
       "openDirect": "Ouvrir une conversation avec"
     },
     "members": {
-      "you": "(vous)",
-      "online": "En ligne",
-      "offline": "Hors ligne"
+      "you": "(vous)"
     },
     "header": {
-      "membersCount": "{{count}} membres",
-      "onlineCount": "{{count}} en ligne"
+      "membersCount": "{{count}} membres"
     },
     "messages": {
       "loadOlder": "Messages précédents",

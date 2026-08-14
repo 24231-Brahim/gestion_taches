@@ -23,8 +23,6 @@ export class ChatHeader {
 
   readonly back = output();
 
-  readonly onlineCount = computed(() => this.members().filter(m => m.online).length);
-
   readonly title = computed(() => {
     const conversation = this.conversation();
     if (!conversation) {

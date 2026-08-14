@@ -3,11 +3,9 @@ package com.gestiontaches.service;
 import com.gestiontaches.domain.Authority;
 import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.Task;
-import com.gestiontaches.domain.TaskHistory;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.service.dto.UserAdminDetailDTO;
 import com.gestiontaches.service.dto.UserAdminDetailDTO.ProjectMembershipDTO;
-import com.gestiontaches.service.dto.UserAdminDetailDTO.TaskHistoryEntryDTO;
 import com.gestiontaches.service.dto.UserAdminDetailDTO.TaskSummaryDTO;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,7 +18,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserAdminDetailMapper {
 
-    public UserAdminDetailDTO toDto(User user, List<Task> tasks, List<ProjectMember> memberships, List<TaskHistory> history) {
+    public UserAdminDetailDTO toDto(User user, List<Task> tasks, List<ProjectMember> memberships) {
         UserAdminDetailDTO dto = new UserAdminDetailDTO();
         dto.setId(user.getId());
         dto.setLogin(user.getLogin());
@@ -35,7 +33,6 @@ public class UserAdminDetailMapper {
 
         dto.setTasks(tasks.stream().map(this::toTaskSummary).toList());
         dto.setProjects(memberships.stream().map(this::toProjectMembership).toList());
-        dto.setRecentActivity(history.stream().map(this::toHistoryEntry).toList());
 
         return dto;
     }
@@ -71,20 +68,6 @@ public class UserAdminDetailMapper {
         dto.setProjectKey(pm.getProject().getKey());
         dto.setRole(pm.getRole());
         dto.setJoinedAt(pm.getJoinedAt());
-        return dto;
-    }
-
-    private TaskHistoryEntryDTO toHistoryEntry(TaskHistory th) {
-        TaskHistoryEntryDTO dto = new TaskHistoryEntryDTO();
-        dto.setId(th.getId());
-        dto.setAction(th.getAction());
-        dto.setOldValue(th.getOldValue());
-        dto.setNewValue(th.getNewValue());
-        dto.setCreatedAt(th.getCreatedAt());
-        if (th.getTask() != null) {
-            dto.setTaskId(th.getTask().getId());
-            dto.setTaskTitle(th.getTask().getTitle());
-        }
         return dto;
     }
 }

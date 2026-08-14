@@ -26,7 +26,6 @@ public class UserAdminDetailDTO implements Serializable {
 
     private List<TaskSummaryDTO> tasks;
     private List<ProjectMembershipDTO> projects;
-    private List<TaskHistoryEntryDTO> recentActivity;
 
     public Long getId() {
         return id;
@@ -122,14 +121,6 @@ public class UserAdminDetailDTO implements Serializable {
 
     public void setProjects(List<ProjectMembershipDTO> projects) {
         this.projects = projects;
-    }
-
-    public List<TaskHistoryEntryDTO> getRecentActivity() {
-        return recentActivity;
-    }
-
-    public void setRecentActivity(List<TaskHistoryEntryDTO> recentActivity) {
-        this.recentActivity = recentActivity;
     }
 
     /**
@@ -296,76 +287,6 @@ public class UserAdminDetailDTO implements Serializable {
 
         public void setJoinedAt(Instant joinedAt) {
             this.joinedAt = joinedAt;
-        }
-    }
-
-    /**
-     * Task history entry for the activity feed.
-     */
-    public static class TaskHistoryEntryDTO implements Serializable {
-
-        private Long id;
-        private String action;
-        private String oldValue;
-        private String newValue;
-        private Instant createdAt;
-        private Long taskId;
-        private String taskTitle;
-
-        public Long getId() {
-            return id;
-        }
-
-        public void setId(Long id) {
-            this.id = id;
-        }
-
-        public String getAction() {
-            return action;
-        }
-
-        public void setAction(String action) {
-            this.action = action;
-        }
-
-        public String getOldValue() {
-            return oldValue;
-        }
-
-        public void setOldValue(String oldValue) {
-            this.oldValue = oldValue;
-        }
-
-        public String getNewValue() {
-            return newValue;
-        }
-
-        public void setNewValue(String newValue) {
-            this.newValue = newValue;
-        }
-
-        public Instant getCreatedAt() {
-            return createdAt;
-        }
-
-        public void setCreatedAt(Instant createdAt) {
-            this.createdAt = createdAt;
-        }
-
-        public Long getTaskId() {
-            return taskId;
-        }
-
-        public void setTaskId(Long taskId) {
-            this.taskId = taskId;
-        }
-
-        public String getTaskTitle() {
-            return taskTitle;
-        }
-
-        public void setTaskTitle(String taskTitle) {
-            this.taskTitle = taskTitle;
         }
     }
 }

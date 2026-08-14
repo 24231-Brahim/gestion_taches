@@ -62,6 +62,26 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
     @Query("DELETE FROM Task t WHERE t.project.id = :projectId")
     int deleteByProjectId(@Param("projectId") Long projectId);
 
+    @Modifying
+    @Query("UPDATE Task t SET t.assignee = NULL WHERE t.assignee.id = :userId AND t.project.id = :projectId")
+    int unassignTasksInProject(@Param("userId") Long userId, @Param("projectId") Long projectId);
+
+    @Modifying
+    @Query("UPDATE Task t SET t.assignee = NULL WHERE t.assignee.id = :userId")
+    int unassignTasksByUserId(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("UPDATE Task t SET t.createdBy = NULL WHERE t.createdBy.id = :userId")
+    int nullifyCreatedBy(@Param("userId") Long userId);
+
+    @Modifying
+    @Query("UPDATE Task t SET t.sprint = NULL WHERE t.sprint.id = :sprintId")
+    int unassignBySprintId(@Param("sprintId") Long sprintId);
+
+    @Modifying
+    @Query("UPDATE Task t SET t.epic = NULL WHERE t.epic.id = :epicId")
+    int unassignByEpicId(@Param("epicId") Long epicId);
+
     @Query(
         "SELECT t FROM Task t LEFT JOIN FETCH t.sprint LEFT JOIN FETCH t.epic LEFT JOIN FETCH t.project LEFT JOIN FETCH t.assignee LEFT JOIN FETCH t.createdBy WHERE t.project.id = :projectId AND t.sprint IS NULL"
     )

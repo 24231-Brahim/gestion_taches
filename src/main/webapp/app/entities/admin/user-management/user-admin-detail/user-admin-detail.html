@@ -165,49 +165,5 @@
         }
       </div>
     </section>
-
-    <!-- Activity Section -->
-    <section class="card">
-      <div class="card-header">
-        <h3>
-          <fa-icon icon="clock-rotate-left" />
-          <span jhiTranslate="userManagement.adminDetail.activity">Activité récente</span>
-          <span class="count-badge">{{ user.recentActivity?.length || 0 }}</span>
-        </h3>
-      </div>
-      <div class="card-body">
-        @if (user.recentActivity && user.recentActivity.length > 0) {
-          <div class="activity-timeline">
-            @for (entry of user.recentActivity; track entry.id) {
-              <div class="activity-entry">
-                <div class="activity-dot"></div>
-                <div class="activity-content">
-                  <div class="activity-action">
-                    <span class="mono">{{ entry.taskTitle }}</span>
-                    <span class="activity-verb">{{ entry.action }}</span>
-                  </div>
-                  @if (entry.oldValue || entry.newValue) {
-                    <div class="activity-changes">
-                      @if (entry.oldValue) {
-                        <span class="old-value">{{ entry.oldValue }}</span>
-                        <fa-icon icon="arrow-right" />
-                      }
-                      @if (entry.newValue) {
-                        <span class="new-value">{{ entry.newValue }}</span>
-                      }
-                    </div>
-                  }
-                  <div class="activity-date mono">{{ entry.createdAt | date: 'dd/MM/yy HH:mm' }}</div>
-                </div>
-              </div>
-            }
-          </div>
-        } @else {
-          <div class="empty-state">
-            <span jhiTranslate="userManagement.adminDetail.noActivity">Aucune activité récente</span>
-          </div>
-        }
-      </div>
-    </section>
   }
 </div>

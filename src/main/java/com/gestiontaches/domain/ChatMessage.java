@@ -6,8 +6,6 @@ import jakarta.validation.constraints.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.HashSet;
-import java.util.Set;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -15,7 +13,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
  * A ChatMessage.
  *
  * <p>A message inside a {@link Conversation}. Replies/threads are supported through
- * {@code parentMessage} (architecture), mentions are persisted as user ids, and deletion
+ * {@code parentMessage} (architecture), and deletion
  * is a soft delete ({@code deleted} flag) so the surrounding conversation stays intact.</p>
  */
 @Entity
@@ -65,15 +63,6 @@ public class ChatMessage implements Serializable {
     @NotNull
     @Column(name = "deleted", nullable = false)
     private Boolean deleted = false;
-
-    /**
-     * User ids mentioned in the message (from @login syntax). Architecture for mention
-     * notifications.
-     */
-    @ElementCollection(fetch = FetchType.LAZY)
-    @CollectionTable(name = "chat_message_mentions", joinColumns = @JoinColumn(name = "message_id"))
-    @Column(name = "user_id")
-    private Set<Long> mentions = new HashSet<>();
 
     public Long getId() {
         return this.id;
@@ -177,19 +166,6 @@ public class ChatMessage implements Serializable {
 
     public void setDeleted(Boolean deleted) {
         this.deleted = deleted;
-    }
-
-    public Set<Long> getMentions() {
-        return this.mentions;
-    }
-
-    public void setMentions(Set<Long> mentions) {
-        this.mentions = mentions;
-    }
-
-    public ChatMessage mentions(Set<Long> mentions) {
-        this.setMentions(mentions);
-        return this;
     }
 
     @Override

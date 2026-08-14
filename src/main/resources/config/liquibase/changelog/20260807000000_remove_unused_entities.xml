@@ -4,14 +4,23 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
     <changeSet id="20260807000000-1" author="brahim">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="task_transition"/>
+        </preConditions>
         <comment>Drop unused TaskTransition table (never populated nor used by the application)</comment>
         <dropTable tableName="task_transition"/>
     </changeSet>
     <changeSet id="20260807000000-2" author="brahim">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="chat_message_reaction"/>
+        </preConditions>
         <comment>Drop unused chat_message_reaction table (no endpoint ever uses it)</comment>
         <dropTable tableName="chat_message_reaction"/>
     </changeSet>
     <changeSet id="20260807000000-3" author="brahim">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="chat_attachment"/>
+        </preConditions>
         <comment>Drop unused chat_attachment table (no upload endpoint exists)</comment>
         <dropTable tableName="chat_attachment"/>
     </changeSet>

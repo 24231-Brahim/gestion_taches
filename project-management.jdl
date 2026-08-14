@@ -70,13 +70,6 @@ entity Notification {
   createdAt Instant
 }
 
-entity TaskHistory {
-  action String required maxlength(100),
-  oldValue String maxlength(500),
-  newValue String maxlength(500),
-  createdAt Instant required
-}
-
 // =========================================================
 // Enumérations
 // =========================================================
@@ -90,7 +83,7 @@ enum EpicStatus {
 }
 
 enum TaskStatus {
-  NEW, IN_PROGRESS, READY_FOR_TEST, DONE, NEEDS_INFO
+  NEW, TODO, IN_PROGRESS, READY_FOR_TEST, IN_REVIEW, DONE, NEEDS_INFO
 }
 
 enum Priority {
@@ -112,7 +105,6 @@ relationship ManyToOne {
   Task{assignee} to User
   Task{createdBy} to User
   Comment{author} to User
-  TaskHistory{user} to User
 }
 
 // =========================================================
@@ -129,14 +121,13 @@ relationship OneToMany {
   Task{comment} to Comment{task}
   Task{attachment} to Attachment{task}
   Task{notification} to Notification{task}
-  Task{history} to TaskHistory{task required}
 }
 
 // ─────────────────────────────────────────────
 //  OPTIONS
 // ─────────────────────────────────────────────
 
-paginate Project, Sprint, Epic, Task, Comment, Attachment, Notification, TaskHistory with pagination
+paginate Project, Sprint, Epic, Task, Comment, Attachment, Notification with pagination
 dto Project, Sprint, Epic, Task with mapstruct
-service Project, ProjectMember, Sprint, Epic, Task, Comment, Attachment, Notification, TaskHistory with serviceImpl
+service Project, ProjectMember, Sprint, Epic, Task, Comment, Attachment, Notification with serviceImpl
 filter Project, Sprint, Epic, Task

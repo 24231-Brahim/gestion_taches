@@ -3,9 +3,7 @@ package com.gestiontaches.service.dto;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * A DTO for the {@link com.gestiontaches.domain.ChatMessage} entity.
@@ -31,9 +29,6 @@ public class ChatMessageDTO implements Serializable {
 
     /** Id of the message this one replies to (threads — architecture only). */
     private Long parentMessageId;
-
-    /** User ids mentioned in the content (mention notifications — architecture). */
-    private Set<Long> mentions = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -97,14 +92,6 @@ public class ChatMessageDTO implements Serializable {
 
     public void setParentMessageId(Long parentMessageId) {
         this.parentMessageId = parentMessageId;
-    }
-
-    public Set<Long> getMentions() {
-        return mentions;
-    }
-
-    public void setMentions(Set<Long> mentions) {
-        this.mentions = mentions;
     }
 
     @Override

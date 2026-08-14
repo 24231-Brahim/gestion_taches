@@ -71,17 +71,6 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="20260805000001-4" author="gestiontaches">
-        <createTable tableName="chat_message_mentions">
-            <column name="message_id" type="bigint">
-                <constraints nullable="false" />
-            </column>
-            <column name="user_id" type="bigint">
-                <constraints nullable="false" />
-            </column>
-        </createTable>
-    </changeSet>
-
     <changeSet id="20260805000001-5" author="gestiontaches">
         <createTable tableName="chat_message_reaction">
             <column name="id" type="bigint">
@@ -122,23 +111,6 @@
                 <constraints nullable="false" />
             </column>
         </createTable>
-    </changeSet>
-
-    <changeSet id="20260805000001-7" author="gestiontaches">
-        <createTable tableName="chat_user_presence">
-            <column name="id" type="bigint">
-                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_chat_user_presence"/>
-            </column>
-            <column name="user_id" type="bigint">
-                <constraints nullable="false" />
-            </column>
-            <column name="last_active_at" type="${datetimeType}">
-                <constraints nullable="false" />
-            </column>
-        </createTable>
-        <addUniqueConstraint columnNames="user_id"
-                             constraintName="ux_chat_user_presence__user"
-                             tableName="chat_user_presence"/>
     </changeSet>
 
     <changeSet id="20260805000001-8" author="gestiontaches">
@@ -185,12 +157,6 @@
                                  referencedTableName="chat_message"
                                  />
         <addForeignKeyConstraint baseColumnNames="message_id"
-                                 baseTableName="chat_message_mentions"
-                                 constraintName="fk_chat_message_mentions__message_id"
-                                 referencedColumnNames="id"
-                                 referencedTableName="chat_message"
-                                 />
-        <addForeignKeyConstraint baseColumnNames="message_id"
                                  baseTableName="chat_message_reaction"
                                  constraintName="fk_chat_message_reaction__message_id"
                                  referencedColumnNames="id"
@@ -214,12 +180,6 @@
                                  referencedColumnNames="id"
                                  referencedTableName="jhi_user"
                                  />
-        <addForeignKeyConstraint baseColumnNames="user_id"
-                                 baseTableName="chat_user_presence"
-                                 constraintName="fk_chat_user_presence__user_id"
-                                 referencedColumnNames="id"
-                                 referencedTableName="jhi_user"
-                                 />
     </changeSet>
 
     <changeSet id="20260805000001-9" author="gestiontaches">
@@ -231,9 +191,6 @@
         </createIndex>
         <createIndex tableName="chat_conversation_member" indexName="idx_chat_conversation_member__conversation_id">
             <column name="conversation_id"/>
-        </createIndex>
-        <createIndex tableName="chat_message_mentions" indexName="idx_chat_message_mentions__message_id">
-            <column name="message_id"/>
         </createIndex>
     </changeSet>
 

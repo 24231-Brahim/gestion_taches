@@ -10,20 +10,12 @@
     >
       <span class="chat-member-avatar">
         {{ initials(member.userLogin) }}
-        <span class="chat-member-dot" [class.online]="member.online" [class.self]="isSelf(member)"></span>
       </span>
       <span class="chat-member-info">
         <span class="chat-member-login">
           {{ member.userLogin }}
           @if (isSelf(member)) {
             <span class="chat-member-self" jhiTranslate="chat.members.you">(vous)</span>
-          }
-        </span>
-        <span class="chat-member-status">
-          @if (member.online) {
-            <span class="chat-member-online" jhiTranslate="chat.members.online">En ligne</span>
-          } @else {
-            <span jhiTranslate="chat.members.offline">Hors ligne</span>
           }
         </span>
       </span>

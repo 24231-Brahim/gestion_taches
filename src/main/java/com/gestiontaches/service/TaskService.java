@@ -5,6 +5,9 @@ import com.gestiontaches.domain.Task;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.domain.enumeration.TaskStatus;
+import com.gestiontaches.repository.AttachmentRepository;
+import com.gestiontaches.repository.CommentRepository;
+import com.gestiontaches.repository.NotificationRepository;
 import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
@@ -42,9 +45,15 @@ public class TaskService {
 
     private final ProjectMemberRepository projectMemberRepository;
 
-    private final ProjectPermissionService projectPermissionService;
+    private final CommentRepository commentRepository;
+
+    private final AttachmentRepository attachmentRepository;
+
+    private final NotificationRepository notificationRepository;
 
     private final NotificationService notificationService;
+
+    private final ProjectPermissionService projectPermissionService;
 
     private final SprintService sprintService;
 
@@ -55,6 +64,9 @@ public class TaskService {
         TaskMapper taskMapper,
         UserRepository userRepository,
         ProjectMemberRepository projectMemberRepository,
+        CommentRepository commentRepository,
+        AttachmentRepository attachmentRepository,
+        NotificationRepository notificationRepository,
         ProjectPermissionService projectPermissionService,
         NotificationService notificationService,
         SprintService sprintService,
@@ -64,6 +76,9 @@ public class TaskService {
         this.taskMapper = taskMapper;
         this.userRepository = userRepository;
         this.projectMemberRepository = projectMemberRepository;
+        this.commentRepository = commentRepository;
+        this.attachmentRepository = attachmentRepository;
+        this.notificationRepository = notificationRepository;
         this.projectPermissionService = projectPermissionService;
         this.notificationService = notificationService;
         this.sprintService = sprintService;
@@ -393,9 +408,10 @@ public class TaskService {
     public void delete(Long id) {
         LOG.debug("Request to delete Task : {}", id);
         Task task = taskRepository.findById(id).orElseThrow(() -> new RuntimeException("Task not found"));
-        // Deletion is a management action: OWNER/MANAGER only (never a plain MEMBER/DEVELOPER,
-        // even for a task they created or are assigned to).
         projectPermissionService.requireProjectRole(task.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
+        notificationRepository.deleteByTaskId(id);
+        commentRepository.deleteByTaskId(id);
+        attachmentRepository.deleteByTaskId(id);
         taskRepository.deleteById(id);
         recalculateParentStatuses(task, null);
     }

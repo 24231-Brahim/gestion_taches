@@ -12,7 +12,6 @@ import { TranslateDirective } from 'app/shared/language';
 import { ITask } from '../task.model';
 import { TaskCommentsTab } from './tabs/task-comments-tab';
 import { TaskAttachmentsTab } from './tabs/task-attachments-tab';
-import { TaskHistoryTab } from './tabs/task-history-tab';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -67,7 +66,6 @@ import { TaskHistoryTab } from './tabs/task-history-tab';
     FormatMediumDatetimePipe,
     TaskCommentsTab,
     TaskAttachmentsTab,
-    TaskHistoryTab,
   ],
 })
 export class TaskDetail {

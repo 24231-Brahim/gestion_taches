@@ -3,8 +3,10 @@
     "TaskStatus": {
       "null": "",
       "NEW": "NOUVEAU",
+      "TODO": "A FAIRE",
       "IN_PROGRESS": "EN COURS",
       "READY_FOR_TEST": "PRET POUR TEST",
+      "IN_REVIEW": "EN REVUE",
       "DONE": "TERMINE",
       "NEEDS_INFO": "INFO REQUISE"
     }

@@ -4,7 +4,7 @@ import { ApplicationConfigService } from 'app/core/config/application-config.ser
 import { StateStorageService } from 'app/core/auth/state-storage.service';
 import { Observable, Subject } from 'rxjs';
 import SockJS from 'sockjs-client';
-import { Client } from '@stomp/stompjs';
+import { Client, ReconnectionTimeMode } from '@stomp/stompjs';
 
 export interface INotification {
   id: number;
@@ -109,7 +109,10 @@ export class NotificationService {
       connectHeaders: {
         Authorization: token ? `Bearer ${token}` : '',
       },
+      connectionTimeout: 10000,
       reconnectDelay: 5000,
+      reconnectTimeMode: ReconnectionTimeMode.EXPONENTIAL,
+      maxReconnectDelay: 60000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
     });
@@ -125,6 +128,14 @@ export class NotificationService {
           // ignore parse errors
         }
       });
+    };
+
+    this.stompClient.onWebSocketError = event => {
+      console.warn('Notification WebSocket error', event);
+    };
+
+    this.stompClient.onStompError = frame => {
+      console.warn('Notification STOMP error', frame.headers['message'], frame.body);
     };
 
     this.stompClient.activate();

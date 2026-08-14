@@ -23,13 +23,10 @@
         "noComments": "No comments yet.",
         "attachments": "Attachments",
         "noAttachments": "No attachments yet.",
-        "history": "History",
-        "noHistory": "No history yet.",
         "tab": {
           "details": "Details",
           "comments": "Comments",
-          "attachments": "Attachments",
-          "history": "History"
+          "attachments": "Attachments"
         }
       },
       "id": "ID",
@@ -41,13 +38,11 @@
       "updatedAt": "Updated At",
       "comments": "Comments",
       "attachments": "Attachments",
-      "history": "History",
       "sprint": "Sprint",
       "epic": "Epic",
       "project": "Project",
       "assignee": "Assignee",
       "createdBy": "Created By",
-      "system": "System",
       "error": {
         "noProject": "No project selected"
       }

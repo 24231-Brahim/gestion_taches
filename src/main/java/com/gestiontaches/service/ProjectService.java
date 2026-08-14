@@ -15,7 +15,6 @@ import com.gestiontaches.repository.NotificationRepository;
 import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.ProjectRepository;
 import com.gestiontaches.repository.SprintRepository;
-import com.gestiontaches.repository.TaskHistoryRepository;
 import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.SecurityUtils;
@@ -69,8 +68,6 @@ public class ProjectService {
 
     private final AttachmentRepository attachmentRepository;
 
-    private final TaskHistoryRepository taskHistoryRepository;
-
     private final NotificationRepository notificationRepository;
 
     private final ConversationRepository conversationRepository;
@@ -93,7 +90,6 @@ public class ProjectService {
         EpicRepository epicRepository,
         CommentRepository commentRepository,
         AttachmentRepository attachmentRepository,
-        TaskHistoryRepository taskHistoryRepository,
         NotificationRepository notificationRepository,
         ConversationRepository conversationRepository,
         ConversationMemberRepository conversationMemberRepository,
@@ -111,7 +107,6 @@ public class ProjectService {
         this.epicRepository = epicRepository;
         this.commentRepository = commentRepository;
         this.attachmentRepository = attachmentRepository;
-        this.taskHistoryRepository = taskHistoryRepository;
         this.notificationRepository = notificationRepository;
         this.conversationRepository = conversationRepository;
         this.conversationMemberRepository = conversationMemberRepository;
@@ -284,14 +279,12 @@ public class ProjectService {
         }
 
         // Chat data: mentions -> messages -> conversation members -> conversations (project FK)
-        chatMessageRepository.deleteMentionsByProjectId(id);
         chatMessageRepository.deleteByProjectId(id);
         conversationMemberRepository.deleteByProjectId(id);
         conversationRepository.deleteByProjectId(id);
 
-        // Task children: notifications/comments/attachments/history reference tasks
+        // Task children: notifications/comments/attachments reference tasks
         notificationRepository.deleteByTaskProjectId(id);
-        taskHistoryRepository.deleteByTaskProjectId(id);
         commentRepository.deleteByTaskProjectId(id);
         attachmentRepository.deleteByTaskProjectId(id);
 
@@ -353,6 +346,7 @@ public class ProjectService {
             }
         }
         projectMemberRepository.delete(member);
+        taskRepository.unassignTasksInProject(userId, projectId);
     }
 
     public void updateMemberRole(Long projectId, Long userId, ProjectMemberDTO memberDTO) {

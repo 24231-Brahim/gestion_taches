@@ -22,6 +22,10 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
     @Query("DELETE FROM Conversation c WHERE c.project.id = :projectId")
     int deleteByProjectId(@Param("projectId") Long projectId);
 
+    @Modifying
+    @Query("UPDATE Conversation c SET c.createdBy = NULL WHERE c.createdBy.id = :userId")
+    int nullifyCreatedBy(@Param("userId") Long userId);
+
     @Query(
         "SELECT c FROM Conversation c WHERE c.project.id = :projectId AND c.type = :type AND EXISTS (" +
             "SELECT m FROM ConversationMember m WHERE m.conversation = c AND m.user.id = :userId" +

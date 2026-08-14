@@ -23,13 +23,10 @@
         "noComments": "Aucun commentaire pour le moment.",
         "attachments": "Pièces jointes",
         "noAttachments": "Aucune pièce jointe pour le moment.",
-        "history": "Historique",
-        "noHistory": "Aucun historique pour le moment.",
         "tab": {
           "details": "Détails",
           "comments": "Commentaires",
-          "attachments": "Pièces jointes",
-          "history": "Historique"
+          "attachments": "Pièces jointes"
         }
       },
       "id": "ID",
@@ -42,13 +39,11 @@
       "updatedAt": "Updated At",
       "comments": "Comments",
       "attachments": "Attachments",
-      "history": "History",
       "sprint": "Sprint",
       "epic": "Epic",
       "project": "Project",
       "assignee": "Assigné",
-      "createdBy": "Créé par",
-      "system": "Système"
+      "createdBy": "Créé par"
     }
   }
 }

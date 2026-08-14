@@ -35,14 +35,6 @@ export interface IChatMember {
   role?: ProjectRole | null;
   joinedAt?: dayjs.Dayjs | null;
   lastReadAt?: dayjs.Dayjs | null;
-  online?: boolean;
-  lastActiveAt?: dayjs.Dayjs | null;
-}
-
-export interface IUserPresence {
-  userId: number | null;
-  online?: boolean;
-  lastActiveAt?: dayjs.Dayjs | null;
 }
 
 export interface IChatMessage {
@@ -54,5 +46,4 @@ export interface IChatMessage {
   conversationId?: number | null;
   sender?: IChatUser | null;
   parentMessageId?: number | null;
-  mentions?: Set<number> | null;
 }

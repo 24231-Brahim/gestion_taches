@@ -17,6 +17,14 @@ public interface AttachmentRepository extends JpaRepository<Attachment, Long> {
     List<Attachment> findByTaskIdOrderByUploadedAtDesc(Long taskId);
 
     @Modifying
+    @Query("DELETE FROM Attachment a WHERE a.task.id = :taskId")
+    int deleteByTaskId(@Param("taskId") Long taskId);
+
+    @Modifying
+    @Query("UPDATE Attachment a SET a.uploadedBy = NULL WHERE a.uploadedBy.id = :userId")
+    int nullifyUploadedBy(@Param("userId") Long userId);
+
+    @Modifying
     @Query("DELETE FROM Attachment a WHERE a.task.id IN (SELECT t.id FROM Task t WHERE t.project.id = :projectId)")
     int deleteByTaskProjectId(@Param("projectId") Long projectId);
 }

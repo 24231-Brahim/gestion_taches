@@ -3,7 +3,6 @@ package com.gestiontaches.web.rest;
 import com.gestiontaches.config.Constants;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.repository.ProjectMemberRepository;
-import com.gestiontaches.repository.TaskHistoryRepository;
 import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
@@ -94,8 +93,6 @@ public class UserResource {
 
     private final ProjectMemberRepository projectMemberRepository;
 
-    private final TaskHistoryRepository taskHistoryRepository;
-
     private final UserAdminDetailMapper userAdminDetailMapper;
 
     public UserResource(
@@ -104,7 +101,6 @@ public class UserResource {
         MailService mailService,
         TaskRepository taskRepository,
         ProjectMemberRepository projectMemberRepository,
-        TaskHistoryRepository taskHistoryRepository,
         UserAdminDetailMapper userAdminDetailMapper
     ) {
         this.userService = userService;
@@ -112,7 +108,6 @@ public class UserResource {
         this.mailService = mailService;
         this.taskRepository = taskRepository;
         this.projectMemberRepository = projectMemberRepository;
-        this.taskHistoryRepository = taskHistoryRepository;
         this.userAdminDetailMapper = userAdminDetailMapper;
     }
 
@@ -232,8 +227,7 @@ public class UserResource {
             .map(user -> {
                 var tasks = taskRepository.findByAssigneeLoginWithToOneRelationships(login);
                 var memberships = projectMemberRepository.findByUserLogin(login);
-                var history = taskHistoryRepository.findByUserLoginOrderByCreatedAtDesc(login, PageRequest.of(0, 20));
-                UserAdminDetailDTO dto = userAdminDetailMapper.toDto(user, tasks, memberships, history);
+                UserAdminDetailDTO dto = userAdminDetailMapper.toDto(user, tasks, memberships);
                 return ResponseEntity.ok().body(dto);
             })
             .orElse(ResponseEntity.notFound().build());

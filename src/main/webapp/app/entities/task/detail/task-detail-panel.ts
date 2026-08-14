@@ -17,7 +17,6 @@ import { ITask } from '../task.model';
 import { TaskService } from '../service/task.service';
 import { TaskCommentList } from '../comments/task-comment-list';
 import { TaskAttachmentList } from '../attachments/task-attachment-list';
-import { TaskActivityFeed } from '../activity/task-activity-feed';
 import { IUser } from 'app/entities/user/user.model';
 
 @Component({
@@ -189,7 +188,6 @@ import { IUser } from 'app/entities/user/user.model';
     FormatMediumDatetimePipe,
     TaskCommentList,
     TaskAttachmentList,
-    TaskActivityFeed,
   ],
 })
 export class TaskDetailPanel {
@@ -206,7 +204,7 @@ export class TaskDetailPanel {
 
   readonly isSaving = signal(false);
   readonly assignableUsers = signal<IUser[]>([]);
-  readonly activeTab = signal<'details' | 'comments' | 'attachments' | 'history'>('details');
+  readonly activeTab = signal<'details' | 'comments' | 'attachments'>('details');
   private readonly lastTaskId = signal<number | null>(null);
 
   protected readonly taskService = inject(TaskService);
@@ -254,7 +252,7 @@ export class TaskDetailPanel {
     });
   }
 
-  setTab(tab: 'details' | 'comments' | 'attachments' | 'history'): void {
+  setTab(tab: 'details' | 'comments' | 'attachments'): void {
     this.activeTab.set(tab);
   }
 

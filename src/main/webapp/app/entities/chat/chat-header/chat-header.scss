@@ -52,17 +52,3 @@
   font: var(--body-sm);
   color: var(--color-text-muted);
 }
-
-.chat-header-online {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--color-success);
-}
-
-.chat-header-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-pill);
-  background: var(--color-success);
-}

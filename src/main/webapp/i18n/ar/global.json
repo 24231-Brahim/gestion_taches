@@ -5,7 +5,7 @@
     "menu": {
       "home": "الرئيسية",
       "search": {
-        "placeholder": "البحث عن مشاريع، مهام، سبرنتات..."
+        "placeholder": "بحث..."
       },
       "jhipster-needle-menu-add-element": "JHipster will add additional menu entries here (do not translate!)",
       "entities": {
@@ -43,10 +43,7 @@
       },
       "language": "اللغة",
       "theme": "المظهر",
-      "notifications": "الإشعارات",
-      "search": {
-        "placeholder": "بحث..."
-      }
+      "notifications": "الإشعارات"
     },
     "form": {
       "username.label": "اسم المستخدم",

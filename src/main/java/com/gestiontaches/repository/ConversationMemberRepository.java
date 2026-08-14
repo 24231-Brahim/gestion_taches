@@ -33,6 +33,10 @@ public interface ConversationMemberRepository extends JpaRepository<Conversation
     @Query("SELECT cm.user.id FROM ConversationMember cm WHERE cm.conversation.id = :conversationId")
     List<Long> findUserIdsByConversationId(@Param("conversationId") Long conversationId);
 
+    @Modifying
+    @Query("DELETE FROM ConversationMember cm WHERE cm.user.id = :userId")
+    int deleteByUserId(@Param("userId") Long userId);
+
     @Query("SELECT COUNT(cm) FROM ConversationMember cm WHERE cm.conversation.id = :conversationId")
     long countMembers(@Param("conversationId") Long conversationId);
 }

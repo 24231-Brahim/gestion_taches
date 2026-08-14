@@ -3,13 +3,11 @@ package com.gestiontaches.service;
 import com.gestiontaches.domain.ProjectMember;
 import com.gestiontaches.domain.Sprint;
 import com.gestiontaches.domain.Task;
-import com.gestiontaches.domain.TaskHistory;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.domain.enumeration.SprintStatus;
 import com.gestiontaches.domain.enumeration.TaskStatus;
 import com.gestiontaches.repository.SprintRepository;
-import com.gestiontaches.repository.TaskHistoryRepository;
 import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.SecurityUtils;
@@ -42,7 +40,6 @@ public class SprintService {
     private final SprintMapper sprintMapper;
     private final ProjectPermissionService projectPermissionService;
     private final TaskRepository taskRepository;
-    private final TaskHistoryRepository taskHistoryRepository;
     private final NotificationService notificationService;
     private final ProjectMemberService projectMemberService;
     private final UserRepository userRepository;
@@ -54,7 +51,6 @@ public class SprintService {
         SprintMapper sprintMapper,
         ProjectPermissionService projectPermissionService,
         TaskRepository taskRepository,
-        TaskHistoryRepository taskHistoryRepository,
         NotificationService notificationService,
         ProjectMemberService projectMemberService,
         UserRepository userRepository,
@@ -65,7 +61,6 @@ public class SprintService {
         this.sprintMapper = sprintMapper;
         this.projectPermissionService = projectPermissionService;
         this.taskRepository = taskRepository;
-        this.taskHistoryRepository = taskHistoryRepository;
         this.notificationService = notificationService;
         this.projectMemberService = projectMemberService;
         this.userRepository = userRepository;
@@ -237,16 +232,7 @@ public class SprintService {
                 task.setUpdatedAt(now);
                 taskRepository.save(task);
                 movedToBacklog++;
-
-                TaskHistory history = new TaskHistory();
-                history.setTask(task);
-                history.setUser(currentUser);
-                history.setAction("TASK_MOVED_TO_BACKLOG");
-                history.setOldValue("Sprint: " + sprint.getName());
-                history.setNewValue("Backlog");
-                history.setCreatedAt(now);
-                taskHistoryRepository.save(history);
-                notificationService.notifyAdminsOfTaskHistory(history);
+                notificationService.notifyAdminsOfTaskMovedToBacklog(task, sprint.getName());
             }
         }
 
@@ -372,6 +358,7 @@ public class SprintService {
             .orElseThrow(() -> new BadRequestAlertException("Sprint not found", "sprint", "idnotfound"));
         projectPermissionService.requireProjectRole(sprint.getProject().getId(), ProjectRole.OWNER, ProjectRole.MANAGER);
         Long projectId = sprint.getProject().getId();
+        taskRepository.unassignBySprintId(id);
         sprintRepository.deleteById(id);
         entityEventSseService.sendEvent(new EntityChangeEvent(EntityEventType.ENTITY_SPRINT, EntityEventType.DELETED, id, projectId));
     }
