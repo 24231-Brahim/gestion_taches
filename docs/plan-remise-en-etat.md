@@ -1,449 +1,114 @@
 # Plan de remise en état — suppression d'entités & correction des suppressions
 
-> **STATUT : EN ATTENTE DE VALIDATION**
-> Ce document décrit TOUT ce qui reste à faire pour que l'application fonctionne :
-> 1. la suppression de 4 entités + le champ `mentions` (demandée dans le prompt ci-dessous),
-> 2. la correction des erreurs `500` lors des suppressions (tâche / utilisateur / projet),
-> 3. l'**Opération A** : retrait d'un membre d'un projet → ses tâches sont automatiquement désassignées,
-> 4. la remise en état de la base de données (dev, vide — recréation),
-> 5. le nettoyage de la documentation,
-> 6. la correction des **bugs complémentaires** découverts lors de l'audit (Partie D).
+> **STATUT : ✅ EXÉCUTÉ ET VÉRIFIÉ EN CODE — au 21/08/2026**
 >
-> **Aucun changement de code n'est effectué tant que l'utilisateur n'a pas validé ce plan.**
+> Toutes les parties de ce plan (A, B, C, D) ont été appliquées dans le code et vérifiées par audit
+> le 21/08/2026 (références fichier:ligne ci-dessous). Ce document est conservé comme trace historique.
+>
+> **Reste à faire :**
+> 1. §8 — purger les dernières références obsolètes de la documentation (`architecture.md:68`, nom de base dans `README.md`),
+> 2. §9 — rejouer la vérification finale complète (`./mvnw clean verify`, `./npmw run build`, `./npmw test`),
+> 3. §11 — traiter les nouveaux travaux issus de l'audit complet du 21/08/2026,
+> 4. §12 — annexe : synthèse complète de l'état de l'application relevée lors de cette session.
 
 ---
 
-## 1. Contexte & prompt utilisateur (référence)
+## Récapitulatif d'exécution
 
-> Projet JHipster 9.1.0 (Spring Boot 4.0.6 / Java 21 + Angular 21.2.14 + PostgreSQL 16).
-> Objectif : simplifier le modèle en supprimant complètement 4 entités redondantes ou non essentielles.
-> La base est en environnement **dev, vide** — pas besoin de migration `dropTable` avec préservation de données ;
-> on retire directement les changelogs concernés et on recrée la base à zéro.
-
-**Entités à supprimer complètement :**
-1. `GroupMessage` — prototype de messagerie remplacé par le chat (`Conversation`/`ChatMessage`).
-2. `TaskHistory` — table d'audit des modifications de tâches.
-3. `ChatUserPresence` / `UserPresence` — présence « en ligne » du chat.
-4. Le champ `mentions` de `ChatMessage` + sa table de jointure `chat_message_mentions`.
-
-**Ne PAS toucher** : `Project`, `Sprint`, `Epic`, `Task`, `Comment`, `Attachment`, `Notification`,
-`ProjectMember`, `Conversation`, `ConversationMember`, `ChatMessage` (hors champ `mentions`).
-
-**Décisions validées par l'utilisateur :**
-- ✅ Notification admins à la fermeture de sprint : **garder une notification équivalente** (sans `TaskHistory`).
-- ✅ Dashboard « Activité récente » du développeur : **basculer sur les tâches récentes** déjà chargées.
-- ✅ Nettoyer **aussi la documentation** (`README.md`, `docs/*.md`, `docs_role.md`).
-
----
-
-## 2. Problèmes détectés (diagnostic)
-
-### 2.1 Erreurs 500 lors des suppressions — violation de clés étrangères (FK sans `ON DELETE CASCADE`)
-
-| Action | Cause | Conséquence |
+| Partie | Contenu | Statut |
 |---|---|---|
-| `DELETE /api/tasks/{id}` | `TaskService.delete` ne supprime pas les enfants. Ex. tâche **2985** : 1 `comment`, 1 `attachment`, 1 `notification` référencent `task_id` | `DataIntegrityViolationException` → **500** |
-| `DELETE /api/admin/users/{login}` | `UserService.deleteUser` fait `userRepository.delete(user)` sans nettoyer : `project_member`, `task.assignee/created_by`, `comment.author`, `attachment.uploaded_by`, `notification.user/related_user`, `chat_message.sender`, `conversation_member`, `conversation.created_by` | **500** |
-| `DELETE /api/projects/{id}` | `ProjectService.delete` nettoie presque tout mais **oublie `group_message`** (pas de `GroupMessageRepository.deleteByProjectId`) | **500** si le projet a des messages |
-
-> Les messages répétés `Failed to load resource ... /api/tasks/2985 ... 500` dans la console =
-> des `DELETE` qui échouent (chaque clic retente). Ce n'est **pas** un problème de permissions.
-
-> ⚠️ **Nuance `group_message`** : son changelog `20260723000000_added_entity_GroupMessage.xml` est **absent
-> de `master.xml`** → sur une base fraîche la table n'existe pas. Le 500 « projet » ci-dessus ne concerne que
-> l'actuelle base dev (table créée avant le retrait du changelog de `master.xml`).
-
-### 2.2 Retrait d'un membre du projet (Opération A)
-
-`ProjectService.removeMember` supprime seulement la ligne `project_member`. Les tâches du projet
-restent assignées à un membre qui n'est plus dans le projet → état incohérent.
-
-**Opération A (choisie) :** à la suppression d'un membre, **désassigner ses tâches** du projet
-(`assignee = null`). On ne supprime pas les tâches (elles appartiennent au projet).
-
-### 2.3 Tables orphelines en base dev
-
-Les changelogs de `task_history`, `group_message` (orphelin — absent de `master.xml`), `chat_user_presence`
-et `chat_message_mentions` sont retirés. La base dev est recréée à zéro (voir §7).
+| A.1 | Suppression `GroupMessage` | ✅ Fait |
+| A.2 | Suppression `TaskHistory` (+ notification équivalente) | ✅ Fait |
+| A.3 | Suppression présence chat (`UserPresence`) | ✅ Fait |
+| A.4 | Suppression champ `mentions` | ✅ Fait |
+| B.1 | `DELETE /api/tasks/{id}` → suppression des enfants | ✅ Fait |
+| B.2 | `DELETE /api/admin/users/{login}` → nettoyage des références | ✅ Fait |
+| B.3 | `DELETE /api/projects/{id}` → cascade complète | ✅ Fait |
+| C | Retrait d'un membre → désassignation de ses tâches | ✅ Fait |
+| D.1–D.9 | Bugs complémentaires de l'audit | ✅ Fait (détail §6) |
+| §7 | Base dev recréée sans tables supprimées | ⚠️ À rejouer/vérifier côté PostgreSQL |
+| §8 | Nettoyage documentation | 🟨 Reste `architecture.md:68` + ce document |
 
 ---
 
-## 3. Partie A — Suppression des 4 entités + champ `mentions`
-
-### A.1 GroupMessage (suppression totale)
-
-**Backend — fichiers à SUPPRIMER :**
-- `src/main/java/com/gestiontaches/domain/GroupMessage.java`
-- `src/main/java/com/gestiontaches/repository/GroupMessageRepository.java`
-- `src/main/java/com/gestiontaches/service/dto/GroupMessageDTO.java`
-- `src/main/java/com/gestiontaches/service/GroupMessageService.java`
-- `src/main/java/com/gestiontaches/service/mapper/GroupMessageMapper.java`
-- `src/main/java/com/gestiontaches/web/rest/GroupMessageResource.java`
-
-**Frontend — fichiers à SUPPRIMER :**
-- `src/main/webapp/app/entities/group-message/` (dossier entier : `group-message.model.ts`,
-  `service/group-message.service.ts`, `list/group-message-list.ts`, `list/group-message-list.html`)
-
-**Frontend — fichiers à MODIFIER :**
-- `src/main/webapp/app/entities/project/detail/project-detail.ts`
-  - retirer `import { GroupMessageListComponent } from 'app/entities/group-message/list/group-message-list';` (≈ ligne 24)
-  - retirer `GroupMessageListComponent,` de l'array `imports` (≈ ligne 76)
-  - retirer le code mort lié à l'onglet `'discussion'` (`activeTab`, `setTab`, CSS de tab-bar) s'il n'est pas utilisé dans le template (le template actuel ne le rend pas).
-
-**i18n — fichiers à SUPPRIMER :**
-- `src/main/webapp/i18n/fr/groupMessage.json`
-- `src/main/webapp/i18n/en/groupMessage.json`
-- `src/main/webapp/i18n/ar/groupMessage.json`
-
-**Config / DB / seed :**
-- Supprimer `.jhipster/GroupMessage.json`
-- Supprimer `src/main/resources/config/liquibase/changelog/20260723000000_added_entity_GroupMessage.xml`
-  (déjà orphelin : absent de `master.xml`)
-- `seed-data.sql` : retirer `group_message` de la liste `TRUNCATE` (ligne 30)
-
-> Note : `group_message` n'est **pas** dans `project-management.jdl` → rien à faire côté JDL.
-
----
-
-### A.2 TaskHistory (suppression totale)
-
-**Backend — fichiers à SUPPRIMER :**
-- `src/main/java/com/gestiontaches/domain/TaskHistory.java`
-- `src/main/java/com/gestiontaches/repository/TaskHistoryRepository.java`
-- `src/main/java/com/gestiontaches/service/dto/TaskHistoryDTO.java`
-- `src/main/java/com/gestiontaches/service/mapper/TaskHistoryMapper.java`
-- `src/main/java/com/gestiontaches/service/TaskHistoryService.java`
-- `src/main/java/com/gestiontaches/web/rest/TaskHistoryResource.java`
-
-**Backend — fichiers à MODIFIER :**
-- `service/SprintService.java`
-  - retirer `TaskHistoryRepository` (champ + paramètre constructeur + affectation)
-  - dans `closeSprint` : supprimer le bloc de création `TaskHistory` (« TASK_MOVED_TO_BACKLOG ») (≈ lignes 241-249)
-  - remplacer `notificationService.notifyAdminsOfTaskHistory(history)` par la **notification équivalente** (voir point suivant)
-- `service/NotificationService.java`
-  - retirer `notifyAdminsOfTaskHistory(TaskHistory)` (lignes 149-165) + import
-  - **AJOUTER** `notifyAdminsOfTaskMovedToBacklog(Task task, String oldSprintName)` :
-    notifie les admins « Task "X" — TASK_MOVED_TO_BACKLOG (Sprint: Y → Backlog) » en utilisant directement `task`
-- `service/ProjectService.java`
-  - retirer `TaskHistoryRepository` (champ + paramètre + affectation) + ligne `taskHistoryRepository.deleteByTaskProjectId(id)` (≈ ligne 294)
-- `web/rest/UserResource.java`
-  - retirer `TaskHistoryRepository` (champ + paramètre + affectation) et les lignes 235-236 de `getUserDetail` (requête `history`)
-- `service/dto/UserAdminDetailDTO.java`
-  - retirer le champ `recentActivity` (ligne 29) + la classe imbriquée `TaskHistoryEntryDTO` (lignes 305-370)
-- `service/UserAdminDetailMapper.java`
-  - retirer le paramètre `List<TaskHistory> history`, `toHistoryEntry(...)` et les imports
-- `service/TaskService.java` : **vérifier** qu'il n'y a aucune référence (aucune actuellement).
-
-**Frontend — fichiers à SUPPRIMER :**
-- `src/main/webapp/app/entities/task-history/` (dossier entier)
-- `src/main/webapp/app/entities/task/activity/task-activity-feed.ts` + `.html`
-- `src/main/webapp/app/entities/task/detail/tabs/task-history-tab.ts` + `.html`
-
-**Frontend — fichiers à MODIFIER :**
-- `src/main/webapp/app/entities/task/detail/task-detail.ts` : retirer `import { TaskHistoryTab } ...` + entrée `TaskHistoryTab,` dans `imports`
-- `src/main/webapp/app/entities/task/detail/task-detail.html` : retirer le bouton d'onglet « History » (lignes 26-29) et le `@case ('history')` (lignes 118-120)
-- `src/main/webapp/app/home/dashboard/developer-dashboard.component.ts`
-  - retirer `recentActivityResource`, `recentActivity`, `ACTIVITY_COLORS`, `formatDate` (si plus utilisé)
-  - retirer `recentActivityResource` de `loading()` et `error()`
-  - remplacer `<jhi-dashboard-timeline [activitiesOverride]="recentActivity()" />` par `<jhi-dashboard-timeline [tasks]="recentTasks()" />`
-- `src/main/webapp/app/entities/admin/user-management/service/user-management.service.ts`
-  - retirer `recentActivity?: ITaskHistoryEntry[];` (ligne 24) et l'interface `ITaskHistoryEntry` (lignes 50-58)
-- `src/main/webapp/app/entities/admin/user-management/user-admin-detail/user-admin-detail.html`
-  - retirer la section « Activité récente » (lignes 169-211)
-- `user-admin-detail.ts` : **GARDER** `findDetail` et le composant tels quels — ils servent encore aux
-  sections Tâches/Projets/informations ; ne retirer que la section HTML ci-dessus.
-- `src/main/webapp/app/home/dashboard/timeline.component.ts`
-  - retirer l'input `activitiesOverride` (lignes 106-109) + son traitement dans `activities()`
-    et le commentaire ligne 110 (« e.g. TaskHistory entries ») : deviennent **morts** une fois
-    que `developer-dashboard` passe à `[tasks]`.
-
-**i18n :**
-- SUPPRIMER `src/main/webapp/i18n/en/actionHistory.json` et `src/main/webapp/i18n/fr/actionHistory.json`
-- `global.json` (fr/en) : retirer la clé `"actionHistory"` (ligne 21) si elle n'est plus utilisée
-  (la clé n'existe **pas** dans `ar/global.json` → rien à faire en ar)
-- `task.json` (en/fr/ar) : retirer les clés devenues mortes : `task.detail.history`, `task.detail.noHistory`,
-  `task.detail.tab.history`, `task.history`, `task.system`
-- `user-management.json` (fr/en/ar) : retirer les clés mortes `userManagement.adminDetail.activity`
-  et `userManagement.adminDetail.noActivity` (lignes 44-45) — plus de section « Activité récente »
-
-**Tests à adapter :**
-- `src/test/java/com/gestiontaches/service/SprintServiceTest.java` : retirer le mock `TaskHistoryRepository`
-  et les `verify(taskHistoryRepository, ...)` / `verify(...notifyAdminsOfTaskHistory...)` ; adapter si nouvelle notification
-- `src/test/java/com/gestiontaches/service/NotificationServiceTest.java` : adapter/retirer les 3 tests utilisant `TaskHistory`
-- `src/test/java/com/gestiontaches/web/rest/ProjectResourceIT.java` : retirer la persistance + l'assertion
-  `task_history` (lignes 581-586, 629) **et** la ligne `message.setMentions(new HashSet<>(...))` (ligne 608,
-  casse la compilation après A.4 — garder l'import `HashSet`, utilisé aussi ligne 649)
-
-**Liquibase / seed / JDL :**
-- Supprimer `src/main/resources/config/liquibase/changelog/20260714000001_added_entity_TaskHistory.xml`
-- `master.xml` : retirer l'`<include ...TaskHistory.xml.../>` (ligne 50)
-- `seed-data.sql` : retirer `task_history` du `TRUNCATE` (ligne 28)
-- `project-management.jdl` : retirer l'entité `TaskHistory` (lignes 73-77), la relation `TaskHistory{user} to User`
-  (ligne 115), la relation `Task{history} to TaskHistory{task required}` (ligne 132), `TaskHistory` de `paginate`
-  (ligne 139) et de `service` (ligne 141)
-
----
-
-### A.3 UserPresence (présence en ligne du chat — suppression totale)
-
-**Backend — fichiers à SUPPRIMER :**
-- `src/main/java/com/gestiontaches/domain/UserPresence.java`
-- `src/main/java/com/gestiontaches/repository/UserPresenceRepository.java`
-- `src/main/java/com/gestiontaches/service/dto/UserPresenceDTO.java`
-- `src/main/java/com/gestiontaches/service/mapper/UserPresenceMapper.java`
-
-**Backend — fichiers à MODIFIER :**
-- `service/ChatService.java` :
-  - retirer `ONLINE_THRESHOLD` (ligne 44), `UserPresenceRepository` + `UserPresenceMapper` (champs, paramètres, affectations)
-  - `sendMessage` : retirer `updatePresence(projectId, sender.getId());` (ligne 162) — **garder** `markRead`
-  - retirer les méthodes `updatePresence`, `getPresence`, `fillPresence`, `presenceByUserIds`, `toUserPresenceDTO`
-  - `getMembers` : ne plus remplir la présence (garder la liste des membres)
-  - `toConversationDTO` : ne plus construire `presenceByUser` ni la passer aux participants
-  - retirer les imports `UserPresenceDTO`, `UserPresenceMapper`, `Duration`
-- `service/dto/ChatMemberDTO.java` : retirer `online` + `lastActiveAt` (champs, getters/setters, `toString`)
-- `service/dto/ConversationDTO.java` : corriger le commentaire « with role/presence » (ligne 38)
-- `web/rest/ChatResource.java` : retirer les 2 endpoints `/presence` (POST heartbeat, GET présence) + import `UserPresenceDTO` + commentaires
-
-**Frontend :**
-- `src/main/webapp/app/entities/chat/chat.model.ts` : retirer `IUserPresence` + champs `online`/`lastActiveAt` de `IChatMember`
-- `src/main/webapp/app/entities/chat/service/chat.service.ts` : retirer `RestUserPresence`, `updatePresence()`,
-  `getPresence()`, `convertPresenceFromServer()`, la conversion `lastActiveAt`
-- `src/main/webapp/app/entities/chat/chat.ts` : retirer `PRESENCE_POLL_INTERVAL`, `heartbeat()`, et l'abonnement
-  `interval(PRESENCE_POLL_INTERVAL)` qui appelle `heartbeat()` — **garder** le refresh des membres (`loadMembers()`)
-- `src/main/webapp/app/entities/chat/member-list/member-list.html` : retirer la pastille « en ligne » + badge online/offline
-- `src/main/webapp/app/entities/chat/member-list/member-list.scss` : retirer `.chat-member-dot`, `.chat-member-dot.online`, `.chat-member-online`
-- `src/main/webapp/app/entities/chat/chat-header/chat-header.ts` : retirer `onlineCount`
-- `src/main/webapp/app/entities/chat/chat-header/chat-header.html` : retirer le bloc `@if (onlineCount() > 0)`
-- `src/main/webapp/app/entities/chat/chat-header/chat-header.scss` : retirer `.chat-header-online`, `.chat-header-dot`
-
-**i18n — `chat.json` (en/fr/ar) :**
-- retirer `chat.members.online`, `chat.members.offline`, `chat.header.onlineCount`
-
-**Liquibase :** dans `20260805000001_added_chat.xml`, retirer le changeSet `20260805000001-7` (`chat_user_presence`),
-sa `addUniqueConstraint`, son `addForeignKeyConstraint` (`fk_chat_user_presence__user_id`)
-
-> ⚠️ Ne PAS confondre avec le WebSocket JHipster (`/websocket/tracker`, STOMP) utilisé pour les
-> notifications : celui-ci reste en place.
-
----
-
-### A.4 Mentions `@user` (suppression)
-
-**Backend :**
-- `domain/ChatMessage.java` : retirer le champ `@ElementCollection mentions` (lignes 69-76) + accesseurs (182-193)
-  + imports `HashSet`/`Set` + mention dans le Javadoc de classe
-- `service/dto/ChatMessageDTO.java` : retirer le champ `mentions` + accesseurs + imports
-- `repository/ChatMessageRepository.java` : retirer `deleteMentionsByProjectId` (lignes 19-24)
-- `service/ChatService.java` : retirer `MENTION_PATTERN`, `extractMentionIds(...)`, les appels
-  `message.mentions(extractMentionIds(...))` (lignes 159, 173), imports `Matcher`/`Pattern`
-- `service/ProjectService.java` : retirer `chatMessageRepository.deleteMentionsByProjectId(id)` (ligne 287) + commentaire
-
-**Frontend :**
-- `src/main/webapp/app/entities/chat/chat.model.ts` : retirer `mentions?: Set<number> | null;` de `IChatMessage`
-- `src/main/webapp/app/entities/chat/service/chat.service.ts` : retirer la ligne `mentions:` de `convertMessageFromServer`
-
-**Liquibase :** dans `20260805000001_added_chat.xml`, retirer le changeSet `20260805000001-4` (`chat_message_mentions`),
-son `addForeignKeyConstraint` (`fk_chat_message_mentions__message_id`) et son index `idx_chat_message_mentions__message_id`
-
-> Il n'existe **aucune** UI d'autocomplétion/surlignage `@user` : rien à retirer côté composants de chat.
-
----
-
-## 4. Partie B — Correction des erreurs 500 (suppressions)
-
-### B.1 Supprimer une tâche → supprimer ses enfants
-
-Dans `service/TaskService.java` → `delete(Long id)` : avant `taskRepository.deleteById(id)`, supprimer les enfants.
-
-- **AJOUTER** dans `repository/CommentRepository.java` :
-  `@Modifying @Query("DELETE FROM Comment c WHERE c.task.id = :taskId") int deleteByTaskId(...)`
-- **AJOUTER** dans `repository/AttachmentRepository.java` :
-  `@Modifying @Query("DELETE FROM Attachment a WHERE a.task.id = :taskId") int deleteByTaskId(...)`
-- **AJOUTER** dans `repository/NotificationRepository.java` :
-  `@Modifying @Query("DELETE FROM Notification n WHERE n.task.id = :taskId") int deleteByTaskId(...)`
-- Injecter ces repositories dans `TaskService` et appeler les 3 `deleteByTaskId(id)` avant `deleteById`.
-
-> `task_history` n'existant plus (Partie A), il n'y a plus de dépendance à gérer pour elle.
-
-### B.2 Supprimer un utilisateur → nettoyer les références
-
-Dans `service/UserService.java` → `deleteUser(String login)` : avant `userRepository.delete(user)`, nettoyer dans l'ordre :
-
-1. **Notifications** (adressées OU liées) — `NotificationRepository` :
-   `DELETE FROM Notification n WHERE n.user.id = :userId OR n.relatedUserId = :userId`
-2. **Membres de projets** — `ProjectMemberRepository` : `DELETE FROM ProjectMember pm WHERE pm.user.id = :userId`
-3. **Tâches assignées** — `TaskRepository` : `UPDATE Task t SET t.assignee = null WHERE t.assignee.id = :userId`
-   (cohérent avec l'Opération A — on garde les tâches, on désassigne)
-4. **Tâches créées** — `TaskRepository` : `UPDATE Task t SET t.createdBy = null WHERE t.createdBy.id = :userId`
-   (`created_by_id` est nullable)
-5. **Commentaires** — `CommentRepository` : `UPDATE Comment c SET c.author = null WHERE c.author.id = :userId`
-6. **Pièces jointes** — `AttachmentRepository` : `UPDATE Attachment a SET a.uploadedBy = null WHERE a.uploadedBy.id = :userId`
-7. **Messages de chat** — `ChatMessageRepository` : `DELETE FROM ChatMessage cm WHERE cm.sender.id = :userId`
-8. **Membres de conversations** — `ConversationMemberRepository` : `DELETE FROM ConversationMember cm WHERE cm.user.id = :userId`
-9. **Conversations créées** — `ConversationRepository` : `UPDATE Conversation c SET c.createdBy = null WHERE c.createdBy.id = :userId`
-
-> Les tables `task_history`, `group_message`, `chat_user_presence`, `chat_message_mentions` n'existant plus
-> (Partie A), leurs FK ne bloquent plus.
-
-### B.3 Supprimer un projet → cascade déjà en place
-
-`ProjectService.delete` est **déjà correct** et complet pour les entités conservées :
-mentions → messages → conversation members → conversations → notifications → commentaires → pièces jointes →
-tâches → sprints → epics → membres → projet.
-
-- Après la Partie A : retirer uniquement `deleteMentionsByProjectId` et `taskHistoryRepository.deleteByTaskProjectId`
-  (déjà prévu en A.2 / A.4).
-- Plus de problème `group_message` (entité supprimée en A.1).
-
----
-
-## 5. Partie C — Opération A : retrait d'un membre du projet → désassignation
-
-Comportement cible : quand un membre est retiré d'un projet, ses tâches du projet passent en `assignee = null`
-(on ne les supprime pas).
-
-Dans `service/ProjectService.java` → `removeMember(Long projectId, Long userId)` :
-
-- **AJOUTER** dans `repository/TaskRepository.java` :
-  `@Modifying @Query("UPDATE Task t SET t.assignee = null WHERE t.assignee.id = :userId AND t.project.id = :projectId")
-  int unassignTasksInProject(@Param("userId") Long userId, @Param("projectId") Long projectId)`
-- Dans `removeMember`, après `projectMemberRepository.delete(member)` :
-  `taskRepository.unassignTasksInProject(userId, projectId);`
-- (Le message « supprimer les tâches » est écarté : les tâches appartiennent au projet.)
-
----
-
-## 6. Partie D — Autres bugs détectés lors de l'audit du code
-
-> Complément découvert pendant l'audit complet (sous-agents backend / frontend / tests & config).
-> Certains relèvent de la Partie A/B déjà planifiée, d'autres sont des correctifs autonomes.
-
-### D.1 Suppression d'un Sprint / d'une Épic → 500 (hors plan)
-
-| Fichier | Lignes | Cause | Conséquence |
-|---|---|---|---|
-| `service/SprintService.java` | 368-377 | `delete` sans nettoyage : FK `task.sprint_id` (RESTRICT) | **500** si des tâches sont liées au sprint |
-| `service/EpicService.java` | 226-233 | idem : FK `task.epic_id` (RESTRICT) | **500** si des tâches sont liées à l'épic |
-
-- Le plan (Partie B) ne couvre **que** task/user/project → **ajouter** ces 2 corrections.
-- Décision à prendre : désassigner (`sprint = null` / `epic = null`) ou supprimer les tâches ? (proposition : désassigner, cohérent avec l'Opération A).
-
-### D.2 `UserService.removeNotActivatedUsers` — suppression sans nettoyage
-
-- `service/UserService.java:326-334` (`removeNotActivatedUsers`) + `:132-140` (`removeNonActivatedUser`)
-  font un `delete` brut → même risque de FK que la Partie B.2 (risque faible : utilisateurs non activés,
-  mais à aligner sur B.2 pour être sûr).
-
-### D.3 `TechnicalStructureTest` — 23 violations ArchUnit (tests backend en échec)
-
-- `src/test/java/com/gestiontaches/TechnicalStructureTest.java` échoue (23 violations) : les services
-  (`ChatService` lignes 120, 455…, `ProjectService`, `EpicService`, `SprintService`, `TaskService`…)
-  appellent `web.rest.errors.BadRequestAlertException`, classée dans la couche **Web** par la règle
-  « Web may only be accessed by Config ».
-- **Fix à choisir** : (a) autoriser la dépendance `service → web.rest.errors` dans la règle ArchUnit,
-  ou (b) déplacer/dupliquer l'exception dans un paquet service. (Le plan référence d'ailleurs un
-  « §3.2.1 » inexistant à la ligne 117 — à corriger.)
-
-### D.4 Échecs de tests backend (surefire)
-
-1. **`TaskResourceIT.putExistingTask` (l.373) + `fullUpdateTaskWithPatch` (l.487)** :
-   `TaskService.update`/`partialUpdate` forcent `Instant.now()` ; `TaskAsserts.java:55` compare à
-   `UPDATED_UPDATED_AT` (précis au `MILLIS`) → mismatch de précision. Fix : arrondir la valeur attendue
-   (`Instant.now().truncatedTo(MILLIS)`) ou comparer par fenêtre.
-2. **`TaskStatusNotificationIT` (4 FAIL)** : double notification — `TaskService.checkAndNotifyTaskChanges`
-   (l.435-462, « Le statut… a changé pour DONE ») **et** `notifyStatusChangeIfNeeded` (l.261-295,
-   « que vous avez créée est passée à DONE »). Fix : ne pas notifier deux fois (garder UNE des deux, décision métier).
-3. **`AttachmentResourceIT.uploadAttachment_asUser_shouldSucceed` (l.536)** : FAIL 403 — le test
-   `@WithMockUser(ROLE_USER)` alors que `AttachmentResource:81-90` exige ADMIN/PROJET_MANAGER/DEVELOPER.
-   Incohérence test/implémentation : aligner l'un sur l'autre (décision : la sécurité semble voulue).
-4. **`ProjectRolePermissionIT.owner_can_create_task` (l.321) + `member_can_create_task` (l.340)** : FAIL 403 —
-   `@WithMockUser` sans autorités globales alors que `TaskResource:125-134` exige
-   `hasAnyAuthority(ADMIN, PROJET_MANAGER, DEVELOPER)`. Doc `roles-et-permissions.md` l.74 : « Créer une
-   tâche : OWNER/MANAGER requis » → le comportement attendu doit être tranché (ajouter l'autorité globale
-   dans les tests, ou assouplir `TaskResource`).
-5. **`UserResourceIT.deleteUserCannotDeleteLastAdmin`** : ERROR au `@AfterEach` — le cleanup supprime le
-   dernier admin restant → `LastAdminException`. Fix : restaurer un admin dans le cleanup.
-
-### D.5 Compilation des tests frontend — `home.spec.ts`
-
-- `src/main/webapp/app/home/home.spec.ts:95` appelle `comp.isUser()` (méthode inexistante ; `Home` n'a
-  que `isManagerOrAdmin`/`isDeveloper` dans `home.ts:21-24`) → `ng test` ne compile pas. Fix : corriger
-  l'appel dans le spec.
-
-### D.6 Config frontend — `angular.json` + `vitest.temp.config.ts`
-
-- `angular.json:112-115` : `buildTarget: "::development"` non supporté par `@angular/build:unit-test`
-  avec le builder `@angular-builders/custom-esbuild:application` (`angular.json:21`).
-- `vitest.temp.config.ts` à la racine : config de test temporaire à supprimer.
-
-### D.7 Code mort / dépréciations frontend
-
-- Imports inutilisés : `layouts/navbar/navbar.ts:27` (`RouterLinkActive`),
-  `notifications/notification-list.ts:23` (`ItemCount`), `admin/metrics/blocks/metrics-endpoints-requests.ts:12`
-  et `metrics-system.ts:14` (`TranslateDirective`).
-- `?? 0` morts dans `entities/admin/user-management/list/user-management.html:35,43`
-  (`usersByRole` non-optional, déjà sous `@if (stats())` l.21).
-- Sass `@import` déprécié : `admin/docs/docs.scss:4-5`, `content/scss/global.scss:4`, `content/scss/vendor.scss:1-3`.
-
-### D.8 Changelogs Liquibase orphelins
-
-Ignorés de `master.xml`, aucune référence dans le code :
-- `20260624093355_added_entity_ActionHistory.xml`
-- `20260703000000_added_action_history_user.xml`
-- `20260714000002_added_entity_TaskTransition.xml`
-
-→ à supprimer (base dev vide) si aucune table ni donnée n'en dépend (à vérifier).
-
-### D.9 Gaps de traduction i18n
-
-- Clé `actionHistory` présente dans `global.json` fr/en mais **pas en ar** ; `actionHistory.json` jamais
-  référencé ; `ar/actionHistory.json` absent. (Deviendra caduque avec la Partie A.2.)
-
-### D.10 Désalignement JDL / `.jhipster` / domain
-
-- `project-management.jdl`, `.jhipster/*.json` et le domaine contiennent encore les déchets de la Partie A
-  (`TaskHistory`, `GroupMessage`) → réaligner après A.1/A.2.
+## Preuves de vérification (audit du 21/08/2026)
+
+### Partie A — entités supprimées
+
+- **Aucun fichier restant** : aucun `*GroupMessage*`, `*TaskHistory*`, `*Presence*`,
+  `*group-message*`, `*task-history*` dans `src/` (backend + frontend).
+- Changelog consolidé présent : `config/liquibase/changelog/20260807000000_remove_unused_entities.xml`.
+- `master.xml` ne référence plus que les changelogs actifs (30 includes, aucune trace des entités supprimées).
+- i18n : `actionHistory.json` et `groupMessage.json` supprimés des 3 langues ; plus aucune clé
+  `actionHistory` dans `global.json` (fr/en/ar).
+- `seed-data.sql` : le `TRUNCATE` (ligne 28) ne contient plus `task_history` ni `group_message`.
+
+### Partie B & C — corrections des suppressions
+
+- **B.1** `service/TaskService.java:412-414` : `delete()` appelle
+  `notificationRepository.deleteByTaskId(id)`, `commentRepository.deleteByTaskId(id)`,
+  `attachmentRepository.deleteByTaskId(id)` avant `deleteById`.
+- **B.2** `service/UserService.java:300` : méthode privée `deleteUserReferences(User)` appelée par
+  `deleteUser()` (:293), `registerUser` via `removeNonActivatedUser` (:176) et
+  `removeNotActivatedUsers()` (tâche planifiée).
+- **B.3** `service/ProjectService.java:282-294` : cascade projet complète
+  (messages → conversations → notifications → commentaires → pièces jointes → tâches → sprints → epics → membres → projet).
+- **C** `service/ProjectService.java:349` : `removeMember()` appelle
+  `taskRepository.unassignTasksInProject(userId, projectId)`.
+
+### Partie D — bugs d'audit corrigés
+
+| Item | Preuve |
+|---|---|
+| D.1 Sprint/Epic delete → 500 | `SprintService.delete` appelle `taskRepository.unassignBySprintId(id)` ; `EpicService.delete` appelle `taskRepository.unassignByEpicId(id)` avant suppression |
+| D.2 `removeNotActivatedUsers` brut | Appelle désormais `deleteUserReferences(user)` avant `userRepository.delete(user)` |
+| D.3 ArchUnit 23 violations | `TechnicalStructureTest.java:39` : `.ignoreDependency(service.. → web.rest.errors..)` (« Known deviation » commenté) |
+| D.4.1 Précision `updatedAt` | `domain/TaskAsserts.java:58-61` : comparaison par fenêtre de tolérance `isCloseTo(within(1, ChronoUnit.MINUTES))` |
+| D.4.2 Double notification statut | `TaskService.java:454` : `checkAndNotifyTaskChanges` ne gère plus les changements de statut (« handled by notifyStatusChangeIfNeeded ») |
+| D.4.3 Test attachment 403 | Test renommé `uploadAttachment_asDeveloper_shouldSucceed` avec autorité adaptée (`AttachmentResourceIT.java:537`) |
+| D.4.4 Tests rôle création tâche | `ProjectRolePermissionIT.java:154,169` : `@WithMockUser(authorities = "ROLE_PROJET_MANAGER")` aligné sur `TaskResource` |
+| D.4.5 Cleanup dernier admin | `UserResourceIT.java:129-148` : re-promotion des admins dans le cleanup avant suppression |
+| D.5 `home.spec.ts` `isUser()` | `home.ts:24` : `readonly isUser = computed(...)` existe |
+| D.6 Config front | `angular.json` : `buildTarget: "gestion-taches:build:development"` correct ; `vitest.temp.config.ts` supprimé |
+| D.7 Imports morts | `navbar.ts` sans `RouterLinkActive`, `notification-list.ts` sans `ItemCount`, blocs metrics restructurés |
+| D.8 Changelogs orphelins | `ActionHistory`, `action_history_user`, `TaskTransition` supprimés du dépôt |
+| D.9 Clé `actionHistory` | Fichiers + clés retirés des 3 langues |
 
 ---
 
 ## 7. Base de données (dev)
 
-1. **Recréer la base** (elle est vide en dev) :
-   ```bash
-   psql -h localhost -U brahim -d postgres -c 'DROP DATABASE IF EXISTS gestion_taches;'
-   psql -h localhost -U brahim -d postgres -c 'CREATE DATABASE gestion_taches;'
-   ```
-   Le démarrage de l'app (`./mvnw`) rejouera Liquibase avec les changelogs nettoyés → tables recréées sans
-   `task_history`, `group_message`, `chat_user_presence`, `chat_message_mentions`.
-2. **`seed-data.sql`** : retirer `task_history` et `group_message` du `TRUNCATE` (§A.1, §A.2).
-3. Le répertoire `target/h2db/` est un artefact de test — ignoré.
-
----
-
-## 8. Documentation à nettoyer
-
-Après validation du code, mettre à jour les fichiers markdown qui citent les entités supprimées :
-- `README.md` (lignes 26-32, 42, 207-211, 263) — `GroupMessage`, `TaskHistory`, présence, mentions
-  (+ optionnel : aligner la section Base de données, lignes 89-102, qui documente `gestionTaches` ≠ `gestion_taches`/`postgres` réel)
-- `docs/fiche-classes.md`, `docs_role.md` (lignes 92, 242, 584-589, 840 — onglet Historique / TaskHistory)
-- `docs/api/group-message.md` (SUPPRIMER), `docs/api/task-history.md` (SUPPRIMER), `docs/api/chat.md`,
-  `docs/api/README.md`, `docs/api/users.md`, `docs/api/notification.md`, `docs/api/sprint.md` (ligne 343)
-- `docs/technique/README.md`, `docs/technique/modele-donnees.md`, `docs/technique/chat-temps-reel.md`,
-  `docs/technique/architecture.md`
-- `docs/fonctionnel/README.md`, `docs/fonctionnel/audit.md` (**SUPPRIMER** : toute la fonctionnalité `TaskHistory`
-  disparaît), `docs/fonctionnel/roles-et-permissions.md` (ligne 137), `docs/fonctionnel/chat.md`,
-  `docs/fonctionnel/notifications.md` (lignes 24, 71), `docs/fonctionnel/cycle-de-vie-sprint.md` (lignes 70, 118)
-- `docs/utilisateur/messagerie.md` (lignes 22, 69-75 — présence), `docs/utilisateur/demarrage.md` (ligne 34),
-  `docs/utilisateur/gestion-taches.md` (lignes 43, 105-109, 132 — onglet Historique)
-
----
-
-## 9. Vérification finale
+Code prêt (changelogs nettoyés + seed nettoyé). La recréation physique reste à rejouer si ce n'est pas déjà fait :
 
 ```bash
-# 1. Références orphelines (doit remonter seulement les docs/README restants avant nettoyage)
-rg -ri "groupmessage|group-message|taskhistory|task-history|userpresence|chat_user_presence|presence|mentions" \
-   src src/test project-management.jdl .jhipster seed-data.sql --type-add 'all:*.{java,ts,tsx,html,json,jdl,xml,scss}' -t all
+psql -h localhost -U brahim -d postgres -c 'DROP DATABASE IF EXISTS gestion_taches;'
+psql -h localhost -U brahim -d postgres -c 'CREATE DATABASE gestion_taches;'
+```
+
+Puis démarrer l'app (`./mvnw`) pour laisser Liquibase créer le schéma, et vérifier l'absence des tables
+`task_history`, `group_message`, `chat_user_presence`, `chat_message_mentions`.
+
+---
+
+## 8. Documentation — reste un fichier
+
+Nettoyage fait sur : `README.md`, `docs_role.md`, `docs/fiche-classes.md`, `docs/api/*`
+(`group-message.md` et `task-history.md` supprimés), `docs/fonctionnel/*`, `docs/utilisateur/*`.
+
+**Restant :**
+- [ ] `docs/technique/architecture.md:68` — retirer `UserPresenceRepository` de la liste des repositories ;
+- [ ] `README.md` (§ Base de données, ≈ lignes 89-102) — aligner le nom de base documenté (`gestionTaches`)
+      sur la base réelle (`gestion_taches`, utilisateur `postgres`) ;
+- [ ] archiver ou supprimer le présent document après la dernière passe de vérification.
+
+---
+
+## 9. Vérification finale — à rejouer
+
+```bash
+# 1. Références orphelines (attendu : seulement docs/technique/architecture.md et ce document)
+rg -ri "groupmessage|group-message|taskhistory|task-history|userpresence|chat_user_presence" \
+   src src/test project-management.jdl .jhipster seed-data.sql docs README.md docs_role.md
 
 # 2. Backend : compile + tests
 ./mvnw clean verify
@@ -453,86 +118,165 @@ rg -ri "groupmessage|group-message|taskhistory|task-history|userpresence|chat_us
 ./npmw test
 ```
 
-Critères de fin :
-- `./mvnw clean verify` OK (compilation + tests).
-- `./npmw run build` et `./npmw test` OK.
-- Plus de 500 sur `DELETE /api/tasks/{id}`, `DELETE /api/admin/users/{login}`, `DELETE /api/projects/{id}`.
-- Retrait d'un membre → ses tâches du projet réapparaissent sans assignee.
-- `rg` ci-dessus ne remonte que les fichiers de docs restants (ou plus rien après §8).
+Critères de fin inchangés : plus aucun 500 sur les DELETE tâche/utilisateur/projet/sprint/épic,
+retrait d'un membre → tâches désassignées, suites de tests vertes.
 
 ---
 
-## 10. Guide d'exécution pour l'assistant
+## 11. Nouveaux travaux issus de l'audit complet du 21/08/2026
 
-Ordre de travail recommandé (chaque étape est suivie d'une recompilation pour détecter les références cassées) :
+> Le plan initial est terminé. L'audit global (back-end, front-end, cohérence API, tests, i18n)
+> a relevé les points suivants, classés par priorité.
 
-### Étape 1 — Base saine avant tout
-- Lire les fichiers touchés avant de les modifier.
-- Travailler par petites passes et recompiler entre chaque passe.
+### 🔴 Critique
 
-### Étape 2 — Partie A.1 (GroupMessage)
-1. Supprimer les 6 fichiers backend + le dossier frontend `entities/group-message/`.
-2. Nettoyer `project-detail.ts`.
-3. Supprimer i18n (3 langues), `.jhipster/GroupMessage.json`, le changelog orphelin.
-4. `seed-data.sql` : retirer `group_message` du TRUNCATE.
-5. Recompiler : `./mvnw -q compile` + `./npmw run build`.
+| # | Tâche | Fichier(s) | Pourquoi |
+|---|---|---|---|
+| C1 | Réécrire ou supprimer les specs E2E Cypress entités qui visitent des routes inexistantes (`/task`, `/sprint`, `/epic`, `/comment`, `/attachment`) ; vraies routes imbriquées sous `/project/:key/...` | `src/test/javascript/cypress/e2e/entity/*.cy.ts:14-15` | Specs systématiquement en échec → E2E non fiable |
+| C2 | Burndown : trancher — **(a)** implémenter `GET /api/sprints/{id}/burndown` + `GET /api/epics/{id}/burndown` et brancher les composants existants, ou **(b)** supprimer services + composants front | `SprintResource.java`, `EpicResource.java`, `sprint.service.ts`, `epic.service.ts`, `entities/sprint/burndown/`, `entities/epic/burndown/` | Appels front sans endpoint back (404 latents) ; composants inaccessibles depuis toute navigation |
+| C3 | Ajouter la suppression de sprint dans l'UI : ouvrir le dialog existant depuis board/table | `sprint/list/sprint.html`, `sprint/detail/sprint-detail.html`, `entities/sprint/delete/*` | `DELETE /api/sprints/{id}` existe mais impossible depuis l'interface |
 
-### Étape 3 — Partie A.2 (TaskHistory)
-1. Supprimer les 6 fichiers backend + dossiers/fichiers frontend (`task-history/`, `task-activity-feed*`, `task-history-tab*`).
-2. Modifier `SprintService`, `NotificationService` (ajouter la notification équivalente), `ProjectService`,
-   `UserResource`, `UserAdminDetailDTO`, `UserAdminDetailMapper`.
-3. Frontend : `task-detail.ts/html`, `developer-dashboard.component.ts`, `timeline.component.ts` (retirer
-   `activitiesOverride`), `user-management.service.ts`, `user-admin-detail.html`.
-4. i18n (`actionHistory.json`, `global.json`, `task.json`, `user-management.json`).
-5. Tests : `SprintServiceTest`, `NotificationServiceTest`, `ProjectResourceIT` (lignes 581-586, 608, 629).
-6. Liquibase + `master.xml` + `seed-data.sql` + `project-management.jdl`.
-7. Recompiler + tests : `./mvnw clean verify`.
+### 🟠 Important
 
-### Étape 4 — Partie A.3 (présence)
-1. Supprimer `UserPresence` (+ repo, DTO, mapper).
-2. Nettoyer `ChatService`, `ChatMemberDTO`, `ConversationDTO`, `ChatResource`.
-3. Frontend chat : `chat.model.ts`, `chat.service.ts`, `chat.ts`, `member-list.html/scss`, `chat-header.ts/html/scss`.
-4. i18n `chat.json`.
-5. Liquibase `20260805000001_added_chat.xml`.
-6. Recompiler.
+| # | Tâche | Fichier(s) | Pourquoi |
+|---|---|---|---|
+| I1 | Brancher les story points réels dans la liste sprint (somme des `storyPoints` des tâches, done = status DONE) | `sprint/list/sprint.ts:317-319` | Valeurs hardcodées à 0 alors que la donnée existe en base (`Task.storyPoints`, `TaskDTO.storyPoints`) |
+| I2 | SSE : câbler `events$` (refresh listes à chaud) ou retirer la connexion navbar + `EntityEventResource`/`NotificationSseService` | `layouts/navbar/navbar.ts:57-60`, `core/util/entity-event.service.ts` | Flux connecté mais événements ignorés ; endpoint SSE notifications jamais appelé (front pousse en STOMP) |
+| I3 | Compléter les clés i18n visibles manquantes puis resynchroniser fr/ar | `i18n/{en,fr,ar}/*.json` | `error.general` (14 composants), `error.loading`, `dashboard.timeTracking.*` (en/fr affichent la clé brute), dropzone pièces jointes, `epic.detail.storyPoints` |
+| I4 | Bottom-nav mobile « Tasks » → `/my-tasks` | `layouts/bottom-nav/bottom-nav.html:13-16` | Lien duplique « Projets » (`/project`) au lieu de pointer vers les tâches |
+| I5 | Internationaliser les labels statut/priorité d'AdminTasks | `entities/admin/admin-tasks/admin-tasks.ts:123-146` | Libellés français codés en dur (bypass i18n) |
 
-### Étape 5 — Partie A.4 (mentions)
-1. Nettoyer `ChatMessage`, `ChatMessageDTO`, `ChatMessageRepository`, `ChatService`, `ProjectService`.
-2. Frontend : `chat.model.ts`, `chat.service.ts`.
-3. Liquibase `20260805000001_added_chat.xml`.
-4. Recompiler.
+### 🟡 Amélioration
 
-### Étape 6 — Partie B (correction des 500)
-1. B.1 : méthodes `deleteByTaskId` + `TaskService.delete`.
-2. B.2 : méthodes de nettoyage utilisateur + `UserService.deleteUser`.
-3. Recompiler.
+| # | Tâche | Fichier(s) | Pourquoi |
+|---|---|---|---|
+| A1 | Supprimer le code mort : `task-form-modal`, `epic-form-modal`, `project-form-modal`, `sprint-backlog-planning` (+ burndowns selon décision C2) ; supprimer `src/main/java/com/gestiontaches/service.zip` | divers | Dette technique, confusion, poids du build ; archive zip dans l'arborescence source Java |
+| A2 | Aligner doc/implémentation chat temps réel : router les messages via STOMP ou corriger la doc qui promet du temps réel | `chat.ts` (polling 5 s), `ChatService.java`, `docs/technique/chat-temps-reel.md` | Fonctionne mais n'est pas « temps réel » comme documenté |
+| A3 | Ajouter des tests unitaires vitest pour chat (8 fichiers), dashboards (7 composants), my-tasks, search, admin étendu | specs vitest | Modules entiers sans couverture (~29 fichiers) |
+| A4 | Rejouer la vérification finale §9 après traitement de C1→I5 | — | Verrouiller les gains |
 
-### Étape 7 — Partie C (Opération A)
-1. `TaskRepository.unassignTasksInProject` + `ProjectService.removeMember`.
-2. Recompiler.
+---
 
-### Étape 8 — Partie D (bugs d'audit)
-1. D.1 : `SprintService.delete` + `EpicService.delete` — désassigner les tâches avant suppression (décision métier à confirmer).
-2. D.2 : aligner `UserService.removeNotActivatedUsers`/`removeNonActivatedUser` sur B.2.
-3. D.3 : `TechnicalStructureTest` — autoriser `service → web.rest.errors` (ou déplacer l'exception).
-4. D.4 : corriger les 5 tests backend (TaskResourceIT, TaskStatusNotificationIT, AttachmentResourceIT, ProjectRolePermissionIT, UserResourceIT).
-5. D.5 : corriger `home.spec.ts` (appel `isUser()`).
-6. D.6 : `angular.json` (buildTarget) + supprimer `vitest.temp.config.ts`.
-7. D.7 : nettoyer les imports inutilisés, `?? 0` morts, Sass `@import`.
-8. D.8 : supprimer les 3 changelogs orphelins (ActionHistory, action_history_user, TaskTransition).
-9. Recompiler + `./mvnw clean verify` + `./npmw test`.
+## 12. Annexe — Synthèse complète de l'audit du 21/08/2026 (tout ce qui a été relevé en session)
 
-### Étape 9 — Base de données
-- Recréer la base (§7) puis lancer l'app pour laisser Liquibase créer le schéma.
-- Vérifier qu'aucune table `task_history`, `group_message`, `chat_user_presence`, `chat_message_mentions` n'existe.
+### 12.1 Architecture identifiée
 
-### Étape 10 — Vérification finale (§9)
-- `./mvnw clean verify`
-- `./npmw run build` + `./npmw test`
-- `rg` des références orphelines
+| Couche | Technologie |
+|---|---|
+| Générateur | JHipster 9.1.0 |
+| Back-end | Spring Boot 4.0.6 / Java 21 (`src/main/java/com/gestiontaches`) |
+| Front-end | Angular 21.2 standalone, signals, zoneless, OnPush (`src/main/webapp`) |
+| Base de données | PostgreSQL 16 + Liquibase (30 changelogs actifs dans `master.xml`) |
+| Auth | JWT (OAuth2 Resource Server) ; rôles `ROLE_ADMIN`, `ROLE_USER`, `ROLE_DEVELOPER`, `ROLE_PROJET_MANAGER` (`AuthoritiesConstants.java`) |
+| Temps réel | WebSocket STOMP/SockJS `/websocket/tracker` ; broker `/queue` + `/topic` (`WebsocketConfiguration.java:35-41`) |
+| Notifications push | `convertAndSendToUser(login, "/queue/notifications")` (`NotificationService.java:63,81,91`) |
+| Pièces jointes | Stockage disque `app.upload.dir` (défaut `uploads/`) — `AttachmentResource.java:60` |
+| i18n | ngx-translate : en (716 clés), fr (683), ar (715), support RTL |
+| Tests | vitest (95 specs front), JUnit + ArchUnit + Cypress (back/front) |
 
-### Étape 11 — Documentation (§8)
-- Mettre à jour `README.md`, `docs/*` selon la liste §8.
+### 12.2 Back-end — inventaire vérifié fonctionnel
 
-> Règle : **aucune hypothèse silencieuse**. Tout comportement métier ambigu est signalé à l'utilisateur
-> avant d'implémenter. Garder le style de code existant (nommage, structure des packages).
+23 contrôleurs REST implémentés, **aucun stub ni TODO/FIXME** (seule occurrence « TODO » = valeur d'enum `TaskStatus`/`EpicStatus`) :
+
+- **Projets** : CRUD, `/progress` (stats cartes), `/by-key/{key}`, `/my-roles`, gestion membres
+  (ajout/retrait/changement de rôle) — `ProjectResource.java`.
+- **Tâches** : CRUD global + création scoping projet `POST /projects/{projectId}/tasks`,
+  assignation `PATCH /{id}/assign`, export CSV — `TaskResource.java`.
+- **Sprints** : CRUD + `/{id}/start`, `/{id}/close` (rapport vélocité `VelocityReportDTO`),
+  `/projects/{projectId}/backlog` — `SprintResource.java`.
+- **Epics** : CRUD + transitions validées (TODO → IN_PROGRESS → DONE/CANCELLED) — `EpicResource.java`.
+- **Commentaires / Pièces jointes** : CRUD + `/by-task/{taskId}`, upload multipart, download blob.
+- **Notifications** : liste, `/unread-count`, `PATCH /{id}/read`, `PATCH /read-all`, push temps réel.
+- **Chat** : conversations GENERAL/DIRECT, messages paginés, édition/suppression soft,
+  marquage lecture, recherche — `ChatResource.java` (REST complet).
+- **Dashboards** : `/api/dashboard/kpis` (manager/admin), `/api/developer-dashboard/statistics`.
+- **Admin** : users CRUD + `/{login}/detail` (détail riche), stats, project-members, notifications globales.
+- **Divers** : recherche globale `/api/search`, export CSV admin `/api/export/csv/**`,
+  SSE entités `/api/events/stream`.
+
+Sécurité cohérente et vérifiée : `/api/admin/**` → ADMIN (`SecurityConfiguration.java:75`),
+le reste authentifié (:76), endpoints publics limités à register/activate/reset/authenticate ;
+permissions par projet déléguées à `ProjectPermissionService` (OWNER/MANAGER/MEMBER).
+
+### 12.3 Front-end — inventaire vérifié fonctionnel
+
+- Toutes les routes résolvent (sidebar, topbar, bottom-nav, deep-links de notifications) ;
+  **0 bouton sans handler** sur l'ensemble des templates (vérification croisée scriptée).
+- Écrans complets : login split-screen, projets (cartes + détail + membres + settings),
+  sprints (board, démarrage/clôture, modal vélocité), epics (roadmap type Gantt + table + détail),
+  tâches (liste + panneau coulissant + détail onglets commentaires/pièces jointes avec drag&drop),
+  mes-tâches (liste + kanban, préférence persistée), chat (conversations + directs +
+  édition/suppression soft + marquage lecture), notifications (cloche temps réel STOMP avec badge
+  non-lus + page + modale détail + deep-links), dashboards 3 profils (KPIs, donut SVG, suivi temps,
+  timeline, actions rapides), admin étendu (tasks/members/notifications/stats), recherche globale ⌘K.
+
+### 12.4 Cohérence front/back API — résultats
+
+Vérifications positives :
+- **Enums parfaitement alignées** TS ↔ Java : TaskStatus (7 valeurs), SprintStatus, EpicStatus,
+  Priority, ProjectRole, ConversationType (`app/entities/enumerations/*.model.ts`
+  vs `domain/enumeration/*.java`).
+- Tous les appels HTTP principaux ont un endpoint back correspondant (projets, tâches, sprints
+  start/close/backlog, épics, commentaires, pièces jointes upload/download/by-task, chat, notifications
+  read/read-all/unread-count, dashboards, search, export CSV, admin).
+- Pagination conforme aux conventions JHipster (`page`/`size`/`sort` + headers `X-Total-Count`).
+
+Écarts relevés (reportés en §11) :
+- `GET /api/sprints/{id}/burndown` et `GET /api/epics/{id}/burndown` appelés côté front
+  (`sprint.service.ts`, `epic.service.ts`) **sans endpoint back** → C2.
+- Flux SSE `/api/events/stream` connecté (`navbar.ts:57-60`) mais aucun abonné à `events$` ;
+  `/api/notifications/stream` (`NotificationSseService`) jamais consommé (le front pousse en STOMP) → I2.
+
+### 12.5 Tests — état détaillé
+
+- **Front unitaire (vitest)** : 95 specs ; cœur JHipster intact ; specs entités adaptées aux
+  personnalisations (board sprint, kanban, permissions). Qualité réelle mais happy-path.
+- **Zéro spec pour ~29 fichiers** : module chat entier (8 fichiers dont `chat.service.ts`),
+  my-tasks, notification-detail-modal, les 7 composants dashboard, project-settings,
+  admin-tasks / admin-project-members / admin-notifications, listes+onglets commentaires/pièces
+  jointes des tâches (4), sprint table/active-board/timeline/burndown (4), epic-burndown,
+  search dialog/service, entity-event.service → A3.
+- **E2E Cypress** : specs account/admin OK ; les 6 specs entités visitent d'anciennes routes
+  inexistantes (`/task`, `/sprint`, `/epic`, `/comment`, `/attachment`) → C1.
+- **Back-end** : ArchUnit corrigé (D.3), tests IT corrigés (D.4.1→D.4.5, preuves §Partie D) ;
+  `./mvnw clean verify` complet à rejouer pour confirmation finale.
+
+### 12.6 i18n — écarts précis relevés
+
+Clés manquantes rendues visibles aux utilisateurs :
+- `error.general` — fallback d'erreur dans **14 composants** (task/epic/sprint/project updates,
+  kanban, panneaux de détail…) → la clé brute s'affiche en cas d'échec de sauvegarde ;
+- `error.loading` — `project/detail/project-detail.ts:128`, `project/settings/project-settings.ts:88` ;
+- `dashboard.timeTracking.title|byUser|byProject` — définies **uniquement en arabe**
+  (en/fr affichent la clé brute) — section « suivi du temps » du dashboard manager ;
+- `global.messages.validate.currentpassword.required` — `account/password/password.html` ;
+- `gestionTachesApp.task.detail.attachments.dropzone` — `task/detail/tabs/task-attachments-tab.html:43` ;
+- `gestionTachesApp.epic.detail.storyPoints` + `...taskTable.storyPoints` — en-tête/table épic.
+
+Dérive inter-langues : **fr manque 35 clés présentes en en** (`project.settings.*`, `project.member.role.*`,
+`task.error.noProject`, plusieurs `metrics.*`, `error.messages.markAllAsRead/viewAllNotifications`…) ;
+**ar manque 28** (`dashboard.kpi.*`, `quickActions.*`, `TaskStatus.NEEDS_INFO/READY_FOR_TEST`,
+`project.card.*`, `task.detail.attachments*`, `userManagement.adminTasks.*`…).
+Labels FR codés en dur hors i18n : `admin-tasks.ts:123-146` → I5.
+
+### 12.7 Hygiène / code mort relevé
+
+- Composants jamais importés/routés : `sprint-backlog-planning`, `sprint/burndown/*`,
+  `epic/burndown/*`, `task-form-modal`, `epic-form-modal`, `project-form-modal` ;
+  dialog orphelin `sprint/delete/*` (jamais ouvert) → A1/C3.
+- `src/main/java/com/gestiontaches/service.zip` — archive 50 Ko dans l'arborescence source → A1.
+- Aucun `console.log`, aucun bloc template commenté, aucun `TODO/FIXME` dans le code applicatif.
+
+### 12.8 Divers notés en session
+
+- Chat : rafraîchissement par polling 5 s (`chat.ts:24,98`) alors que
+  `docs/technique/chat-temps-reel.md` documente du temps réel → A2.
+- Story points : présents en base et dans le DTO back (`Task.java:61`, `TaskDTO.java:36`)
+  mais total/done hardcodés à 0 côté UI (`sprint/list/sprint.ts:317-319`) → I1.
+- Suppression sprint : endpoint back OK, aucune entrée UI (dialog orphelin) → C3.
+- Deep-links des notifications : tous valides vers des routes existantes (rien à faire).
+
+---
+
+> Règle conservée : **aucune hypothèse silencieuse**. Tout comportement métier ambigu
+> (notamment C2-a/b et I2 câbler/supprimer) est soumis à validation avant implémentation.
