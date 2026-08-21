@@ -51,6 +51,11 @@
             ],
             "styles": ["src/main/webapp/content/scss/vendor.scss", "src/main/webapp/content/scss/global.scss"],
             "scripts": [],
+            "stylePreprocessorOptions": {
+              "sass": {
+                "silenceDeprecations": ["import"]
+              }
+            },
             "define": {
               "SERVER_API_URL": "''"
             }
@@ -112,7 +117,7 @@
           "builder": "@angular/build:unit-test",
           "options": {
             "runner": "vitest",
-            "buildTarget": "::development",
+            "buildTarget": "gestion-taches:build:development",
             "runnerConfig": true,
             "setupFiles": ["src/test/javascript/mocks/test-setup.ts"],
             "coverageReporters": ["text", "lcov"],

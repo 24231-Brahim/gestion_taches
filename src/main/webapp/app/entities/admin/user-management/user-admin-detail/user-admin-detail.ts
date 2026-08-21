@@ -1,6 +1,6 @@
 import { DatePipe, NgClass, UpperCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
@@ -13,7 +13,7 @@ import { UserManagementService, IUserAdminDetail } from '../service/user-managem
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './user-admin-detail.html',
   styleUrl: './user-admin-detail.scss',
-  imports: [RouterLink, FontAwesomeModule, TranslateDirective, TranslateModule, DatePipe, NgClass, UpperCasePipe],
+  imports: [FontAwesomeModule, TranslateDirective, TranslateModule, DatePipe, NgClass, UpperCasePipe],
 })
 export class UserAdminDetail implements OnInit {
   readonly userDetail = signal<IUserAdminDetail | null>(null);

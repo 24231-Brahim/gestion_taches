@@ -18,7 +18,7 @@ Base URL : `http://localhost:8080/api/projects/{projectId}/chat`
 | `lastMessageAt` | `Instant` | Horodatage du dernier message (pour le tri dans la sidebar) |
 | `lastMessagePreview` | `String` | Extrait du dernier message |
 | `unreadCount` | `long` | Nombre de messages non lus pour l'utilisateur courant |
-| `participants` | `ChatMemberDTO[]` | Membres de la conversation (avec rôle/présence) |
+| `participants` | `ChatMemberDTO[]` | Membres de la conversation (avec rôle) |
 
 ### ChatMessageDTO
 
@@ -32,7 +32,6 @@ Base URL : `http://localhost:8080/api/projects/{projectId}/chat`
 | `conversationId` | `Long` | ID de la conversation |
 | `sender` | `UserDTO` | Expéditeur (`id`, `login`) |
 | `parentMessageId` | `Long` | ID du message parent (threads — architecture, pas encore connecté à l'UI) |
-| `mentions` | `Long[]` | IDs des utilisateurs mentionnés (`@login` — architecture, pas encore connecté à l'UI) |
 
 ### ChatMemberDTO
 
@@ -43,16 +42,6 @@ Base URL : `http://localhost:8080/api/projects/{projectId}/chat`
 | `role` | `ProjectRole` | Rôle dans le projet |
 | `joinedAt` | `Instant` | Date d'adhésion au projet |
 | `lastReadAt` | `Instant` | Dernière lecture dans cette conversation (null hors contexte) |
-| `online` | `boolean` | Présence en ligne |
-| `lastActiveAt` | `Instant` | Dernière activité |
-
-### UserPresenceDTO
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `userId` | `Long` | ID de l'utilisateur |
-| `online` | `boolean` | En ligne |
-| `lastActiveAt` | `Instant` | Dernière activité |
 
 ### ConversationType
 
@@ -83,21 +72,11 @@ Un endpoint WebSocket est configuré pour le temps réel :
 - **Authentification** : header `Authorization: Bearer <token>` dans le message STOMP CONNECT.
 - **Notifications** : poussées sur `/queue/notifications` via `convertAndSendToUser`.
 
-> Note : le chat lui-même utilise **exclusivement des endpoints REST**. Le WebSocket `/websocket/tracker` est configuré pour le tracking/présence mais aucun endpoint de chat temps réel n'est documenté dans le code. Les messages sont récupérés via `GET /messages` (pagination par `beforeId`/`limit`).
+> Note : le chat lui-même utilise **exclusivement des endpoints REST**. Le WebSocket `/websocket/tracker` est configuré pour les notifications temps réel mais aucun endpoint de chat temps réel n'est documenté dans le code. Les messages sont récupérés via `GET /messages` (pagination par `beforeId`/`limit`).
 
-## Présence
-
-La présence est gérée par un heartbeat :
-
-- `POST /api/projects/{projectId}/chat/presence` : met à jour `lastActiveAt` de l'utilisateur courant.
-- `GET /api/projects/{projectId}/chat/presence` : retourne la liste des présences des membres.
-
-Un utilisateur est considéré `online` lorsque `lastActiveAt` est dans une fenêtre de fraîcheur courte (définie dans `ChatService`).
-
-## Threads et mentions
+## Threads
 
 - **Threads** : un message peut répondre à un autre via `parentMessageId`. C'est de l'architecture, pas encore connecté à l'UI.
-- **Mentions** : les mentions `@login` sont stockées comme IDs d'utilisateurs dans `mentions`. C'est de l'architecture, pas encore connecté à l'UI.
 
 ## Endpoints
 
@@ -142,9 +121,7 @@ Les conversations sont triées : GENERAL en premier, puis les DIRECT par `lastMe
         "userLogin": "johndoe",
         "role": "MEMBER",
         "joinedAt": "2026-08-01T10:00:00Z",
-        "lastReadAt": "2026-08-10T11:00:00Z",
-        "online": true,
-        "lastActiveAt": "2026-08-10T12:00:00Z"
+        "lastReadAt": "2026-08-10T11:00:00Z"
       }
     ]
   }
@@ -188,9 +165,7 @@ Si une conversation DIRECT existe déjà entre l'utilisateur courant et `{userId
       "userLogin": "johndoe",
       "role": "MEMBER",
       "joinedAt": "2026-08-01T10:00:00Z",
-      "lastReadAt": null,
-      "online": true,
-      "lastActiveAt": "2026-08-10T12:00:00Z"
+      "lastReadAt": null
     }
   ]
 }
@@ -237,8 +212,7 @@ Les messages sont triés par `createdAt` croissant (du plus ancien au plus réce
       "id": 1,
       "login": "admin"
     },
-    "parentMessageId": null,
-    "mentions": []
+    "parentMessageId": null
   }
 ]
 ```
@@ -283,8 +257,7 @@ Content-Type: application/json
     "id": 5,
     "login": "johndoe"
   },
-  "parentMessageId": null,
-  "mentions": []
+  "parentMessageId": null
 }
 ```
 
@@ -331,8 +304,7 @@ Seul l'expéditeur du message peut l'éditer.
     "id": 5,
     "login": "johndoe"
   },
-  "parentMessageId": null,
-  "mentions": []
+  "parentMessageId": null
 }
 ```
 
@@ -395,7 +367,7 @@ Authorization: Bearer <token>
 
 **Rôle requis** : authentifié (`isAuthenticated()`)
 
-Retourne les membres du projet avec leur rôle et leur présence.
+Retourne les membres du projet avec leur rôle.
 
 **Réponse 200 OK**
 
@@ -406,18 +378,14 @@ Retourne les membres du projet avec leur rôle et leur présence.
     "userLogin": "admin",
     "role": "OWNER",
     "joinedAt": "2026-08-01T10:00:00Z",
-    "lastReadAt": null,
-    "online": true,
-    "lastActiveAt": "2026-08-10T12:00:00Z"
+    "lastReadAt": null
   },
   {
     "userId": 5,
     "userLogin": "johndoe",
     "role": "MEMBER",
     "joinedAt": "2026-08-02T10:00:00Z",
-    "lastReadAt": "2026-08-10T11:00:00Z",
-    "online": false,
-    "lastActiveAt": "2026-08-10T09:00:00Z"
+    "lastReadAt": "2026-08-10T11:00:00Z"
   }
 ]
 ```
@@ -460,71 +428,7 @@ Recherche plein texte dans les conversations accessibles par l'utilisateur.
     "deleted": false,
     "conversationId": 1,
     "sender": { "id": 1, "login": "admin" },
-    "parentMessageId": null,
-    "mentions": [5]
-  }
-]
-```
-
-**Erreurs**
-
-| Code | Signification |
-|------|---------------|
-| 403 | L'utilisateur n'est pas membre du projet |
-
----
-
-### 10. Mettre à jour ma présence
-
-```http
-POST /api/projects/{projectId}/chat/presence
-Authorization: Bearer <token>
-```
-
-**Rôle requis** : authentifié (`isAuthenticated()`)
-
-Heartbeat : rafraîchit `lastActiveAt` de l'utilisateur courant.
-
-**Réponse 200 OK**
-
-```json
-{
-  "userId": 5,
-  "online": true,
-  "lastActiveAt": "2026-08-10T12:10:00Z"
-}
-```
-
-**Erreurs**
-
-| Code | Signification |
-|------|---------------|
-| 403 | L'utilisateur n'est pas membre du projet |
-
----
-
-### 11. Récupérer la présence des membres
-
-```http
-GET /api/projects/{projectId}/chat/presence
-Authorization: Bearer <token>
-```
-
-**Rôle requis** : authentifié (`isAuthenticated()`)
-
-**Réponse 200 OK**
-
-```json
-[
-  {
-    "userId": 1,
-    "online": true,
-    "lastActiveAt": "2026-08-10T12:00:00Z"
-  },
-  {
-    "userId": 5,
-    "online": false,
-    "lastActiveAt": "2026-08-10T09:00:00Z"
+    "parentMessageId": null
   }
 ]
 ```

@@ -23,13 +23,10 @@ Système de gestion de projet agile (type Jira) généré avec **JHipster 9.1.0*
 | **Task**               | Unité de travail (NEW / IN_PROGRESS / READY_FOR_TEST / DONE) |
 | **Comment**            | Commentaire sur une tâche                                    |
 | **Attachment**         | Fichier joint à une tâche                                    |
-| **TaskHistory**        | Audit des modifications d'une tâche                          |
 | **Notification**       | Notification in-app (assignation, rappel, etc.)              |
-| **GroupMessage**       | Message de messagerie de groupe lié à un projet              |
 | **Conversation**       | Conversation de chat (GENERAL ou DIRECT)                     |
 | **ConversationMember** | Membre d'une conversation avec suivi de dernière lecture     |
-| **ChatMessage**        | Message de chat (threads, mentions, soft-delete)             |
-| **UserPresence**       | Présence en ligne d'un utilisateur                           |
+| **ChatMessage**        | Message de chat (threads, soft-delete)                       |
 
 ## Project Structure
 
@@ -39,7 +36,6 @@ gestion_taches/
 │   ├── Attachment.json
 │   ├── Comment.json
 │   ├── Epic.json
-│   ├── GroupMessage.json
 │   ├── Project.json
 │   └── Sprint.json
 ├── .yo-rc.json                    # Configuration du générateur JHipster
@@ -83,23 +79,22 @@ gestion_taches/
 
 Pour le développement, PostgreSQL 16 doit être installé localement :
 
-| Élément         | Valeur          |
-| --------------- | --------------- |
-| PostgreSQL      | Version 16      |
-| Base de données | `gestionTaches` |
-| Hôte            | `localhost`     |
-| Port            | `5432`          |
-| Utilisateur     | `gestionTaches` |
-| Mot de passe    | `gestionTaches` |
+| Élément         | Valeur           |
+| --------------- | ---------------- |
+| PostgreSQL      | Version 16       |
+| Base de données | `gestion_taches` |
+| Hôte            | `localhost`      |
+| Port            | `5432`           |
+| Utilisateur     | `postgres`       |
 
 Étapes préalables :
 
 1. Installer PostgreSQL 16.
-2. Créer la base de données `gestionTaches` :
+2. Créer la base de données `gestion_taches` :
    ```sql
-   CREATE DATABASE "gestionTaches";
+   CREATE DATABASE gestion_taches;
    ```
-3. Vérifier la connexion de l'utilisateur `gestionTaches` sur `localhost:5432` (voir `src/main/resources/config/application-dev.yml`).
+3. Vérifier la connexion de l'utilisateur `postgres` sur `localhost:5432` (voir `src/main/resources/config/application-dev.yml`).
    Si l'authentification échoue, modifier `pg_hba.conf` :
    ```
    host  all  all  127.0.0.1/32  trust
@@ -204,11 +199,10 @@ Des rôles par projet (OWNER / MANAGER / MEMBER) sont gérés via `ProjectMember
 - **Epics** : Regroupement de tâches, roadmap, statuts automatiques
 - **Tâches** : Kanban, assignation, story points, cycle de vie complet
 - **Commentaires & pièces jointes** : Collaboration sur les tâches
-- **Chat** : Conversations GENERAL et DIRECT par projet, mentions, threads, présence en ligne
+- **Chat** : Conversations GENERAL et DIRECT par projet, threads
 - **Notifications** : Alertes en temps réel (SSE), assignation, rappels
 - **Recherche et exports** : Recherche plein texte, export CSV projets/tâches/utilisateurs
 - **Dashboards** : KPIs admin/manager, dashboard développeur
-- **Audit** : Historique des modifications (TaskHistory)
 
 ## Documentation
 
@@ -260,6 +254,6 @@ docker compose -f src/main/docker/jhipster-control-center.yml up
 
 ## Remarques
 
-- Le chat utilise **REST polling** pour les messages (intervalle 5s) et la présence (intervalle 30s), via WebSocket pour le tracking uniquement.
+- Le chat utilise **REST polling** pour les messages (intervalle 5s), via WebSocket pour les notifications uniquement.
 - L'entité `Task` n'a pas de champ `type` (pas de distinction Story/Bug/Task/Subtask/Improvement).
 - Les migrations de base de données sont gérées par Liquibase.

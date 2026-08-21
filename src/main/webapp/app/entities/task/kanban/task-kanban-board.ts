@@ -7,7 +7,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TaskStatus } from 'app/entities/enumerations/task-status.model';
 import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
-import { TranslateDirective } from 'app/shared/language';
 import { PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES } from '../task-helper';
 import { ITask } from '../task.model';
 import { TaskService } from '../service/task.service';
@@ -149,7 +148,7 @@ interface KanbanColumn {
       }
     `,
   ],
-  imports: [FontAwesomeModule, TranslateDirective, TranslateModule],
+  imports: [FontAwesomeModule, TranslateModule],
 })
 export class TaskKanbanBoard {
   readonly tasks = input<ITask[]>([]);

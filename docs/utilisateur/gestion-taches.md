@@ -40,7 +40,6 @@ Il existe plusieurs façons de créer une tâche :
    - **Détails** : titre, description, statut, priorité, dates, projet, sprint, epic, créé par, assigné
    - **Commentaires** : échanges autour de la tâche
    - **Pièces jointes** : fichiers liés à la tâche
-   - **Historique** : journal des modifications
 
 3. Pour revenir à la liste, cliquez sur le bouton **Retour** ou fermez le panneau.
 
@@ -102,12 +101,6 @@ Il existe plusieurs façons de créer une tâche :
 
 ⚠️ Attention : la taille maximale d'un fichier est de 20 Mo. Les formats acceptés dépendent de la configuration du serveur.
 
-## Consulter l'historique
-
-1. Ouvrez une tâche.
-2. Cliquez sur l'onglet **Historique**.
-3. La liste affiche chronologiquement chaque modification : action effectuée, ancienne valeur, nouvelle valeur, date et auteur.
-
 ---
 
 ## Mes Tâches
@@ -129,7 +122,7 @@ La page **Mes Tâches** donne une vue personnalisée de toutes les tâches qui v
 ### Consulter une tâche
 
 1. Dans la liste ou le Kanban, cliquez sur une tâche.
-2. Le panneau de détail s'ouvre avec les mêmes onglets que la vue standard (Détails, Commentaires, Pièces jointes, Historique).
+2. Le panneau de détail s'ouvre avec les mêmes onglets que la vue standard (Détails, Commentaires, Pièces jointes).
 3. Vous pouvez y changer le statut de la tâche directement.
 
 ## Filtrer et rechercher les tâches

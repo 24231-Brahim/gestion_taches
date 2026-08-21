@@ -5,14 +5,13 @@
 Le chat du projet utilise **deux mécanismes complémentaires** :
 
 1. **WebSocket STOMP** : configuré et disponible, utilisé pour les **notifications** push (`/queue/notifications`), pas pour le chat lui-même.
-2. **Polling REST** : mécanisme **actif et documenté** côté frontend pour le chat (messages et présence).
+2. **Polling REST** : mécanisme **actif et documenté** côté frontend pour le chat (messages).
 
 ```mermaid
 graph LR
     subgraph "Frontend Angular"
         A[ChatComponent]
         B[interval 5s]
-        C[interval 30s]
         D[ChatService]
     end
 
@@ -24,8 +23,6 @@ graph LR
 
     A -->|polling messages| B
     B -->|GET /messages| D
-    A -->|polling presence| C
-    C -->|POST /presence| D
     D -->|HTTP| E
     A -.->|pas utilisé pour chat| F
     F -.->|notifications| G
@@ -103,24 +100,6 @@ ngOnInit(): void {
 
 `refreshConversations()` recharge la liste des conversations et les derniers messages de la conversation sélectionnée.
 
-### Polling de la présence
-
-```typescript
-// chat.ts
-const PRESENCE_POLL_INTERVAL = 30000; // 30 secondes
-
-ngOnInit(): void {
-  interval(PRESENCE_POLL_INTERVAL)
-    .pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe(() => {
-      this.heartbeat();
-      this.loadMembers();
-    });
-}
-```
-
-`heartbeat()` appelle `POST /api/projects/{projectId}/chat/presence` pour mettre à jour `lastActiveAt`.
-
 ## Canaux de chat
 
 ### GENERAL
@@ -148,14 +127,10 @@ Tous les endpoints sont sous `/api/projects/{projectId}/chat` et nécessitent `i
 | `/messages/{messageId}` | PATCH | Éditer un message |
 | `/messages/{messageId}` | DELETE | Supprimer un message (soft delete) |
 | `/conversations/{conversationId}/read` | POST | Marquer conversation comme lue |
-| `/members` | GET | Membres du projet (avec rôle et présence) |
+| `/members` | GET | Membres du projet (avec rôle) |
 | `/search` | GET | Rechercher des messages (`q`, `limit`) |
-| `/presence` | POST | Heartbeat (mise à jour présence) |
-| `/presence` | GET | Liste des présences du projet |
 
-## Threads et mentions
-
-### Threads
+## Threads
 
 Un message peut répondre à un autre via `parentMessageId` :
 
@@ -165,20 +140,6 @@ Un message peut répondre à un autre via `parentMessageId` :
   "content": "Réponse au message",
   "parentMessageId": 1,
   ...
-}
-```
-
-**Statut** : architecture uniquement, pas encore connecté à l'UI.
-
-### Mentions
-
-Les mentions `@login` sont stockées comme IDs d'utilisateurs dans `mentions` :
-
-```json
-{
-  "id": 3,
-  "content": "Bonjour @johndoe, peux-tu vérifier ?",
-  "mentions": [5]
 }
 ```
 
@@ -197,7 +158,6 @@ Ces événements ne concernent pas directement le chat, mais pourraient être ut
 | Fonctionnalité | Mécanisme | Fichier backend | Fichier frontend |
 |----------------|-----------|-----------------|------------------|
 | Envoyer/recevoir messages | **Polling REST** (5s) | `ChatResource.java` | `chat.ts`, `chat.service.ts` |
-| Présence | **Polling REST** (30s) | `ChatResource.java` | `chat.ts` |
 | Notifications | **STOMP** `/queue/notifications` | `NotificationService.java` | `notification.interceptor.ts` |
 | WebSocket config | STOMP + SockJS | `WebsocketConfiguration.java` | `@stomp/stompjs` (disponible) |
-| Threads/mentions | Stockés en DB, pas d'UI | `ChatMessage.java` | `chat.model.ts` (champs présents) |
+| Threads | Stockés en DB, pas d'UI | `ChatMessage.java` | `chat.model.ts` (champ présent) |

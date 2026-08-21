@@ -8,7 +8,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
-import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
+import { FormatMediumDatePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { TaskService } from 'app/entities/task/service/task.service';
 import { ITask } from 'app/entities/task/task.model';
@@ -294,15 +294,7 @@ interface EpicStats {
       }
     `,
   ],
-  imports: [
-    RouterLink,
-    FontAwesomeModule,
-    TranslateDirective,
-    TranslateModule,
-    FormatMediumDatePipe,
-    FormatMediumDatetimePipe,
-    TaskKanbanBoard,
-  ],
+  imports: [RouterLink, FontAwesomeModule, TranslateDirective, TranslateModule, FormatMediumDatePipe, TaskKanbanBoard],
 })
 export class EpicDetail {
   readonly epic = input<IEpic | null>(null);

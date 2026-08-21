@@ -25,14 +25,12 @@
     <include file="config/liquibase/changelog/20260624093352_added_entity_Issue.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260624093353_added_entity_Comment.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260624093354_added_entity_Attachment.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20260624093355_added_entity_ActionHistory.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <include file="config/liquibase/changelog/20260624093350_added_entity_constraints_Sprint.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260624093351_added_entity_constraints_Epic.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260624093352_added_entity_constraints_Issue.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260624093353_added_entity_constraints_Comment.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260624093354_added_entity_constraints_Attachment.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20260624093355_added_entity_constraints_ActionHistory.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
     <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
     <include file="config/liquibase/changelog/20260625000000_added_entity_Project_owner.xml" relativeToChangelogFile="false"/>
@@ -42,7 +40,6 @@
     <include file="config/liquibase/changelog/20260701000001_added_issue_assignee.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260701000002_added_comment_author.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260702000000_added_entity_Notification.xml" relativeToChangelogFile="false"/>
-    <include file="config/liquibase/changelog/20260703000000_added_action_history_user.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260704000000_added_issue_created_by.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260705000000_added_project_role_enum.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20260713000000_rename_issue_to_task.xml" relativeToChangelogFile="false"/>

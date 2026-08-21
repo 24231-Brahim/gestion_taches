@@ -6,7 +6,6 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { TaskStatus } from 'app/entities/enumerations/task-status.model';
-import { TranslateDirective } from 'app/shared/language';
 import { FormatMediumDatePipe } from 'app/shared/date';
 import { PRIORITY_COLORS, PRIORITY_ICONS, STATUS_BADGES } from 'app/entities/task/task-helper';
 import { ITask } from 'app/entities/task/task.model';
@@ -264,7 +263,7 @@ interface KanbanColumn {
       }
     `,
   ],
-  imports: [FormsModule, FontAwesomeModule, TranslateDirective, TranslateModule, FormatMediumDatePipe],
+  imports: [FormsModule, FontAwesomeModule, TranslateModule, FormatMediumDatePipe],
 })
 export class SprintActiveBoard {
   readonly sprint = input<ISprint | null>(null);

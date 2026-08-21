@@ -11,7 +11,6 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 
 import { NotificationService, INotification } from 'app/core/util/notification.service';
-import { ItemCount } from 'app/shared/pagination';
 import { ITEMS_PER_PAGE } from 'app/config/pagination.constants';
 import { NotificationDetailModal } from 'app/notifications/notification-detail-modal';
 
@@ -20,7 +19,7 @@ import { NotificationDetailModal } from 'app/notifications/notification-detail-m
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './notification-list.html',
   styleUrl: './notification-list.scss',
-  imports: [FontAwesomeModule, TranslateModule, DatePipe, NgbPagination, ItemCount],
+  imports: [FontAwesomeModule, TranslateModule, DatePipe, NgbPagination],
 })
 export default class NotificationListComponent implements OnInit, OnDestroy {
   readonly notifications = signal<INotification[]>([]);

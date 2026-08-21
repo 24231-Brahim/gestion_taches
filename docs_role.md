@@ -89,7 +89,7 @@ L'administrateur a un accès **complet et total** à toute l'application. Il est
 - Créer, modifier, supprimer une tâche
 - Assigner un utilisateur à une tâche
 - Changer le statut d'une tâche (via kanban ou formulaire)
-- Voir les détails d'une tâche (onglets: détails, commentaires, pièces jointes, historique)
+- Voir les détails d'une tâche (onglets: détails, commentaires, pièces jointes)
 
 #### Gestion des commentaires
 
@@ -235,11 +235,10 @@ L'administrateur a un accès **complet et total** à toute l'application. Il est
 1. Page /project/PRJ/task
 2. Clique sur le titre d'une tâche
 3. Le panneau latéral s'ouvre OU page /project/PRJ/task/:id/view
-4. 4 onglets disponibles :
+4. 3 onglets disponibles :
    - Détails : titre, description, type, statut, priorité, dates, sprint, epic, projet, createur, assigné
    - Commentaires : liste des commentaires + formulaire pour ajouter
    - Pièces jointes : liste des fichiers + bouton uploader
-   - Historique : journal des modifications
 5. Bouton "Éditer" en bas pour modifier
 ```
 
@@ -581,14 +580,6 @@ Le développeur **travaille sur les tâches**. Il peut créer, modifier et assig
 5. Pour télécharger : clique sur le nom du fichier
 ```
 
-#### Voir l'historique d'une tâche
-
-```
-1. Ouvre la tâche
-2. Clique sur l'onglet "History"
-3. L'historique affiche toutes les modifications passées
-```
-
 ### 5.5 Navigation du DEVELOPER
 
 ```
@@ -836,8 +827,7 @@ Projet
         ├── Créé par → Utilisateur
         ├── Assigné à → Utilisateur
         ├── Commentaires (Comment) ──→ Auteur (Utilisateur)
-        ├── Pièces jointes (Attachment)
-        └── Historique (TaskHistory)
+        └── Pièces jointes (Attachment)
 ```
 
 ### Statuts des entités

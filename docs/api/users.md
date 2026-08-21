@@ -206,7 +206,7 @@ Authorization: Bearer <token>
 
 **Rôle requis** : `ROLE_ADMIN`.
 
-Retourne l'utilisateur avec ses tâches assignées, ses adhésions aux projets et son activité récente (20 dernières entrées d'historique).
+Retourne l'utilisateur avec ses tâches assignées et ses adhésions aux projets.
 
 **Réponse 200 OK** (`UserAdminDetailDTO`)
 
@@ -220,7 +220,6 @@ Retourne l'utilisateur avec ses tâches assignées, ses adhésions aux projets e
 | `authorities` | `Set<String>` | Rôles globaux |
 | `tasks` | `TaskSummaryDTO[]` | Tâches assignées (titre, statut, priorité, projet, sprint, epic) |
 | `projects` | `ProjectMembershipDTO[]` | Adhésions projet (projet, `ProjectRole`, `joinedAt`) |
-| `recentActivity` | `TaskHistoryEntryDTO[]` | 20 dernières actions (action, ancienne/nouvelle valeur, date, tâche) |
 
 **Erreurs**
 

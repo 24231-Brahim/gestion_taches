@@ -41,10 +41,5 @@
             <column name="created_at" type="datetime"/>
             <column name="issue_id" type="numeric"/>
         </loadData>
-        <loadData file="config/liquibase/data/action_history.csv" separator=";" tableName="action_history">
-            <column name="id" type="numeric"/>
-            <column name="created_at" type="datetime"/>
-            <column name="issue_id" type="numeric"/>
-        </loadData>
     </changeSet>
 </databaseChangeLog>

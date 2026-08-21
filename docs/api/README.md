@@ -162,11 +162,9 @@ Un endpoint WebSocket est configuré pour les notifications temps réel :
 - [task.md](./task.md) — Tasks
 - [comment.md](./comment.md) — Comments
 - [attachment.md](./attachment.md) — Attachments
-- [task-history.md](./task-history.md) — Task Histories
 - [notification.md](./notification.md) — Notifications
 - [project-member.md](./project-member.md) — Project Members
-- [chat.md](./chat.md) — Chat (Conversations, Messages, Présence)
-- [group-message.md](./group-message.md) — Group Messages
+- [chat.md](./chat.md) — Chat (Conversations, Messages)
 
 ### Comptes, utilisateurs et autorités
 

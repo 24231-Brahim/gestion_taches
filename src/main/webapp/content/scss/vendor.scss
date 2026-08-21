@@ -1,3 +1,7 @@
-@import 'design-system';
+@use 'design-system';
+
+// Bootstrap 5.3 theming requires the classic @import override pattern
+// (its own sources still use @import internally); silence the Sass
+// deprecation until Bootstrap migrates to @use.
 @import 'bootstrap-variables';
 @import 'bootstrap/scss/bootstrap';

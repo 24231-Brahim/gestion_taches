@@ -533,8 +533,8 @@ class AttachmentResourceIT {
 
     @Test
     @Transactional
-    @WithMockUser(authorities = { "ROLE_USER" })
-    void uploadAttachment_asUser_shouldSucceed() throws Exception {
+    @WithMockUser(authorities = { "ROLE_DEVELOPER" })
+    void uploadAttachment_asDeveloper_shouldSucceed() throws Exception {
         long databaseSizeBeforeCreate = getRepositoryCount();
 
         org.springframework.mock.web.MockMultipartFile file = new org.springframework.mock.web.MockMultipartFile(
@@ -552,6 +552,17 @@ class AttachmentResourceIT {
         } else {
             task = TestUtil.findAll(em, Task.class).get(0);
         }
+
+        // Uploading requires at least view access to the task's project: make the mock "user"
+        // account (the default @WithMockUser principal) a member of it.
+        User currentUser = userRepository.findOneByLogin("user").orElseThrow();
+        ProjectMember member = new ProjectMember()
+            .project(task.getProject())
+            .user(currentUser)
+            .role(ProjectRole.MEMBER)
+            .joinedAt(Instant.now());
+        em.persist(member);
+        em.flush();
 
         restAttachmentMockMvc
             .perform(

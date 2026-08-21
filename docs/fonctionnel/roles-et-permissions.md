@@ -134,15 +134,6 @@ Légende : ✅ autorisé · ❌ refusé · 🔒 autorisé si l'utilisateur a le 
 | Tableau de bord développeur (statistiques développeur) | ✅ | ✅ | ✅ | ❌ |
 | KPIs du tableau de bord principal | ✅ | 🔒 (membres) | 🔒 (membres) | 🔒 (membres) |
 
-### Audit (TaskHistory)
-
-| Action | ADMIN (global) | PROJET_MANAGER (global) | DEVELOPER (global) | USER (global) |
-|--------|---------------|------------------------|--------------------|---------------|
-| Ajouter / modifier / supprimer une entrée d'historique | ✅ | ✅ | ✅ | ❌ |
-| Consulter l'historique d'une tâche / son propre historique | ✅ | ✅ | ✅ | ✅ |
-
-Voir [audit.md](./audit.md) pour les règles de contenu.
-
 ## Actions publiques (sans compte)
 
 - Connexion (`POST /api/authenticate`).

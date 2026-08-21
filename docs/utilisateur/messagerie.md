@@ -19,7 +19,7 @@ Le chat intégré permet de communiquer en temps réel avec les membres de votre
 
 - **Volet gauche (280 px)** : liste des conversations groupées par type
 - **Volet central** : en-tête de la conversation, liste des messages, zone de saisie
-- **Volet droit (240 px)** : liste des membres avec indicateur de présence
+- **Volet droit (240 px)** : liste des membres du projet
 
 ### Sur mobile (écran petit)
 
@@ -65,14 +65,6 @@ Le chat intégré permet de communiquer en temps réel avec les membres de votre
 Le message est alors marqué comme supprimé et son contenu est remplacé par "Message supprimé".
 
 ⚠️ Attention : la suppression est définitive. Vous ne pourrez pas récupérer le message.
-
-## Voir qui est en ligne
-
-- Dans le **volet droit**, chaque membre affiche une **pastille verte** (en ligne) ou **grise** (hors ligne) à côté de son avatar.
-- Le texte indique explicitement **"En ligne"** ou **"Hors ligne"**.
-- Dans l'en-tête de la conversation, un compteur indique le nombre de membres en ligne (ex: "2 en ligne").
-
-💡 Astuce : votre propre présence est mise à jour automatiquement toutes les 30 secondes.
 
 ## Consulter les messages précédents
 

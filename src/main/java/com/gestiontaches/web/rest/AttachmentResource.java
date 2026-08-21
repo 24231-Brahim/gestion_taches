@@ -16,7 +16,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -99,7 +98,7 @@ public class AttachmentResource {
             throw new BadRequestAlertException("File name is required", ENTITY_NAME, "filenamerequired");
         }
         String storedName = UUID.randomUUID() + "_" + originalName;
-        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Path uploadPath = Path.of(uploadDir).toAbsolutePath().normalize();
         Files.createDirectories(uploadPath);
         Path filePath = uploadPath.resolve(storedName);
         file.transferTo(filePath.toFile());
@@ -126,7 +125,7 @@ public class AttachmentResource {
         AttachmentDTO attachmentDTO = attachmentService
             .findOne(id)
             .orElseThrow(() -> new BadRequestAlertException("Attachment not found", ENTITY_NAME, "idnotfound"));
-        Path filePath = Paths.get(uploadDir).toAbsolutePath().normalize().resolve(attachmentDTO.getFilePath());
+        Path filePath = Path.of(uploadDir).toAbsolutePath().normalize().resolve(attachmentDTO.getFilePath());
         Resource resource = new UrlResource(filePath.toUri());
         if (!resource.exists() || !resource.isReadable()) {
             throw new BadRequestAlertException("File not found on disk", ENTITY_NAME, "filenotfound");

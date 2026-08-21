@@ -119,7 +119,7 @@ et `chat_message_mentions` sont retirés. La base dev est recréée à zéro (vo
 - `service/SprintService.java`
   - retirer `TaskHistoryRepository` (champ + paramètre constructeur + affectation)
   - dans `closeSprint` : supprimer le bloc de création `TaskHistory` (« TASK_MOVED_TO_BACKLOG ») (≈ lignes 241-249)
-  - remplacer `notificationService.notifyAdminsOfTaskHistory(history)` par la **notification équivalente** (§3.2.1)
+  - remplacer `notificationService.notifyAdminsOfTaskHistory(history)` par la **notification équivalente** (voir point suivant)
 - `service/NotificationService.java`
   - retirer `notifyAdminsOfTaskHistory(TaskHistory)` (lignes 149-165) + import
   - **AJOUTER** `notifyAdminsOfTaskMovedToBacklog(Task task, String oldSprintName)` :

@@ -28,14 +28,14 @@ Toutes les fonctionnalités du chat exigent d'être **membre du projet** (les `A
 | # Général | Tout membre du projet. |
 | Privée | Uniquement les **participants** de la conversation (ou ADMIN/PROJET_MANAGER globaux). |
 
-La liste des conversations affiche, pour chacune : le dernier message (extrait), le nombre de **messages non lus**, et les participants avec leur présence.
+La liste des conversations affiche, pour chacune : le dernier message (extrait), le nombre de **messages non lus**, et les participants.
 
 ## 2. Les messages
 
 ### Envoi
 
 - Contenu obligatoire, **de 1 à 5000 caractères**.
-- Envoyer un message met à jour la **présence** de l'auteur et **marque la conversation comme lue** pour lui.
+- Envoyer un message **marque la conversation comme lue** pour l'auteur.
 
 ### Consultation
 
@@ -52,19 +52,7 @@ La liste des conversations affiche, pour chacune : le dernier message (extrait),
 - Un utilisateur ne peut supprimer que **ses propres messages**.
 - La suppression est **douce** (soft delete) : le message n'est pas physiquement effacé, son contenu est remplacé par *« message deleted »*.
 
-## 3. Présence en ligne
-
-- Un membre est considéré **en ligne** si sa dernière activité remonte à **moins de 2 minutes**.
-- L'application envoie périodiquement un **signal d'activité** (heartbeat) qui rafraîchit l'horodatage de dernière activité.
-- La liste des membres du projet et la liste de présence indiquent, pour chacun : **en ligne / hors ligne**, et l'heure de dernière activité.
-
-## 4. Mentions
-
-Le message peut contenir des **mentions** de membres du projet sous la forme `@login`. Les mentions sont **détectées et enregistrées** avec le message.
-
-> **État actuel** : la détection des mentions est prévue dans l'architecture, mais aucune **notification** n'est encore émise vers les personnes mentionnées, et la fonctionnalité n'est pas reliée à l'interface graphique. Elle est donc enregistrée pour une utilisation future.
-
-## 5. Récapitulatif des actions
+## 3. Récapitulatif des actions
 
 | Action | Qui peut le faire | Règle |
 |--------|-------------------|-------|
@@ -74,5 +62,5 @@ Le message peut contenir des **mentions** de membres du projet sous la forme `@l
 | Modifier un message | **Auteur** uniquement | Le contenu est remplacé et horodaté. |
 | Supprimer un message | **Auteur** uniquement | Suppression douce, contenu remplacé. |
 | Rechercher des messages | Membre du projet | Sur les conversations accessibles. |
-| Voir les membres / leur présence | Membre du projet | Statut en ligne ≤ 2 minutes. |
+| Voir les membres du projet | Membre du projet | Avec leur rôle dans le projet. |
 | Marquer une conversation comme lue | Participant | Met à jour le compteur de non-lus. |

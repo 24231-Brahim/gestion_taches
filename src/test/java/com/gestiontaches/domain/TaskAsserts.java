@@ -1,6 +1,9 @@
 package com.gestiontaches.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+
+import java.time.temporal.ChronoUnit;
 
 public class TaskAsserts {
 
@@ -52,7 +55,14 @@ public class TaskAsserts {
             .satisfies(a -> assertThat(a.getStatus()).as("check status").isEqualTo(expected.getStatus()))
             .satisfies(a -> assertThat(a.getPriority()).as("check priority").isEqualTo(expected.getPriority()))
             .satisfies(a -> assertThat(a.getCreatedAt()).as("check createdAt").isEqualTo(expected.getCreatedAt()))
-            .satisfies(a -> assertThat(a.getUpdatedAt()).as("check updatedAt").isEqualTo(expected.getUpdatedAt()));
+            // updatedAt is overwritten by the service (Instant.now()) on update: compare within a tolerance window
+            .satisfies(a -> {
+                if (expected.getUpdatedAt() != null) {
+                    assertThat(a.getUpdatedAt()).as("check updatedAt").isCloseTo(expected.getUpdatedAt(), within(1, ChronoUnit.MINUTES));
+                } else {
+                    assertThat(a.getUpdatedAt()).as("check updatedAt").isNull();
+                }
+            });
     }
 
     /**

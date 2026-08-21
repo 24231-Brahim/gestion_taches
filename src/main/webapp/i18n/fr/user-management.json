@@ -40,9 +40,7 @@
       "noTasks": "Aucune tâche assignée",
       "projects": "Projets",
       "joinedAt": "Rejoint le",
-      "noProjects": "Aucun projet",
-      "activity": "Activité récente",
-      "noActivity": "Aucune activité récente"
+      "noProjects": "Aucun projet"
     },
     "id": "ID",
     "login": "Login",

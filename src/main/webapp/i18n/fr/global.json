@@ -17,8 +17,7 @@
         "chat": "Discussion",
         "members": "Membres",
         "comment": "Comment",
-        "attachment": "Attachment",
-        "actionHistory": "Action History"
+        "attachment": "Attachment"
       },
       "account": {
         "main": "Compte",

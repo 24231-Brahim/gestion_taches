@@ -24,7 +24,6 @@ Des fonctions transverses complètent l'outil : commentaires, pièces jointes, c
 | Commentaires & pièces jointes | Discussions et fichiers liés à une tâche | [roles-et-permissions.md](./roles-et-permissions.md) |
 | Chat | Conversations du projet (# Général + messages privés) | [chat.md](./chat.md) |
 | Notifications | Alertes en temps réel et en différé | [notifications.md](./notifications.md) |
-| Audit | Journal des actions tracées | [audit.md](./audit.md) |
 
 ## Les deux niveaux de rôles
 
@@ -52,7 +51,6 @@ Voir la matrice complète dans [roles-et-permissions.md](./roles-et-permissions.
 - Les statuts d'un **épic** et d'un **sprint** se recalculent automatiquement selon l'état des tâches qu'ils contiennent.
 - La clôture d'un sprint **repousse automatiquement** les tâches non terminées dans le backlog.
 - Un **MEMBER** ne peut modifier que les tâches qui lui sont assignées, et ne peut **jamais** en changer l'assignation.
-- L'**audit** est alimenté manuellement (actions rapportées) plus automatiquement (tâches reportées à la clôture d'un sprint) ; voir [audit.md](./audit.md).
 - Les **notifications** sont persistées, poussées en temps réel et purgées après 15 jours ; voir [notifications.md](./notifications.md).
 
 ## Navigation
@@ -62,6 +60,5 @@ Voir la matrice complète dans [roles-et-permissions.md](./roles-et-permissions.
   - [cycle-de-vie-task.md](./cycle-de-vie-task.md) — Cycle de vie des tâches et des épics
   - [cycle-de-vie-sprint.md](./cycle-de-vie-sprint.md) — Cycle de vie des sprints, backlog, vélocité
   - [notifications.md](./notifications.md) — Toutes les notifications et leurs destinataires
-  - [chat.md](./chat.md) — Conversations, messages, présence
-  - [audit.md](./audit.md) — Journal d'audit (TaskHistory)
+  - [chat.md](./chat.md) — Conversations, messages
 - **Documentation technique / API REST** : [docs/api/](../api/README.md) — endpoints, payloads, réponses.

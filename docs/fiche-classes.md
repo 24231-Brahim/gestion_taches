@@ -82,24 +82,12 @@ classDiagram
         +Instant uploadedAt
     }
 
-    class TaskHistory {
-        +String action
-        +String oldValue
-        +String newValue
-        +Instant createdAt
-    }
-
     class Notification {
         +String message
         +String taskTitle
         +Boolean isRead
         +Long relatedUserId
         +String relatedUserLogin
-        +Instant createdAt
-    }
-
-    class GroupMessage {
-        +String content
         +Instant createdAt
     }
 
@@ -119,11 +107,6 @@ classDiagram
         +Instant createdAt
         +Instant editedAt
         +Boolean deleted
-        +Set~Long~ mentions
-    }
-
-    class UserPresence {
-        +Instant lastActiveAt
     }
 
     class SprintStatus {
@@ -184,12 +167,10 @@ classDiagram
     Epic "1" --> "*" Task : catégorise
     Task "1" --> "*" Comment : reçoit
     Task "1" --> "*" Attachment : contient
-    Task "1" --> "*" TaskHistory : trace
     Task "1" --> "*" Notification : déclenche
     User "1" --> "*" Task : assigné (assignee)
     User "1" --> "*" Task : crée (createdBy)
     User "1" --> "*" Comment : écrit (author)
-    User "1" --> "*" TaskHistory : effectue
     User "1" --> "*" Notification : reçoit
     User "1" --> "*" Attachment : téléverse (uploadedBy)
     User "1" --> "*" UserAuthority : possède
@@ -201,16 +182,12 @@ classDiagram
     Task --> TaskStatus
     Epic --> Priority
     Task --> Priority
-    Project "1" --> "*" GroupMessage : contient
-    GroupMessage "*" --> "1" User : émet (sender)
-    GroupMessage "*" --> "1" User : destinataire (recipient)
     Project "1" --> "*" Conversation : contient
     Conversation "1" --> "*" ConversationMember : contient
     ConversationMember "*" --> "1" User : référence
     Conversation "1" --> "*" ChatMessage : contient
     ChatMessage "*" --> "1" User : émet (sender)
     ChatMessage "*" --> "1" ChatMessage : répond (parent)
-    User "1" --> "*" UserPresence : suivi (presence)
     Conversation --> ConversationType
 ```
 
@@ -317,16 +294,6 @@ erDiagram
         Long uploaded_by FK
     }
 
-    TASK_HISTORY {
-        Long id PK
-        String action
-        String oldValue
-        String newValue
-        Instant createdAt
-        Long task_id FK
-        Long user_id FK
-    }
-
     NOTIFICATION {
         Long id PK
         String message
@@ -337,15 +304,6 @@ erDiagram
         Long user_id FK
         Long related_user_id FK
         String related_user_login
-    }
-
-    GROUP_MESSAGE {
-        Long id PK
-        String content
-        Instant createdAt
-        Long sender_id FK
-        Long recipient_id FK
-        Long project_id FK
     }
 
     CHAT_CONVERSATION {
@@ -376,17 +334,6 @@ erDiagram
         Boolean deleted
     }
 
-    CHAT_MESSAGE_MENTIONS {
-        Long message_id FK
-        Long user_id FK
-    }
-
-    CHAT_USER_PRESENCE {
-        Long id PK
-        Long user_id FK
-        Instant lastActiveAt
-    }
-
     USER ||--o{ PROJECT : "possède (owner)"
     USER ||--o{ PROJECT_MEMBER : "référence"
     PROJECT ||--o{ PROJECT_MEMBER : "contient"
@@ -397,27 +344,20 @@ erDiagram
     EPIC ||--o{ TASK : "catégorise"
     TASK ||--o{ COMMENT : "reçoit"
     TASK ||--o{ ATTACHMENT : "contient"
-    TASK ||--o{ TASK_HISTORY : "trace"
     TASK ||--o{ NOTIFICATION : "déclenche"
     USER ||--o{ TASK : "assigné (assignee)"
     USER ||--o{ TASK : "crée (createdBy)"
     USER ||--o{ COMMENT : "écrit (author)"
     USER ||--o{ ATTACHMENT : "téléverse (uploadedBy)"
-    USER ||--o{ TASK_HISTORY : "effectue"
     USER ||--o{ NOTIFICATION : "reçoit"
     USER ||--o{ USER_AUTHORITY : "possède"
     AUTHORITY ||--o{ USER_AUTHORITY : "associé à"
-    PROJECT ||--o{ GROUP_MESSAGE : "contient"
-    USER ||--o{ GROUP_MESSAGE : "émet (sender)"
-    USER ||--o{ GROUP_MESSAGE : "destinataire (recipient)"
     PROJECT ||--o{ CHAT_CONVERSATION : "contient"
     CHAT_CONVERSATION ||--o{ CHAT_CONVERSATION_MEMBER : "contient"
     CHAT_CONVERSATION ||--o{ CHAT_MESSAGE : "contient"
     USER ||--o{ CHAT_CONVERSATION_MEMBER : "membre"
     USER ||--o{ CHAT_MESSAGE : "émet (sender)"
     CHAT_MESSAGE ||--o{ CHAT_MESSAGE : "répond (parent)"
-    CHAT_MESSAGE ||--o{ CHAT_MESSAGE_MENTIONS : "mentionne"
-    USER ||--o{ CHAT_USER_PRESENCE : "suivi (presence)"
 ```
 ---
 
@@ -566,20 +506,6 @@ Fichier joint à une tâche (capture d'écran, document, etc.). Stocke le chemin
 | `task_id` | `bigint` | FK → `task(id)`, NOT NULL |
 | `uploaded_by` | `bigint` | FK → `jhi_user(id)` |
 
-### `task_history`
-
-Trace d'audit détaillant chaque modification d'une tâche. Enregistre l'action effectuée, l'ancienne et la nouvelle valeur, ainsi que l'utilisateur ayant effectué la modification.
-
-| Colonne | Type | Contraintes |
-|---------|------|-------------|
-| `id` | `bigint` | PRIMARY KEY |
-| `action` | `varchar(100)` | NOT NULL |
-| `old_value` | `varchar(500)` | |
-| `new_value` | `varchar(500)` | |
-| `created_at` | `datetime` | NOT NULL |
-| `task_id` | `bigint` | FK → `task(id)`, NOT NULL |
-| `user_id` | `bigint` | FK → `jhi_user(id)` |
-
 ### `notification`
 
 Notification in-app pour informer un utilisateur (ex: assignation à une tâche). Contient un message, une référence vers la tâche et un statut de lecture. Les champs `related_user_id` / `related_user_login` permettent la navigation vers un utilisateur lié (ex. auteur d'une action).
@@ -595,19 +521,6 @@ Notification in-app pour informer un utilisateur (ex: assignation à une tâche)
 | `related_user_login` | `varchar(50)` | |
 | `is_read` | `boolean` | NOT NULL, default `false` |
 | `created_at` | `datetime(6)` | NOT NULL |
-
-### `group_message`
-
-Message de messagerie de groupe lié à un projet (prototype initial du chat). Contient l'expéditeur (`sender_id`) et un destinataire optionnel (`recipient_id`).
-
-| Colonne | Type | Contraintes |
-|---------|------|-------------|
-| `id` | `bigint` | PRIMARY KEY |
-| `content` | `varchar(5000)` | NOT NULL |
-| `created_at` | `datetime(6)` | |
-| `sender_id` | `bigint` | FK → `jhi_user(id)`, NOT NULL |
-| `recipient_id` | `bigint` | FK → `jhi_user(id)` |
-| `project_id` | `bigint` | FK → `project(id)`, NOT NULL |
 
 ### `chat_conversation`
 
@@ -637,7 +550,7 @@ Association entre une conversation et un utilisateur. Porte l'horodatage de dern
 
 ### `chat_message`
 
-Message à l'intérieur d'une conversation. Supporte les fils de discussion (`parent_message_id`), les mentions (`chat_message_mentions`) et la suppression logique (`deleted`).
+Message à l'intérieur d'une conversation. Supporte les fils de discussion (`parent_message_id`) et la suppression logique (`deleted`).
 
 | Colonne | Type | Contraintes |
 |---------|------|-------------|
@@ -649,25 +562,6 @@ Message à l'intérieur d'une conversation. Supporte les fils de discussion (`pa
 | `created_at` | `datetime` | NOT NULL |
 | `edited_at` | `datetime` | |
 | `deleted` | `boolean` | NOT NULL, default `false` |
-
-### `chat_message_mentions`
-
-Table de jointure (collection) entre un message et les identifiants d'utilisateurs mentionnés (`@login`).
-
-| Colonne | Type | Contraintes |
-|---------|------|-------------|
-| `message_id` | `bigint` | FK → `chat_message(id)`, NOT NULL |
-| `user_id` | `bigint` | FK → `jhi_user(id)` |
-
-### `chat_user_presence`
-
-Marqueur de présence d'un utilisateur pour le chat. Une ligne par utilisateur avec la date de sa dernière activité. Un utilisateur est considéré en ligne si `last_active_at` est récent (fenêtre configurée dans `ChatService`).
-
-| Colonne | Type | Contraintes |
-|---------|------|-------------|
-| `id` | `bigint` | PRIMARY KEY |
-| `user_id` | `bigint` | FK → `jhi_user(id)`, NOT NULL, UNIQUE |
-| `last_active_at` | `datetime` | NOT NULL |
 
 ---
 
@@ -688,21 +582,17 @@ Marqueur de présence d'un utilisateur pour le chat. Une ligne par utilisateur a
 
 | Table | Dépend de | Est utilisé par |
 |-------|-----------|-----------------|
-| jhi_user | — | Project (owner), ProjectMember, Task (assignee, createdBy), Comment (author), Attachment (uploadedBy), TaskHistory (user), Notification (user, relatedUser), GroupMessage (sender, recipient), Conversation (createdBy), ConversationMember (user), ChatMessage (sender), UserPresence (user) |
+| jhi_user | — | Project (owner), ProjectMember, Task (assignee, createdBy), Comment (author), Attachment (uploadedBy), Notification (user, relatedUser), Conversation (createdBy), ConversationMember (user), ChatMessage (sender) |
 | jhi_authority | — | jhi_user_authority |
 | jhi_user_authority | jhi_user, jhi_authority | — |
-| project | jhi_user (owner) | Sprint, Epic, Task, ProjectMember, GroupMessage, Conversation |
+| project | jhi_user (owner) | Sprint, Epic, Task, ProjectMember, Conversation |
 | project_member | project, jhi_user | — |
 | sprint | project | Task |
 | epic | project | Task |
-| task | project, sprint, epic, jhi_user (assignee, createdBy) | Comment, Attachment, TaskHistory, Notification |
+| task | project, sprint, epic, jhi_user (assignee, createdBy) | Comment, Attachment, Notification |
 | comment | task, jhi_user (author) | — |
 | attachment | task, jhi_user (uploadedBy) | — |
-| task_history | task, jhi_user (user) | — |
 | notification | task, jhi_user (user, relatedUser) | — |
-| group_message | project, jhi_user (sender, recipient) | — |
 | chat_conversation | project, jhi_user (createdBy) | ConversationMember, ChatMessage |
 | chat_conversation_member | chat_conversation, jhi_user | — |
-| chat_message | chat_conversation, jhi_user (sender), chat_message (parent) | chat_message_mentions |
-| chat_message_mentions | chat_message, jhi_user | — |
-| chat_user_presence | jhi_user | — |
+| chat_message | chat_conversation, jhi_user (sender), chat_message (parent) | — |

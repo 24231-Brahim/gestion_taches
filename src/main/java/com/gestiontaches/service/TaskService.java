@@ -451,7 +451,7 @@ public class TaskService {
     private void checkAndNotifyTaskChanges(Task oldTask, Task newTask) {
         String currentLogin = SecurityUtils.getCurrentUserLogin().orElse(null);
 
-        // 1. Check Assignee Change
+        // Check Assignee Change (status changes are handled by notifyStatusChangeIfNeeded)
         User oldAssignee = oldTask != null ? oldTask.getAssignee() : null;
         User newAssignee = newTask.getAssignee();
         if (newAssignee != null && (oldAssignee == null || !oldAssignee.getId().equals(newAssignee.getId()))) {
@@ -462,23 +462,6 @@ public class TaskService {
                     newTask.getTitle(),
                     newTask
                 );
-            }
-        }
-
-        // 2. Check Status Change
-        TaskStatus oldStatus = oldTask != null ? oldTask.getStatus() : null;
-        TaskStatus newStatus = newTask.getStatus();
-        if (newStatus != null && oldStatus != null && !oldStatus.equals(newStatus)) {
-            User currentAssignee = newTask.getAssignee();
-            if (currentAssignee != null) {
-                if (currentLogin == null || !currentLogin.equals(currentAssignee.getLogin())) {
-                    notificationService.createNotification(
-                        currentAssignee,
-                        "Le statut de la tâche \"" + newTask.getTitle() + "\" a changé pour " + newStatus,
-                        newTask.getTitle(),
-                        newTask
-                    );
-                }
             }
         }
     }

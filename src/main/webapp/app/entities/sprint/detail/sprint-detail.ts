@@ -10,7 +10,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
 import { FormatMediumDatePipe } from 'app/shared/date';
-import { TranslateDirective } from 'app/shared/language';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
 import { ITEM_DELETED_EVENT } from 'app/config/navigation.constants';
 import { TaskService } from 'app/entities/task/service/task.service';
@@ -216,7 +215,7 @@ type Tab = 'board' | 'tasks' | 'timeline';
       }
     `,
   ],
-  imports: [RouterLink, FontAwesomeModule, TranslateDirective, TranslateModule, FormatMediumDatePipe, SprintActiveBoard, SprintTimeline],
+  imports: [RouterLink, FontAwesomeModule, TranslateModule, FormatMediumDatePipe, SprintActiveBoard, SprintTimeline],
 })
 export class SprintDetail {
   readonly sprint = input<ISprint | null>(null);

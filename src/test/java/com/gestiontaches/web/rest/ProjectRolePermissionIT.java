@@ -316,7 +316,7 @@ class ProjectRolePermissionIT {
     // --- Task creation tests ---
 
     @Test
-    @WithMockUser(username = "owner-user")
+    @WithMockUser(username = "owner-user", authorities = { "ROLE_DEVELOPER" })
     @Transactional
     void owner_can_create_task() throws Exception {
         TaskDTO dto = new TaskDTO();
@@ -335,7 +335,7 @@ class ProjectRolePermissionIT {
     }
 
     @Test
-    @WithMockUser(username = "member-user")
+    @WithMockUser(username = "member-user", authorities = { "ROLE_DEVELOPER" })
     @Transactional
     void member_can_create_task() throws Exception {
         // Any project member (DEVELOPER/USER with a MEMBER project role) may create tasks.

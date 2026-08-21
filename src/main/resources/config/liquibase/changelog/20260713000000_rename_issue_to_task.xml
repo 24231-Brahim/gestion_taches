@@ -56,8 +56,11 @@
         <addForeignKeyConstraint baseTableName="attachment" baseColumnNames="task_id" constraintName="fk_attachment_task_id" referencedTableName="task" referencedColumnNames="id"/>
     </changeSet>
 
-    <!-- Drop the action_history table (not in target schema) -->
+    <!-- Drop the action_history table if it exists (legacy schema cleanup) -->
     <changeSet id="20260713000000-14" author="jhipster">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="action_history"/>
+        </preConditions>
         <dropTable tableName="action_history"/>
     </changeSet>
 

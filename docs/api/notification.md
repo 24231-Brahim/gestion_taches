@@ -23,7 +23,7 @@ Base URL : `http://localhost:8080/api/notifications`
 |-----------|-----------------|
 | Création de sprint | Tous les membres du projet (sauf l'initiateur) |
 | Démarrage de sprint | Tous les membres du projet (sauf l'initiateur) |
-| Clôture de sprint (tâches non DONE déplacées) | Admins (via TaskHistory) |
+| Clôture de sprint (tâches non DONE déplacées) | Admins |
 | Assignation de tâche | Utilisateur assigné |
 | Changement de statut de tâche | Assigné (s'il n'est pas l'initiateur) |
 | Passage à DONE (créateur/admin) | Créateur si `ROLE_ADMIN` |

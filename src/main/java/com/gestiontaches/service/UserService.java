@@ -173,6 +173,7 @@ public class UserService {
         if (existingUser.isActivated()) {
             return false;
         }
+        deleteUserReferences(existingUser);
         userRepository.delete(existingUser);
         userRepository.flush();
         this.clearUserCaches(existingUser);
@@ -289,20 +290,24 @@ public class UserService {
                     throw new LastAdminException();
                 }
             }
-            Long userId = user.getId();
-            notificationRepository.deleteByUser_IdOrRelatedUserId(userId, userId);
-            projectMemberRepository.deleteByUserId(userId);
-            taskRepository.unassignTasksByUserId(userId);
-            taskRepository.nullifyCreatedBy(userId);
-            commentRepository.nullifyAuthor(userId);
-            attachmentRepository.nullifyUploadedBy(userId);
-            chatMessageRepository.deleteBySenderId(userId);
-            conversationMemberRepository.deleteByUserId(userId);
-            conversationRepository.nullifyCreatedBy(userId);
+            deleteUserReferences(user);
             userRepository.delete(user);
             this.clearUserCaches(user);
             LOG.debug("Deleted User: {}", user);
         });
+    }
+
+    private void deleteUserReferences(User user) {
+        Long userId = user.getId();
+        notificationRepository.deleteByUser_IdOrRelatedUserId(userId, userId);
+        projectMemberRepository.deleteByUserId(userId);
+        taskRepository.unassignTasksByUserId(userId);
+        taskRepository.nullifyCreatedBy(userId);
+        commentRepository.nullifyAuthor(userId);
+        attachmentRepository.nullifyUploadedBy(userId);
+        chatMessageRepository.deleteBySenderId(userId);
+        conversationMemberRepository.deleteByUserId(userId);
+        conversationRepository.nullifyCreatedBy(userId);
     }
 
     /**
@@ -378,6 +383,7 @@ public class UserService {
             .findAllByActivatedIsFalseAndActivationKeyIsNotNullAndCreatedDateBefore(Instant.now().minus(3, ChronoUnit.DAYS))
             .forEach(user -> {
                 LOG.debug("Deleting not activated user {}", user.getLogin());
+                deleteUserReferences(user);
                 userRepository.delete(user);
                 this.clearUserCaches(user);
             });

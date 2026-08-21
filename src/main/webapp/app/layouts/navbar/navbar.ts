@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnDestroy, effect, inject, signal } from '@angular/core';
 import { DatePipe, NgOptimizedImage } from '@angular/common';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
@@ -24,7 +24,6 @@ import { TranslateDirective } from 'app/shared/language';
   styleUrl: './navbar.scss',
   imports: [
     RouterLink,
-    RouterLinkActive,
     FontAwesomeModule,
     NgbDropdown,
     NgbDropdownMenu,

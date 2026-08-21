@@ -155,16 +155,20 @@ class NotificationTriggersIT {
 
         notificationRepository.deleteAll();
 
-        // Change status (logged in as adminUser)
+        // Change status to DONE (logged in as adminUser): only DONE transitions notify, admins only
         setupSecurityContext(adminUser);
         TaskDTO dto = new TaskDTO();
         dto.setId(task.getId());
-        dto.setStatus(TaskStatus.IN_PROGRESS);
+        dto.setStatus(TaskStatus.DONE);
         taskService.partialUpdate(dto);
 
-        List<Notification> notifications = notificationRepository.findByUser_idOrderByCreatedAtDesc(devUser1.getId());
+        // The admin creator is notified
+        List<Notification> notifications = notificationRepository.findByUser_idOrderByCreatedAtDesc(adminUser.getId());
         assertThat(notifications).hasSize(1);
-        assertThat(notifications.get(0).getMessage()).contains("statut");
+        assertThat(notifications.get(0).getMessage()).contains("DONE");
+
+        // The non-admin assignee is not notified
+        assertThat(notificationRepository.findByUser_idOrderByCreatedAtDesc(devUser1.getId())).isEmpty();
     }
 
     @Test

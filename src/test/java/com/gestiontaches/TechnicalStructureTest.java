@@ -2,6 +2,7 @@ package com.gestiontaches;
 
 import static com.tngtech.archunit.base.DescribedPredicate.alwaysTrue;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf;
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
 import static com.tngtech.archunit.library.Architectures.layeredArchitecture;
 
 import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests;
@@ -34,5 +35,7 @@ class TechnicalStructureTest {
         .ignoreDependency(alwaysTrue(), belongToAnyOf(
             com.gestiontaches.config.Constants.class,
             com.gestiontaches.config.ApplicationProperties.class
-        ));
+        ))
+        // Known deviation: services throw web-layer exceptions (BadRequestAlertException & co.)
+        .ignoreDependency(resideInAPackage("..service.."), resideInAPackage("..web.rest.errors.."));
 }

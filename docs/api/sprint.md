@@ -340,7 +340,7 @@ Authorization: Bearer <token>
 
 **Rôle requis** : `ROLE_ADMIN`, `ROLE_PROJET_MANAGER` ou `ROLE_USER` (doit être `OWNER`/`MANAGER` du projet)
 
-Passe le statut de `ACTIVE` à `COMPLETED`. Les tâches non `DONE` sont déplacées vers le backlog et un historique est créé. Un rapport de vélocité est retourné.
+Passe le statut de `ACTIVE` à `COMPLETED`. Les tâches non `DONE` sont déplacées vers le backlog et les administrateurs sont notifiés. Un rapport de vélocité est retourné.
 
 **Réponse 200 OK**
 

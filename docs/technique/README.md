@@ -40,6 +40,6 @@ Le projet a été généré avec **JHipster 9.1.0**. Le modèle de domaine est d
 ### Conventions de nommage
 
 - Packages Java : `com.gestiontaches.{couche}` (`domain`, `repository`, `service`, `web.rest`, `config`, `security`)
-- Tables PostgreSQL : snake_case (ex: `chat_message`, `task_history`)
-- Entités JPA : PascalCase correspondant (ex: `ChatMessage`, `TaskHistory`)
+- Tables PostgreSQL : snake_case (ex: `chat_message`, `project_member`)
+- Entités JPA : PascalCase correspondant (ex: `ChatMessage`, `ProjectMember`)
 - Composants Angular : kebab-case avec préfixe `jhi-` (ex: `jhi-task-detail-panel`)

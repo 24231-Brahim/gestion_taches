@@ -15,13 +15,11 @@ erDiagram
 
     TASK ||--o{ COMMENT : "a pour commentaires"
     TASK ||--o{ ATTACHMENT : "a pour pièces jointes"
-    TASK ||--o{ TASK_HISTORY : "a pour historique"
     TASK }o--o| USER : "assigné à"
     TASK }|--|| USER : "créé par (createdBy)"
 
     COMMENT }|--|| USER : "écrit par (author)"
     ATTACHMENT }o--o| USER : "uploadé par (uploadedBy)"
-    TASK_HISTORY }o--o| USER : "action effectuée par"
 
     NOTIFICATION }|--|| USER : "destinataire"
     NOTIFICATION }o--o| TASK : "liée à"
@@ -42,11 +40,9 @@ erDiagram
         Instant joinedAt
         Instant lastReadAt
     }
-    CHAT_MESSAGE }o--o{ USER : "mentions (user_ids)"
-    USER_PRESENCE }|--|| USER : "pour"
 ```
 
-> **Note** : le diagramme ci-dessus fusionne le modèle JDL (`project-management.jdl`) avec les entités chat ajoutées manuellement (`Conversation`, `ConversationMember`, `ChatMessage`, `UserPresence`).
+> **Note** : le diagramme ci-dessus fusionne le modèle JDL (`project-management.jdl`) avec les entités chat ajoutées manuellement (`Conversation`, `ConversationMember`, `ChatMessage`).
 
 ## Entités principales
 
@@ -126,7 +122,6 @@ erDiagram
 - `* ── 0..1 Epic`
 - `1 ── * Comment`
 - `1 ── * Attachment`
-- `1 ── * TaskHistory`
 
 ### Comment
 
@@ -148,18 +143,6 @@ erDiagram
 | `uploadedAt` | `Instant` | `@NotNull` | Date d'upload |
 | `task` | `Task` | ManyToOne (required) | Tâche associée |
 | `uploadedBy` | `User` | ManyToOne (LAZY) | Uploadé par |
-
-### TaskHistory
-
-| Attribut | Type | Contraintes | Description |
-|----------|------|-------------|-------------|
-| `id` | `Long` | PK, auto-généré | Identifiant |
-| `task` | `Task` | ManyToOne (required) | Tâche concernée |
-| `user` | `User` | ManyToOne (LAZY) | Utilisateur ayant effectué l'action |
-| `action` | `String` | `@NotNull @Size(max=100)` | Type d'action (ex: `STATUS_CHANGED`) |
-| `oldValue` | `String` | `@Size(max=500)` | Ancienne valeur |
-| `newValue` | `String` | `@Size(max=500)` | Nouvelle valeur |
-| `createdAt` | `Instant` | `@NotNull` | Date de l'action |
 
 ### Notification
 
@@ -228,20 +211,11 @@ erDiagram
 | `createdAt` | `Instant` | `@NotNull` | Date d'envoi |
 | `editedAt` | `Instant` | — | Date de modification |
 | `deleted` | `Boolean` | `@NotNull`, défaut `false` | Suppression douce |
-| `mentions` | `Set<Long>` | ElementCollection | IDs des utilisateurs mentionnés |
 
 **Relations** :
 - `* ── 1 Conversation`
 - `* ── 1 User (sender)`
 - `* ── 0..1 ChatMessage (parent)`
-
-#### UserPresence
-
-| Attribut | Type | Contraintes | Description |
-|----------|------|-------------|-------------|
-| `id` | `Long` | PK, auto-généré | Identifiant |
-| `user` | `User` | ManyToOne (required) | Utilisateur |
-| `lastActiveAt` | `Instant` | `@NotNull` | Dernière activité |
 
 ## Enums
 
@@ -346,4 +320,3 @@ Les seules règles indirectes :
 - **Attachment** : le nom de fichier stocké est préfixé par un UUID (`UUID.randomUUID() + "_" + originalName`).
 - **ChatMessage** : suppression douce (`deleted = true`), les messages ne sont jamais physiquement supprimés.
 - **Notification** : purge automatique quotidienne à 3h des notifications de plus de 15 jours (`@Scheduled`).
-- **TaskHistory** : créé automatiquement lors des déplacements de tâches (ex: sprint → backlog lors de la clôture de sprint).

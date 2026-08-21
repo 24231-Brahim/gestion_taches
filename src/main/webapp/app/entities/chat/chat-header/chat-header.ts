@@ -4,7 +4,6 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
 import { ConversationType } from 'app/entities/enumerations/conversation-type.model';
-import { TranslateDirective } from 'app/shared/language';
 
 import { IChatMember, IConversation } from '../chat.model';
 
@@ -13,7 +12,7 @@ import { IChatMember, IConversation } from '../chat.model';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './chat-header.html',
   styleUrl: './chat-header.scss',
-  imports: [FontAwesomeModule, TranslateModule, TranslateDirective],
+  imports: [FontAwesomeModule, TranslateModule],
 })
 export class ChatHeader {
   readonly conversation = input<IConversation | null>(null);

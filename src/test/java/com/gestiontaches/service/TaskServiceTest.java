@@ -14,6 +14,9 @@ import com.gestiontaches.domain.Task;
 import com.gestiontaches.domain.User;
 import com.gestiontaches.domain.enumeration.ProjectRole;
 import com.gestiontaches.domain.enumeration.TaskStatus;
+import com.gestiontaches.repository.AttachmentRepository;
+import com.gestiontaches.repository.CommentRepository;
+import com.gestiontaches.repository.NotificationRepository;
 import com.gestiontaches.repository.ProjectMemberRepository;
 import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
@@ -51,6 +54,15 @@ class TaskServiceTest {
 
     @Mock
     private ProjectPermissionService projectPermissionService;
+
+    @Mock
+    private CommentRepository commentRepository;
+
+    @Mock
+    private AttachmentRepository attachmentRepository;
+
+    @Mock
+    private NotificationRepository notificationRepository;
 
     @Mock
     private NotificationService notificationService;

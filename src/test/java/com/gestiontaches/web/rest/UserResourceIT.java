@@ -83,6 +83,8 @@ class UserResourceIT {
 
     private Long numberOfUsers;
 
+    private final List<String> demotedAdminLogins = new ArrayList<>();
+
     @BeforeEach
     void countUsers() {
         numberOfUsers = userRepository.count();
@@ -124,6 +126,19 @@ class UserResourceIT {
 
     @AfterEach
     void cleanupAndCheck() {
+        // Re-promote the admins demoted by deleteUserCannotDeleteLastAdmin FIRST: that test
+        // leaves "admin-to-delete" as the sole remaining admin, so the deletions below would
+        // otherwise fail with LastAdminException.
+        for (String login : demotedAdminLogins) {
+            userRepository.findOneByLogin(login).ifPresent(u -> {
+                u.getAuthorities().clear();
+                Authority adminAuth = new Authority();
+                adminAuth.setName(AuthoritiesConstants.ADMIN);
+                u.getAuthorities().add(adminAuth);
+                userRepository.saveAndFlush(u);
+            });
+        }
+        demotedAdminLogins.clear();
         userService.deleteUser(DEFAULT_LOGIN);
         userService.deleteUser(UPDATED_LOGIN);
         userService.deleteUser(user.getLogin());
@@ -131,18 +146,6 @@ class UserResourceIT {
         userService.deleteUser("self-delete-user");
         userService.deleteUser("admin-to-delete");
         userService.deleteUser("admin-deleter");
-        // Restore any modified admin users
-        userRepository
-            .findAllByAuthorityNames(List.of(AuthoritiesConstants.USER))
-            .stream()
-            .filter(u -> u.getLogin().startsWith("admin-to-delete"))
-            .forEach(u -> {
-                u.getAuthorities().clear();
-                Authority adminAuth = new Authority();
-                adminAuth.setName(AuthoritiesConstants.ADMIN);
-                u.getAuthorities().add(adminAuth);
-                userRepository.saveAndFlush(u);
-            });
         assertThat(userRepository.count()).isEqualTo(numberOfUsers);
         numberOfUsers = null;
         cacheManager
@@ -554,6 +557,7 @@ class UserResourceIT {
         List<User> allAdmins = userRepository.findAllByAuthorityNames(List.of(AuthoritiesConstants.ADMIN));
         for (User existingAdmin : allAdmins) {
             if (!existingAdmin.getLogin().equals("admin-to-delete")) {
+                demotedAdminLogins.add(existingAdmin.getLogin());
                 existingAdmin.getAuthorities().clear();
                 Authority userAuth = new Authority();
                 userAuth.setName(AuthoritiesConstants.USER);

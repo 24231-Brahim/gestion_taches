@@ -67,9 +67,8 @@ La clôture se fait uniquement depuis un sprint `ACTIVE`. Elle produit un **bila
 **Comportement à la clôture** :
 
 1. Toutes les tâches **non `DONE`** sont **retirées du sprint** et repoussées dans le **backlog** (elles restent dans le projet, sans sprint).
-2. Chaque tâche reportée fait l'objet d'une **entrée d'audit** `TASK_MOVED_TO_BACKLOG` (voir [audit.md](./audit.md)).
-3. Tous les **administrateurs sont notifiés** de ces déplacements.
-4. Le sprint passe en `COMPLETED`.
+2. Tous les **administrateurs sont notifiés** de ces déplacements (`TASK_MOVED_TO_BACKLOG`).
+3. Le sprint passe en `COMPLETED`.
 
 ## 5. Recalcul automatique du statut
 

@@ -189,7 +189,7 @@ public class SprintService {
             sprint.getProject().getId(),
             SprintStatus.ACTIVE
         );
-        if (existingActive.isPresent() && !existingActive.get().getId().equals(sprintId)) {
+        if (existingActive.isPresent() && !existingActive.orElseThrow().getId().equals(sprintId)) {
             throw new BadRequestAlertException("A project can only have one active sprint at a time", "sprint", "activeexists");
         }
 

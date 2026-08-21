@@ -1,7 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, Signal, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -26,7 +25,6 @@ import { ProjectFormGroup, ProjectFormService } from '../update/project-form.ser
   imports: [
     FormsModule,
     ReactiveFormsModule,
-    RouterLink,
     FontAwesomeModule,
     Alert,
     AlertError,
