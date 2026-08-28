@@ -21,7 +21,10 @@
         "title": "Tâche",
         "comments": "Commentaires",
         "noComments": "Aucun commentaire pour le moment.",
-        "attachments": "Pièces jointes",
+        "attachments": {
+          "title": "Pièces jointes",
+          "dropzone": "Glissez un fichier ici ou cliquez pour parcourir"
+        },
         "noAttachments": "Aucune pièce jointe pour le moment.",
         "tab": {
           "details": "Détails",
@@ -34,7 +37,6 @@
       "description": "Description",
       "status": "Status",
       "priority": "Priority",
-      "storyPoints": "Story Points",
       "createdAt": "Created At",
       "updatedAt": "Updated At",
       "comments": "Comments",
@@ -43,7 +45,10 @@
       "epic": "Epic",
       "project": "Project",
       "assignee": "Assigné",
-      "createdBy": "Créé par"
+      "createdBy": "Créé par",
+      "error": {
+        "noProject": "Aucun projet sélectionné"
+      }
     }
   }
 }

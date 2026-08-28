@@ -16,7 +16,9 @@
       "IN_PROGRESS": "قيد الإنجاز",
       "IN_REVIEW": "قيد المراجعة",
       "DONE": "مكتمل",
-      "CANCELLED": "ملغى"
+      "CANCELLED": "ملغى",
+      "READY_FOR_TEST": "جاهز للاختبار",
+      "NEEDS_INFO": "بحاجة لمعلومات"
     }
   }
 }

@@ -42,7 +42,11 @@
         "removed": "Membre retiré du projet",
         "updated": "Rôle du membre mis à jour",
         "userLogin": "Utilisateur",
-        "role": "Rôle",
+        "role": {
+          "OWNER": "Propriétaire",
+          "MANAGER": "Gestionnaire",
+          "MEMBER": "Membre"
+        },
         "joinedAt": "Date d'ajout",
         "selectUser": "Sélectionner un utilisateur",
         "empty": "Aucun membre pour le moment",
@@ -51,7 +55,21 @@
           "add": "Erreur lors de l'ajout du membre",
           "remove": "Erreur lors du retrait du membre",
           "update": "Erreur lors de la mise à jour du rôle"
-        }
+        },
+        "roleLabel": "Rôle"
+      },
+      "settings": {
+        "title": "Paramètres",
+        "forbidden": "Vous n'avez pas accès aux paramètres de ce projet.",
+        "information": "Informations générales",
+        "nameRequired": "Le nom est requis.",
+        "descriptionPlaceholder": "Décrivez l'objectif du projet...",
+        "keyHint": "Identifiant unique court (2-10 caractères)."
+      },
+      "tab": {
+        "details": "Détails",
+        "members": "Membres",
+        "discussion": "Discussion"
       }
     }
   }

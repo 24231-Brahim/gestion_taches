@@ -40,6 +40,11 @@
     "timeline": {
       "title": "Recent activity"
     },
+    "timeTracking": {
+      "title": "Time Tracking",
+      "byUser": "By User",
+      "byProject": "By Project"
+    },
     "quickActions": {
       "title": "Quick actions",
       "newProject": "New Project",

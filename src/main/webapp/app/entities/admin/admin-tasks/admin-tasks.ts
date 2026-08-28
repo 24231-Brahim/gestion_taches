@@ -6,7 +6,7 @@ import { HttpResponse } from '@angular/common/http';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { Alert } from 'app/shared/alert/alert';
@@ -70,6 +70,7 @@ export class AdminTasks implements OnInit {
   private readonly router = inject(Router);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly sortService = inject(SortService);
+  private readonly translateService = inject(TranslateService);
 
   ngOnInit(): void {
     this.activatedRoute.queryParamMap.subscribe((params: ParamMap) => {
@@ -122,27 +123,18 @@ export class AdminTasks implements OnInit {
 
   getStatusLabel(status: string | null | undefined): string {
     if (!status) return '';
-    const map: Record<string, string> = {
-      NEW: 'Nouveau',
-      TODO: 'A faire',
-      IN_PROGRESS: 'En cours',
-      IN_REVIEW: 'En revue',
-      DONE: 'Terminé',
-      CANCELLED: 'Annulé',
-    };
-    return map[status] ?? status;
+    return this.translateEnumKey('gestionTachesApp.TaskStatus', status);
   }
 
   getPriorityLabel(priority: string | null | undefined): string {
     if (!priority) return '';
-    const map: Record<string, string> = {
-      LOWEST: 'Très bas',
-      LOW: 'Bas',
-      MEDIUM: 'Moyen',
-      HIGH: 'Haut',
-      HIGHEST: 'Très haut',
-    };
-    return map[priority] ?? priority;
+    return this.translateEnumKey('gestionTachesApp.Priority', priority);
+  }
+
+  private translateEnumKey(prefix: string, value: string): string {
+    const key = `${prefix}.${value}`;
+    const translated = this.translateService.instant(key);
+    return translated === key ? value : translated;
   }
 
   protected fillComponentAttributeFromRoute(params: ParamMap): void {

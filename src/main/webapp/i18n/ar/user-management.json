@@ -68,7 +68,11 @@
       "status": "الحالة",
       "priority": "الأولوية",
       "assignee": "المُعيَّن له",
-      "createdAt": "تاريخ الإنشاء"
+      "createdAt": "تاريخ الإنشاء",
+      "allPriorities": "جميع الأولويات",
+      "allStatuses": "جميع الحالات",
+      "resetFilters": "إعادة تعيين الفلاتر",
+      "searchPlaceholder": "البحث حسب عنوان المهمة..."
     },
     "adminProjectMembers": {
       "title": "جميع الأعضاء",

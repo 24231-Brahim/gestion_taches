@@ -175,7 +175,9 @@
       "notSet": "Non défini",
       "notAssigned": "Non assigné",
       "unassigned": "Non assigné",
-      "noNotifications": "Aucune notification"
+      "noNotifications": "Aucune notification",
+      "viewAllNotifications": "Voir tout",
+      "markAllAsRead": "Tout marquer comme lu"
     }
   },
   "footer": "Ceci est votre pied de page"

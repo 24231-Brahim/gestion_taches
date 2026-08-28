@@ -28,6 +28,9 @@
           <button type="button" (click)="openEditSprintModal(sp)" class="btn btn-outline-primary btn-sm">
             <fa-icon icon="pencil" /> {{ 'entity.action.edit' | translate }}
           </button>
+          <button type="button" (click)="openDeleteSprintModal(sp)" class="btn btn-outline-danger btn-sm">
+            <fa-icon icon="trash" /> {{ 'entity.action.delete' | translate }}
+          </button>
         }
       }
     </div>

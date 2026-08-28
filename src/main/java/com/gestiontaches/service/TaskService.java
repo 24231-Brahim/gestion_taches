@@ -13,6 +13,8 @@ import com.gestiontaches.repository.TaskRepository;
 import com.gestiontaches.repository.UserRepository;
 import com.gestiontaches.security.AuthoritiesConstants;
 import com.gestiontaches.security.SecurityUtils;
+import com.gestiontaches.service.dto.EntityChangeEvent;
+import com.gestiontaches.service.dto.EntityEventType;
 import com.gestiontaches.service.dto.NotificationDTO;
 import com.gestiontaches.service.dto.TaskDTO;
 import com.gestiontaches.service.mapper.TaskMapper;
@@ -59,6 +61,8 @@ public class TaskService {
 
     private final EpicService epicService;
 
+    private final EntityEventSseService entityEventSseService;
+
     public TaskService(
         TaskRepository taskRepository,
         TaskMapper taskMapper,
@@ -70,7 +74,8 @@ public class TaskService {
         ProjectPermissionService projectPermissionService,
         NotificationService notificationService,
         SprintService sprintService,
-        EpicService epicService
+        EpicService epicService,
+        EntityEventSseService entityEventSseService
     ) {
         this.taskRepository = taskRepository;
         this.taskMapper = taskMapper;
@@ -83,6 +88,7 @@ public class TaskService {
         this.notificationService = notificationService;
         this.sprintService = sprintService;
         this.epicService = epicService;
+        this.entityEventSseService = entityEventSseService;
     }
 
     /**
@@ -120,6 +126,7 @@ public class TaskService {
         task = taskRepository.save(task);
         recalculateParentStatuses(task);
         checkAndNotifyTaskChanges(oldTask, task);
+        publishEvent(task, oldTask == null ? EntityEventType.CREATED : EntityEventType.UPDATED);
         return taskMapper.toDto(task);
     }
 
@@ -181,6 +188,7 @@ public class TaskService {
                 notifyStatusChangeIfNeeded(existingTask, savedTask, oldStatus);
                 recalculateParentStatuses(oldSprintId, oldEpicId, savedTask);
                 checkAndNotifyTaskChanges(oldTask, savedTask);
+                publishEvent(savedTask, EntityEventType.UPDATED);
                 return savedTask;
             })
             .map(taskMapper::toDto);
@@ -414,6 +422,13 @@ public class TaskService {
         attachmentRepository.deleteByTaskId(id);
         taskRepository.deleteById(id);
         recalculateParentStatuses(task, null);
+        Long projectId = task.getProject() != null ? task.getProject().getId() : null;
+        entityEventSseService.sendEvent(new EntityChangeEvent(EntityEventType.ENTITY_TASK, EntityEventType.DELETED, id, projectId));
+    }
+
+    private void publishEvent(Task task, String eventType) {
+        Long projectId = task.getProject() != null ? task.getProject().getId() : null;
+        entityEventSseService.sendEvent(new EntityChangeEvent(EntityEventType.ENTITY_TASK, eventType, task.getId(), projectId));
     }
 
     /**

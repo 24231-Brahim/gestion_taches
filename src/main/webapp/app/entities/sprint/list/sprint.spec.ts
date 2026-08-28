@@ -142,6 +142,17 @@ describe('Sprint Component', () => {
     expect(modalOpen).toHaveBeenCalled();
   });
 
+  it('should open delete sprint modal', () => {
+    const modalOpen = vitest.spyOn(modalService, 'open').mockReturnValue({
+      componentInstance: {},
+      closed: new Subject(),
+    } as any);
+
+    const sprint: ISprint = { id: 1, name: 'Sprint 1', status: 'PLANNED' };
+    comp.openDeleteSprintModal(sprint);
+    expect(modalOpen).toHaveBeenCalled();
+  });
+
   it('should close velocity report modal', () => {
     comp.velocityReport.set({ tachesPrevues: 10, tachesTerminees: 8, pourcentage: 80, tachesReportees: 2 });
     comp.showVelocityModal.set(true);
@@ -210,6 +221,18 @@ describe('Sprint Component', () => {
     ]);
     fixture.detectChanges();
     expect(comp.sprintProgress()).toBe(100);
+  });
+
+  it('should compute story points totals from tasks', () => {
+    comp.tasks.set([
+      { id: 1, title: 'Task 1', status: 'DONE', storyPoints: 3 },
+      { id: 2, title: 'Task 2', status: 'IN_PROGRESS', storyPoints: 5 },
+      { id: 3, title: 'Task 3', status: 'DONE', storyPoints: null },
+      { id: 4, title: 'Task 4', status: 'TODO', storyPoints: 2 },
+    ]);
+    fixture.detectChanges();
+    expect(comp.totalStoryPoints()).toBe(10);
+    expect(comp.doneStoryPoints()).toBe(3);
   });
 
   it('should navigate to the task detail page when a task is selected', () => {

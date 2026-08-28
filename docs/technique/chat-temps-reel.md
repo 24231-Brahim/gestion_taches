@@ -149,9 +149,9 @@ Un message peut répondre à un autre via `parentMessageId` :
 
 Bien que le chat utilise du polling REST, des événements SSE existent pour d'autres entités :
 
-- `GET /api/events/stream` — Événements de changement d'entité (project, sprint, epic) via `EntityEventSseService`.
+- `GET /api/events/stream` — Événements de changement d'entité (project, sprint, epic, task) via `EntityEventSseService`.
 
-Ces événements ne concernent pas directement le chat, mais pourraient être utilisés pour rafraîchir les listes de conversations sans polling.
+Ces événements ne concernent pas directement le chat, mais sont **consommés côté front** (`EntityEventService`) pour rafraîchir à chaud les listes de projets, epics, sprints et tâches sans polling (cf. `architecture.md`).
 
 ## Récapitulatif
 

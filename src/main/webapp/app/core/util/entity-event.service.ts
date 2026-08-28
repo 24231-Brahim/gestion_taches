@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { StateStorageService } from 'app/core/auth/state-storage.service';
-import { Observable, Subject, filter } from 'rxjs';
+import { Observable, Subject, debounceTime, filter } from 'rxjs';
 
 export interface EntityChangeEvent {
   entityType: string;
@@ -54,8 +54,11 @@ export class EntityEventService {
     }
   }
 
-  onEntityType(entityType: string): Observable<EntityChangeEvent> {
-    return this.events$.pipe(filter(e => e.entityType === entityType));
+  onEntityType(entityType: string, debounceMs = 0): Observable<EntityChangeEvent> {
+    return this.events$.pipe(
+      debounceTime(debounceMs),
+      filter(e => e.entityType === entityType),
+    );
   }
 
   onEntityTypeAndProject(entityType: string, projectId: number | null): Observable<EntityChangeEvent> {

@@ -42,12 +42,14 @@
         "sprints": "Sprints",
         "team": "Team",
         "noTasks": "No tasks for this epic",
+        "storyPoints": "Story Points",
         "taskTable": {
           "title": "Title",
           "status": "Status",
           "priority": "Priority",
           "assignee": "Assignee",
-          "sprint": "Sprint"
+          "sprint": "Sprint",
+          "storyPoints": "Story Points"
         }
       },
       "tab": {

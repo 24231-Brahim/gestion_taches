@@ -41,12 +41,14 @@
         "sprints": "السبرنتات",
         "team": "الفريق",
         "noTasks": "لا توجد مهام لهذا الإيبك",
+        "storyPoints": "نقاط القصة",
         "taskTable": {
           "title": "العنوان",
           "status": "الحالة",
           "priority": "الأولوية",
           "assignee": "المُعيَّن",
-          "sprint": "السبرنت"
+          "sprint": "السبرنت",
+          "storyPoints": "نقاط القصة"
         }
       },
       "tab": {

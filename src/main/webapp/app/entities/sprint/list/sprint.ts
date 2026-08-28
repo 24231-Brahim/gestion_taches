@@ -12,7 +12,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 
 import { AccountService } from 'app/core/auth/account.service';
 import { AlertService } from 'app/core/util/alert.service';
-import { ITEM_SAVED_EVENT } from 'app/config/navigation.constants';
+import { ITEM_DELETED_EVENT, ITEM_SAVED_EVENT } from 'app/config/navigation.constants';
 import { TaskService } from 'app/entities/task/service/task.service';
 import { ITask } from 'app/entities/task/task.model';
 import { ProjectRole } from 'app/entities/enumerations/project-role.model';
@@ -23,6 +23,7 @@ import { ProjectService } from 'app/entities/project/service/project.service';
 import { SprintActiveBoard } from '../active-board/sprint-active-board';
 import { SprintService, VelocityReport } from '../service/sprint.service';
 import { ISprint } from '../sprint.model';
+import { SprintDeleteDialog } from '../delete/sprint-delete-dialog';
 import { SprintFormModal } from '../update/sprint-form-modal';
 
 type Tab = 'board';
@@ -314,9 +315,13 @@ export class Sprint implements OnInit {
     return Math.round((this.doneTasksCount() / total) * 100);
   });
 
-  readonly totalStoryPoints = computed(() => 0);
+  readonly totalStoryPoints = computed(() => this.tasks().reduce((sum, t) => sum + (t.storyPoints ?? 0), 0));
 
-  readonly doneStoryPoints = computed(() => 0);
+  readonly doneStoryPoints = computed(() =>
+    this.tasks()
+      .filter(t => t.status === 'DONE')
+      .reduce((sum, t) => sum + (t.storyPoints ?? 0), 0),
+  );
 
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly router = inject(Router);
@@ -550,6 +555,19 @@ export class Sprint implements OnInit {
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_SAVED_EVENT),
+        tap(() => {
+          this.sprintService.refresh();
+        }),
+      )
+      .subscribe();
+  }
+
+  openDeleteSprintModal(sprint: ISprint): void {
+    const modalRef = this.modalService.open(SprintDeleteDialog, { size: 'lg', backdrop: 'static' });
+    modalRef.componentInstance.sprint = sprint;
+    modalRef.closed
+      .pipe(
+        filter(reason => reason === ITEM_DELETED_EVENT),
         tap(() => {
           this.sprintService.refresh();
         }),

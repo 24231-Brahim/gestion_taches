@@ -5,6 +5,7 @@ import dayjs from 'dayjs/esm';
 import { Observable, map } from 'rxjs';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
+import { EntityEventService, EntityType } from 'app/core/util/entity-event.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
 import { IEpic, NewEpic } from '../epic.model';
@@ -23,12 +24,6 @@ export type RestEpic = RestOf<IEpic>;
 export type NewRestEpic = RestOf<NewEpic>;
 
 export type PartialUpdateRestEpic = RestOf<PartialUpdateEpic>;
-
-export interface EpicBurndownData {
-  dates: string[];
-  ideal: number[];
-  actual: number[];
-}
 
 @Injectable()
 export class EpicsService {
@@ -68,6 +63,12 @@ export class EpicsService {
 @Injectable({ providedIn: 'root' })
 export class EpicService extends EpicsService {
   protected readonly http = inject(HttpClient);
+  protected readonly entityEventService = inject(EntityEventService);
+
+  constructor() {
+    super();
+    this.entityEventService.onEntityType(EntityType.EPIC, 400).subscribe(() => this.refresh());
+  }
 
   create(epic: NewEpic): Observable<IEpic> {
     const copy = this.convertValueFromClient(epic);
@@ -101,10 +102,6 @@ export class EpicService extends EpicsService {
 
   delete(id: number): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl}/${encodeURIComponent(id)}`);
-  }
-
-  getBurndown(id: number): Observable<EpicBurndownData> {
-    return this.http.get<EpicBurndownData>(`${this.resourceUrl}/${encodeURIComponent(id)}/burndown`);
   }
 
   getEpicIdentifier(epic: Pick<IEpic, 'id'>): number {

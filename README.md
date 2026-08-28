@@ -101,6 +101,8 @@ Pour le développement, PostgreSQL 16 doit être installé localement :
    ```
    Puis redémarrer PostgreSQL.
 
+> **Note** : En environnement Docker/production, la base s'appelle `gestionTaches` (camelCase) avec un user PostgreSQL dédié `gestionTaches`. Voir `src/main/docker/postgresql.yml` et `docs/technique/environnements.md`.
+
 ## Démarrage rapide
 
 ```bash

@@ -6,9 +6,9 @@
 > le 21/08/2026 (références fichier:ligne ci-dessous). Ce document est conservé comme trace historique.
 >
 > **Reste à faire :**
-> 1. §8 — purger les dernières références obsolètes de la documentation (`architecture.md:68`, nom de base dans `README.md`),
-> 2. §9 — rejouer la vérification finale complète (`./mvnw clean verify`, `./npmw run build`, `./npmw test`),
-> 3. §11 — traiter les nouveaux travaux issus de l'audit complet du 21/08/2026,
+> 1. §8 — purger les dernières références obsolètes de la documentation (`architecture.md:68`, nom de base dans `README.md`), ✅ fait en code.
+> 2. §9 — rejouer la vérification finale complète (`./mvnw clean verify`, `./npmw run build`, `./npmw test`).
+> 3. §11 — C1 (validation E2E réelle), C2, C3 et I1→I5 traités ✅ ; restent A1→A3.
 > 4. §12 — annexe : synthèse complète de l'état de l'application relevée lors de cette session.
 
 ---
@@ -96,8 +96,8 @@ Nettoyage fait sur : `README.md`, `docs_role.md`, `docs/fiche-classes.md`, `docs
 (`group-message.md` et `task-history.md` supprimés), `docs/fonctionnel/*`, `docs/utilisateur/*`.
 
 **Restant :**
-- [ ] `docs/technique/architecture.md:68` — retirer `UserPresenceRepository` de la liste des repositories ;
-- [ ] `README.md` (§ Base de données, ≈ lignes 89-102) — aligner le nom de base documenté (`gestionTaches`)
+- [x] `docs/technique/architecture.md:68` — retirer `UserPresenceRepository` de la liste des repositories ;
+- [x] `README.md` (§ Base de données, ≈ lignes 89-102) — aligner le nom de base documenté (`gestionTaches`)
       sur la base réelle (`gestion_taches`, utilisateur `postgres`) ;
 - [ ] archiver ou supprimer le présent document après la dernière passe de vérification.
 
@@ -132,19 +132,19 @@ retrait d'un membre → tâches désassignées, suites de tests vertes.
 
 | # | Tâche | Fichier(s) | Pourquoi |
 |---|---|---|---|
-| C1 | Réécrire ou supprimer les specs E2E Cypress entités qui visitent des routes inexistantes (`/task`, `/sprint`, `/epic`, `/comment`, `/attachment`) ; vraies routes imbriquées sous `/project/:key/...` | `src/test/javascript/cypress/e2e/entity/*.cy.ts:14-15` | Specs systématiquement en échec → E2E non fiable |
-| C2 | Burndown : trancher — **(a)** implémenter `GET /api/sprints/{id}/burndown` + `GET /api/epics/{id}/burndown` et brancher les composants existants, ou **(b)** supprimer services + composants front | `SprintResource.java`, `EpicResource.java`, `sprint.service.ts`, `epic.service.ts`, `entities/sprint/burndown/`, `entities/epic/burndown/` | Appels front sans endpoint back (404 latents) ; composants inaccessibles depuis toute navigation |
-| C3 | Ajouter la suppression de sprint dans l'UI : ouvrir le dialog existant depuis board/table | `sprint/list/sprint.html`, `sprint/detail/sprint-detail.html`, `entities/sprint/delete/*` | `DELETE /api/sprints/{id}` existe mais impossible depuis l'interface |
+| C1 | ✅ Réécrire les 5 specs E2E entités vers les vraies routes imbriquées `/project/:key/...` (création de projet via API, sélection par data-cy réels). **Restant : validation E2E réelle (Cypress) à rejouer.** | `e2e/entity/{task,sprint,epic,comment,attachment}.cy.ts` | Specs initiales visitant des routes inexistantes → E2E non fiable ; désormais alignées sur la structure custom |
+| C2 | ✅ **Option (b) retenue** : supprimer le code burndown (services `getBurndown` + types, composants `entities/{sprint,epic}/burndown/`, DTO back `BurndownData.java`). | `sprint.service.ts`, `epic.service.ts`, `entities/sprint/burndown/`, `entities/epic/burndown/`, `service/dto/BurndownData.java` | Appels front sans endpoint back (404 latents) ; composants inaccessibles depuis toute navigation |
+| C3 | ✅ Ajouter la suppression de sprint dans l'UI (bouton `entity.action.delete` + `openDeleteSprintModal` ouvrant le dialog existant, refresh après `ITEM_DELETED_EVENT`) + spec vitest. | `sprint/list/sprint.html`, `sprint/list/sprint.ts`, `sprint/list/sprint.spec.ts` | `DELETE /api/sprints/{id}` existe mais était inaccessible depuis l'interface |
 
 ### 🟠 Important
 
 | # | Tâche | Fichier(s) | Pourquoi |
 |---|---|---|---|
-| I1 | Brancher les story points réels dans la liste sprint (somme des `storyPoints` des tâches, done = status DONE) | `sprint/list/sprint.ts:317-319` | Valeurs hardcodées à 0 alors que la donnée existe en base (`Task.storyPoints`, `TaskDTO.storyPoints`) |
-| I2 | SSE : câbler `events$` (refresh listes à chaud) ou retirer la connexion navbar + `EntityEventResource`/`NotificationSseService` | `layouts/navbar/navbar.ts:57-60`, `core/util/entity-event.service.ts` | Flux connecté mais événements ignorés ; endpoint SSE notifications jamais appelé (front pousse en STOMP) |
-| I3 | Compléter les clés i18n visibles manquantes puis resynchroniser fr/ar | `i18n/{en,fr,ar}/*.json` | `error.general` (14 composants), `error.loading`, `dashboard.timeTracking.*` (en/fr affichent la clé brute), dropzone pièces jointes, `epic.detail.storyPoints` |
-| I4 | Bottom-nav mobile « Tasks » → `/my-tasks` | `layouts/bottom-nav/bottom-nav.html:13-16` | Lien duplique « Projets » (`/project`) au lieu de pointer vers les tâches |
-| I5 | Internationaliser les labels statut/priorité d'AdminTasks | `entities/admin/admin-tasks/admin-tasks.ts:123-146` | Libellés français codés en dur (bypass i18n) |
+| I1 | ✅ Story points réels dans la liste sprint : `totalStoryPoints`/`doneStoryPoints` somment les `storyPoints` des tâches (done = status DONE) + spec vitest | `sprint/list/sprint.ts:318-326`, `sprint/list/sprint.spec.ts` | Valeurs hardcodées à 0 alors que la donnée existe en base (`Task.storyPoints`, `TaskDTO.storyPoints`) |
+| I2 | ✅ SSE câblé : `events$` consommé pour un refresh listes à chaud — publication TASK ajoutée côté back (`TaskService`) ; les services `TaskService`/`SprintService`/`EpicService` s'abonnent à `events$` (débouncé) et rechargent; `EntityEventService.onEntityType(type, ms)` | `TaskService.java`, `sprint.service.ts`, `epic.service.ts`, `task.service.ts`, `core/util/entity-event.service.ts` | Flux connecté mais événements ignorés mais publication réelle côté back ; désormais consommé (option « câbler » retenue) |
+| I3 | ✅ i18n complété puis resynchronisation en/fr/ar (0 divergence sur tous les fichiers) : `error.general`/`error.loading`, `dashboard.timeTracking.*` (ajouté à en/fr), dropzone pièces jointes (restructuré `task.detail.attachments` en objet + `roleLabel`), `epic.detail.storyPoints`, `Priority` fr traduites, etc. | `i18n/{en,fr,ar}/*.json`, `task-attachments-tab.html`, `project-detail.html`, `project-settings.html` | `error.general` (14 composants), `error.loading`, `dashboard.timeTracking.*` (en/fr affichaient la clé brute), dropzone pièces jointes, `epic.detail.storyPoints` |
+| I4 | ✅ Bottom-nav mobile « Tasks » → `/my-tasks` | `layouts/bottom-nav/bottom-nav.html:13-16` | Lien dupliquait « Projets » (`/project`) au lieu de pointer vers les tâches |
+| I5 | ✅ Labels statut/priorité d'AdminTasks internationalisés via `TranslateService` (`TaskStatus.*`/`Priority.*`) avec fallback sur la valeur brute | `entities/admin/admin-tasks/admin-tasks.ts:123-146`, `i18n/fr/priority.json` | Libellés français codés en dur (bypass i18n) |
 
 ### 🟡 Amélioration
 

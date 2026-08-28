@@ -40,6 +40,11 @@
     "timeline": {
       "title": "Activité récente"
     },
+    "timeTracking": {
+      "title": "Suivi du temps",
+      "byUser": "Par utilisateur",
+      "byProject": "Par projet"
+    },
     "quickActions": {
       "title": "Actions rapides",
       "newProject": "Nouveau projet",

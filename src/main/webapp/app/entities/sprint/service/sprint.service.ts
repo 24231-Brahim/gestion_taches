@@ -6,17 +6,12 @@ import { Observable, map } from 'rxjs';
 
 import { DATE_FORMAT } from 'app/config/input.constants';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
+import { EntityEventService, EntityType } from 'app/core/util/entity-event.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
 import { ISprint, NewSprint } from '../sprint.model';
 
 export type PartialUpdateSprint = Partial<ISprint> & Pick<ISprint, 'id'>;
-
-export interface BurndownData {
-  dates: string[];
-  ideal: number[];
-  actual: number[];
-}
 
 export interface VelocityReport {
   tachesPrevues: number;
@@ -74,6 +69,12 @@ export class SprintsService {
 @Injectable({ providedIn: 'root' })
 export class SprintService extends SprintsService {
   protected readonly http = inject(HttpClient);
+  protected readonly entityEventService = inject(EntityEventService);
+
+  constructor() {
+    super();
+    this.entityEventService.onEntityType(EntityType.SPRINT, 400).subscribe(() => this.refresh());
+  }
 
   create(sprint: NewSprint): Observable<ISprint> {
     const copy = this.convertValueFromClient(sprint);
@@ -117,10 +118,6 @@ export class SprintService extends SprintsService {
 
   closeSprint(id: number): Observable<VelocityReport> {
     return this.http.post<VelocityReport>(`${this.resourceUrl}/${encodeURIComponent(id)}/close`, {});
-  }
-
-  getBurndown(id: number): Observable<BurndownData> {
-    return this.http.get<BurndownData>(`${this.resourceUrl}/${encodeURIComponent(id)}/burndown`);
   }
 
   getSprintIdentifier(sprint: Pick<ISprint, 'id'>): number {

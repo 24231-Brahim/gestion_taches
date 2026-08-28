@@ -68,15 +68,6 @@ La page d'un sprint affiche en haut :
 1. Dans la page Sprints, cliquez sur le bouton **"Table"** en haut à droite.
 2. La vue tableau liste tous les sprints du projet avec : nom, statut, dates de début/fin, nombre de tâches.
 
-## Consulter le burndown chart
-
-1. Ouvrez un sprint.
-2. Cliquez sur l'onglet **Burndown**.
-3. Le graphique affiche :
-   - La ligne idéale de burndown (pente théorique)
-   - La ligne réelle de burndown (progression effective)
-   - Des statistiques : tâches terminées, tâches restantes, vélocité
-
 ## Consulter la timeline
 
 1. Ouvrez un sprint.
@@ -119,7 +110,6 @@ La page d'un sprint affiche en haut :
 3. Plusieurs onglets sont disponibles :
    - **Tasks** : tableau des tâches liées à l'epic
    - **Kanban** : vue Kanban des tâches de l'epic
-   - **Burndown** : graphique de progression de l'epic
    - **Timeline** : vue chronologique des tâches
 
 ## Créer une tâche depuis un Epic

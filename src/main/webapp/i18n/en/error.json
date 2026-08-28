@@ -9,6 +9,8 @@
       "500": "Internal server error."
     },
     "concurrencyFailure": "Another user modified this data at the same time as you. Your changes were rejected.",
-    "validation": "Validation error on the server."
+    "validation": "Validation error on the server.",
+    "general": "An error has occurred. Please try again later.",
+    "loading": "Failed to load the requested data."
   }
 }

@@ -65,7 +65,7 @@ graph LR
 
 ### `repository` — Accès aux données
 
-- Interfaces Spring Data JPA pour chaque entité : `ProjectRepository`, `TaskRepository`, `SprintRepository`, `EpicRepository`, `CommentRepository`, `AttachmentRepository`, `NotificationRepository`, `ChatMessageRepository`, `ConversationRepository`, `ConversationMemberRepository`, `UserPresenceRepository`, `UserRepository`, `AuthorityRepository`, etc.
+- Interfaces Spring Data JPA pour chaque entité : `ProjectRepository`, `ProjectMemberRepository`, `TaskRepository`, `SprintRepository`, `EpicRepository`, `CommentRepository`, `AttachmentRepository`, `NotificationRepository`, `ChatMessageRepository`, `ConversationRepository`, `ConversationMemberRepository`, `UserRepository`, `AuthorityRepository`, etc.
 - Certaines entités disposent de requêtes personnalisées via `@Query` ou méthodes dérivées.
 - Les repositories bénéficient du cache Hibernate de second niveau (Caffeine/JCache).
 
@@ -80,6 +80,7 @@ graph LR
 - `SecurityConfiguration` : chaîne de filtres de sécurité, CORS, session stateless
 - `SecurityJwtConfiguration` : encodeur/décodeur JWT Nimbus (HS512)
 - `WebsocketConfiguration` : broker STOMP, endpoint SockJS, authentification JWT sur le handshake WebSocket
+- `EntityEventSseService` + `EntityEventResource` : flux SSE `GET /api/events/stream` publiant les changements d'entités (TASK, SPRINT, EPIC, PROJECT) — consommé côté front par `EntityEventService` pour rafraîchir à chaud les listes.
 - `CacheConfiguration` : configuration Caffeine/JCache, caches Hibernate
 - `WebConfigurer` : CORS filter, static resources, H2 console (dev)
 - `LiquibaseConfiguration` : configuration des migrations
@@ -135,5 +136,6 @@ L'application utilise exclusivement des composants **standalone**. Il n'y a pas 
 | Composants standalone Angular 21 | Architecture moderne, arbre de composants optimisé, zoneless change detection |
 | Pas de store global | Simplicité : l'état reste local aux composants/services pour ce périmètre |
 | WebSocket STOMP limité aux notifications | Besoin métier couvert : notifications push ; le chat utilise du polling REST |
+| SSE `EntityEventService` pour l'état | Rafraîchissement à chaud des listes (tasks/sprints/epics) quand une entité change (publié par `TaskService`/`SprintService`/`EpicService`) |
 | Cache Caffeine + JCache | Performance : cache de second niveau Hibernate + cache applicatif |
 | Liquibase | Migrations SQL versionnées, rollback, reproductibilité entre environnements |

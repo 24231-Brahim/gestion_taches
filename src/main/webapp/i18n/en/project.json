@@ -55,7 +55,6 @@
         "removed": "Member removed from project",
         "updated": "Member role updated",
         "userLogin": "User",
-        "role": "Role",
         "role": {
           "OWNER": "OWNER",
           "MANAGER": "MANAGER",
@@ -69,7 +68,8 @@
           "add": "Error adding member",
           "remove": "Error removing member",
           "update": "Error updating role"
-        }
+        },
+        "roleLabel": "Role"
       }
     }
   }

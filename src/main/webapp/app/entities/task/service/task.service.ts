@@ -7,6 +7,7 @@ import { Observable, map, tap } from 'rxjs';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
 import { isPresent } from 'app/core/util/operators';
+import { EntityEventService, EntityType } from 'app/core/util/entity-event.service';
 import { SprintService } from 'app/entities/sprint/service/sprint.service';
 import { EpicService } from 'app/entities/epic/service/epic.service';
 import { ITask, NewTask } from '../task.model';
@@ -73,6 +74,12 @@ export class TaskService extends TasksService {
   protected readonly http = inject(HttpClient);
   protected readonly sprintService = inject(SprintService);
   protected readonly epicService = inject(EpicService);
+  protected readonly entityEventService = inject(EntityEventService);
+
+  constructor() {
+    super();
+    this.entityEventService.onEntityType(EntityType.TASK, 400).subscribe(() => this.refresh());
+  }
 
   create(task: NewTask): Observable<ITask> {
     const copy = this.convertValueFromClient(task);

@@ -23,7 +23,10 @@
       "completedTasks": "المهام المكتملة",
       "overdueTasks": "المهام المتأخرة",
       "teamMembers": "أعضاء الفريق",
-      "totalTimeSpent": "إجمالي الوقت المستغرق"
+      "totalTimeSpent": "إجمالي الوقت المستغرق",
+      "inProgressTasks": "قيد الإنجاز",
+      "myAssignedTasks": "مهامي المعيّنة",
+      "myProjects": "مشاريعي"
     },
     "timeTracking": {
       "title": "تتبع الوقت",
@@ -48,7 +51,10 @@
       "newProject": "مشروع جديد",
       "viewProjects": "عرض المشاريع",
       "newTask": "مهمة جديدة",
-      "viewTasks": "عرض المهام"
+      "viewTasks": "عرض المهام",
+      "kanbanBoard": "لوحة كانبان",
+      "myTasks": "مهامي",
+      "viewBacklog": "عرض الأعمال المتراكمة"
     }
   }
 }

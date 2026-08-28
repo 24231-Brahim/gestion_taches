@@ -21,7 +21,10 @@
         "title": "Task",
         "comments": "Comments",
         "noComments": "No comments yet.",
-        "attachments": "Attachments",
+        "attachments": {
+          "title": "Attachments",
+          "dropzone": "Drop a file here or click to browse"
+        },
         "noAttachments": "No attachments yet.",
         "tab": {
           "details": "Details",

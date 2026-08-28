@@ -9,7 +9,8 @@
         "title": "Mémoire",
         "total": "Mémoire totale",
         "heap": "Mémoire \"Heap\"",
-        "nonheap": "Mémoire \"Non-Heap\""
+        "nonheap": "Mémoire \"Non-Heap\"",
+        "committed": "Engagé"
       },
       "threads": {
         "title": "Threads",
@@ -28,15 +29,20 @@
           "lockname": "Nom du processus bloquant",
           "stacktrace": "Stacktrace",
           "show": "Afficher",
-          "hide": "Cacher"
-        }
+          "hide": "Cacher",
+          "caption": "Dump des threads :"
+        },
+        "expand": "Déplier",
+        "total": "Total"
       },
       "gc": {
         "title": "Garbage collections",
         "marksweepcount": "Total de \"Mark Sweep\"",
         "marksweeptime": "Temps \"Mark Sweep\"",
         "scavengecount": "Total \"Scavenge\"",
-        "scavengetime": "Temps \"Scavenge\""
+        "scavengetime": "Temps \"Scavenge\"",
+        "classesLoaded": "Classes chargées",
+        "classesUnloaded": "Classes déchargées"
       },
       "http": {
         "title": "Requêtes HTTP (temps en millisecondes)",
@@ -47,13 +53,26 @@
           "count": "Total",
           "mean": "Médian",
           "average": "Moyenne",
-          "max": "Max"
+          "max": "Max",
+          "method": "Méthode",
+          "url": "URL de l'endpoint"
         },
         "code": {
           "ok": "Ok",
           "notfound": "Non trouvé",
           "servererror": "Erreur serveur"
         }
+      },
+      "system": {
+        "loadAverage": "Charge moyenne système (1m)",
+        "processCpuUsage": "Utilisation CPU du processus",
+        "processFilesMax": "Fichiers max du processus",
+        "processFilesOpen": "Fichiers ouverts du processus",
+        "startTime": "Heure de démarrage",
+        "systemCpuCount": "Nombre de CPU système",
+        "systemCpuUsage": "Utilisation CPU système",
+        "title": "Système",
+        "uptime": "Temps d'activité"
       }
     },
     "servicesstats": {
@@ -96,7 +115,10 @@
       "p50": "p50",
       "p75": "p75",
       "p95": "p95",
-      "p99": "p99"
+      "p99": "p99",
+      "acquire": "Acquérir",
+      "creation": "Création",
+      "usageLabel": "Utilisation"
     }
   }
 }

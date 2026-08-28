@@ -1,24 +1,11 @@
-import {
-  entityConfirmDeleteButtonSelector,
-  entityCreateButtonSelector,
-  entityCreateCancelButtonSelector,
-  entityCreateSaveButtonSelector,
-  entityDeleteButtonSelector,
-  entityDetailsBackButtonSelector,
-  entityDetailsButtonSelector,
-  entityEditButtonSelector,
-  entityTableSelector,
-} from '../../support/entity';
+import { entityConfirmDeleteButtonSelector, entityCreateSaveButtonSelector } from '../../support/entity';
 
 describe('Sprint e2e test', () => {
-  const sprintPageUrl = '/sprint';
-  const sprintPageUrlPattern = new RegExp('/sprint(\\?.*)?$');
   let username: string;
   let password: string;
-  const sprintSample = { name: 'rectorat biathlète candide', status: 'CANCELLED' };
 
-  let sprint;
   let project;
+  let sprint;
 
   before(() => {
     cy.credentials().then(credentials => {
@@ -30,37 +17,34 @@ describe('Sprint e2e test', () => {
     cy.login(username, password);
   });
 
-  beforeEach(() => {
-    // create an instance at the required relationship entity:
-    cy.authenticatedRequest({
-      method: 'POST',
-      url: '/api/projects',
-      body: { name: 'cot cot', description: 'athlète commissionnaire', key: 'psitt tand', createdAt: '2026-06-23T14:35:00.728Z' },
-    }).then(({ body }) => {
-      project = body;
-    });
-  });
+  const createProject = () =>
+    cy
+      .authenticatedRequest({
+        method: 'POST',
+        url: '/api/projects',
+        body: { name: `E2E Sprint ${Date.now()}`, description: 'e2e', key: `E2ESP${Date.now()}` },
+      })
+      .then(({ body }) => {
+        project = body;
+      });
 
-  beforeEach(() => {
-    cy.intercept('GET', '/api/sprints+(?*|)').as('entitiesRequest');
-    cy.intercept('POST', '/api/sprints').as('postEntityRequest');
-    cy.intercept('DELETE', '/api/sprints/*').as('deleteEntityRequest');
-  });
+  const createSprint = () =>
+    cy
+      .authenticatedRequest({
+        method: 'POST',
+        url: '/api/sprints',
+        body: { name: 'e2e sprint', status: 'PLANNED', project },
+      })
+      .then(({ body }) => {
+        sprint = body;
+      });
 
-  beforeEach(() => {
-    // Simulate relationships api for better performance and reproducibility.
-    cy.intercept('GET', '/api/projects', {
-      statusCode: 200,
-      body: [project],
-    });
-  });
+  const sprintListUrl = () => `/project/${project.key}/sprint`;
+  const sprintUrlPattern = key => new RegExp(`/project/${key}/sprint(.*)$`);
 
   afterEach(() => {
     if (sprint) {
-      cy.authenticatedRequest({
-        method: 'DELETE',
-        url: `/api/sprints/${sprint.id}`,
-      }).then(() => {
+      cy.authenticatedRequest({ method: 'DELETE', url: `/api/sprints/${sprint.id}` }).then(() => {
         sprint = undefined;
       });
     }
@@ -68,171 +52,57 @@ describe('Sprint e2e test', () => {
 
   afterEach(() => {
     if (project) {
-      cy.authenticatedRequest({
-        method: 'DELETE',
-        url: `/api/projects/${project.id}`,
-      }).then(() => {
+      cy.authenticatedRequest({ method: 'DELETE', url: `/api/projects/${project.id}` }).then(() => {
         project = undefined;
       });
     }
   });
 
-  it('Sprints menu should load Sprints page', () => {
-    cy.visit('/');
-    cy.clickOnEntityMenuItem('sprint');
-    cy.wait('@entitiesRequest').then(({ response }) => {
-      if (response?.body.length === 0) {
-        cy.get(entityTableSelector).should('not.exist');
-      } else {
-        cy.get(entityTableSelector).should('exist');
-      }
-    });
-    cy.getEntityHeading('Sprint').should('exist');
-    cy.url().should('match', sprintPageUrlPattern);
-  });
-
-  describe('Sprint page', () => {
-    it('should have translated page title', () => {
-      cy.visit(sprintPageUrl);
-      cy.getEntityHeading('Sprint').should('not.contain', 'gestionTachesApp.sprint.home.title');
-    });
-
-    describe('create button click', () => {
-      beforeEach(() => {
-        cy.visit(sprintPageUrl);
-        cy.wait('@entitiesRequest');
-      });
-
-      it('should load create Sprint page', () => {
-        cy.get(entityCreateButtonSelector).click();
-        cy.url().should('match', new RegExp('/sprint/new$'));
-        cy.getEntityCreateUpdateHeading('Sprint');
-        cy.get(entityCreateSaveButtonSelector).should('exist');
-        cy.get(entityCreateCancelButtonSelector).click();
-        cy.wait('@entitiesRequest').then(({ response }) => {
-          expect(response?.statusCode).to.equal(200);
-        });
-        cy.url().should('match', sprintPageUrlPattern);
-      });
-    });
-
-    describe('with existing value', () => {
-      beforeEach(() => {
-        cy.authenticatedRequest({
-          method: 'POST',
-          url: '/api/sprints',
-          body: {
-            ...sprintSample,
-            project,
-          },
-        }).then(({ body }) => {
-          sprint = body;
-
-          cy.intercept(
-            {
-              method: 'GET',
-              url: '/api/sprints+(?*|)',
-              times: 1,
-            },
-            {
-              statusCode: 200,
-              headers: {
-                link: '<http://localhost/api/sprints?page=0&size=20>; rel="last",<http://localhost/api/sprints?page=0&size=20>; rel="first"',
-              },
-              body: [sprint],
-            },
-          ).as('entitiesRequestInternal');
-        });
-
-        cy.visit(sprintPageUrl);
-
-        cy.wait('@entitiesRequestInternal');
-      });
-
-      it('detail button click should load details Sprint page', () => {
-        cy.get(entityDetailsButtonSelector).first().click();
-        cy.getEntityDetailsHeading('sprint');
-        cy.get(entityDetailsBackButtonSelector).click();
-        cy.wait('@entitiesRequest').then(({ response }) => {
-          expect(response?.statusCode).to.equal(200);
-        });
-        cy.url().should('match', sprintPageUrlPattern);
-      });
-
-      it('edit button click should load edit Sprint page and go back', () => {
-        cy.get(entityEditButtonSelector).first().click();
-        cy.getEntityCreateUpdateHeading('Sprint');
-        cy.get(entityCreateSaveButtonSelector).should('exist');
-        cy.get(entityCreateCancelButtonSelector).click();
-        cy.wait('@entitiesRequest').then(({ response }) => {
-          expect(response?.statusCode).to.equal(200);
-        });
-        cy.url().should('match', sprintPageUrlPattern);
-      });
-
-      it('edit button click should load edit Sprint page and save', () => {
-        cy.get(entityEditButtonSelector).first().click();
-        cy.getEntityCreateUpdateHeading('Sprint');
-        cy.get(entityCreateSaveButtonSelector).click();
-        cy.wait('@entitiesRequest').then(({ response }) => {
-          expect(response?.statusCode).to.equal(200);
-        });
-        cy.url().should('match', sprintPageUrlPattern);
-      });
-
-      it('last delete button click should delete instance of Sprint', () => {
-        cy.get(entityDeleteButtonSelector).last().click();
-        cy.getEntityDeleteDialogHeading('sprint').should('exist');
-        cy.get(entityConfirmDeleteButtonSelector).click();
-        cy.wait('@deleteEntityRequest').then(({ response }) => {
-          expect(response?.statusCode).to.equal(204);
-        });
-        cy.wait('@entitiesRequest').then(({ response }) => {
-          expect(response?.statusCode).to.equal(200);
-        });
-        cy.url().should('match', sprintPageUrlPattern);
-
-        sprint = undefined;
-      });
-    });
-  });
-
-  describe('new Sprint page', () => {
+  describe('project sprint page', () => {
     beforeEach(() => {
-      cy.visit(sprintPageUrl);
-      cy.get(entityCreateButtonSelector).click();
-      cy.getEntityCreateUpdateHeading('Sprint');
+      createProject();
+      cy.intercept('GET', '/api/sprints+(?*|)').as('entitiesRequest');
     });
 
-    it('should create an instance of Sprint', () => {
-      cy.get(`[data-cy="name"]`).type('gens');
-      cy.get(`[data-cy="name"]`).should('have.value', 'gens');
+    it('should display the sprint page of a project', () => {
+      cy.visit(sprintListUrl());
+      cy.wait('@entitiesRequest');
+      cy.get('.sprint-page').should('exist');
+      cy.url().should('match', sprintUrlPattern(project.key));
+    });
 
-      cy.get(`[data-cy="goal"]`).type('hors de à travers');
-      cy.get(`[data-cy="goal"]`).should('have.value', 'hors de à travers');
-
-      cy.get(`[data-cy="startDate"]`).type('2026-06-23');
-      cy.get(`[data-cy="startDate"]`).blur();
-      cy.get(`[data-cy="startDate"]`).should('have.value', '2026-06-23');
-
-      cy.get(`[data-cy="endDate"]`).type('2026-06-23');
-      cy.get(`[data-cy="endDate"]`).blur();
-      cy.get(`[data-cy="endDate"]`).should('have.value', '2026-06-23');
-
-      cy.get(`[data-cy="status"]`).select('CANCELLED');
-
-      cy.get(`[data-cy="project"]`).select(1);
-
+    it('should create a new Sprint from the new page', () => {
+      cy.visit(`/project/${project.key}/sprint/new`);
+      cy.get('[data-cy="SprintCreateUpdateHeading"]').should('exist');
+      cy.get('[data-cy="name"]').type('e2e sprint new');
+      cy.get('[data-cy="status"]').select('PLANNED');
       cy.get(entityCreateSaveButtonSelector).click();
+      cy.url().should('match', sprintUrlPattern(project.key));
+    });
+  });
 
-      cy.wait('@postEntityRequest').then(({ response }) => {
-        expect(response?.statusCode).to.equal(201);
-        sprint = response.body;
+  describe('with existing sprint', () => {
+    beforeEach(() => {
+      createProject().then(() => createSprint());
+      cy.intercept('GET', '/api/sprints+(?*|)').as('entitiesRequest');
+      cy.intercept('DELETE', '/api/sprints/*').as('deleteEntityRequest');
+      cy.visit(sprintListUrl());
+      cy.wait('@entitiesRequest');
+    });
+
+    it('should display the selected sprint details', () => {
+      cy.get('.sprint-page').should('exist');
+      cy.get('.sprint-name').should('contain', 'e2e sprint');
+    });
+
+    it('should delete the sprint from the board header', () => {
+      cy.get('.btn-outline-danger').click();
+      cy.get('[data-cy="sprintDeleteDialogHeading"]').should('exist');
+      cy.get(entityConfirmDeleteButtonSelector).click();
+      cy.wait('@deleteEntityRequest').then(({ response }) => {
+        expect(response?.statusCode).to.equal(204);
       });
-      cy.wait('@entitiesRequest').then(({ response }) => {
-        expect(response?.statusCode).to.equal(200);
-      });
-      cy.url().should('match', sprintPageUrlPattern);
+      sprint = undefined;
     });
   });
 });

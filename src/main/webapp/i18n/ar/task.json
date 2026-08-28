@@ -21,6 +21,11 @@
         "title": "المهمة",
         "comments": "التعليقات",
         "noComments": "لا توجد تعليقات بعد.",
+        "attachments": {
+          "title": "المرفقات",
+          "dropzone": "قم بإفلات ملف هنا أو انقر للاستعراض"
+        },
+        "noAttachments": "لا توجد مرفقات بعد.",
         "tab": {
           "details": "التفاصيل",
           "comments": "التعليقات",
@@ -41,7 +46,10 @@
       "epic": "الإيبك",
       "project": "المشروع",
       "assignee": "المُعيَّن",
-      "createdBy": "أنشئ بواسطة"
+      "createdBy": "أنشئ بواسطة",
+      "error": {
+        "noProject": "لم يتم تحديد مشروع"
+      }
     }
   }
 }
